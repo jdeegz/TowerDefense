@@ -13,19 +13,14 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     public event Action<ResourceNode> OnResourceNodeDepletion;
     
 
-    void Start()
-    {
-    }
-
-    public (int, List<ResourceNode>) RequestResource(int i)
+    public int RequestResource(int i)
     {
         int resourcesHarvested = 0;
-        List<ResourceNode> nearByNodes = null;
         if (m_resourcesRemaining > 0)
         {
             //Give the gatherer how much they ask for or all that is remaining.
-            int giveValue = Math.Min(i, m_resourcesRemaining);
-            m_resourcesRemaining -= giveValue;
+            resourcesHarvested = Math.Min(i, m_resourcesRemaining);
+            m_resourcesRemaining -= resourcesHarvested;
         }
 
         if (m_resourcesRemaining <= 0)
@@ -33,8 +28,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             //If we hit 0 resources after giving some up, send the gatherer nearby nodes and start the destroy process.
             OnDepletion();
         }
-
-        return (resourcesHarvested, nearByNodes);
+        return resourcesHarvested;
     }
     
 

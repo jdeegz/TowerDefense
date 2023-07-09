@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
@@ -25,6 +26,9 @@ public class GameplayManager : MonoBehaviour
     [Header("Selected Object Info")] public GameObject m_selectedRing;
     public GameObject m_selectedObj;
     public LayerMask m_objLayerMask;
+    
+    [Header("Equipped Towers")]
+    public ScriptableTowerDataObject[] m_equippedTowers;
 
 
     public enum GameplayState
@@ -55,14 +59,17 @@ public class GameplayManager : MonoBehaviour
             m_selectedRing.transform.position = pos;
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
-            OnMouseLeftDown();
-        }
+            if (Input.GetMouseButtonDown(0))
+            {
+                OnMouseLeftDown();
+            }
 
-        if (Input.GetMouseButtonDown(1))
-        {
-            OnMouseRightDown();
+            if (Input.GetMouseButtonDown(1))
+            {
+                OnMouseRightDown();
+            }
         }
     }
 
@@ -198,28 +205,28 @@ public class GameplayManager : MonoBehaviour
         switch (type)
         {
             case ResourceManager.ResourceType.Wood:
-                
-                foreach (GathererController g in m_woodGathererList)
+
+                for (int i = 0; i < m_woodGathererList.Count; ++i)
                 {
-                    if (gatherer == g)
+                    if (m_woodGathererList[i] == gatherer)
                     {
-                        m_woodGathererList.Remove(gatherer);
+                        m_woodGathererList.RemoveAt(i);
                     }
                 }
+
                 break;
             case ResourceManager.ResourceType.Stone:
-                
-                foreach (GathererController g in m_stoneGathererList)
+                for (int i = 0; i < m_stoneGathererList.Count; ++i)
                 {
-                    if (gatherer == g)
+                    if (m_stoneGathererList[i] == gatherer)
                     {
-                        m_stoneGathererList.Remove(gatherer);
+                        m_stoneGathererList.RemoveAt(i);
                     }
                 }
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
     }
 }

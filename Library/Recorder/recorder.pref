@@ -21,6 +21,7 @@ MonoBehaviour:
   m_StartTime: 0
   m_EndTime: 0
   m_CapFrameRate: 1
+  m_ExitPlayMode: 1
   m_RecorderSettings:
   - {fileID: 2}
 --- !u!114 &2
@@ -36,7 +37,7 @@ MonoBehaviour:
   m_Name: Movie
   m_EditorClassIdentifier: 
   enabled: 1
-  take: 19
+  take: 22
   captureEveryNthFrame: 1
   fileNameGenerator:
     m_Path:
@@ -45,17 +46,11 @@ MonoBehaviour:
       m_ForceAssetFolder: 0
       m_AbsolutePath: C:/Users/Jim/Desktop
     m_FileName: Recording_<Take>
-  outputFormat: 0
-  videoBitRateMode: 2
+  m_Version: 1
+  encoderSettings:
+    rid: 1921606736519888896
   captureAlpha: 0
-  containerFormatSelected: 0
-  encoderSelected: 0
-  encoderPresetSelected: 0
-  encoderPresetSelectedName: 
-  encoderPresetSelectedOptions: 
-  encoderPresetSelectedSuffixes: 
-  encoderColorDefinitionSelected: 0
-  encoderCustomOptions: 
+  captureAudio: 1
   m_ImageInputSelector:
     m_Selected: gameViewInputSettings
     gameViewInputSettings:
@@ -115,9 +110,29 @@ MonoBehaviour:
     preserveAudio: 1
   _accumulationSettings:
     rid: 8986951322472284160
+  outputFormat: 0
+  encodingQuality: 2
+  containerFormatSelected: 0
+  encoderSelected: 0
+  encoderPresetSelected: 0
+  encoderPresetSelectedName: 
+  encoderPresetSelectedOptions: 
+  encoderPresetSelectedSuffixes: 
+  encoderColorDefinitionSelected: 0
+  encoderCustomOptions: 
   references:
     version: 2
     RefIds:
+    - rid: 1921606736519888896
+      type: {class: CoreEncoderSettings, ns: UnityEditor.Recorder.Encoder, asm: Unity.Recorder.Editor}
+      data:
+        targetBitRate: 8
+        gopSize: 25
+        numConsecutiveBFrames: 2
+        encodingProfile: 2
+        keyframeDistance: 25
+        codec: 0
+        encodingQuality: 2
     - rid: 8986951322472284160
       type: {class: AccumulationSettings, ns: , asm: Unity.Recorder.Editor}
       data:
@@ -151,3 +166,4 @@ MonoBehaviour:
           m_RotationOrder: 4
         shutterFullyOpen: 0.25
         shutterBeginsClosing: 0.75
+        useSubPixelJitter: 1

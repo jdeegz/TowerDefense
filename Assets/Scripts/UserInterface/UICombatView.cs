@@ -15,7 +15,8 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
-
+    [SerializeField] private GameObject m_towerTrayButtonPrefab;
+    [SerializeField] private RectTransform m_towerTrayLayoutObj;
 
     void Awake()
     {
@@ -32,26 +33,23 @@ public class UICombatView : MonoBehaviour
 
     private void UpdateWoodGathererDisplay(int i)
     {
-        int newCount = i + ResourceManager.Instance.GetWoodGathererAmount();
-        m_woodGathererLabel.SetText(newCount.ToString());
+        m_woodGathererLabel.SetText(i.ToString());
     }
 
     private void UpdateStoneGathererDisplay(int i)
     {
-        int newCount = i + ResourceManager.Instance.GetStoneGathererAmount();
-        m_stoneGathererLabel.SetText(newCount.ToString());
+        m_stoneGathererLabel.SetText(i.ToString());
     }
 
     private void UpdateWoodDisplay(int i)
     {
-        int newCount = i + ResourceManager.Instance.GetWoodAmount();
-        m_woodBankLabel.SetText(newCount.ToString());
+        m_woodBankLabel.SetText(i.ToString());
     }
 
     private void UpdateStoneDisplay(int i)
     {
-        int newCount = i + ResourceManager.Instance.GetStoneAmount();
-        m_stoneBankLabel.SetText(newCount.ToString());
+        
+        m_stoneBankLabel.SetText(i.ToString());
     }
 
     void OnDestroy()
@@ -75,6 +73,18 @@ public class UICombatView : MonoBehaviour
         m_victoryButton.onClick.AddListener(OnVictoryButtonClicked);
         m_defeatButton.onClick.AddListener(OnDefeatButtonClick);
         m_exitButton.onClick.AddListener(OnExitButtonClicked);
+
+        BuildTowerTrayDisplay();
+    }
+
+    private void BuildTowerTrayDisplay()
+    {
+        for (int i = 0; i < GameplayManager.Instance.m_equippedTowers.Length; ++i)
+        {
+            GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_towerTrayLayoutObj);
+            TowerTrayButton buttonScript = buttonPrefab.GetComponent<TowerTrayButton>();
+            buttonScript.SetupData(GameplayManager.Instance.m_equippedTowers[i], i);
+        }
     }
 
     private void OnPlayButtonClicked()

@@ -98,7 +98,6 @@ public class GathererController : MonoBehaviour
 
     private void OnNodeDepleted(ResourceNode depletedNode)
     {
-        Debug.Log("Node Found Depleted, trying to find new node.");
         float detectionRadius = 1.5f;
         LayerMask layerMask = LayerMask.GetMask("Actors");
         Collider depletedNodeCollider = depletedNode.GetComponent<Collider>();
@@ -106,8 +105,6 @@ public class GathererController : MonoBehaviour
 
         //Get a bunch of nodes near the point.
         Collider[] colliders = Physics.OverlapSphere(depletedNode.transform.position, detectionRadius, layerMask);
-
-        Debug.Log("Number of colliders found: " + colliders.Length);
 
         foreach (Collider collider in colliders)
         {
@@ -125,7 +122,6 @@ public class GathererController : MonoBehaviour
             }
         }
 
-        Debug.Log("List of nearby Nodes created.");
         //Get the closest one.
         float closestDistance = float.MaxValue;
         ResourceNode closestNode = null;
@@ -217,12 +213,10 @@ public class GathererController : MonoBehaviour
         switch (m_type)
         {
             case ResourceManager.ResourceType.Wood:
-                Debug.Log("Trying to add Gatherer type: " + m_type);
                 GameplayManager.Instance.AddGathererToList(this, m_type);
                 ResourceManager.Instance.UpdateWoodGathererAmount(1);
                 break;
             case ResourceManager.ResourceType.Stone:
-                Debug.Log("Trying to add Gatherer type: " + m_type);
                 GameplayManager.Instance.AddGathererToList(this, m_type);
                 ResourceManager.Instance.UpdateStoneGathererAmount(1);
                 break;
@@ -249,43 +243,11 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    public void UpdateHarvestTarget(List<ResourceNode> nodes)
-    {
-        float closestDistance = float.MaxValue;
-        ResourceNode closestNode = null;
-        foreach (ResourceNode node in nodes)
-        {
-            //Compare the previous Node Position with the new ones.
-            float distance = Vector3.Distance(m_harvestNode.transform.position, node.transform.position);
-
-            if (CanPath(node.transform.position) && distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestNode = node;
-            }
-        }
-
-        if (closestNode != null)
-        {
-            m_harvestNode = closestNode;
-        }
-        else
-        {
-            m_harvestNode = null;
-        }
-    }
-
     private IEnumerator Harvesting()
     {
         yield return new WaitForSeconds(m_harvestDuration);
-        (int i, List<ResourceNode> nodes) = m_harvestNode.RequestResource(m_carryCapacity);
+        int i = m_harvestNode.RequestResource(m_carryCapacity);
         m_resourceCarried = i;
-        
-        //I think i can delete all the node list stuff...?? Is this causing weirdness?
-        if (nodes != null)
-        {
-            UpdateHarvestTarget(nodes);
-        }
 
         UpdateTask(GathererTask.TravelingToCastle);
     }
@@ -296,16 +258,16 @@ public class GathererController : MonoBehaviour
         switch (m_type)
         {
             case ResourceManager.ResourceType.Wood:
-                Debug.Log("Trying to store wood amount: " + m_resourceCarried);
                 ResourceManager.Instance.UpdateWoodAmount(m_resourceCarried);
                 break;
             case ResourceManager.ResourceType.Stone:
-                Debug.Log("Trying to store stone amount: " + m_resourceCarried);
                 ResourceManager.Instance.UpdateStoneAmount(m_resourceCarried);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        m_resourceCarried = 0;
         
         if (m_harvestNode)
         {
