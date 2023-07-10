@@ -24,6 +24,7 @@ public class ResourceManager : MonoBehaviour
 
     public static event Action<int> UpdateWoodBank;
     public static event Action<int> UpdateStoneBank;
+    
 
 
     private void Awake()

@@ -26,9 +26,8 @@ public class GameplayManager : MonoBehaviour
     [Header("Selected Object Info")] public GameObject m_selectedRing;
     public GameObject m_selectedObj;
     public LayerMask m_objLayerMask;
-    
-    [Header("Equipped Towers")]
-    public ScriptableTowerDataObject[] m_equippedTowers;
+
+    [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
 
 
     public enum GameplayState
@@ -93,7 +92,7 @@ public class GameplayManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_objLayerMask))
         {
-            //Debug.Log(raycastHit.collider.name + " command issued.");
+            Debug.Log(raycastHit.collider.name + " command issued.");
             OnCommandRequested?.Invoke(raycastHit.collider.gameObject);
         }
         else
@@ -120,16 +119,7 @@ public class GameplayManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-
+        Instance = this;
         OnGameplayStateChanged += GameplayManagerStateChanged;
         OnGameObjectSelected += OnOnGameObjectSelected;
     }

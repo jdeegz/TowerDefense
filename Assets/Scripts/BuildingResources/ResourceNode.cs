@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,11 +6,19 @@ using UnityEngine.Serialization;
 
 public class ResourceNode : MonoBehaviour, IResourceNode
 {
-    
     public ResourceManager.ResourceType m_type;
     [SerializeField] private int m_resourcesRemaining;
     public event Action<ResourceNode> OnResourceNodeDepletion;
-    
+    [SerializeField] private Animator m_animator;
+    public List<HarvestPoint> m_harvestPoints = new List<HarvestPoint>();
+    private int m_harvesters;
+    private static int m_gatherersHarvestingHash = Animator.StringToHash("gatherersHarvesting");
+
+
+    public void Start()
+    {
+        //m_harvestPoints = new List<HarvestPoint>();
+    }
 
     public int RequestResource(int i)
     {
@@ -28,9 +35,15 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             //If we hit 0 resources after giving some up, send the gatherer nearby nodes and start the destroy process.
             OnDepletion();
         }
+
         return resourcesHarvested;
     }
-    
+
+    public void SetIsHarvesting(int i)
+    {
+        m_harvesters += i;
+        m_animator.SetInteger(m_gatherersHarvestingHash, m_harvesters);
+    }
 
     private void OnDepletion()
     {
@@ -39,3 +52,10 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     }
 }
 
+[Serializable]
+public class HarvestPoint
+{
+    public Transform m_transform;
+    public bool m_isOccupied;
+    public GathererController m_gatherer;
+}
