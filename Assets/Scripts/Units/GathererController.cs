@@ -45,7 +45,8 @@ public class GathererController : MonoBehaviour
                 //If no node, go to idle.
                 if (!m_harvestNode)
                 {
-                    Debug.Log("No harvest node assigned.");
+                    //Debug.Log("No harvest node assigned.");
+                    //Find a new node.
                     UpdateTask(GathererTask.Idling);
                 }
 
@@ -55,7 +56,7 @@ public class GathererController : MonoBehaviour
                 //If no harvest Point available, go to idle.
                 if (!m_harvestPoint || m_harvestPointIndex < 0)
                 {
-                    Debug.Log("No harvest point available.");
+                    //Debug.Log("No harvest point available.");
                     UpdateTask(GathererTask.Idling);
                     break;
                 }
@@ -82,7 +83,7 @@ public class GathererController : MonoBehaviour
 
                 //Get the point on the castle we want to move to. Triggers Storing when close (uses Update to check proximity).
                 Vector3 castle = GetClosestTransform(GameplayManager.Instance.m_enemyGoals).position;
-                Debug.Log("Moving to castle point: " + castle);
+                //Debug.Log("Moving to castle point: " + castle);
                 StartMoving(castle);
                 break;
             case GathererTask.Storing:
@@ -123,16 +124,15 @@ public class GathererController : MonoBehaviour
             }
             else
             {
-                Debug.Log("Not right Resource Type");
+                //Debug.Log("Not right Resource Type");
             }
         }
     }
-
-
-    private void OnNodeDepleted(ResourceNode depletedNode)
+    //Get Node
+    //Right clicking sends me an object. Check if it's a node. If it's the right type. Set Harvest Node to the object. Get accessible harvest point.
+    //If node is still null, check surrounding area for a node that is valid and has accessible harvest point. Set harvest node to the object.
+    private void SetResourceNode()
     {
-        StopHarvesting();
-        UpdateTask(GathererTask.Idling);
         float detectionRadius = 1.5f;
         LayerMask layerMask = LayerMask.GetMask("Actors");
         Collider depletedNodeCollider = depletedNode.GetComponent<Collider>();
@@ -151,7 +151,69 @@ public class GathererController : MonoBehaviour
                     if (newNode.m_type == m_type)
                     {
                         nearbyNodes.Add(newNode);
-                        Debug.Log("Added: " + newNode.name);
+                        //Debug.Log("Added: " + newNode.name);
+                    }
+                }
+            }
+        }
+
+        //Get the closest one harvest point out of all of the valid nodes.
+        float closestDistance = float.MaxValue;
+        ResourceNode closestNode = null;
+
+        for (var i = 0; i < nearbyNodes.Count; ++i)
+        {
+            var nearbyNode = nearbyNodes[i];
+            Transform nodesClosestTransform = null;
+            int nodesClosestTransformIndex = -1;
+            (nodesClosestTransform, nodesClosestTransformIndex) = GetHarvestPoint(nearbyNode);
+
+            float distance = Vector3.Distance(nodesClosestTransform.position, transform.position);
+            if (distance <= closestDistance)
+            {
+                closestDistance = distance;
+                closestNode = nearbyNode;
+                m_harvestPoint = nodesClosestTransform;
+                m_harvestPointIndex = nodesClosestTransformIndex;
+            }
+        }
+        if (closestNode)
+        {
+            m_harvestNode = closestNode;
+        }
+        else
+        {
+            m_harvestNode = null;
+        }
+    }
+    
+    private void OnNodeDepleted(ResourceNode depletedNode)
+    {
+        StopHarvesting();
+        //Save Node's position.
+        //Set Node, Harvest Point, and Harvest Point Index to null/0
+        //Go to FindGatheringPoint state to find a new node and point.
+        
+        //UpdateTask(GathererTask.Idling);
+        float detectionRadius = 1.5f;
+        LayerMask layerMask = LayerMask.GetMask("Actors");
+        Collider depletedNodeCollider = depletedNode.GetComponent<Collider>();
+        List<ResourceNode> nearbyNodes = new List<ResourceNode>();
+
+        //Get a bunch of nodes near the point.
+        Collider[] colliders = Physics.OverlapSphere(depletedNode.transform.position, detectionRadius, layerMask);
+
+        foreach (Collider collider in colliders)
+        {
+            if (collider != null && collider != depletedNodeCollider)
+            {
+                ResourceNode newNode = collider.GetComponent<ResourceNode>();
+                if (newNode != null)
+                {
+                    if (newNode.m_type == m_type)
+                    {
+                        nearbyNodes.Add(newNode);
+                        //Debug.Log("Added: " + newNode.name);
                     }
                 }
             }
@@ -181,20 +243,23 @@ public class GathererController : MonoBehaviour
         //If we're given a node, unsub from previous node, assign the new node, then sub the new node, else set node to null.
         if (closestNode)
         {
-            m_harvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
+            //m_harvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
             m_harvestNode = closestNode;
             m_harvestNode.m_harvestPoints[m_harvestPointIndex].m_isOccupied = true;
             m_harvestNode.m_harvestPoints[m_harvestPointIndex].m_gatherer = this;
             m_harvestNode.OnResourceNodeDepletion += OnNodeDepleted;
-            UpdateTask(GathererTask.TravelingToHarvest);
+            if (m_gathererTask == GathererTask.Harvesting)
+            {
+                UpdateTask(GathererTask.TravelingToHarvest);
+            }
         }
         else
         {
             //m_harvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
             m_harvestNode = null;
-            UpdateTask(GathererTask.Idling);
-            Vector3 castle = GetClosestTransform(GameplayManager.Instance.m_enemyGoals).position;
-            StartMoving(castle);
+            //UpdateTask(GathererTask.Idling);
+            //Vector3 castle = GetClosestTransform(GameplayManager.Instance.m_enemyGoals).position;
+            //StartMoving(castle);
         }
     }
 
@@ -262,11 +327,11 @@ public class GathererController : MonoBehaviour
 
         if (closestTransform != null)
         {
-            Debug.Log("Closest transform : " + closestTransform.name + " and Closest Index: " + closestTransformIndex);
+            //Debug.Log("Closest transform : " + closestTransform.name + " and Closest Index: " + closestTransformIndex);
         }
         else
         {
-            Debug.Log("No valid point found.");
+            //Debug.Log("No valid point found.");
         }
 
         return (closestTransform, closestTransformIndex);
@@ -327,14 +392,17 @@ public class GathererController : MonoBehaviour
         {
             return;
         }
-
-        m_animator.SetBool(m_isHarvestingHash, false);
-        m_harvestNode.SetIsHarvesting(-1);
         if (m_curCoroutine != null)
         {
             StopCoroutine(m_curCoroutine);
             m_curCoroutine = null;
         }
+
+        m_animator.SetBool(m_isHarvestingHash, false);
+        
+        //Since node is depleted, we dont need to talk to it anymore.
+        //m_harvestNode.SetIsHarvesting(-1);
+        
     }
 
     private void StartHarvesting()
@@ -345,10 +413,11 @@ public class GathererController : MonoBehaviour
 
     private void CompletedHarvest()
     {
-        m_resourceCarried = m_harvestNode.RequestResource(m_carryCapacity);
-        UpdateTask(GathererTask.TravelingToCastle);
-        m_animator.SetBool(m_isHarvestingHash, false);
         m_harvestNode.SetIsHarvesting(-1);
+        m_resourceCarried = m_harvestNode.RequestResource(m_carryCapacity);
+        m_animator.SetBool(m_isHarvestingHash, false);
+        UpdateTask(GathererTask.TravelingToCastle);
+        Debug.Log(gameObject.name + " has finished harvesting and -1'd the node: " + m_harvestNode.name);
         m_curCoroutine = null;
     }
 

@@ -28,14 +28,14 @@ public class TowerTrayButton : MonoBehaviour
     private void CheckStoneCost(int i)
     {
         m_canAffordStone = i >= m_towerData.m_stoneCost;
-        Debug.Log("Check stone cost: " + i);
+        //Debug.Log("Check stone cost: " + i);
         CanAffordToBuildTower();
     }
 
     private void CheckWoodCost(int i)
     {
         m_canAffordWood = i >= m_towerData.m_woodCost;
-        Debug.Log("Check wood cost: " + i);
+        //Debug.Log("Check wood cost: " + i);
         CanAffordToBuildTower();
     }
 
