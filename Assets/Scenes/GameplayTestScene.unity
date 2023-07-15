@@ -501,8 +501,12 @@ MonoBehaviour:
   - {fileID: 7136376470468178563}
   - {fileID: 7136376470468178562}
   - {fileID: 7136376470468178561}
+  m_equippedTowers:
+  - {fileID: 11400000, guid: 2eb2b0ef5dee4fb4593956182ff1e62a, type: 2}
+  - {fileID: 11400000, guid: e5bd7c829d0abbf4ea2a104d9b87b635, type: 2}
   m_woodGathererList: []
   m_stoneGathererList: []
+  m_towerList: []
   m_crossHair: {fileID: 2214207000022776436, guid: 254907378f6c5aa42a47df5ab25635b3, type: 3}
   m_crossHairLayerMask:
     serializedVersion: 2
@@ -512,9 +516,6 @@ MonoBehaviour:
   m_objLayerMask:
     serializedVersion: 2
     m_Bits: 384
-  m_equippedTowers:
-  - {fileID: 11400000, guid: 2eb2b0ef5dee4fb4593956182ff1e62a, type: 2}
-  - {fileID: 11400000, guid: e5bd7c829d0abbf4ea2a104d9b87b635, type: 2}
 --- !u!1 &444974910
 GameObject:
   m_ObjectHideFlags: 0
@@ -768,6 +769,37 @@ Transform:
   - {fileID: 625370082}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &770534014
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 770534015}
+  m_Layer: 0
+  m_Name: Towers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &770534015
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 770534014}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1389930049}
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &787830170 stripped
 Transform:
@@ -1581,6 +1613,7 @@ Transform:
   - {fileID: 456097240}
   - {fileID: 2056040128}
   - {fileID: 1161124757}
+  - {fileID: 770534015}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2417,18 +2450,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 456097240}
     m_Modifications:
-    - target: {fileID: 1128030053039724339, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2
-      objectReference: {fileID: 0}
-    - target: {fileID: 2019490355459664293, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6190516904373505226, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 7136376470559165852, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
       propertyPath: m_Name
       value: Castle
@@ -2476,10 +2497,6 @@ PrefabInstance:
     - target: {fileID: 7136376470559165853, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8586907920414702781, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -12,9 +12,15 @@ public class GameplayManager : MonoBehaviour
     public static GameplayManager Instance;
     public GameplayState m_gameplayState;
 
-    public Transform[] m_enemyGoals;
+    [Header("Castle Points")] public Transform[] m_enemyGoals;
+    [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
+
+    [Header("Player Constructed")] 
+    public Transform m_gathererObjRoot;
     public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
+    public Transform m_towerObjRoot;
+    public List<TowerController> m_towerList;
 
     [Header("Cross Hair Info")] public GameObject m_crossHair;
     public LayerMask m_crossHairLayerMask;
@@ -26,8 +32,9 @@ public class GameplayManager : MonoBehaviour
     [Header("Selected Object Info")] public GameObject m_selectedRing;
     public GameObject m_selectedObj;
     public LayerMask m_objLayerMask;
+    public int m_preConstructedTowerIndex;
+    public GameObject m_preConstructedTower;
 
-    [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
 
 
     public enum GameplayState
@@ -41,7 +48,7 @@ public class GameplayManager : MonoBehaviour
 
     void Update()
     {
-        if (m_drawCrosshair)
+        /*if (m_drawCrosshair)
         {
             m_crossHair.SetActive(true);
             DrawCrosshair();
@@ -49,6 +56,12 @@ public class GameplayManager : MonoBehaviour
         else
         {
             m_crossHair.SetActive(false);
+        }*/
+
+        if (m_preConstructedTower)
+        {
+            DrawCrosshair();
+            DrawPreconstructedTower();
         }
 
         if (m_selectedObj)
@@ -109,10 +122,6 @@ public class GameplayManager : MonoBehaviour
             gridPos = Util.RoundVectorToInt(gridPos);
             gridPos.y = .02f;
             m_crossHair.transform.position = gridPos;
-        }
-        else
-        {
-            Debug.Log("No valid raycast hit.");
         }
     }
 
@@ -215,6 +224,60 @@ public class GameplayManager : MonoBehaviour
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public void PreconstructTower(int i)
+    {
+        ClearPreconstructedTower();
+        
+        //Set up the objects
+        m_preConstructedTower = Instantiate(m_equippedTowers[i].m_prefab, Vector3.zero, Quaternion.identity);
+        m_crossHair.SetActive(true);
+    }
+
+    private void DrawPreconstructedTower()
+    {
+        //Position the objects
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_crossHairLayerMask))
+        {
+            Vector3 gridPos = raycastHit.point;
+            gridPos = Util.RoundVectorToInt(gridPos);
+            gridPos.y = .02f;
+            m_crossHair.transform.position = gridPos;
+            m_preConstructedTower.transform.position = gridPos;
+        }
+        //Check currency
+        
+        //Set visibility
+        
+    }
+    
+    public void ClearPreconstructedTower()
+    {
+        Destroy(m_preConstructedTower);
+        m_preConstructedTower = null;
+        m_crossHair.SetActive(false);
+    }
+
+    public void BuildTower()
+    {
+        
+    }
+    
+    public void AddTowerToList(TowerController tower){
+        m_towerList.Add(tower);
+    }
+
+    public void RemoveTowerFromList(TowerController tower)
+    {
+        for (int i = 0; i < m_towerList.Count; ++i)
+        {
+            if (m_towerList[i] == tower)
+            {
+                m_towerList.RemoveAt(i);
+            }
         }
     }
 }

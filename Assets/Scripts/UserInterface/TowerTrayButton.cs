@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class TowerTrayButton : MonoBehaviour
@@ -15,14 +16,19 @@ public class TowerTrayButton : MonoBehaviour
 
     private bool m_canAffordWood;
     private bool m_canAffordStone;
+    private Button m_button;
+    private int m_equippedTowerIndex;
     
     // Start is called before the first frame update
     void Start()
     {
+        m_button = GetComponent<Button>();
         ResourceManager.UpdateStoneBank += CheckStoneCost;
         ResourceManager.UpdateWoodBank += CheckWoodCost;
         CheckStoneCost(ResourceManager.Instance.GetStoneAmount());
         CheckWoodCost(ResourceManager.Instance.GetWoodAmount());
+        
+       m_button.onClick.AddListener(SelectTowerButton);
     }
 
     private void CheckStoneCost(int i)
@@ -62,12 +68,29 @@ public class TowerTrayButton : MonoBehaviour
     public void SetupData(ScriptableTowerDataObject towerData, int i)
     {
         m_towerData = towerData;
-        
+        m_equippedTowerIndex = i;
+
         //Tower Cost
         string woodSprite = "<sprite name=ResourceWood>";
         m_towerCost.SetText(towerData.m_woodCost + woodSprite);
-        
+
         //Tower Image
         m_towerImage.sprite = towerData.m_uiIcon;
     }
+
+    void OnMouseDown()
+    {
+        
+    }
+    
+    public void SelectTowerButton()
+    {
+        GameplayManager.Instance.PreconstructTower(m_equippedTowerIndex);
+    }
+
+    public void DeselectTowerButton()
+    {
+        
+    }
+    
 }
