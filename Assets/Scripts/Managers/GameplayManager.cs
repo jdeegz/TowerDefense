@@ -92,7 +92,6 @@ public class GameplayManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_objLayerMask))
         {
-            Debug.Log(raycastHit.collider.name + " command issued.");
             OnCommandRequested?.Invoke(raycastHit.collider.gameObject);
         }
         else
@@ -164,7 +163,6 @@ public class GameplayManager : MonoBehaviour
         }
 
         OnGameplayStateChanged?.Invoke(newState);
-        Debug.Log("Gameplay State:" + newState);
     }
 
     private void OnOnGameObjectSelected(GameObject obj)
