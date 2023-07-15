@@ -91,13 +91,14 @@ public class GathererController : MonoBehaviour
             {
                 ClearHarvestVars();
             }
-            
+
             //Find and set variables for this script.
             ValueTuple<ResourceNode, Transform, int> vars = GetHarvestPoint(GetHarvestNodes(requestObj.transform.position, 0.2f));
-            SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
 
-            if (m_curHarvestNode)
+
+            if (vars.Item1)
             {
+                SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                 UpdateTask(GathererTask.TravelingToHarvest);
             }
         }
@@ -109,6 +110,25 @@ public class GathererController : MonoBehaviour
         switch (m_gathererTask)
         {
             case GathererTask.Idling:
+                StartMoving(GetClosestTransform(GameplayManager.Instance.m_enemyGoals).position);
+                break;
+            case GathererTask.FindingHarvestablePoint:
+                //Set new variables.
+                ValueTuple<ResourceNode, Transform, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 2f));
+
+                //If we found a node start moving.
+                if (vars.Item1)
+                {
+                    SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                    Debug.Log("Harvestable Point Found: " + vars.Item1 + vars.Item2 + vars.Item3);
+                    UpdateTask(GathererTask.TravelingToHarvest);
+                }
+                else
+                {
+                    ClearHarvestVars();
+                    UpdateTask(GathererTask.Idling);
+                }
+
                 break;
             case GathererTask.TravelingToHarvest:
                 StartMoving(m_curHarvestPoint.position);
@@ -125,6 +145,8 @@ public class GathererController : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        Debug.Log(gameObject.name + " : " + m_gathererTask);
     }
 
     private void StartMoving(Vector3 pos)
@@ -148,7 +170,6 @@ public class GathererController : MonoBehaviour
 
     private void ClearHarvestVars()
     {
-        Debug.Log(gameObject.name + " is clearing vars.");
         //Unassign from the node (used for Player interupting the Harvesting state)
         if (m_curHarvestNode)
         {
@@ -162,28 +183,24 @@ public class GathererController : MonoBehaviour
         m_curHarvestNode = null;
         m_curHarvestPoint = null;
         m_curHarvestPointIndex = -1;
-        Debug.Log(m_curHarvestNode + " and " + m_curHarvestPoint + " and " + m_curHarvestPointIndex);
     }
 
     private void OnNodeDepleted(ResourceNode obj)
     {
-        Debug.Log(m_curHarvestNode + " has depleted.");
         //Clear current variables.
         ClearHarvestVars();
+
         //If harvesting, stop cur coroutine.
-        if (m_gathererTask == GathererTask.Harvesting)
+        if (m_gathererTask == GathererTask.Harvesting && m_curCoroutine != null)
         {
             StopCoroutine(m_curCoroutine);
+            m_curCoroutine = null;
         }
 
-        //Set new variables.
-        ValueTuple<ResourceNode, Transform, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 2f));
-        SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
-
-        //If harvesting, Start TravelingToHarvest.
-        if (m_gathererTask == GathererTask.Harvesting)
+        //Interrupt flow if we're not currently carrying or storing resources.
+        if (m_gathererTask != GathererTask.TravelingToCastle || m_gathererTask != GathererTask.Storing)
         {
-            UpdateTask(GathererTask.TravelingToHarvest);
+            UpdateTask(GathererTask.FindingHarvestablePoint);
         }
     }
 
@@ -202,7 +219,7 @@ public class GathererController : MonoBehaviour
                 ResourceNode newNode = collider.GetComponent<ResourceNode>();
                 if (newNode != null)
                 {
-                    if (newNode.m_type == m_gatherer.m_type)
+                    if (newNode.m_type == m_gatherer.m_type && newNode.HasResources())
                     {
                         nearbyNodes.Add(newNode);
                     }
@@ -301,7 +318,7 @@ public class GathererController : MonoBehaviour
         }
         else
         {
-            UpdateTask(GathererTask.Idling);
+            UpdateTask(GathererTask.FindingHarvestablePoint);
         }
     }
 
@@ -313,12 +330,16 @@ public class GathererController : MonoBehaviour
 
     private void CompletedHarvest()
     {
-        m_curHarvestNode.SetIsHarvesting(-1);
+        //Unsub from the node so if it depletes when we RequestResource we dont react to the invokation.
+        m_curHarvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
+
+        //Update this script
         m_resourceCarried = m_curHarvestNode.RequestResource(m_gatherer.m_carryCapacity);
-        m_animator.SetBool(m_isHarvestingHash, false);
+
+        //Clear the vars, so we know to find a new point after we store.
+        ClearHarvestVars();
+
         UpdateTask(GathererTask.TravelingToCastle);
-        Debug.Log(gameObject.name + " has finished harvesting and -1'd the node: " + m_curHarvestNode.name);
-        m_curCoroutine = null;
     }
 
     private Transform GetClosestTransform(Transform[] transforms)

@@ -6,11 +6,14 @@ using UnityEngine.Serialization;
 
 public class ResourceNode : MonoBehaviour, IResourceNode
 {
-    public ResourceManager.ResourceType m_type;
     [SerializeField] private int m_resourcesRemaining;
-    public event Action<ResourceNode> OnResourceNodeDepletion;
     [SerializeField] private Animator m_animator;
+    
+    public ResourceManager.ResourceType m_type;
     public List<HarvestPoint> m_harvestPoints = new List<HarvestPoint>();
+    
+    public event Action<ResourceNode> OnResourceNodeDepletion;
+    
     private int m_harvesters;
     private static int m_gatherersHarvestingHash = Animator.StringToHash("gatherersHarvesting");
 
@@ -37,6 +40,11 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         }
 
         return resourcesHarvested;
+    }
+
+    public bool HasResources()
+    {
+        return m_resourcesRemaining > 0;
     }
 
     public void SetIsHarvesting(int i)
