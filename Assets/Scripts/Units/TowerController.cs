@@ -13,7 +13,6 @@ public class TowerController : MonoBehaviour
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
 
-
     void Update()
     {
         if (m_curTarget == null)
@@ -31,7 +30,7 @@ public class TowerController : MonoBehaviour
         else
         {
             m_timeUntilFire += Time.deltaTime;
-            
+
             //If we have elapsed time, and are looking at the target, fire.
             Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
             if (m_timeUntilFire >= 1f / m_towerData.m_fireRate && Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold)

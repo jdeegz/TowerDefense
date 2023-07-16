@@ -15,28 +15,33 @@ public class GameplayManager : MonoBehaviour
     [Header("Castle Points")] public Transform[] m_enemyGoals;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
 
-    [Header("Player Constructed")] 
-    public Transform m_gathererObjRoot;
+    [Header("Player Constructed")] public Transform m_gathererObjRoot;
     public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
     public Transform m_towerObjRoot;
     public List<TowerController> m_towerList;
 
-    [Header("Cross Hair Info")] public GameObject m_crossHair;
-    public LayerMask m_crossHairLayerMask;
-    private bool m_drawCrosshair;
+    [Header("Cross Hair Info")] public LayerMask m_crossHairLayerMask;
     public static event Action<GameplayState> OnGameplayStateChanged;
     public static event Action<GameObject> OnGameObjectSelected;
     public static event Action<GameObject> OnCommandRequested;
+    public static event EventHandler OnObjRestricted;
 
     [Header("Selected Object Info")] public GameObject m_selectedRing;
     public GameObject m_selectedObj;
+    public bool m_selectedObjIsRestricted;
     public LayerMask m_objLayerMask;
     public int m_preConstructedTowerIndex;
-    public GameObject m_preConstructedTower;
+    public Color m_outlineBaseColor;
+    public Color m_outlineRestrictedColor;
+    public float m_outlineWidth;
+
+    [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
+    public TowerController m_preconstructedTower;
 
 
-
+    private GameObject m_hoveredObj;
+    
     public enum GameplayState
     {
         Setup,
@@ -48,19 +53,21 @@ public class GameplayManager : MonoBehaviour
 
     void Update()
     {
-        /*if (m_drawCrosshair)
-        {
-            m_crossHair.SetActive(true);
-            DrawCrosshair();
-        }
-        else
-        {
-            m_crossHair.SetActive(false);
-        }*/
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
 
-        if (m_preConstructedTower)
+        if (Physics.Raycast(ray, out hit))
         {
-            DrawCrosshair();
+            if (hit.collider.gameObject != m_hoveredObj)
+            {
+                Debug.Log("Mouse hovering over: " + hit.collider.gameObject.name);
+                m_hoveredObj = hit.collider.gameObject;
+            }
+        }
+        
+        
+        if (m_preconstructedTowerObj)
+        {
             DrawPreconstructedTower();
         }
 
@@ -81,6 +88,7 @@ public class GameplayManager : MonoBehaviour
             if (Input.GetMouseButtonDown(1))
             {
                 OnMouseRightDown();
+                OnObjRestricted?.Invoke(this, EventArgs.Empty);
             }
         }
     }
@@ -113,18 +121,6 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    private void DrawCrosshair()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_crossHairLayerMask))
-        {
-            Vector3 gridPos = raycastHit.point;
-            gridPos = Util.RoundVectorToInt(gridPos);
-            gridPos.y = .02f;
-            m_crossHair.transform.position = gridPos;
-        }
-    }
-
     private void Awake()
     {
         Instance = this;
@@ -140,13 +136,12 @@ public class GameplayManager : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayState state)
     {
-        m_drawCrosshair = m_gameplayState == GameplayState.Combat;
+        //
     }
 
 
     void Start()
     {
-        m_crossHair = Instantiate(m_crossHair, Vector3.zero, Quaternion.Euler(90f, 0f, 0f));
         m_selectedRing = Instantiate(m_selectedRing, Vector3.zero, Quaternion.Euler(90f, 0f, 0f));
         UpdateGameplayState(GameplayState.Setup);
     }
@@ -230,10 +225,10 @@ public class GameplayManager : MonoBehaviour
     public void PreconstructTower(int i)
     {
         ClearPreconstructedTower();
-        
+
         //Set up the objects
-        m_preConstructedTower = Instantiate(m_equippedTowers[i].m_prefab, Vector3.zero, Quaternion.identity);
-        m_crossHair.SetActive(true);
+        m_preconstructedTowerObj = Instantiate(m_equippedTowers[i].m_prefab, Vector3.zero, Quaternion.identity);
+        m_preconstructedTower = m_preconstructedTowerObj.GetComponent<TowerController>();
     }
 
     private void DrawPreconstructedTower()
@@ -245,28 +240,25 @@ public class GameplayManager : MonoBehaviour
             Vector3 gridPos = raycastHit.point;
             gridPos = Util.RoundVectorToInt(gridPos);
             gridPos.y = .02f;
-            m_crossHair.transform.position = gridPos;
-            m_preConstructedTower.transform.position = gridPos;
+            m_preconstructedTowerObj.transform.position = gridPos;
         }
         //Check currency
-        
+
         //Set visibility
-        
     }
-    
+
     public void ClearPreconstructedTower()
     {
-        Destroy(m_preConstructedTower);
-        m_preConstructedTower = null;
-        m_crossHair.SetActive(false);
+        Destroy(m_preconstructedTowerObj);
+        m_preconstructedTowerObj = null;
     }
 
     public void BuildTower()
     {
-        
     }
-    
-    public void AddTowerToList(TowerController tower){
+
+    public void AddTowerToList(TowerController tower)
+    {
         m_towerList.Add(tower);
     }
 
