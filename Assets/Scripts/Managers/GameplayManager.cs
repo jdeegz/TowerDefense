@@ -50,6 +50,14 @@ public class GameplayManager : MonoBehaviour
         Victory,
         Defeat,
     }
+    
+    public enum InteractionState
+    {
+        Idle,
+        SelectedGatherer,
+        SelectedTower,
+        PreconstructionTower,
+    }
 
     void Update()
     {
@@ -60,22 +68,16 @@ public class GameplayManager : MonoBehaviour
         {
             if (hit.collider.gameObject != m_hoveredObj)
             {
-                Debug.Log("Mouse hovering over: " + hit.collider.gameObject.name);
+                //Debug.Log("Mouse hovering over: " + hit.collider.gameObject.name);
                 m_hoveredObj = hit.collider.gameObject;
             }
         }
         
-        
+        //Tommorow: Change all of this update code store what im hovering and act upon it based on what it is, rather than having a lot of splintered code.
+        //May need states; like No Selection, Selected Object, Preconstruction to help clean up calls based on input and context.
         if (m_preconstructedTowerObj)
         {
             DrawPreconstructedTower();
-        }
-
-        if (m_selectedObj)
-        {
-            Vector3 pos = m_selectedObj.transform.position;
-            pos.y = 0.02f;
-            m_selectedRing.transform.position = pos;
         }
 
         if (!EventSystem.current.IsPointerOverGameObject())
@@ -142,7 +144,6 @@ public class GameplayManager : MonoBehaviour
 
     void Start()
     {
-        m_selectedRing = Instantiate(m_selectedRing, Vector3.zero, Quaternion.Euler(90f, 0f, 0f));
         UpdateGameplayState(GameplayState.Setup);
     }
 
@@ -171,10 +172,8 @@ public class GameplayManager : MonoBehaviour
 
     private void OnOnGameObjectSelected(GameObject obj)
     {
-        m_selectedRing.SetActive(false);
         m_selectedObj = obj;
-        //This quick toggle re-starts the Animator so we get a little 'bounce'. Optimize later!
-        m_selectedRing.SetActive(true);
+        Debug.Log("Selected : " + obj.name);
     }
 
     public void AddGathererToList(GathererController gatherer, ResourceManager.ResourceType type)
@@ -229,6 +228,7 @@ public class GameplayManager : MonoBehaviour
         //Set up the objects
         m_preconstructedTowerObj = Instantiate(m_equippedTowers[i].m_prefab, Vector3.zero, Quaternion.identity);
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<TowerController>();
+        OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
     }
 
     private void DrawPreconstructedTower()

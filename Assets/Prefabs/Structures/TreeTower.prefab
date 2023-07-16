@@ -77,6 +77,7 @@ GameObject:
   - component: {fileID: 9037552262671346934}
   - component: {fileID: 4478089951611948086}
   - component: {fileID: -8462519795219939483}
+  - component: {fileID: 8923076353046454371}
   m_Layer: 7
   m_Name: TreeTower
   m_TagString: Untagged
@@ -157,6 +158,18 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0.5, z: 0}
   m_TimeToStationary: 1
+--- !u!114 &8923076353046454371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9140437940615734701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b720afc83a42d4547b766f747d29d048, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1078254712261271554
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -220,8 +233,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a6bd21f65d0e49945b52c4e204ca29ea, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1483684713656222071}
   m_SourcePrefab: {fileID: 100100000, guid: a6bd21f65d0e49945b52c4e204ca29ea, type: 3}
+--- !u!1 &159828460308815187 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a6bd21f65d0e49945b52c4e204ca29ea, type: 3}
+  m_PrefabInstance: {fileID: 1078254712261271554}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1483684713656222071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 159828460308815187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!4 &683425159708936169 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a6bd21f65d0e49945b52c4e204ca29ea, type: 3}
@@ -298,8 +337,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e21de3969d321a84a9b3166e5952d630, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 390426754264210378}
   m_SourcePrefab: {fileID: 100100000, guid: e21de3969d321a84a9b3166e5952d630, type: 3}
+--- !u!1 &2499319496262131880 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e21de3969d321a84a9b3166e5952d630, type: 3}
+  m_PrefabInstance: {fileID: 3345668777431047673}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &390426754264210378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2499319496262131880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!4 &3018693212221602322 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e21de3969d321a84a9b3166e5952d630, type: 3}
@@ -380,8 +445,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 22a958b36ddcd6345b963c3c887c56e1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6757352412228890600}
   m_SourcePrefab: {fileID: 100100000, guid: 22a958b36ddcd6345b963c3c887c56e1, type: 3}
+--- !u!1 &3716330304627773094 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 22a958b36ddcd6345b963c3c887c56e1, type: 3}
+  m_PrefabInstance: {fileID: 4562823074211607543}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6757352412228890600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3716330304627773094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!4 &4096268039680152604 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 22a958b36ddcd6345b963c3c887c56e1, type: 3}
@@ -466,8 +557,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 678454022cfd44b498a0652da503fcc4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8376442537815837397}
   m_SourcePrefab: {fileID: 100100000, guid: 678454022cfd44b498a0652da503fcc4, type: 3}
+--- !u!1 &5875244276248687812 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 678454022cfd44b498a0652da503fcc4, type: 3}
+  m_PrefabInstance: {fileID: 6721734987336255893}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8376442537815837397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5875244276248687812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!4 &6540034967169363582 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 678454022cfd44b498a0652da503fcc4, type: 3}

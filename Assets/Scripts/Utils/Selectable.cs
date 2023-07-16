@@ -13,14 +13,25 @@ public class Selectable : MonoBehaviour
 
     void Start()
     {
-        m_outlines = GetComponentsInChildren<Outline>();
+        //Get the colors from the gameplay manager and store them here.
         SetOutlineVariables();
+        
+        //Get all the outlines in the children and set their color & activity
+        m_outlines = GetComponentsInChildren<Outline>();
+        for (int i = 0; i < m_outlines.Length; ++i)
+        {
+            Outline outline = m_outlines[i];
+            outline.OutlineColor = m_outlineBaseColor;
+            outline.enabled = false;
+            Debug.Log("Setting up Outline on " + outline.gameObject.name);
+        }
+        
         GameplayManager.OnObjRestricted += SetOutlineColor;
         GameplayManager.OnGameObjectSelected += SetSelected;
     }
 
     private void SetSelected(GameObject obj)
-    {
+    { 
         EnableOutlines(obj == gameObject);
     }
 
@@ -44,8 +55,7 @@ public class Selectable : MonoBehaviour
     {
         for (int i = 0; i < m_outlines.Length; ++i)
         {
-            Outline outline = m_outlines[i];
-            outline.enabled = enabled;
+            m_outlines[i].enabled = enabled;
         }
     }
 
