@@ -12,6 +12,12 @@ public class GameplayManager : MonoBehaviour
     public static GameplayManager Instance;
     public GameplayState m_gameplayState;
 
+    public static event Action<GameplayState> OnGameplayStateChanged;
+    public static event Action<GameObject> OnGameObjectSelected;
+    public static event Action<GameObject> OnGameObjectDeselected;
+    public static event Action<GameObject> OnCommandRequested;
+    public static event EventHandler OnObjRestricted;
+
     [Header("Castle Points")] public Transform[] m_enemyGoals;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
 
@@ -21,27 +27,19 @@ public class GameplayManager : MonoBehaviour
     public Transform m_towerObjRoot;
     public List<TowerController> m_towerList;
 
-    [Header("Cross Hair Info")] public LayerMask m_crossHairLayerMask;
-    public static event Action<GameplayState> OnGameplayStateChanged;
-    public static event Action<GameObject> OnGameObjectSelected;
-    public static event Action<GameObject> OnCommandRequested;
-    public static event EventHandler OnObjRestricted;
 
-    [Header("Selected Object Info")] public GameObject m_selectedRing;
-    public GameObject m_selectedObj;
+    [Header("Selected Object Info")] private Selectable m_curSelectable;
+    private Selectable m_hoveredSelectable;
     public bool m_selectedObjIsRestricted;
-    public LayerMask m_objLayerMask;
-    public int m_preConstructedTowerIndex;
     public Color m_outlineBaseColor;
     public Color m_outlineRestrictedColor;
     public float m_outlineWidth;
 
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public TowerController m_preconstructedTower;
+    [SerializeField] private LayerMask m_buildSurface;
 
 
-    private GameObject m_hoveredObj;
-    
     public enum GameplayState
     {
         Setup,
@@ -50,7 +48,9 @@ public class GameplayManager : MonoBehaviour
         Victory,
         Defeat,
     }
-    
+
+    public InteractionState m_interactionState;
+
     public enum InteractionState
     {
         Idle,
@@ -64,62 +64,104 @@ public class GameplayManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit))
+        // && !EventSystem.current.IsPointerOverGameObject()
+        if (Physics.Raycast(ray, out hit) && !EventSystem.current.IsPointerOverGameObject())
         {
-            if (hit.collider.gameObject != m_hoveredObj)
+            //Is the object selectable?
+            Selectable hitSelectable = hit.collider.gameObject.GetComponent<Selectable>();
+            if (m_hoveredSelectable == null || m_hoveredSelectable != hitSelectable)
             {
-                //Debug.Log("Mouse hovering over: " + hit.collider.gameObject.name);
-                m_hoveredObj = hit.collider.gameObject;
+                m_hoveredSelectable = hitSelectable;
             }
-        }
-        
-        //Tommorow: Change all of this update code store what im hovering and act upon it based on what it is, rather than having a lot of splintered code.
-        //May need states; like No Selection, Selected Object, Preconstruction to help clean up calls based on input and context.
-        if (m_preconstructedTowerObj)
-        {
-            DrawPreconstructedTower();
-        }
 
-        if (!EventSystem.current.IsPointerOverGameObject())
-        {
+            //Hovering
+            if (m_hoveredSelectable)
+            {
+                switch (m_interactionState)
+                {
+                    case InteractionState.Idle:
+                        break;
+                    case InteractionState.SelectedGatherer:
+                        break;
+                    case InteractionState.SelectedTower:
+                        break;
+                    case InteractionState.PreconstructionTower:
+                        //Check for restrictions
+                        //OnObjRestricted?.Invoke(this, EventArgs.Empty);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            //Mouse 1 Clicking
             if (Input.GetMouseButtonDown(0))
             {
-                OnMouseLeftDown();
+                //Based on the interaction state we're in, when mouse 1 is pressed, do X.
+                //If the object we're hovering is not currently the selected object.
+                if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
+                {
+                    Debug.Log(m_hoveredSelectable + " : selected.");
+                    switch (m_interactionState)
+                    {
+                        case InteractionState.Idle:
+                            OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
+                            break;
+                        case InteractionState.SelectedGatherer:
+                            OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
+                            break;
+                        case InteractionState.SelectedTower:
+                            OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
+                            break;
+                        case InteractionState.PreconstructionTower:
+                            //Try to build the tower
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
             }
 
+            //Mouse 2 Clicking
             if (Input.GetMouseButtonDown(1))
             {
-                OnMouseRightDown();
-                OnObjRestricted?.Invoke(this, EventArgs.Empty);
+                //If something is selected.
+                if (m_hoveredSelectable != null || m_preconstructedTowerObj != null)
+                {
+                    switch (m_interactionState)
+                    {
+                        case InteractionState.Idle:
+                            break;
+                        case InteractionState.SelectedGatherer:
+                            if (m_hoveredSelectable.m_selectedObjectType == Selectable.SelectedObjectType.ResourceWood)
+                            {
+                                OnCommandRequested?.Invoke(m_hoveredSelectable.gameObject);
+                            }
+
+                            break;
+                        case InteractionState.SelectedTower:
+                            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                            break;
+                        case InteractionState.PreconstructionTower:
+                            //Cancel tower preconstruction
+                            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                            ClearPreconstructedTower();
+                            m_interactionState = InteractionState.Idle;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                else if (m_curSelectable)
+                {
+                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                }
             }
         }
-    }
 
-    void OnMouseLeftDown()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_objLayerMask))
+        if (m_interactionState == InteractionState.PreconstructionTower)
         {
-            //Debug.Log(raycastHit.collider.name + " was clicked on.");
-            OnGameObjectSelected?.Invoke(raycastHit.collider.gameObject);
-        }
-        else
-        {
-            Debug.Log("No valid raycast hit.");
-        }
-    }
-
-    void OnMouseRightDown()
-    {
-        //Move Unit
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_objLayerMask))
-        {
-            OnCommandRequested?.Invoke(raycastHit.collider.gameObject);
-        }
-        else
-        {
-            Debug.Log("No valid raycast hit.");
+            DrawPreconstructedTower();
         }
     }
 
@@ -127,20 +169,21 @@ public class GameplayManager : MonoBehaviour
     {
         Instance = this;
         OnGameplayStateChanged += GameplayManagerStateChanged;
-        OnGameObjectSelected += OnOnGameObjectSelected;
+        OnGameObjectSelected += GameObjectSelected;
+        OnGameObjectDeselected += GameObjectDeselected;
     }
 
     void OnDestroy()
     {
         OnGameplayStateChanged -= GameplayManagerStateChanged;
-        OnGameObjectSelected -= OnOnGameObjectSelected;
+        OnGameObjectSelected -= GameObjectSelected;
+        OnGameObjectDeselected -= GameObjectDeselected;
     }
 
     private void GameplayManagerStateChanged(GameplayState state)
     {
         //
     }
-
 
     void Start()
     {
@@ -170,10 +213,59 @@ public class GameplayManager : MonoBehaviour
         OnGameplayStateChanged?.Invoke(newState);
     }
 
-    private void OnOnGameObjectSelected(GameObject obj)
+    public void UpdateInteractionState(InteractionState newState)
     {
-        m_selectedObj = obj;
-        Debug.Log("Selected : " + obj.name);
+        m_interactionState = newState;
+
+        switch (m_interactionState)
+        {
+            case InteractionState.Idle:
+                break;
+            case InteractionState.SelectedGatherer:
+                break;
+            case InteractionState.SelectedTower:
+                break;
+            case InteractionState.PreconstructionTower:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void GameObjectSelected(GameObject obj)
+    {
+        Selectable objSelectable = obj.GetComponent<Selectable>();
+        m_curSelectable = objSelectable;
+
+        switch (objSelectable.m_selectedObjectType)
+        {
+            case Selectable.SelectedObjectType.ResourceWood:
+                break;
+            case Selectable.SelectedObjectType.ResourceStone:
+                break;
+            case Selectable.SelectedObjectType.Tower:
+                if (m_preconstructedTowerObj)
+                {
+                    m_interactionState = InteractionState.PreconstructionTower;
+                }
+                else
+                {
+                    m_interactionState = InteractionState.SelectedTower;
+                }
+
+                break;
+            case Selectable.SelectedObjectType.Gatherer:
+                m_interactionState = InteractionState.SelectedGatherer;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void GameObjectDeselected(GameObject obj)
+    {
+        m_curSelectable = null;
+        m_interactionState = InteractionState.Idle;
     }
 
     public void AddGathererToList(GathererController gatherer, ResourceManager.ResourceType type)
@@ -235,12 +327,12 @@ public class GameplayManager : MonoBehaviour
     {
         //Position the objects
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_crossHairLayerMask))
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
         {
             Vector3 gridPos = raycastHit.point;
             gridPos = Util.RoundVectorToInt(gridPos);
-            gridPos.y = .02f;
-            m_preconstructedTowerObj.transform.position = gridPos;
+            gridPos.y = 0.7f;
+            m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position, gridPos, 20f * Time.deltaTime);
         }
         //Check currency
 
@@ -249,8 +341,13 @@ public class GameplayManager : MonoBehaviour
 
     public void ClearPreconstructedTower()
     {
-        Destroy(m_preconstructedTowerObj);
+        if (m_preconstructedTowerObj)
+        {
+            Destroy(m_preconstructedTowerObj);
+        }
+
         m_preconstructedTowerObj = null;
+        m_preconstructedTower = null;
     }
 
     public void BuildTower()

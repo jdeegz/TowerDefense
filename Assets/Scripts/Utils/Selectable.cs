@@ -10,12 +10,36 @@ public class Selectable : MonoBehaviour
     private Color m_outlineBaseColor;
     private Color m_outlineRestrictedColor;
     private float m_outlineWidth;
+    private bool m_isSelected;
+
+    public SelectedObjectType m_selectedObjectType;
+
+    public enum SelectedObjectType
+    {
+        ResourceWood,
+        ResourceStone,
+        Tower,
+        Gatherer
+    }
+
+    void Awake()
+    {
+        GameplayManager.OnObjRestricted += SetOutlineColor;
+        GameplayManager.OnGameObjectSelected += GameObjectSelected;
+        GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
+    }
 
     void Start()
     {
         //Get the colors from the gameplay manager and store them here.
         SetOutlineVariables();
         
+        //Can probably remove this
+        BuildOutlineArray();
+    }
+
+    private void BuildOutlineArray()
+    {
         //Get all the outlines in the children and set their color & activity
         m_outlines = GetComponentsInChildren<Outline>();
         for (int i = 0; i < m_outlines.Length; ++i)
@@ -23,16 +47,33 @@ public class Selectable : MonoBehaviour
             Outline outline = m_outlines[i];
             outline.OutlineColor = m_outlineBaseColor;
             outline.enabled = false;
-            Debug.Log("Setting up Outline on " + outline.gameObject.name);
         }
-        
-        GameplayManager.OnObjRestricted += SetOutlineColor;
-        GameplayManager.OnGameObjectSelected += SetSelected;
     }
 
-    private void SetSelected(GameObject obj)
-    { 
+    private void GameObjectSelected(GameObject obj)
+    {
         EnableOutlines(obj == gameObject);
+    }
+
+    private void GameObjectDeselected(GameObject obj)
+    {
+        if (obj == gameObject)
+        {
+            EnableOutlines(false);
+        }
+    }
+
+    public void EnableOutlines(bool enabled)
+    {
+        if (m_outlines.Length <= 0)
+        {
+            BuildOutlineArray();
+        }
+        
+        for (int i = 0; i < m_outlines.Length; ++i)
+        {
+            m_outlines[i].enabled = enabled;
+        }
     }
 
     private void SetOutlineColor(object sender, EventArgs e)
@@ -51,17 +92,11 @@ public class Selectable : MonoBehaviour
         m_outlineWidth = GameplayManager.Instance.m_outlineWidth;
     }
 
-    public void EnableOutlines(bool enabled)
-    {
-        for (int i = 0; i < m_outlines.Length; ++i)
-        {
-            m_outlines[i].enabled = enabled;
-        }
-    }
 
-    void Destroy()
+    void OnDestroy()
     {
         GameplayManager.OnObjRestricted -= SetOutlineColor;
-        GameplayManager.OnGameObjectSelected -= SetSelected;
+        GameplayManager.OnGameObjectSelected -= GameObjectSelected;
+        GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }
 }
