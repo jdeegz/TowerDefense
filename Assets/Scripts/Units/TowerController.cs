@@ -41,6 +41,11 @@ public class TowerController : MonoBehaviour
         }
     }
 
+    public (int, int) GetTowercost()
+    {
+        return (m_towerData.m_stoneCost, m_towerData.m_woodCost);
+    }
+
     private void Fire()
     {
         GameObject projectileObj =

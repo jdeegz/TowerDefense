@@ -10,8 +10,6 @@ public class Selectable : MonoBehaviour
     [SerializeField] private Outline[] m_outlines;
     public SelectedObjectType m_selectedObjectType;
 
-    private bool m_isSelected;
-
     public enum SelectedObjectType
     {
         ResourceWood,
@@ -59,12 +57,15 @@ public class Selectable : MonoBehaviour
         }
     }
 
-    private void SetOutlineColor(object sender, EventArgs e)
+    private void SetOutlineColor(GameObject obj, bool isRestricted)
     {
+        
+        if (obj != gameObject) { return; }
+        Debug.Log("Trying to change colors");
         for (int i = 0; i < m_outlines.Length; ++i)
         {
             Outline outline = m_outlines[i];
-            outline.OutlineColor = GameplayManager.Instance.m_selectedObjIsRestricted ? m_selectionColors.m_outlineRestrictedColor : m_selectionColors.m_outlineBaseColor;
+            outline.OutlineColor = isRestricted ? m_selectionColors.m_outlineBaseColor : m_selectionColors.m_outlineRestrictedColor;
         }
     }
 
