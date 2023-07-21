@@ -31,9 +31,6 @@ public class GameplayManager : MonoBehaviour
     [Header("Selected Object Info")] private Selectable m_curSelectable;
     private Selectable m_hoveredSelectable;
     public bool m_selectedObjIsRestricted;
-    public Color m_outlineBaseColor;
-    public Color m_outlineRestrictedColor;
-    public float m_outlineWidth;
 
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public TowerController m_preconstructedTower;
