@@ -146,7 +146,7 @@ public class GathererController : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
 
-        Debug.Log(gameObject.name + " : " + m_gathererTask);
+        //Debug.Log(gameObject.name + " : " + m_gathererTask);
     }
 
     private void StartMoving(Vector3 pos)

@@ -17,6 +17,7 @@ public class UnitSpawner : MonoBehaviour
 
     private void Start()
     {
+        m_isSpawning = false;
         StartSpawning();
     }
 
@@ -26,6 +27,7 @@ public class UnitSpawner : MonoBehaviour
         {
             m_elapsedTime += Time.deltaTime;
 
+            //If there are more units to spawn in this wave, continue to spawn them at the spawn interval
             if (m_unitsSpawned < m_unitsPerWave)
             {
                 if (m_elapsedTime >= m_spawnInterval)
@@ -34,6 +36,7 @@ public class UnitSpawner : MonoBehaviour
                     m_elapsedTime = 0f;
                 }
             }
+            //If there are no more units to spawn in the wave, we wait for the next wave.
             else
             {
                 if (m_elapsedTime >= m_waveInterval)

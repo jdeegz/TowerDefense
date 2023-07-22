@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class TowerController : MonoBehaviour
 {
@@ -9,12 +10,16 @@ public class TowerController : MonoBehaviour
     [SerializeField] private ScriptableTowerDataObject m_towerData;
     [SerializeField] private LayerMask m_layerMask;
 
+    private bool m_isBuilt;
     private UnitEnemy m_curTarget;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
-
+    
     void Update()
     {
+        //Dont do anything until we're built.
+        if (!m_isBuilt) { return; }
+        
         if (m_curTarget == null)
         {
             FindTarget();
@@ -86,5 +91,13 @@ public class TowerController : MonoBehaviour
     private bool IsTargetInRange()
     {
         return Vector3.Distance(transform.position, m_curTarget.transform.position) < m_towerData.m_targetRange;
+    }
+
+    public void SetupTower()
+    {
+        GameplayManager.Instance.AddTowerToList(this);
+        gameObject.GetComponent<Collider>().enabled = true;
+        gameObject.GetComponent<NavMeshObstacle>().enabled = true;
+        m_isBuilt = true;
     }
 }

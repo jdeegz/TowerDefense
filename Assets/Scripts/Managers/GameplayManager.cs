@@ -17,6 +17,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameObject> OnGameObjectDeselected;
     public static event Action<GameObject> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
+    public static event Action<String> OnAlertDisplayed;
 
     [Header("Castle Points")] public Transform[] m_enemyGoals;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
@@ -36,6 +37,9 @@ public class GameplayManager : MonoBehaviour
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public TowerController m_preconstructedTower;
     [SerializeField] private LayerMask m_buildSurface;
+    private int m_preconstructedTowerIndex;
+
+    [SerializeField] private ScriptableUIStrings m_uiStrings;
 
     private Camera m_mainCamera;
 
@@ -58,23 +62,12 @@ public class GameplayManager : MonoBehaviour
         SelectedTower,
         PreconstructionTower,
     }
-
-    void OnMouseEnter(Collider collider)
-    {
-        Debug.Log("Entered : " + collider.gameObject);
-    }
-    
-    void OnMouseExit(Collider collider)
-    {
-        Debug.Log("Exited : " + collider.gameObject);
-    }
     
     void Update()
     {
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        // && !EventSystem.current.IsPointerOverGameObject()
         if (Physics.Raycast(ray, out hit) && !EventSystem.current.IsPointerOverGameObject())
         {
             //Is the object selectable?
@@ -96,43 +89,43 @@ public class GameplayManager : MonoBehaviour
                     case InteractionState.SelectedTower:
                         break;
                     case InteractionState.PreconstructionTower:
-                        //Check for restrictions
-                        //OnObjRestricted?.Invoke(m_curSelectable.gameObject, true);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
-            else if (m_interactionState == InteractionState.PreconstructionTower)
-            {
-                //OnObjRestricted?.Invoke(m_curSelectable.gameObject, false);
-            }
-            
+
             //Mouse 1 Clicking
             if (Input.GetMouseButtonDown(0))
             {
                 //Based on the interaction state we're in, when mouse 1 is pressed, do X.
                 //If the object we're hovering is not currently the selected object.
+                if (m_interactionState == InteractionState.PreconstructionTower)
+                {
+                    if (m_costRestricted)
+                    {
+                        Debug.Log("Not Enough Resources.");
+                        OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotAfford);
+                        return;
+                    }
+
+                    if (m_placementRestricted)
+                    {
+                        Debug.Log("Cannot build here.");
+                        OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotPlace);
+                        return;
+                    }
+                    BuildTower();
+                    return;
+                }
                 if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
                 {
                     Debug.Log(m_hoveredSelectable + " : selected.");
-                    switch (m_interactionState)
-                    {
-                        case InteractionState.Idle:
-                            OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
-                            break;
-                        case InteractionState.SelectedGatherer:
-                            OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
-                            break;
-                        case InteractionState.SelectedTower:
-                            OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
-                            break;
-                        case InteractionState.PreconstructionTower:
-                            //Try to build the tower
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
+                }
+                else
+                {
+                    Debug.Log("I clicked on nothing.");
                 }
             }
 
@@ -172,8 +165,8 @@ public class GameplayManager : MonoBehaviour
                 }
             }
         }
-            
-        
+
+
         if (m_interactionState == InteractionState.PreconstructionTower)
         {
             DrawPreconstructedTower();
@@ -254,7 +247,7 @@ public class GameplayManager : MonoBehaviour
         int curStone = ResourceManager.Instance.GetStoneAmount();
         int curWood = ResourceManager.Instance.GetWoodAmount();
         ValueTuple<int, int> cost = m_preconstructedTower.GetTowercost();
-        
+
         bool newPlacementRestricted = m_hoveredSelectable;
         bool newCostRestricted = curStone < cost.Item1 || curWood < cost.Item2;
         if (newCostRestricted != m_costRestricted || newPlacementRestricted != m_placementRestricted)
@@ -268,7 +261,7 @@ public class GameplayManager : MonoBehaviour
             Debug.Log("Can build : " + canBuild);
         }
     }
-    
+
     private void GameObjectSelected(GameObject obj)
     {
         Selectable objSelectable = obj.GetComponent<Selectable>();
@@ -357,16 +350,16 @@ public class GameplayManager : MonoBehaviour
         //Set up the objects
         m_preconstructedTowerObj = Instantiate(m_equippedTowers[i].m_prefab, Vector3.zero, Quaternion.identity);
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<TowerController>();
+        m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
         m_costRestricted = true;
         m_placementRestricted = true;
-
     }
 
     private void DrawPreconstructedTower()
     {
         CheckObjRestriction();
-        
+
         //Position the objects
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
@@ -391,6 +384,20 @@ public class GameplayManager : MonoBehaviour
 
     public void BuildTower()
     {
+        Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
+        {
+            Vector3 gridPos = raycastHit.point;
+            gridPos = Util.RoundVectorToInt(gridPos);
+            GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
+            TowerController newTower = newTowerObj.GetComponent<TowerController>();
+            newTower.SetupTower();
+            
+            //Update banks
+            ValueTuple<int, int> cost = newTower.GetTowercost();
+            ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
+            ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
+        }
     }
 
     public void AddTowerToList(TowerController tower)

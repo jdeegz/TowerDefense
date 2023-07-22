@@ -1619,6 +1619,7 @@ RectTransform:
   - {fileID: 952654687747197165}
   - {fileID: 3384670302890231853}
   - {fileID: 5512446226814822863}
+  - {fileID: 4409330211841857527}
   m_Father: {fileID: 0}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1650,6 +1651,8 @@ MonoBehaviour:
   m_woodGathererLabel: {fileID: 2909748319056628462}
   m_towerTrayButtonPrefab: {fileID: 1338795559678056421, guid: 04284a80e0d40af4fb45124034f8c77e, type: 3}
   m_towerTrayLayoutObj: {fileID: 5512446226814822863}
+  m_alertRootObj: {fileID: 5146570696094432079}
+  m_alertPrefab: {fileID: 3818641833424345620, guid: 8d1aef97a1be9e343a4d10f92d1ea0e0, type: 3}
 --- !u!1 &3032980542837261495
 GameObject:
   m_ObjectHideFlags: 0
@@ -2218,6 +2221,42 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 60, y: 34}
   m_Pivot: {x: 1, y: 1}
+--- !u!1 &5146570696094432079
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4409330211841857527}
+  m_Layer: 0
+  m_Name: AlertsRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4409330211841857527
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5146570696094432079}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3032980542750083679}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 169}
+  m_SizeDelta: {x: -901.1378, y: -665.7056}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &5185426322450724406
 GameObject:
   m_ObjectHideFlags: 0

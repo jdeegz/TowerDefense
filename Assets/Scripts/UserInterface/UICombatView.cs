@@ -17,10 +17,13 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
+    [SerializeField] private GameObject m_alertRootObj;
+    [SerializeField] private GameObject m_alertPrefab;
 
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        GameplayManager.OnAlertDisplayed += Alert;
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
@@ -85,6 +88,12 @@ public class UICombatView : MonoBehaviour
             TowerTrayButton buttonScript = buttonPrefab.GetComponent<TowerTrayButton>();
             buttonScript.SetupData(GameplayManager.Instance.m_equippedTowers[i], i);
         }
+    }
+
+    private void Alert(string text)
+    {
+        GameObject curAlert = Instantiate(m_alertPrefab, m_alertRootObj.transform);
+        curAlert.GetComponent<UIAlert>().SetLabelText(text);
     }
 
     private void OnPlayButtonClicked()

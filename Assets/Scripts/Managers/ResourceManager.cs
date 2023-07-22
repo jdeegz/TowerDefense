@@ -24,12 +24,17 @@ public class ResourceManager : MonoBehaviour
 
     public static event Action<int> UpdateWoodBank;
     public static event Action<int> UpdateStoneBank;
+
+    public int m_startingStone;
+    public int m_startingWood;
     
 
 
     private void Awake()
     {
         Instance = this;
+        UpdateWoodAmount(m_startingWood);
+        UpdateStoneAmount(m_startingStone);
     }
 
     public void UpdateStoneAmount(int amount)

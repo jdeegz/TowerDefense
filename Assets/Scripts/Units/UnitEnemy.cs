@@ -29,6 +29,7 @@ public class UnitEnemy : MonoBehaviour
         }
 
         m_navMeshAgent = GetComponent<NavMeshAgent>();
+        StartMoving(m_goal.position);
     }
 
     private void CollectMeshRenderers(Transform parent)
@@ -80,20 +81,15 @@ public class UnitEnemy : MonoBehaviour
 
     void Update()
     {
-        if (!m_goal)
-        {
-            return;
-        }
-
-        m_navMeshAgent.destination = m_goal.position;
-    }
-
-    private void OnCollisionEnter(Collision other)
-    {
-        if (other.gameObject.CompareTag("Castle"))
+        if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
         {
             Destroy(gameObject);
         }
+    }
+
+    private void StartMoving(Vector3 pos)
+    {
+        m_navMeshAgent.SetDestination(pos);
     }
 
     public void TakeDamage(int dmg)
