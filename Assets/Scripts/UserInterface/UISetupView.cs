@@ -10,7 +10,7 @@ public class UISetupView : MonoBehaviour
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
-        }
+    }
 
     void OnDestroy()
     {

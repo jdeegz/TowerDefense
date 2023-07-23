@@ -97,7 +97,7 @@ public class GameplayManager : MonoBehaviour
             }
 
             //Mouse 1 Clicking
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonUp(0))
             {
                 //Based on the interaction state we're in, when mouse 1 is pressed, do X.
                 //If the object we're hovering is not currently the selected object.

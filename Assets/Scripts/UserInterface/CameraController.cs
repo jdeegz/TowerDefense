@@ -15,11 +15,15 @@ public class CameraController : MonoBehaviour
     private Vector3 m_dragStartPosition;
     private Vector3 m_dragCurrentPosition;
     private bool m_isDragging;
-
+    
     void Update()
     {
         HandleScreenEdgePan();
-        HandleMouseInput();
+        
+        if (GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
+        {
+            HandleMouseInput();
+        }
     }
 
     void HandleMouseInput()
