@@ -4,32 +4,39 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 public class UnitEnemy : MonoBehaviour
 {
-    private Transform m_goal;
-    private NavMeshAgent m_navMeshAgent;
+    [SerializeField] private NavMeshAgent m_navMeshAgent;
+    
     public Transform m_targetPoint;
-
     public float m_moveSpeed;
-    [SerializeField] private int m_hitPoints = 2;
+    public int m_maxHealth = 2;
+    
+    private int m_curHealth;
+    private Transform m_goal;
     private List<MeshRenderer> m_allMeshRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
 
+    public event Action<int> UpdateHealth;
+    public event Action DestroyEnemy;
 
     void Start()
     {
         CollectMeshRenderers(transform);
+        m_goal = GetClosestTransform(GameplayManager.Instance.m_enemyGoals);
+        
+        GameplayManager.Instance.AddEnemyToList(this);
+        UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
+        lifeMeter.SetEnemy(this);
 
-        //Find the closest Castle collider
-        if (GameplayManager.Instance != null)
-        {
-            m_goal = GetClosestTransform(GameplayManager.Instance.m_enemyGoals);
-        }
-
-        m_navMeshAgent = GetComponent<NavMeshAgent>();
         StartMoving(m_goal.position);
+
+        m_curHealth = m_maxHealth;
+        UpdateHealth += OnUpdateHealth;
+        DestroyEnemy += OnEnemyDestroyed;
     }
 
     private void CollectMeshRenderers(Transform parent)
@@ -83,7 +90,7 @@ public class UnitEnemy : MonoBehaviour
     {
         if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
         {
-            Destroy(gameObject);
+            DestroyEnemy?.Invoke();
         }
     }
 
@@ -100,13 +107,24 @@ public class UnitEnemy : MonoBehaviour
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
+        
+        UpdateHealth?.Invoke(-dmg);
+    }
 
-        m_hitPoints -= dmg;
-
-        if (m_hitPoints <= 0)
+    void OnUpdateHealth(int i)
+    {
+        m_curHealth += i;
+        
+        if (m_curHealth <= 0)
         {
-            Destroy(gameObject);
+            DestroyEnemy?.Invoke();
         }
+    }
+
+    void OnEnemyDestroyed()
+    {
+        GameplayManager.Instance.RemoveEnemyFromList(this);
+        Destroy(gameObject);
     }
 
     void Awake()

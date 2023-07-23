@@ -21,6 +21,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Castle Points")] public Transform[] m_enemyGoals;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
+    [Header("Active Enemies")] public List<UnitEnemy> m_enemyList;
 
     [Header("Player Constructed")] public Transform m_gathererObjRoot;
     public List<GathererController> m_woodGathererList;
@@ -412,6 +413,21 @@ public class GameplayManager : MonoBehaviour
             if (m_towerList[i] == tower)
             {
                 m_towerList.RemoveAt(i);
+            }
+        }
+    }
+    public void AddEnemyToList(UnitEnemy enemy)
+    {
+        m_enemyList.Add(enemy);
+    }
+
+    public void RemoveEnemyFromList(UnitEnemy enemy)
+    {
+        for (int i = 0; i < m_enemyList.Count; ++i)
+        {
+            if (m_enemyList[i] == enemy)
+            {
+                m_enemyList.RemoveAt(i);
             }
         }
     }

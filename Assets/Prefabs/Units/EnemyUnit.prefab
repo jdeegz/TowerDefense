@@ -125,9 +125,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be1d1f2e210cd87409f92686bd5906a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_navMeshAgent: {fileID: -680416782355534056}
   m_targetPoint: {fileID: 652604265444189931}
   m_moveSpeed: 1
-  m_hitPoints: 4
+  m_maxHealth: 10
 --- !u!54 &2859179848928085092
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -136,7 +137,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2620192096539630463}
   serializedVersion: 4
-  m_Mass: 0.0000001
+  m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}

@@ -11,7 +11,11 @@ public class Projectile : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!m_target) { return; }
+        if (!m_target)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Vector3 direction = (m_target.position - transform.position).normalized;
 
         m_rb.velocity = direction * m_projectileSpeed;
@@ -24,6 +28,7 @@ public class Projectile : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
+        Debug.Log(gameObject.name + " has hit : " + other.gameObject.name);
         other.gameObject.GetComponent<UnitEnemy>().TakeDamage(1);
         Destroy(gameObject);
     }
