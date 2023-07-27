@@ -5,45 +5,41 @@ using UnityEngine.Serialization;
 
 public class UnitSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject m_unitPrefab;
-    [SerializeField] private float m_spawnInterval = 1f;
-    [SerializeField] private int m_unitsPerWave = 5;
-    [SerializeField] private float m_waveInterval = 30f;
     [SerializeField] private Transform m_spawnPoint;
+    public List<CreepWave> m_creepWaves;
 
     private int m_unitsSpawned;
-    private bool m_isSpawning;
+    private bool m_isSpawnerActive;
     private float m_elapsedTime;
-
+    private List<Creep> m_activeCreeps;
+    
     private void Start()
     {
-        m_isSpawning = false;
-        StartSpawning();
+        m_isSpawnerActive = false;
+        GameplayManager.Instance.AddSpawnerToList(this);
     }
 
     private void Update()
     {
-        if (m_isSpawning)
+        //is Spawning is determine by the Gameplay State, if we're in GameplayManager.GameplayState.SpawnEnemies, spawn enemies.
+        if (m_isSpawnerActive)
         {
-            m_elapsedTime += Time.deltaTime;
-
-            //If there are more units to spawn in this wave, continue to spawn them at the spawn interval
-            if (m_unitsSpawned < m_unitsPerWave)
+            for (int i = 0; i < m_activeCreeps.Count; ++i)
             {
-                if (m_elapsedTime >= m_spawnInterval)
+                Creep creep = m_activeCreeps[i];
+                if (creep.IsCreepSpawning())
                 {
-                    SpawnUnit();
-                    m_elapsedTime = 0f;
+                    creep.UpdateCreep();
                 }
-            }
-            //If there are no more units to spawn in the wave, we wait for the next wave.
-            else
-            {
-                if (m_elapsedTime >= m_waveInterval)
+                else
                 {
-                    m_unitsSpawned = 0;
-                    m_elapsedTime = 0f;
-                    SpawnWave();
+                    //If the creep is NOT spawning, remove it from the active creep spawner list.
+                    m_activeCreeps.RemoveAt(i);
+                    if (m_activeCreeps.Count == 0)
+                    {
+                        m_isSpawnerActive = false;
+                        GameplayManager.Instance.DisableSpawner();
+                    }
                 }
             }
         }
@@ -51,26 +47,27 @@ public class UnitSpawner : MonoBehaviour
 
     private void StartSpawning()
     {
-        m_unitsSpawned = 0;
+        //Tell this spawner what creeps we'll be spawning.
+        int wave = GameplayManager.Instance.m_wave % m_creepWaves.Count;
+        Debug.Log("Modulo wave number is : " + wave);
+        
+        m_activeCreeps = new List<Creep>(m_creepWaves[wave].m_creeps);
+        Debug.Log("Active Creeps List Created. Count: " + m_activeCreeps.Count);
+        
+        //Assure each creep has a point to spawn to.
+        for (int i = 0; i < m_activeCreeps.Count; ++i)
+        {
+            m_activeCreeps[i].SetCreepVariables(m_spawnPoint);
+        }
+
+        m_isSpawnerActive = true;
     }
 
-    private void SpawnUnit()
+    public bool IsSpawning()
     {
-        Instantiate(m_unitPrefab, m_spawnPoint.position, Quaternion.identity);
-        m_unitsSpawned++;
+        return m_isSpawnerActive;
     }
 
-    private void SpawnWave()
-    {
-        // Spawn a wave of units here
-        // You can use a loop or any other mechanism to spawn multiple units
-    }
-
-    public void StopSpawning()
-    {
-        m_isSpawning = false;
-    }
-    
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
@@ -83,6 +80,77 @@ public class UnitSpawner : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
     {
-        m_isSpawning = state == GameplayManager.GameplayState.Combat;
+        if (state == GameplayManager.GameplayState.SpawnEnemies)
+        {
+            StartSpawning();
+        }
+    }
+}
+
+[System.Serializable]
+public class CreepWave
+{
+    public List<Creep> m_creeps;
+}
+
+[System.Serializable]
+public class Creep
+{
+    public UnitEnemy m_enemy;
+    public int m_unitsToSpawn;
+    public float m_spawnDelay;
+    public float m_spawnInterval;
+
+    private bool m_isCreepSpawning = true;
+    private int m_unitsSpawned;
+    private float m_elapsedTime;
+    private bool m_delayElapsed;
+    private Transform m_creepSpawnPoint;
+    
+    public void UpdateCreep()
+    {
+        m_elapsedTime += Time.deltaTime;
+
+        if (m_elapsedTime >= m_spawnDelay && !m_delayElapsed)
+        {
+            m_delayElapsed = true;
+            m_elapsedTime = 0;
+        }
+
+        //Interval Timer
+        if (m_delayElapsed && m_unitsSpawned < m_unitsToSpawn && m_elapsedTime >= m_spawnInterval)
+        {
+            Debug.Log("Spawning enemy " + m_enemy.name + " : " + m_unitsSpawned + " of " + m_unitsToSpawn);
+            Vector3 spawnPoint = m_creepSpawnPoint.position;
+            float xOffset = Random.Range(-0.2f, 0.2f);
+            float zOffset = Random.Range(-0.2f, 0.2f);
+
+            spawnPoint.x += xOffset;
+            spawnPoint.z += zOffset;
+            
+            Object.Instantiate(m_enemy.gameObject, spawnPoint, Quaternion.identity, GameplayManager.Instance.m_enemiesObjRoot);
+            m_unitsSpawned++;
+            m_elapsedTime = 0;
+
+            //Are we done?
+            if (m_unitsSpawned >= m_unitsToSpawn)
+            {
+                m_isCreepSpawning = false;
+            }
+        }
+    }
+
+    public bool IsCreepSpawning()
+    {
+        return m_isCreepSpawning;
+    }
+
+    public void SetCreepVariables(Transform transform)
+    {
+        m_delayElapsed = false;
+        m_elapsedTime = 0;
+        m_unitsSpawned = 0;
+        m_isCreepSpawning = true;
+        m_creepSpawnPoint = transform;
     }
 }

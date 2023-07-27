@@ -29,7 +29,7 @@ public class UISetupView : MonoBehaviour
 
     private void OnReadyButtonClicked()
     {
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Combat);
+        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.SpawnEnemies);
     }
 
     // Update is called once per frame

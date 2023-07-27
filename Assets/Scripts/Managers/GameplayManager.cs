@@ -11,6 +11,7 @@ public class GameplayManager : MonoBehaviour
 {
     public static GameplayManager Instance;
     public GameplayState m_gameplayState;
+    public int m_wave;
 
     public static event Action<GameplayState> OnGameplayStateChanged;
     public static event Action<GameObject> OnGameObjectSelected;
@@ -21,7 +22,9 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Castle Points")] public Transform[] m_enemyGoals;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
+    [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
     [Header("Active Enemies")] public List<UnitEnemy> m_enemyList;
+    public Transform m_enemiesObjRoot;
 
     [Header("Player Constructed")] public Transform m_gathererObjRoot;
     public List<GathererController> m_woodGathererList;
@@ -43,12 +46,16 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private ScriptableUIStrings m_uiStrings;
 
     private Camera m_mainCamera;
+    public float m_buildDuration;
+    private float m_timeToNextWave;
 
 
     public enum GameplayState
     {
         Setup,
+        SpawnEnemies,
         Combat,
+        Build,
         Paused,
         Victory,
         Defeat,
@@ -63,7 +70,7 @@ public class GameplayManager : MonoBehaviour
         SelectedTower,
         PreconstructionTower,
     }
-    
+
     void Update()
     {
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -116,9 +123,11 @@ public class GameplayManager : MonoBehaviour
                         OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotPlace);
                         return;
                     }
+
                     BuildTower();
                     return;
                 }
+
                 if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
                 {
                     Debug.Log(m_hoveredSelectable + " : selected.");
@@ -172,6 +181,12 @@ public class GameplayManager : MonoBehaviour
         {
             DrawPreconstructedTower();
         }
+
+        m_timeToNextWave -= Time.deltaTime;
+        if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
+        {
+            UpdateGameplayState(GameplayState.SpawnEnemies);
+        }
     }
 
     private void Awake()
@@ -208,7 +223,13 @@ public class GameplayManager : MonoBehaviour
         {
             case GameplayState.Setup:
                 break;
+            case GameplayState.SpawnEnemies:
+                m_wave++;
+                break;
             case GameplayState.Combat:
+                break;
+            case GameplayState.Build:
+                m_timeToNextWave = m_buildDuration;
                 break;
             case GameplayState.Paused:
                 break;
@@ -393,7 +414,7 @@ public class GameplayManager : MonoBehaviour
             GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
             TowerController newTower = newTowerObj.GetComponent<TowerController>();
             newTower.SetupTower();
-            
+
             //Update banks
             ValueTuple<int, int> cost = newTower.GetTowercost();
             ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
@@ -416,6 +437,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
     }
+
     public void AddEnemyToList(UnitEnemy enemy)
     {
         m_enemyList.Add(enemy);
@@ -428,6 +450,43 @@ public class GameplayManager : MonoBehaviour
             if (m_enemyList[i] == enemy)
             {
                 m_enemyList.RemoveAt(i);
+            }
+        }
+
+        if (m_enemyList.Count <= 0)
+        {
+            UpdateGameplayState(GameplayState.Build);
+        }
+    }
+
+    public void AddSpawnerToList(UnitSpawner unitSpawner)
+    {
+        m_unitSpawners.Add(unitSpawner);
+        Debug.Log("Added creep spawner: " + m_unitSpawners.Count);
+    }
+
+    public void DisableSpawner()
+    {
+        bool spawning = false;
+        foreach (UnitSpawner unitSpawner in m_unitSpawners)
+        {
+            spawning = unitSpawner.IsSpawning();
+        }
+
+        if (!spawning)
+        {
+            Debug.Log("Spawning Completed.");
+            UpdateGameplayState(GameplayState.Combat);
+        }
+    }
+
+    public void RemoveSpawnerFromList(UnitSpawner unitSpawner)
+    {
+        for (int i = 0; i < m_unitSpawners.Count; ++i)
+        {
+            if (m_unitSpawners[i] == unitSpawner)
+            {
+                m_unitSpawners.RemoveAt(i);
             }
         }
     }

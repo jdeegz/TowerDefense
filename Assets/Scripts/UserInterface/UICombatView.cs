@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -11,14 +12,18 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private Button m_victoryButton;
     [SerializeField] private Button m_defeatButton;
     [SerializeField] private Button m_exitButton;
+    [SerializeField] private Button m_nextWaveButton;
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
+    [SerializeField] private TextMeshProUGUI m_gameClockLabel;
+    [SerializeField] private TextMeshProUGUI m_waveLabel;
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
+    private float m_timeToNextWave;
 
     void Awake()
     {
@@ -51,7 +56,6 @@ public class UICombatView : MonoBehaviour
 
     private void UpdateStoneDisplay(int i)
     {
-        
         m_stoneBankLabel.SetText(i.ToString());
     }
 
@@ -62,10 +66,32 @@ public class UICombatView : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
     {
-        gameObject.SetActive(state == GameplayManager.GameplayState.Combat ||
-                             state == GameplayManager.GameplayState.Paused);
-        m_playButton.gameObject.SetActive(state == GameplayManager.GameplayState.Paused);
-        m_pauseButton.gameObject.SetActive(state == GameplayManager.GameplayState.Combat);
+        switch (state)
+        {
+            case GameplayManager.GameplayState.Setup:
+                break;
+            case GameplayManager.GameplayState.SpawnEnemies:
+                m_waveLabel.SetText("Wave: " + (GameplayManager.Instance.m_wave+1));
+                break;
+            case GameplayManager.GameplayState.Combat:
+                break;
+            case GameplayManager.GameplayState.Build:
+                m_timeToNextWave = GameplayManager.Instance.m_buildDuration;
+                break;
+            case GameplayManager.GameplayState.Paused:
+                break;
+            case GameplayManager.GameplayState.Victory:
+                break;
+            case GameplayManager.GameplayState.Defeat:
+                break;
+            default:
+                break;
+        }
+
+        gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
+        m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build);
+        //m_playButton.gameObject.SetActive(state == GameplayManager.GameplayState.Paused);
+        //m_pauseButton.gameObject.SetActive(state == GameplayManager.GameplayState.Combat);
     }
 
     // Start is called before the first frame update
@@ -76,6 +102,7 @@ public class UICombatView : MonoBehaviour
         m_victoryButton.onClick.AddListener(OnVictoryButtonClicked);
         m_defeatButton.onClick.AddListener(OnDefeatButtonClick);
         m_exitButton.onClick.AddListener(OnExitButtonClicked);
+        m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
 
         BuildTowerTrayDisplay();
     }
@@ -121,8 +148,17 @@ public class UICombatView : MonoBehaviour
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Victory);
     }
 
+    private void OnNextWaveButtonClicked()
+    {
+        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.SpawnEnemies);
+    }
+
     // Update is called once per frame
     void Update()
     {
+        m_timeToNextWave -= Time.deltaTime;
+        TimeSpan timeSpan = TimeSpan.FromSeconds(m_timeToNextWave);
+        string formattedTime = string.Format("{0:D2}:{1:D2}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
+        m_gameClockLabel.SetText(formattedTime);
     }
 }
