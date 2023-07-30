@@ -15,6 +15,22 @@ public class CameraController : MonoBehaviour
     private Vector3 m_dragStartPosition;
     private Vector3 m_dragCurrentPosition;
     private bool m_isDragging;
+    private float m_minXBounds;
+    private float m_maxXBounds;
+    private float m_minZBounds;
+    private float m_maxZBounds;
+
+    void Start()
+    {
+        float x = transform.position.x;
+        float z = transform.position.z;
+
+        m_minXBounds = x - m_xBounds;
+        m_maxXBounds = x + m_xBounds;
+
+        m_minZBounds = z - m_zBounds;
+        m_maxZBounds = z + m_zBounds;
+    }
     
     void Update()
     {
@@ -55,19 +71,19 @@ public class CameraController : MonoBehaviour
                 m_isDragging = true;
                 m_dragCurrentPosition = ray.GetPoint(entry);
                 Vector3 delta = m_dragStartPosition - m_dragCurrentPosition;
-                if (transform.position.x <= -m_xBounds && delta.x < 0)
+                if (transform.position.x <= m_minXBounds && delta.x < 0)
                 {
                     delta.x = 0;
                 }
-                if (transform.position.x >= m_xBounds && delta.x > 0)
+                if (transform.position.x >= m_maxXBounds && delta.x > 0)
                 {
                     delta.x = 0;
                 }
-                if (transform.position.z <= -m_zBounds && delta.z < 0)
+                if (transform.position.z <= m_minZBounds && delta.z < 0)
                 {
                     delta.z = 0;
                 }
-                if (transform.position.z >= m_zBounds && delta.z > 0)
+                if (transform.position.z >= m_maxZBounds && delta.z > 0)
                 {
                     delta.z = 0;
                 }
@@ -98,10 +114,10 @@ public class CameraController : MonoBehaviour
         bool atBotEdge = mousePos.y < m_scrollZone;
 
         Vector3 cameraMovement = Vector3.zero;
-        if (atLeftEdge && transform.position.x > -m_xBounds) cameraMovement.x -= m_scrollSpeed;
-        if (atRightEdge && transform.position.x < m_xBounds) cameraMovement.x += m_scrollSpeed;
-        if (atTopEdge && transform.position.z < m_zBounds) cameraMovement.z += m_scrollSpeed;
-        if (atBotEdge && transform.position.z > -m_zBounds) cameraMovement.z -= m_scrollSpeed;
+        if (atLeftEdge && transform.position.x > m_minXBounds) cameraMovement.x -= m_scrollSpeed;
+        if (atRightEdge && transform.position.x < m_maxXBounds) cameraMovement.x += m_scrollSpeed;
+        if (atTopEdge && transform.position.z < m_maxZBounds) cameraMovement.z += m_scrollSpeed;
+        if (atBotEdge && transform.position.z > m_minZBounds) cameraMovement.z -= m_scrollSpeed;
 
         transform.Translate(cameraMovement * Time.deltaTime, Space.World);
     }

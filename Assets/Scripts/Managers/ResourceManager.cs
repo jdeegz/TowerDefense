@@ -33,6 +33,10 @@ public class ResourceManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+    }
+
+    void Start()
+    {
         UpdateWoodAmount(m_startingWood);
         UpdateStoneAmount(m_startingStone);
     }

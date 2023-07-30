@@ -90,6 +90,7 @@ public class UnitEnemy : MonoBehaviour
     {
         if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
         {
+            GameplayManager.Instance.m_castleController.TakeDamage(1);
             DestroyEnemy?.Invoke();
         }
     }

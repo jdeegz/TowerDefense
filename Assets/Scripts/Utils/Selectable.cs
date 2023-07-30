@@ -61,7 +61,7 @@ public class Selectable : MonoBehaviour
     {
         
         if (obj != gameObject) { return; }
-        Debug.Log("Trying to change colors");
+        //Debug.Log("Trying to change colors");
         for (int i = 0; i < m_outlines.Length; ++i)
         {
             Outline outline = m_outlines[i];

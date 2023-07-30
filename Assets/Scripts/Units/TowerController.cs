@@ -1,14 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
+using Palmmedia.ReportGenerator.Core.Parser.Analysis;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class TowerController : MonoBehaviour
 {
+    
     [SerializeField] private Transform m_turretPivot;
     [SerializeField] private Transform m_muzzlePoint;
     [SerializeField] private ScriptableTowerDataObject m_towerData;
     [SerializeField] private LayerMask m_layerMask;
+    
 
     private bool m_isBuilt;
     private UnitEnemy m_curTarget;
@@ -95,6 +98,7 @@ public class TowerController : MonoBehaviour
 
     public void SetupTower()
     {
+        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
         GameplayManager.Instance.AddTowerToList(this);
         gameObject.GetComponent<Collider>().enabled = true;
         gameObject.GetComponent<NavMeshObstacle>().enabled = true;

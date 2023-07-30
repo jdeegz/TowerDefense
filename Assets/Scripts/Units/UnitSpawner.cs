@@ -5,16 +5,15 @@ using UnityEngine.Serialization;
 
 public class UnitSpawner : MonoBehaviour
 {
-    [SerializeField] private Transform m_spawnPoint;
+    public Transform m_spawnPoint;
     public List<CreepWave> m_creepWaves;
 
-    private int m_unitsSpawned = 0;
     private bool m_isSpawnerActive = false;
-    private float m_elapsedTime = 0;
     private List<Creep> m_activeCreeps;
 
     private void Start()
     {
+        GridCellOccupantUtil.SetOccupant(gameObject, true, 2, 2);
         m_isSpawnerActive = false;
         GameplayManager.Instance.AddSpawnerToList(this);
     }
@@ -52,10 +51,10 @@ public class UnitSpawner : MonoBehaviour
     {
         //Tell this spawner what creeps we'll be spawning.
         int wave = GameplayManager.Instance.m_wave % m_creepWaves.Count;
-        Debug.Log("Modulo wave number is : " + wave);
+        //Debug.Log("Modulo wave number is : " + wave);
 
         m_activeCreeps = new List<Creep>(m_creepWaves[wave].m_creeps);
-        Debug.Log("Active Creeps List Created. Count: " + m_activeCreeps.Count);
+        //Debug.Log("Active Creeps List Created. Count: " + m_activeCreeps.Count);
 
         //Assure each creep has a point to spawn to.
         for (int i = 0; i < m_activeCreeps.Count; ++i)
@@ -123,7 +122,7 @@ public class Creep
         //Interval Timer
         if (m_delayElapsed && m_unitsSpawned < m_unitsToSpawn && m_elapsedTime >= m_spawnInterval)
         {
-            Debug.Log("Spawning enemy " + m_enemy.name + " : " + m_unitsSpawned + " of " + m_unitsToSpawn);
+            //Debug.Log("Spawning enemy " + m_enemy.name + " : " + m_unitsSpawned + " of " + m_unitsToSpawn);
             Vector3 spawnPoint = m_creepSpawnPoint.position;
             float xOffset = Random.Range(-0.2f, 0.2f);
             float zOffset = Random.Range(-0.2f, 0.2f);

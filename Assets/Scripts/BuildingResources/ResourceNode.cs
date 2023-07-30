@@ -20,6 +20,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     public void Start()
     {
+        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
         //m_harvestPoints = new List<HarvestPoint>();
     }
 
@@ -55,6 +56,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     private void OnDepletion()
     {
+        GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
         OnResourceNodeDepletion?.Invoke(this);
         Destroy(gameObject);
     }

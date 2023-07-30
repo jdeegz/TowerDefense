@@ -19,11 +19,14 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
     [SerializeField] private TextMeshProUGUI m_gameClockLabel;
     [SerializeField] private TextMeshProUGUI m_waveLabel;
+    [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
     private float m_timeToNextWave;
+    private int m_curCastleHealth;
+    private int m_maxCastleHealth;
 
     void Awake()
     {
@@ -33,10 +36,13 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
-        m_woodGathererLabel.SetText("0");
-        m_stoneGathererLabel.SetText("0");
-        m_woodBankLabel.SetText("0");
-        m_stoneBankLabel.SetText("0");
+        
+    }
+    
+    private void UpdateCastleHealthDisplay(int i)
+    {
+        m_curCastleHealth += i;
+        m_castleHealthLabel.SetText("Castle Health: " + m_curCastleHealth + "/" + m_maxCastleHealth);
     }
 
     private void UpdateWoodGathererDisplay(int i)
@@ -81,8 +87,10 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.Paused:
                 break;
             case GameplayManager.GameplayState.Victory:
+                Time.timeScale = 0;
                 break;
             case GameplayManager.GameplayState.Defeat:
+                Time.timeScale = 0;
                 break;
             default:
                 break;
@@ -97,6 +105,15 @@ public class UICombatView : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GameplayManager.Instance.m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
+        m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_maxHealth;
+        m_curCastleHealth = m_maxCastleHealth;
+        m_castleHealthLabel.SetText("Castle Health: " + m_curCastleHealth + "/" + m_maxCastleHealth);
+        m_woodGathererLabel.SetText("0");
+        m_stoneGathererLabel.SetText("0");
+        m_woodBankLabel.SetText("0");
+        m_stoneBankLabel.SetText("0");
+        
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_victoryButton.onClick.AddListener(OnVictoryButtonClicked);

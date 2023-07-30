@@ -6,20 +6,18 @@ using System.Linq;
 
 public static class Util
 {
-    public static GridManager gridManager;
-    //public static GameState gameState;
-    //public static CharactersState charactersState;
+    public static GridManager gridManager; //Assigned by the GridManager's Awake()
 
     public static Vector3 RoundVectorToInt(Vector3 vector)
     {
-        return new Vector3(Mathf.RoundToInt(vector.x), Mathf.RoundToInt(vector.y), Mathf.RoundToInt(vector.z));
+        return new Vector3(Mathf.CeilToInt(vector.x), Mathf.CeilToInt(vector.y), Mathf.CeilToInt(vector.z));
     }
 
     
 
     public static bool CellIsBlocked(int start_x, int start_y, int end_x, int end_y)
     {
-        var deltaCol = System.Math.Abs(end_x - start_x);
+        /*var deltaCol = System.Math.Abs(end_x - start_x);
         //If start_x < end_x, stepCol is 1, else -1
         var stepCol = start_x < end_x ? 1 : -1;
 
@@ -77,12 +75,12 @@ public static class Util
                     wallFound = true;
                 }
             }
-        }
+        }*/
 
         return false;
     }
 
-    public static GameObject GetTargetForProjectile(int start_x, int start_y, int end_x, int end_y)
+    /*public static GameObject GetTargetForProjectile(int start_x, int start_y, int end_x, int end_y)
     {
         var deltaCol = System.Math.Abs(end_x - start_x);
         //If start_x < end_x, stepCol is 1, else -1
@@ -136,7 +134,7 @@ public static class Util
         }
 
         return GetCellFromPos(new Vector2(end_x, end_y));
-    }
+    }*/
 
     public static GameObject GetCellOfObj(GameObject obj)
     {
@@ -157,8 +155,8 @@ public static class Util
 
         return onCell;
     }
-
-    public static List<GameObject> GetClosestCells(GameObject obj, int cellsNeeded)
+    
+    /*public static List<GameObject> GetClosestCells(GameObject obj, int cellsNeeded)
     {
         List<GameObject> cellList = new List<GameObject>(0);
 
@@ -191,9 +189,9 @@ public static class Util
         }
 
         return cellList;
-    }
+    }*/
 
-    public static List<GameObject> GetUnitsInRange(GameObject obj, int range)
+    /*public static List<GameObject> GetUnitsInRange(GameObject obj, int range)
     {
         List<GameObject> residentsInRange = new List<GameObject>();
 
@@ -225,7 +223,7 @@ public static class Util
         }
 
         return interactablesInRange;
-    }
+    }*/
 
     public static GameObject GetCellFromPos(Vector2 pos)
     {
@@ -244,7 +242,7 @@ public static class Util
         return gridManager.gridCells[x, y];
     }
 
-    public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)
+    /*public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)
     {
         int row = (int) obj.transform.position.x;
         int col = (int) obj.transform.position.y;
@@ -276,7 +274,7 @@ public static class Util
         }
 
         return neighbors;
-    }
+    }*/
 
     /*public static List<GameObject> GetCellsInView(GameObject obj, GameObject[,] grid, int range)
     {
@@ -392,7 +390,7 @@ public static class Util
         return acceptableTargets;
     }*/
 
-    public static GameObject ClosestObj(List<GameObject> objList, GameObject gameObject)
+    /*public static GameObject ClosestObj(List<GameObject> objList, GameObject gameObject)
     {
         List<float> distances = new List<float>();
 
@@ -410,9 +408,9 @@ public static class Util
         }
 
         return closestObj;
-    }
+    }*/
 
-    public static GameObject FindNextCell(GameObject startCell, GameObject endCell)
+    /*public static GameObject FindNextCell(GameObject startCell, GameObject endCell)
     {
         //Getting a next best direction will require pathfinding (should I go up around the wall or down towards the door?)
 
@@ -459,9 +457,9 @@ public static class Util
         }
 
         return direction;
-    }
+    }*/
 
-    public static int GetDistance(GameObject objA, GameObject objB)
+    /*public static int GetDistance(GameObject objA, GameObject objB)
     {
         int objAX = (int) objA.transform.position.x;
         int objAY = (int) objA.transform.position.y;
@@ -471,6 +469,6 @@ public static class Util
 
         int distance = Mathf.Abs(objAX - objBX) + Mathf.Abs(objAY - objBY);
         return distance;
-    }
+    }*/
     
  }

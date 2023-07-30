@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -20,7 +21,8 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
 
-    [Header("Castle Points")] public Transform[] m_enemyGoals;
+    [Header("Castle")] public CastleController m_castleController;
+    public Transform[] m_enemyGoals;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
     [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
     [Header("Active Enemies")] public List<UnitEnemy> m_enemyList;
@@ -35,13 +37,17 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Selected Object Info")] private Selectable m_curSelectable;
     private Selectable m_hoveredSelectable;
-    private bool m_placementRestricted;
-    private bool m_costRestricted;
+    private bool m_placementOpen;
+    private bool m_costAffordable;
+    private bool m_placementPathsValid;
+    private bool m_canBuild = true;
 
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public TowerController m_preconstructedTower;
     [SerializeField] private LayerMask m_buildSurface;
+    [SerializeField] private LayerMask m_pathObstructableLayer;
     private int m_preconstructedTowerIndex;
+    private Vector3 m_preconstructedTowerPos;
 
     [SerializeField] private ScriptableUIStrings m_uiStrings;
 
@@ -62,6 +68,7 @@ public class GameplayManager : MonoBehaviour
     }
 
     public InteractionState m_interactionState;
+
 
     public enum InteractionState
     {
@@ -110,16 +117,16 @@ public class GameplayManager : MonoBehaviour
                 //If the object we're hovering is not currently the selected object.
                 if (m_interactionState == InteractionState.PreconstructionTower)
                 {
-                    if (m_costRestricted)
+                    if (!m_costAffordable)
                     {
-                        Debug.Log("Not Enough Resources.");
+                        //Debug.Log("Not Enough Resources.");
                         OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotAfford);
                         return;
                     }
 
-                    if (m_placementRestricted)
+                    if (!m_placementOpen || !m_placementPathsValid)
                     {
-                        Debug.Log("Cannot build here.");
+                        //Debug.Log("Cannot build here.");
                         OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotPlace);
                         return;
                     }
@@ -130,12 +137,12 @@ public class GameplayManager : MonoBehaviour
 
                 if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
                 {
-                    Debug.Log(m_hoveredSelectable + " : selected.");
+                    //Debug.Log(m_hoveredSelectable + " : selected.");
                     OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
                 }
                 else
                 {
-                    Debug.Log("I clicked on nothing.");
+                    //Debug.Log("I clicked on nothing.");
                 }
             }
 
@@ -265,23 +272,92 @@ public class GameplayManager : MonoBehaviour
 
     void CheckObjRestriction()
     {
-        //Check cost
+        bool canBuild;
+        
+        //Check cost & banks
         int curStone = ResourceManager.Instance.GetStoneAmount();
         int curWood = ResourceManager.Instance.GetWoodAmount();
         ValueTuple<int, int> cost = m_preconstructedTower.GetTowercost();
-
-        bool newPlacementRestricted = m_hoveredSelectable;
-        bool newCostRestricted = curStone < cost.Item1 || curWood < cost.Item2;
-        if (newCostRestricted != m_costRestricted || newPlacementRestricted != m_placementRestricted)
+        bool newCostAffordable = curStone >= cost.Item1 && curWood >= cost.Item2;
+        if (newCostAffordable != m_costAffordable)
         {
-            Debug.Log(newCostRestricted ? "Cost is restricted." : "Cost is not restricted.");
-            m_costRestricted = newCostRestricted;
-            Debug.Log(newPlacementRestricted ? "Placement is Restricted" : "Placement is not Restricted");
-            m_placementRestricted = newPlacementRestricted;
-            bool canBuild = !m_placementRestricted && !m_costRestricted;
-            OnObjRestricted?.Invoke(m_curSelectable.gameObject, canBuild);
-            Debug.Log("Can build : " + canBuild);
+            Debug.Log(newCostAffordable ? "Cost is Affordable." : "Cost is not Affordable.");
+            m_costAffordable = newCostAffordable;
         }
+
+        //Check collision
+        bool newPlacementOpen = !m_hoveredSelectable;
+        if (newPlacementOpen != m_placementOpen)
+        {
+            Debug.Log(newPlacementOpen ? "Placement is Open" : "Placement is not Open");
+            m_placementOpen = newPlacementOpen;
+        }
+
+        //Check pathing
+        Vector3 newPlacementPosition = m_preconstructedTowerObj.transform.position;
+        newPlacementPosition = Util.RoundVectorToInt(newPlacementPosition);
+        newPlacementPosition.y = 0f;
+        if (m_placementOpen && m_costAffordable && newPlacementPosition != m_preconstructedTowerPos)
+        {
+            m_preconstructedTowerPos = newPlacementPosition;
+            m_placementPathsValid = CheckPathWithObstacle(m_preconstructedTowerPos);
+            Debug.Log(m_placementPathsValid ? "Placement paths are valid" : "Placement paths are not valid");
+        }
+
+        //Can we build
+        canBuild = m_costAffordable && m_placementOpen && m_placementPathsValid;
+        Debug.Log(canBuild);
+        if (canBuild != m_canBuild)
+        {
+            m_canBuild = canBuild;
+            OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
+            Debug.Log("Can build : " + m_canBuild);
+        }
+    }
+
+    private bool CheckPathWithObstacle(Vector3 testPos)
+    {
+        /*//Can the spawners path to the the testPos, and from the testPos to the castle?
+        for (int i = 0; i < m_unitSpawners.Count;)
+        {
+            Vector3 spawnerPos = m_unitSpawners[i].m_spawnPoint.position;
+
+            // Check if the path would be valid with the obstacle placed
+            bool pathToObstacle = IsPathValid(testPos, spawnerPos);
+            if (!pathToObstacle)
+            {
+                return false;
+            }
+            
+            //Check if the path is valid from the obstacle to the castle.
+            for (int x = 0; x < m_enemyGoals.Length; ++x)
+            {
+                bool pathToCastle = IsPathValid(testPos, m_enemyGoals[i].position);
+                if (!pathToCastle)
+                {
+                    return false;
+                }
+            }
+        }*/
+
+        return false;
+    }
+
+    private bool IsPathValid(Vector3 from, Vector3 to)
+    {
+        /*NavMeshPath path = new NavMeshPath();
+        bool validPath = NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path);
+
+        // Check if the path is complete and valid
+        if (validPath && path.status == NavMeshPathStatus.PathComplete)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }*/
+        return false;
     }
 
     private void GameObjectSelected(GameObject obj)
@@ -374,8 +450,8 @@ public class GameplayManager : MonoBehaviour
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<TowerController>();
         m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
-        m_costRestricted = true;
-        m_placementRestricted = true;
+        m_costAffordable = true;
+        m_placementOpen = true;
     }
 
     private void DrawPreconstructedTower()
@@ -462,7 +538,7 @@ public class GameplayManager : MonoBehaviour
     public void AddSpawnerToList(UnitSpawner unitSpawner)
     {
         m_unitSpawners.Add(unitSpawner);
-        Debug.Log("Added creep spawner: " + m_unitSpawners.Count);
+        //Debug.Log("Added creep spawner: " + m_unitSpawners.Count);
     }
 
     public void DisableSpawner()
@@ -475,7 +551,7 @@ public class GameplayManager : MonoBehaviour
 
         if (!spawning)
         {
-            Debug.Log("Spawning Completed.");
+            //Debug.Log("Spawning Completed.");
             UpdateGameplayState(GameplayState.Combat);
         }
     }
