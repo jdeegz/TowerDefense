@@ -19,7 +19,7 @@ public class GridCellOccupantUtil
             {
                 Vector2 pos = new Vector2(m_bottomLeftCell.x + x, m_bottomLeftCell.z + z);
                 Debug.Log("Grid Cell occupied: " + pos);
-                Util.GetCellFromPos(pos).GetComponent<Cell>().m_isOccupied = isOccupied;
+                Util.GetCellFromPos(pos).m_isOccupied = isOccupied;
             }
         }
     }

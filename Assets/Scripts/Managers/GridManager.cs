@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    [HideInInspector] public GameObject[,] gridCells;
+    [HideInInspector] public Cell[,] gridCells;
 
     void Awake()
     {
@@ -30,7 +30,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        gridCells = new GameObject[x + 1, z + 1];
+        gridCells = new Cell[x + 1, z + 1];
 
         foreach (GameObject cell in allCells)
         {
@@ -39,7 +39,7 @@ public class GridManager : MonoBehaviour
 
             if (!gridCells[cellPosX, cellPosZ])
             {
-                gridCells[cellPosX, cellPosZ] = cell;
+                gridCells[cellPosX, cellPosZ] = cell.GetComponent<Cell>();
             }
             else
             {

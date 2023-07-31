@@ -136,7 +136,7 @@ public static class Util
         return GetCellFromPos(new Vector2(end_x, end_y));
     }*/
 
-    public static GameObject GetCellOfObj(GameObject obj)
+    public static Cell GetCellOfObj(GameObject obj)
     {
         int x = (int) obj.transform.position.x;
         int y = (int) obj.transform.position.y;
@@ -151,7 +151,7 @@ public static class Util
             return null;
         }
 
-        GameObject onCell = gridManager.gridCells[x, y];
+        Cell onCell = gridManager.gridCells[x, y];
 
         return onCell;
     }
@@ -225,7 +225,7 @@ public static class Util
         return interactablesInRange;
     }*/
 
-    public static GameObject GetCellFromPos(Vector2 pos)
+    public static Cell GetCellFromPos(Vector2 pos)
     {
         int x = (int) pos.x;
         int y = (int) pos.y;
