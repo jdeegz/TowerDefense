@@ -82,6 +82,10 @@ public class AstarPathingTest : MonoBehaviour
                             {
                                 Cell islandCell = Util.GetCellFromPos(cellPos);
                                 islandCell.UpdateCellState(Cell.CellState.Island);
+                                if (islandCell.m_actorCount > 0)
+                                {
+                                    SetCrosshairColor(Color.red);
+                                }
                             }
                         }
                     }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters;
+using UnityEditor;
 using UnityEngine;
 
 public class Cell : MonoBehaviour
@@ -17,6 +18,8 @@ public class Cell : MonoBehaviour
 
     public CellState m_cellState;
     public bool m_isOccupied;
+    public int m_actorCount;
+   //public GameObject m_cylinderObj;
 
     private CellState m_baseState;
     private Material m_material;
@@ -67,5 +70,21 @@ public class Cell : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    public void UpdateActorCount(int i)
+    {
+        m_actorCount += i;
+    }
+
+
+    void OnDrawGizmos()
+    {
+        
+        Handles.color = Color.black;
+        Handles.Label(transform.position, m_actorCount.ToString());
+
+        //Mesh cylinderMesh = m_cylinderObj.GetComponent<MeshFilter>().sharedMesh;
+        //Gizmos.DrawMesh(cylinderMesh, transform.position);
     }
 }

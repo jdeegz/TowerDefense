@@ -19,6 +19,8 @@ public class UnitEnemy : MonoBehaviour
     private List<MeshRenderer> m_allMeshRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
+    private Vector2Int m_curPos;
+    private Cell m_curCell;
 
     public event Action<int> UpdateHealth;
     public event Action DestroyEnemy;
@@ -26,17 +28,21 @@ public class UnitEnemy : MonoBehaviour
     void Start()
     {
         CollectMeshRenderers(transform);
-        m_goal = GetClosestTransform(GameplayManager.Instance.m_enemyGoals);
+        //m_goal = GetClosestTransform(GameplayManager.Instance.m_enemyGoals);
         
-        GameplayManager.Instance.AddEnemyToList(this);
-        UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
-        lifeMeter.SetEnemy(this);
+        //GameplayManager.Instance.AddEnemyToList(this);
+        //UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
+        //lifeMeter.SetEnemy(this);
 
-        StartMoving(m_goal.position);
+        //StartMoving(m_goal.position);
 
         m_curHealth = m_maxHealth;
         UpdateHealth += OnUpdateHealth;
         DestroyEnemy += OnEnemyDestroyed;
+        
+        m_curPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
+        m_curCell = Util.GetCellFromPos(m_curPos);
+        m_curCell.UpdateActorCount(1);
     }
 
     private void CollectMeshRenderers(Transform parent)
@@ -88,10 +94,19 @@ public class UnitEnemy : MonoBehaviour
 
     void Update()
     {
-        if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
+        /*if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
         {
             GameplayManager.Instance.m_castleController.TakeDamage(1);
             DestroyEnemy?.Invoke();
+        }*/
+
+        Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
+        
+        if(newPos != m_curPos){
+            m_curCell.UpdateActorCount(-1);
+            m_curPos = newPos;
+            m_curCell = Util.GetCellFromPos(m_curPos);
+            m_curCell.UpdateActorCount(1);
         }
     }
 
