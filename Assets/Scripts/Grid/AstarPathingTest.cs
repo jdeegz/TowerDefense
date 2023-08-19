@@ -33,27 +33,25 @@ public class AstarPathingTest : MonoBehaviour
 
             if (rayPos != m_curCellPos)
             {
-                Util.GetCellFromPos(m_curCellPos).ResetState();
                 
                 m_curCellPos = rayPos;
                 m_crosshair.transform.position = new Vector3(m_curCellPos.x, 0.05f, m_curCellPos.y);
-                
-                ResetCells();
 
                 Cell curCell = Util.GetCellFromPos(m_curCellPos);
+                if (curCell == null)
+                {
+                    return;
+                }
                 
                 if (curCell.m_isOccupied)
                 {
                     SetCrosshairColor(Color.red);
-                    return;
                 }
                 else
                 {
                     SetCrosshairColor(Color.white);
                 }
                 
-                curCell.UpdateCellState(Cell.CellState.Hovered);
-
                 //Get neighbor cells.
                 Vector2Int[] neighbors =
                 {
@@ -65,15 +63,19 @@ public class AstarPathingTest : MonoBehaviour
 
                 for (int i = 0; i < neighbors.Length; ++i)
                 {
-                    Debug.Log("Pathing from:" + neighbors[i]);
+                    //Debug.Log("Pathing from:" + neighbors[i]);
                     Cell cell = Util.GetCellFromPos(neighbors[i]);
+                    if (cell == null)
+                    {
+                        return;
+                    }
+                    
                     if (!cell.m_isOccupied)
                     {
-                        List<Vector2Int> testPath = AStar.FindPath(neighbors[i], m_goalPointPos, Util.gridManager.gridCells);
+                        List<Vector2Int> testPath = AStar.FindPath(neighbors[i], m_goalPointPos);
                         if (testPath != null)
                         {
                             m_pathCells = new List<Vector2Int>(testPath);
-                            ColorCells();
                         }
                         else
                         {
@@ -81,7 +83,6 @@ public class AstarPathingTest : MonoBehaviour
                             foreach (Vector2Int cellPos in islandCells)
                             {
                                 Cell islandCell = Util.GetCellFromPos(cellPos);
-                                islandCell.UpdateCellState(Cell.CellState.Island);
                                 if (islandCell.m_actorCount > 0)
                                 {
                                     SetCrosshairColor(Color.red);
@@ -94,26 +95,9 @@ public class AstarPathingTest : MonoBehaviour
         }
     }
 
-    void ResetCells()
-    {
-        foreach (Cell cell in Util.gridManager.gridCells)
-        {
-            if (cell.m_cellState == Cell.CellState.Path || cell.m_cellState == Cell.CellState.Island)
-            {
-                cell.ResetState();
-            }
-        }
-    }
 
-    void ColorCells()
-    {
-        for (var i = 0; i < m_pathCells.Count; i++)
-        {
-            var cellPos = m_pathCells[i];
-            Cell cell = Util.GetCellFromPos(cellPos);
-            cell.UpdateCellState(Cell.CellState.Path);
-        }
-    }
+
+
 
     void SetCrosshairColor(Color color)
     {

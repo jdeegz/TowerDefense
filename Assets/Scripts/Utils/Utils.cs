@@ -6,8 +6,6 @@ using System.Linq;
 
 public static class Util
 {
-    public static GridManager gridManager; //Assigned by the GridManager's Awake()
-
     public static Vector3 RoundVectorToInt(Vector3 vector)
     {
         return new Vector3(Mathf.CeilToInt(vector.x), Mathf.CeilToInt(vector.y), Mathf.CeilToInt(vector.z));
@@ -136,25 +134,25 @@ public static class Util
         return GetCellFromPos(new Vector2(end_x, end_y));
     }*/
 
-    public static Cell GetCellOfObj(GameObject obj)
+    /*public static Cell GetCellOfObj(GameObject obj)
     {
         int x = (int) obj.transform.position.x;
         int y = (int) obj.transform.position.y;
 
-        if (x < 0 || x > gridManager.gridCells.GetLength(0) - 1)
+        if (x < 0 || x > gridManager.m_gridCells.GetLength(0) - 1)
         {
             return null;
         }
 
-        if (y < 0 || y > gridManager.gridCells.GetLength(1) - 1)
+        if (y < 0 || y > gridManager.m_gridCells.GetLength(1) - 1)
         {
             return null;
         }
 
-        Cell onCell = gridManager.gridCells[x, y];
+        Cell onCell = gridManager.m_gridCells[x, y];
 
         return onCell;
-    }
+    }*/
     
     /*public static List<GameObject> GetClosestCells(GameObject obj, int cellsNeeded)
     {
@@ -225,21 +223,30 @@ public static class Util
         return interactablesInRange;
     }*/
 
-    public static Cell GetCellFromPos(Vector2 pos)
+    public static Cell GetCellFromPos(Vector2Int pos)
     {
-        int x = (int) pos.x;
-        int y = (int) pos.y;
-        if (x < 0 || x > gridManager.gridCells.GetLength(0) - 1)
+        //Subtract 1 because Arrays are base0
+        int x = pos.x;
+        int z = pos.y;
+        
+        //Check we're within the grid width
+        if (x < 0 || x >= GridManager.Instance.m_gridWidth)
         {
+            Debug.Log("X not within grid bounds.");
             return null;
         }
 
-        if (y < 0 || y > gridManager.gridCells.GetLength(1) - 1)
+        //Check we're within the grid height
+        if (z < 0 || z >= GridManager.Instance.m_gridHeight)
         {
+            Debug.Log("Z not within grid bounds.");
             return null;
         }
+        
+        int index = x * GridManager.Instance.m_gridWidth + z;
+        Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
-        return gridManager.gridCells[x, y];
+        return GridManager.Instance.m_gridCells[index];
     }
 
     /*public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)

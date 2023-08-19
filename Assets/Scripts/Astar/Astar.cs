@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 
 public class AStar
 {
-    public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal, Cell[,] obstacleGrid)
+    public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal)
     {
         List<Vector2Int> path = new List<Vector2Int>();
 
-        if (start == goal || obstacleGrid[start.x, start.y].m_isOccupied || obstacleGrid[goal.x, goal.y].m_isOccupied)
+        if (start == goal || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(goal).m_isOccupied)
             return null;
 
         // Priority queue for open nodes
@@ -53,8 +54,8 @@ public class AStar
 
             foreach (Vector2Int neighbor in neighbors)
             {
-                if (!visited.Contains(neighbor) && neighbor.x >= 0 && neighbor.x < obstacleGrid.GetLength(0) &&
-                    neighbor.y >= 0 && neighbor.y < obstacleGrid.GetLength(1) && !obstacleGrid[neighbor.x, neighbor.y].m_isOccupied)
+                if (!visited.Contains(neighbor) && neighbor.x >= 0 && neighbor.x < GridManager.Instance.m_gridWidth &&
+                    neighbor.y >= 0 && neighbor.y < GridManager.Instance.m_gridHeight && !Util.GetCellFromPos(neighbor).m_isOccupied)
                 {
                     // Calculate the g value (cost from start to neighbor)
                     float g = current.g + 1;
@@ -114,10 +115,10 @@ public class AStar
     private static void PerformDFS(Vector2Int currentCell, List<Vector2Int> islandCells, HashSet<Vector2Int> visited)
     {
         // Check if the current cell is valid and not already visited
-        if (currentCell.x >= 0 && currentCell.x < Util.gridManager.gridCells.GetLength(0) &&
-            currentCell.y >= 0 && currentCell.y <  Util.gridManager.gridCells.GetLength(1) &&
+        if (currentCell.x >= 0 && currentCell.x < GridManager.Instance.m_gridWidth &&
+            currentCell.y >= 0 && currentCell.y <  GridManager.Instance.m_gridHeight &&
             !visited.Contains(currentCell) &&
-            !Util.gridManager.gridCells[currentCell.x, currentCell.y].m_isOccupied)
+            !Util.GetCellFromPos(currentCell).m_isOccupied)
         {
             // Mark the current cell as visited
             visited.Add(currentCell);

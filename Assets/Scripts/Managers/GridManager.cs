@@ -4,49 +4,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GridManager : MonoBehaviour
 {
-    [HideInInspector] public Cell[,] gridCells;
+    public static GridManager Instance;
+    public Cell[] m_gridCells;
+    public int m_gridWidth = 10;
+    public int m_gridHeight = 10;
 
     void Awake()
     {
-        GameObject[] allCells = GameObject.FindGameObjectsWithTag("Cell");
+        Instance = this;
+        BuildGrid();
+    }
 
-        int x = 0;
-        int z = 0;
-
-        foreach (GameObject cell in allCells)
+    void BuildGrid()
+    {
+        m_gridCells = new Cell[m_gridWidth * m_gridHeight];
+        
+        
+        for (int x = 0; x < m_gridWidth; ++x)
         {
-
-            if (cell.transform.position.x >= x)
+            for (int z = 0; z < m_gridHeight; ++z)
             {
-                x = (int)cell.transform.position.x;
-            }
-
-            if (cell.transform.position.z >= z)
-            {
-                z = (int)cell.transform.position.z;
+                int index = x * m_gridWidth + z;
+                m_gridCells[index] = new Cell();
+                //Debug.Log("New Cell created at: " + index);
             }
         }
+    }
+}
+[System.Serializable]
+public class Cell
+{
+    public bool m_isOccupied;
+    public int m_actorCount;
 
-        gridCells = new Cell[x + 1, z + 1];
+    public void UpdateActorCount(int i)
+    {
+        m_actorCount += i;
+    }
 
-        foreach (GameObject cell in allCells)
-        {
-            int cellPosX = (int)cell.transform.position.x;
-            int cellPosZ = (int)cell.transform.position.z;
-
-            if (!gridCells[cellPosX, cellPosZ])
-            {
-                gridCells[cellPosX, cellPosZ] = cell.GetComponent<Cell>();
-            }
-            else
-            {
-                Debug.Log("Duplicate cell at " + cellPosX + ", " + cellPosZ);
-            }
-        }
-
-        Util.gridManager = gameObject.GetComponent<GridManager>();
+    public void UpdateOccupancy(bool b)
+    {
+        m_isOccupied = b;
     }
 }
