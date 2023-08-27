@@ -5,11 +5,11 @@ using UnityEngine.Diagnostics;
 
 public class AStar
 {
-    public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal)
+    public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
     {
         List<Vector2Int> path = new List<Vector2Int>();
 
-        if (start == goal || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(goal).m_isOccupied)
+        if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied)
             return null;
 
         // Priority queue for open nodes
@@ -19,7 +19,7 @@ public class AStar
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
 
         // Add the start node to openNodes
-        openNodes.Enqueue(new Node(start, null, 0, Heuristic(start, goal)));
+        openNodes.Enqueue(new Node(start, null, 0, Heuristic(start, end)));
 
         while (openNodes.Count > 0)
         {
@@ -27,7 +27,7 @@ public class AStar
             Node current = openNodes.Dequeue();
 
             // Check if we reached the goal
-            if (current.position == goal)
+            if (current.position == end)
             {
                 // Reconstruct the path from the goal node to the start node
                 Node node = current;
@@ -36,16 +36,21 @@ public class AStar
                     path.Add(node.position);
                     node = node.parent;
                 }
+
                 path.Reverse(); // Reverse the path to get the correct order
                 Debug.Log("Path Found.");
                 return path;
             }
 
             // Mark the current node as visited
-            visited.Add(current.position);
+            if (!visited.Add(current.position))
+            {
+                continue;
+            }
 
             // Get the neighboring cells (North, East, South, and West)
-            Vector2Int[] neighbors = {
+            Vector2Int[] neighbors =
+            {
                 new Vector2Int(current.position.x, current.position.y + 1),
                 new Vector2Int(current.position.x + 1, current.position.y),
                 new Vector2Int(current.position.x, current.position.y - 1),
@@ -55,13 +60,14 @@ public class AStar
             foreach (Vector2Int neighbor in neighbors)
             {
                 if (!visited.Contains(neighbor) && neighbor.x >= 0 && neighbor.x < GridManager.Instance.m_gridWidth &&
-                    neighbor.y >= 0 && neighbor.y < GridManager.Instance.m_gridHeight && !Util.GetCellFromPos(neighbor).m_isOccupied)
+                    neighbor.y >= 0 && neighbor.y < GridManager.Instance.m_gridHeight &&
+                    !Util.GetCellFromPos(neighbor).m_isOccupied)
                 {
                     // Calculate the g value (cost from start to neighbor)
                     float g = current.g + 1;
 
                     // Calculate the h value (heuristic value from neighbor to goal)
-                    float h = Heuristic(neighbor, goal);
+                    float h = Heuristic(neighbor, end);
 
                     // Add the neighbor node to openNodes
                     openNodes.Enqueue(new Node(neighbor, current, g, h));
@@ -103,7 +109,7 @@ public class AStar
             return f.CompareTo(other.f);
         }
     }
-    
+
     public static List<Vector2Int> FindIsland(Vector2Int startCell)
     {
         List<Vector2Int> islandCells = new List<Vector2Int>();
@@ -111,12 +117,12 @@ public class AStar
         PerformDFS(startCell, islandCells, visited);
         return islandCells;
     }
-    
+
     private static void PerformDFS(Vector2Int currentCell, List<Vector2Int> islandCells, HashSet<Vector2Int> visited)
     {
         // Check if the current cell is valid and not already visited
         if (currentCell.x >= 0 && currentCell.x < GridManager.Instance.m_gridWidth &&
-            currentCell.y >= 0 && currentCell.y <  GridManager.Instance.m_gridHeight &&
+            currentCell.y >= 0 && currentCell.y < GridManager.Instance.m_gridHeight &&
             !visited.Contains(currentCell) &&
             !Util.GetCellFromPos(currentCell).m_isOccupied)
         {
@@ -125,12 +131,97 @@ public class AStar
 
             // Add the current cell to the list of island cells
             islandCells.Add(currentCell);
-            
+
             // Recursively explore the neighbors of the current cell
             PerformDFS(new Vector2Int(currentCell.x + 1, currentCell.y), islandCells, visited); // Right neighbor
             PerformDFS(new Vector2Int(currentCell.x - 1, currentCell.y), islandCells, visited); // Left neighbor
             PerformDFS(new Vector2Int(currentCell.x, currentCell.y + 1), islandCells, visited); // Up neighbor
             PerformDFS(new Vector2Int(currentCell.x, currentCell.y - 1), islandCells, visited); // Down neighbor
         }
+    }
+
+    public static List<Vector2Int> FindExitPath(Vector2Int start, Vector2Int end, Vector2Int precon, Vector2Int exit)
+    {
+        List<Vector2Int> path = new List<Vector2Int>();
+
+        if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied)
+        {
+            Debug.Log("Start is End: " + (start == end));
+            Debug.Log("Start is occupied: " + Util.GetCellFromPos(start).m_isOccupied);
+            Debug.Log("End is occupied: " + Util.GetCellFromPos(end).m_isOccupied);
+            return null;
+        }
+
+
+        // Priority queue for open nodes
+        PriorityQueue<Node> openNodes = new PriorityQueue<Node>();
+
+        // List to keep track of visited nodes
+        HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
+
+        // Add the start node to openNodes
+        openNodes.Enqueue(new Node(start, null, 0, Heuristic(start, end)));
+        while (openNodes.Count > 0)
+        {
+            // Get the node with the lowest f value from openNodes
+            Node current = openNodes.Dequeue();
+
+            // Check if we reached the goal
+            if (current.position == end)
+            {
+                // Reconstruct the path from the goal node to the start node
+                Node node = current;
+                while (node != null)
+                {
+                    path.Add(node.position);
+                    node = node.parent;
+                }
+
+                path.Reverse(); // Reverse the path to get the correct order
+                Debug.Log($"Path Found. {start} - {end}");
+                return path;
+            }
+
+            // Mark the current node as visited
+            if (!visited.Add(current.position))
+            {
+                continue;
+            }
+
+            // Get the neighboring cells (North, East, South, and West)
+            Vector2Int[] neighbors =
+            {
+                new Vector2Int(current.position.x, current.position.y + 1),
+                new Vector2Int(current.position.x + 1, current.position.y),
+                new Vector2Int(current.position.x, current.position.y - 1),
+                new Vector2Int(current.position.x - 1, current.position.y)
+            };
+
+            foreach (Vector2Int neighbor in neighbors)
+            {
+                if (!visited.Contains(neighbor) &&
+                    neighbor.x >= 0 &&
+                    neighbor.x < GridManager.Instance.m_gridWidth &&
+                    neighbor.y >= 0 &&
+                    neighbor.y < GridManager.Instance.m_gridHeight &&
+                    !Util.GetCellFromPos(neighbor).m_isOccupied &&
+                    neighbor != precon &&
+                    neighbor != exit)
+                {
+                    // Calculate the g value (cost from start to neighbor)
+                    float g = current.g + 1;
+
+                    // Calculate the h value (heuristic value from neighbor to goal)
+                    float h = Heuristic(neighbor, end);
+
+                    // Add the neighbor node to openNodes
+                    openNodes.Enqueue(new Node(neighbor, current, g, h));
+                }
+            }
+        }
+
+        // No path found
+        Debug.Log($"No Path Found. {start} - {end}");
+        return null;
     }
 }

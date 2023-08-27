@@ -110,7 +110,7 @@ public class GathererController : MonoBehaviour
         switch (m_gathererTask)
         {
             case GathererTask.Idling:
-                StartMoving(GetClosestTransform(GameplayManager.Instance.m_enemyGoals).position);
+                StartMoving(GameplayManager.Instance.m_enemyGoal.position);
                 break;
             case GathererTask.FindingHarvestablePoint:
                 //Set new variables.
@@ -137,7 +137,7 @@ public class GathererController : MonoBehaviour
                 m_curCoroutine = StartCoroutine(Harvesting());
                 break;
             case GathererTask.TravelingToCastle:
-                StartMoving(GetClosestTransform(GameplayManager.Instance.m_enemyGoals).position);
+                StartMoving(GameplayManager.Instance.m_enemyGoal.position);
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());

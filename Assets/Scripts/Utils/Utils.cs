@@ -8,11 +8,9 @@ public static class Util
 {
     public static Vector3 RoundVectorToInt(Vector3 vector)
     {
-        return new Vector3(Mathf.CeilToInt(vector.x), Mathf.CeilToInt(vector.y), Mathf.CeilToInt(vector.z));
+        return new Vector3(Mathf.FloorToInt(vector.x + 0.5f), Mathf.FloorToInt(vector.y), Mathf.FloorToInt(vector.z + 0.5f));
     }
-
     
-
     public static bool CellIsBlocked(int start_x, int start_y, int end_x, int end_y)
     {
         /*var deltaCol = System.Math.Abs(end_x - start_x);
@@ -225,29 +223,60 @@ public static class Util
 
     public static Cell GetCellFromPos(Vector2Int pos)
     {
-        //Subtract 1 because Arrays are base0
         int x = pos.x;
         int z = pos.y;
         
         //Check we're within the grid width
         if (x < 0 || x >= GridManager.Instance.m_gridWidth)
         {
-            Debug.Log("X not within grid bounds.");
+            //Debug.Log("X not within grid bounds.");
             return null;
         }
 
         //Check we're within the grid height
         if (z < 0 || z >= GridManager.Instance.m_gridHeight)
         {
-            Debug.Log("Z not within grid bounds.");
+            //Debug.Log("Z not within grid bounds.");
             return null;
         }
         
         int index = x * GridManager.Instance.m_gridWidth + z;
-        Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
+        //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
         return GridManager.Instance.m_gridCells[index];
     }
+    
+    public static Cell GetCellFrom3DPos(Vector3 pos)
+    {
+        int x = Mathf.FloorToInt(pos.x + 0.5f);
+        int z = Mathf.FloorToInt(pos.z + 0.5f);
+        
+        //Check we're within the grid width
+        if (x < 0 || x >= GridManager.Instance.m_gridWidth)
+        {
+            //Debug.Log("X not within grid bounds.");
+            return null;
+        }
+
+        //Check we're within the grid height
+        if (z < 0 || z >= GridManager.Instance.m_gridHeight)
+        {
+            //Debug.Log("Z not within grid bounds.");
+            return null;
+        }
+        
+        int index = x * GridManager.Instance.m_gridWidth + z;
+        //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
+
+        return GridManager.Instance.m_gridCells[index];
+    }
+
+    public static Vector2Int GetVector2IntFrom3DPos(Vector3 pos)
+    {
+        int x = Mathf.FloorToInt(pos.x + 0.5f);
+        int z = Mathf.FloorToInt(pos.z + 0.5f);
+        return  new Vector2Int(x, z);
+    } 
 
     /*public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)
     {

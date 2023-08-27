@@ -75,10 +75,14 @@ public class AstarPathingTest : MonoBehaviour
                         List<Vector2Int> testPath = AStar.FindPath(neighbors[i], m_goalPointPos);
                         if (testPath != null)
                         {
+                            //Found path
                             m_pathCells = new List<Vector2Int>(testPath);
                         }
                         else
                         {
+                            //Cannot path
+                            SetCrosshairColor(Color.yellow);
+                            
                             List<Vector2Int> islandCells = new List<Vector2Int>(AStar.FindIsland(neighbors[i]));
                             foreach (Vector2Int cellPos in islandCells)
                             {

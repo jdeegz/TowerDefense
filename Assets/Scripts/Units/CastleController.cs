@@ -9,6 +9,8 @@ public class CastleController : MonoBehaviour
 
     [SerializeField] private int m_repairHealthAmount;
     [SerializeField] private float m_repairHealthInterval;
+    [SerializeField] private List<GameObject> m_castleCorners;
+    [SerializeField] private List<GameObject> m_castleEntrancePoints;
     
     private List<MeshRenderer> m_allMeshRenderers;
     private List<Color> m_allOrigColors;
@@ -22,7 +24,21 @@ public class CastleController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 3, 3);
+        //Set the corners and center of the castle to occupied.
+        //GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        
+        foreach (GameObject obj in m_castleCorners)
+        {
+            GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
+        }
+
+        //Set an actor in each entrance. (Trying to prevent blocking the entrances with towers)
+        foreach (GameObject obj in m_castleEntrancePoints)
+        {
+            Cell objCell = Util.GetCellFrom3DPos(obj.transform.position);
+            objCell.UpdateActorCount(1);
+        }
+        
         CollectMeshRenderers(transform);
         
         m_curHealth = m_maxHealth;

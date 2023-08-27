@@ -22,11 +22,14 @@ public class GameplayManager : MonoBehaviour
     public static event Action<String> OnAlertDisplayed;
 
     [Header("Castle")] public CastleController m_castleController;
-    public Transform[] m_enemyGoals;
+    [FormerlySerializedAs("m_enemyGoals")] public Transform m_enemyGoal;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
     [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
     [Header("Active Enemies")] public List<UnitEnemy> m_enemyList;
     public Transform m_enemiesObjRoot;
+
+    private Vector2Int m_curCellPos;
+    private Vector2Int m_goalPointPos;
 
     [Header("Player Constructed")] public Transform m_gathererObjRoot;
     public List<GathererController> m_woodGathererList;
@@ -38,16 +41,16 @@ public class GameplayManager : MonoBehaviour
     [Header("Selected Object Info")] private Selectable m_curSelectable;
     private Selectable m_hoveredSelectable;
     private bool m_placementOpen;
-    private bool m_costAffordable;
-    private bool m_placementPathsValid;
+    private bool m_canAfford;
+    private bool m_canPlace;
     private bool m_canBuild = true;
 
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public TowerController m_preconstructedTower;
+    public Vector2Int m_preconstructedTowerPos;
     [SerializeField] private LayerMask m_buildSurface;
     [SerializeField] private LayerMask m_pathObstructableLayer;
     private int m_preconstructedTowerIndex;
-    private Vector3 m_preconstructedTowerPos;
 
     [SerializeField] private ScriptableUIStrings m_uiStrings;
 
@@ -117,14 +120,14 @@ public class GameplayManager : MonoBehaviour
                 //If the object we're hovering is not currently the selected object.
                 if (m_interactionState == InteractionState.PreconstructionTower)
                 {
-                    if (!m_costAffordable)
+                    if (!m_canAfford)
                     {
                         //Debug.Log("Not Enough Resources.");
                         OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotAfford);
                         return;
                     }
 
-                    if (!m_placementOpen || !m_placementPathsValid)
+                    if (!m_placementOpen || !m_canPlace)
                     {
                         //Debug.Log("Cannot build here.");
                         OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotPlace);
@@ -200,6 +203,7 @@ public class GameplayManager : MonoBehaviour
     {
         Instance = this;
         m_mainCamera = Camera.main;
+        m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
         OnGameplayStateChanged += GameplayManagerStateChanged;
         OnGameObjectSelected += GameObjectSelected;
         OnGameObjectDeselected += GameObjectDeselected;
@@ -268,96 +272,6 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
-    }
-
-    void CheckObjRestriction()
-    {
-        bool canBuild;
-        
-        //Check cost & banks
-        int curStone = ResourceManager.Instance.GetStoneAmount();
-        int curWood = ResourceManager.Instance.GetWoodAmount();
-        ValueTuple<int, int> cost = m_preconstructedTower.GetTowercost();
-        bool newCostAffordable = curStone >= cost.Item1 && curWood >= cost.Item2;
-        if (newCostAffordable != m_costAffordable)
-        {
-            Debug.Log(newCostAffordable ? "Cost is Affordable." : "Cost is not Affordable.");
-            m_costAffordable = newCostAffordable;
-        }
-
-        //Check collision
-        bool newPlacementOpen = !m_hoveredSelectable;
-        if (newPlacementOpen != m_placementOpen)
-        {
-            Debug.Log(newPlacementOpen ? "Placement is Open" : "Placement is not Open");
-            m_placementOpen = newPlacementOpen;
-        }
-
-        //Check pathing
-        Vector3 newPlacementPosition = m_preconstructedTowerObj.transform.position;
-        newPlacementPosition = Util.RoundVectorToInt(newPlacementPosition);
-        newPlacementPosition.y = 0f;
-        if (m_placementOpen && m_costAffordable && newPlacementPosition != m_preconstructedTowerPos)
-        {
-            m_preconstructedTowerPos = newPlacementPosition;
-            m_placementPathsValid = CheckPathWithObstacle(m_preconstructedTowerPos);
-            Debug.Log(m_placementPathsValid ? "Placement paths are valid" : "Placement paths are not valid");
-        }
-
-        //Can we build
-        canBuild = m_costAffordable && m_placementOpen && m_placementPathsValid;
-        Debug.Log(canBuild);
-        if (canBuild != m_canBuild)
-        {
-            m_canBuild = canBuild;
-            OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
-            Debug.Log("Can build : " + m_canBuild);
-        }
-    }
-
-    private bool CheckPathWithObstacle(Vector3 testPos)
-    {
-        /*//Can the spawners path to the the testPos, and from the testPos to the castle?
-        for (int i = 0; i < m_unitSpawners.Count;)
-        {
-            Vector3 spawnerPos = m_unitSpawners[i].m_spawnPoint.position;
-
-            // Check if the path would be valid with the obstacle placed
-            bool pathToObstacle = IsPathValid(testPos, spawnerPos);
-            if (!pathToObstacle)
-            {
-                return false;
-            }
-            
-            //Check if the path is valid from the obstacle to the castle.
-            for (int x = 0; x < m_enemyGoals.Length; ++x)
-            {
-                bool pathToCastle = IsPathValid(testPos, m_enemyGoals[i].position);
-                if (!pathToCastle)
-                {
-                    return false;
-                }
-            }
-        }*/
-
-        return false;
-    }
-
-    private bool IsPathValid(Vector3 from, Vector3 to)
-    {
-        /*NavMeshPath path = new NavMeshPath();
-        bool validPath = NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path);
-
-        // Check if the path is complete and valid
-        if (validPath && path.status == NavMeshPathStatus.PathComplete)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }*/
-        return false;
     }
 
     private void GameObjectSelected(GameObject obj)
@@ -450,23 +364,139 @@ public class GameplayManager : MonoBehaviour
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<TowerController>();
         m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
-        m_costAffordable = true;
+        m_canAfford = true;
         m_placementOpen = true;
     }
 
     private void DrawPreconstructedTower()
     {
-        CheckObjRestriction();
-
         //Position the objects
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
         {
+            //Raycast has hit the ground, round that point to the nearest int.
             Vector3 gridPos = raycastHit.point;
-            gridPos = Util.RoundVectorToInt(gridPos);
-            gridPos.y = 0.7f;
-            m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position, gridPos, 20f * Time.deltaTime);
+
+            //Convert hit point to 2d grid position
+            m_preconstructedTowerPos =
+                new Vector2Int(Mathf.FloorToInt(gridPos.x + 0.5f), Mathf.FloorToInt(gridPos.z + 0.5f));
+
+            //Define the new destination of the Precon Tower Obj. Offset the tower on Y.
+            Vector3 moveToPosition = new Vector3(m_preconstructedTowerPos.x, 0.7f, m_preconstructedTowerPos.y);
+
+            //Position the precon Tower at the cursor position.
+            m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
+                moveToPosition, 20f * Time.deltaTime);
         }
+
+        //Check Affordability & Pathing every frame. (Because you may be sitting waiting for units to move out of an island)
+        bool canAfford = CheckAffordability();
+        bool canPlace = CheckPathRestriction();
+
+        //If either values have changed, updated the canBuild and invoke ObjRestricted.
+        if (canAfford != m_canAfford || canPlace != m_canPlace)
+        {
+            m_canAfford = canAfford;
+            m_canPlace = canPlace;
+            m_canBuild = canAfford && canPlace;
+            OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
+            Debug.Log("Can Afford : " + m_canAfford + " Can Place: " + m_canPlace);
+        }
+    }
+
+    bool CheckAffordability()
+    {
+        //Check cost & banks
+        int curStone = ResourceManager.Instance.GetStoneAmount();
+        int curWood = ResourceManager.Instance.GetWoodAmount();
+        ValueTuple<int, int> cost = m_preconstructedTower.GetTowercost();
+        bool canAfford = curStone >= cost.Item1 && curWood >= cost.Item2;
+        return canAfford;
+    }
+
+    bool CheckPathRestriction()
+    {
+        Cell curCell = Util.GetCellFromPos(m_preconstructedTowerPos);
+        Debug.Log("Checking path from: " + m_preconstructedTowerPos);
+
+        //If the current cell is not apart of the grid, not a valid spot.
+        if (curCell == null)
+        {
+            Debug.Log("CheckPathRestriction: No cell here.");
+            return false;
+        }
+
+        //If the currenct cell is occupied (by a structure), not a valid spot.
+        if (curCell.m_isOccupied)
+        {
+            Debug.Log("CheckPathRestriction: Cell is occupied");
+            return false;
+        }
+
+        //Get neighbor cells.
+        Vector2Int[] neighbors =
+        {
+            new Vector2Int(m_preconstructedTowerPos.x, m_preconstructedTowerPos.y + 1), //North
+            new Vector2Int(m_preconstructedTowerPos.x + 1, m_preconstructedTowerPos.y), //East
+            new Vector2Int(m_preconstructedTowerPos.x, m_preconstructedTowerPos.y - 1), //South
+            new Vector2Int(m_preconstructedTowerPos.x - 1, m_preconstructedTowerPos.y) //West
+        };
+
+        //Check the path from each neighbor to the goal.
+        for (int i = 0; i < neighbors.Length; ++i)
+        {
+            Debug.Log("Pathing from Neighbor:" + i + " of: " + neighbors.Length);
+            Cell cell = Util.GetCellFromPos(neighbors[i]);
+
+            //Assure we're not past the bound of the grid.
+            if (cell == null)
+            {
+                Debug.Log("Neighbor not on Grid:" + neighbors[i]);
+                continue;
+            }
+
+            //Assure the neighbor cell is not occupied.
+            if (!cell.m_isOccupied)
+            {
+                List<Vector2Int> testPath = AStar.FindPath(neighbors[i], m_goalPointPos);
+
+                //If we found a path, this neighbor is OK. If not, we need to check if it creates an island.
+                if (testPath == null)
+                {
+                    //If we did not find a path, check islands for actors. If there are, we cannot build here.
+                    List<Vector2Int> islandCells = new List<Vector2Int>(AStar.FindIsland(neighbors[i]));
+                    foreach (Vector2Int cellPos in islandCells)
+                    {
+                        Cell islandCell = Util.GetCellFromPos(cellPos);
+                        if (islandCell.m_actorCount > 0)
+                        {
+                            Debug.Log("Island created, and contains actors");
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool CheckExitToSpawnerPathing()
+    {
+        //List of Exit Points to use a the start.
+        Vector2Int goal = Util.GetVector2IntFrom3DPos(m_enemyGoal.transform.position);
+        Vector2Int[] exits =
+        {
+            new Vector2Int(goal.x, goal.y + 1), //North
+            new Vector2Int(goal.x + 1, goal.y), //East
+            new Vector2Int(goal.x, goal.y - 1), //South
+            new Vector2Int(goal.x - 1, goal.y) //West
+        };
+        
+        //List of Spawner Points to use as the destination.
+        //m_unitSpawners
+        
+        return true;
     }
 
     public void ClearPreconstructedTower()
@@ -487,7 +517,8 @@ public class GameplayManager : MonoBehaviour
         {
             Vector3 gridPos = raycastHit.point;
             gridPos = Util.RoundVectorToInt(gridPos);
-            GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
+            GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos,
+                Quaternion.identity, m_towerObjRoot.transform);
             TowerController newTower = newTowerObj.GetComponent<TowerController>();
             newTower.SetupTower();
 

@@ -28,13 +28,13 @@ public class UnitEnemy : MonoBehaviour
     void Start()
     {
         CollectMeshRenderers(transform);
-        //m_goal = GetClosestTransform(GameplayManager.Instance.m_enemyGoals);
+        m_goal = GameplayManager.Instance.m_enemyGoal;
         
-        //GameplayManager.Instance.AddEnemyToList(this);
-        //UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
-        //lifeMeter.SetEnemy(this);
+        GameplayManager.Instance.AddEnemyToList(this);
+        UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
+        lifeMeter.SetEnemy(this);
 
-        //StartMoving(m_goal.position);
+        StartMoving(m_goal.position);
 
         m_curHealth = m_maxHealth;
         UpdateHealth += OnUpdateHealth;
@@ -94,11 +94,11 @@ public class UnitEnemy : MonoBehaviour
 
     void Update()
     {
-        /*if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
+        if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
         {
             GameplayManager.Instance.m_castleController.TakeDamage(1);
             DestroyEnemy?.Invoke();
-        }*/
+        }
 
         Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
         
