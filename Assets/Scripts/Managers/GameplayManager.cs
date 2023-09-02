@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,6 +21,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameObject> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
+    public static event Action<Vector2Int> OnPreconTowerMoved;
 
     [Header("Castle")] public CastleController m_castleController;
     [FormerlySerializedAs("m_enemyGoals")] public Transform m_enemyGoal;
@@ -39,11 +41,11 @@ public class GameplayManager : MonoBehaviour
 
 
     [Header("Selected Object Info")] private Selectable m_curSelectable;
-    private Selectable m_hoveredSelectable;
+    public Selectable m_hoveredSelectable;
     private bool m_placementOpen;
-    private bool m_canAfford;
-    private bool m_canPlace;
-    private bool m_canBuild = true;
+    public bool m_canAfford;
+    public bool m_canPlace;
+    public bool m_canBuild = true;
 
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public TowerController m_preconstructedTower;
@@ -61,6 +63,9 @@ public class GameplayManager : MonoBehaviour
 
     public enum GameplayState
     {
+        BuildGrid,
+        PlaceObstacles,
+        CreatePaths,
         Setup,
         SpawnEnemies,
         Combat,
@@ -223,15 +228,22 @@ public class GameplayManager : MonoBehaviour
 
     void Start()
     {
-        UpdateGameplayState(GameplayState.Setup);
+        UpdateGameplayState(GameplayState.BuildGrid);
     }
 
     public void UpdateGameplayState(GameplayState newState)
     {
         m_gameplayState = newState;
+        Debug.Log($"Game state is now: {m_gameplayState}");
 
         switch (m_gameplayState)
         {
+            case GameplayState.BuildGrid:
+                break;
+            case GameplayState.PlaceObstacles:
+                break;
+            case GameplayState.CreatePaths:
+                break;
             case GameplayState.Setup:
                 break;
             case GameplayState.SpawnEnemies:
@@ -376,10 +388,18 @@ public class GameplayManager : MonoBehaviour
         {
             //Raycast has hit the ground, round that point to the nearest int.
             Vector3 gridPos = raycastHit.point;
+            Debug.Log($"Precon raycast point: {gridPos}");
 
             //Convert hit point to 2d grid position
-            m_preconstructedTowerPos =
+            Vector2Int newPos =
                 new Vector2Int(Mathf.FloorToInt(gridPos.x + 0.5f), Mathf.FloorToInt(gridPos.z + 0.5f));
+
+            if (newPos != m_preconstructedTowerPos)
+            {
+                m_preconstructedTowerPos = newPos;
+
+                OnPreconTowerMoved?.Invoke(m_preconstructedTowerPos);
+            }
 
             //Define the new destination of the Precon Tower Obj. Offset the tower on Y.
             Vector3 moveToPosition = new Vector3(m_preconstructedTowerPos.x, 0.7f, m_preconstructedTowerPos.y);
@@ -417,20 +437,31 @@ public class GameplayManager : MonoBehaviour
     bool CheckPathRestriction()
     {
         Cell curCell = Util.GetCellFromPos(m_preconstructedTowerPos);
-        Debug.Log("Checking path from: " + m_preconstructedTowerPos);
+        //Debug.Log("Checking path from: " + m_preconstructedTowerPos);
 
         //If the current cell is not apart of the grid, not a valid spot.
         if (curCell == null)
         {
-            Debug.Log("CheckPathRestriction: No cell here.");
+            //Debug.Log("CheckPathRestriction: No cell here.");
             return false;
         }
 
         //If the currenct cell is occupied (by a structure), not a valid spot.
         if (curCell.m_isOccupied)
         {
-            Debug.Log("CheckPathRestriction: Cell is occupied");
+            //Debug.Log("CheckPathRestriction: Cell is occupied");
             return false;
+        }
+
+        //Check to see if any of our UnitPaths have no path.
+        for (var i = 0; i < GridManager.Instance.m_unitPaths.Count; i++)
+        {
+            var unitPath = GridManager.Instance.m_unitPaths[i];
+            if (!unitPath.m_hasPath)
+            {
+                Debug.Log($"{unitPath.m_sourceObj.name} has no path.");
+                return false;
+            }
         }
 
         //Get neighbor cells.
@@ -445,7 +476,7 @@ public class GameplayManager : MonoBehaviour
         //Check the path from each neighbor to the goal.
         for (int i = 0; i < neighbors.Length; ++i)
         {
-            Debug.Log("Pathing from Neighbor:" + i + " of: " + neighbors.Length);
+            //Debug.Log("Pathing from Neighbor:" + i + " of: " + neighbors.Length);
             Cell cell = Util.GetCellFromPos(neighbors[i]);
 
             //Assure we're not past the bound of the grid.
@@ -492,10 +523,10 @@ public class GameplayManager : MonoBehaviour
             new Vector2Int(goal.x, goal.y - 1), //South
             new Vector2Int(goal.x - 1, goal.y) //West
         };
-        
+
         //List of Spawner Points to use as the destination.
         //m_unitSpawners
-        
+
         return true;
     }
 
@@ -512,21 +543,15 @@ public class GameplayManager : MonoBehaviour
 
     public void BuildTower()
     {
-        Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
-        {
-            Vector3 gridPos = raycastHit.point;
-            gridPos = Util.RoundVectorToInt(gridPos);
-            GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos,
-                Quaternion.identity, m_towerObjRoot.transform);
-            TowerController newTower = newTowerObj.GetComponent<TowerController>();
-            newTower.SetupTower();
+        Vector3 gridPos = new Vector3(m_preconstructedTowerPos.x, 0, m_preconstructedTowerPos.y);
+        GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
+        TowerController newTower = newTowerObj.GetComponent<TowerController>();
+        newTower.SetupTower();
 
-            //Update banks
-            ValueTuple<int, int> cost = newTower.GetTowercost();
-            ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
-            ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
-        }
+        //Update banks
+        ValueTuple<int, int> cost = newTower.GetTowercost();
+        ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
+        ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
     }
 
     public void AddTowerToList(TowerController tower)

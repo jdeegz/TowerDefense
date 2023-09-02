@@ -10,46 +10,47 @@ public class CastleController : MonoBehaviour
     [SerializeField] private int m_repairHealthAmount;
     [SerializeField] private float m_repairHealthInterval;
     [SerializeField] private List<GameObject> m_castleCorners;
-    [SerializeField] private List<GameObject> m_castleEntrancePoints;
-    
+    [SerializeField] public List<GameObject> m_castleEntrancePoints;
+
     private List<MeshRenderer> m_allMeshRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
     private int m_curHealth;
     private float m_repairElapsedTime;
-    
+
     public event Action<int> UpdateHealth;
     public event Action DestroyCastle;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        //Set the corners and center of the castle to occupied.
-        //GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-        
-        foreach (GameObject obj in m_castleCorners)
-        {
-            GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
-        }
-
-        //Set an actor in each entrance. (Trying to prevent blocking the entrances with towers)
-        foreach (GameObject obj in m_castleEntrancePoints)
-        {
-            Cell objCell = Util.GetCellFrom3DPos(obj.transform.position);
-            objCell.UpdateActorCount(1);
-        }
-        
         CollectMeshRenderers(transform);
-        
+
         m_curHealth = m_maxHealth;
         UpdateHealth += OnUpdateHealth;
         DestroyCastle += OnCastleDestroyed;
+
+        GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+    }
+
+    void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
+    {
+        if (newState == GameplayManager.GameplayState.PlaceObstacles)
+        {
+            foreach (GameObject obj in m_castleCorners)
+            {
+                GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
+            }
+            
+            GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build && m_curHealth < m_maxHealth)
+        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build &&
+            m_curHealth < m_maxHealth)
         {
             m_repairElapsedTime += Time.deltaTime;
             if (m_repairElapsedTime >= m_repairHealthInterval)
@@ -60,7 +61,7 @@ public class CastleController : MonoBehaviour
             }
         }
     }
-    
+
     public void TakeDamage(int dmg)
     {
         if (m_hitFlashCoroutine != null)
@@ -69,14 +70,14 @@ public class CastleController : MonoBehaviour
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
-        
+
         UpdateHealth?.Invoke(-dmg);
     }
-    
+
     void OnUpdateHealth(int i)
     {
         m_curHealth += i;
-        
+
         if (m_curHealth <= 0)
         {
             DestroyCastle?.Invoke();
@@ -88,7 +89,7 @@ public class CastleController : MonoBehaviour
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Defeat);
         //Destroy(gameObject);
     }
-    
+
     private IEnumerator HitFlash()
     {
         //Set the color
@@ -105,7 +106,7 @@ public class CastleController : MonoBehaviour
             m_allMeshRenderers[i].material.SetColor("_EmissionColor", m_allOrigColors[i]);
         }
     }
-    
+
     private void CollectMeshRenderers(Transform parent)
     {
         //Get Parent Mesh Renderer if there is one.

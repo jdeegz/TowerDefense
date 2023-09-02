@@ -11,12 +11,12 @@ public class UnitSpawner : MonoBehaviour
     private bool m_isSpawnerActive = false;
     private List<Creep> m_activeCreeps;
 
+
     private void Start()
     {
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 2, 2);
         m_isSpawnerActive = false;
-        GameplayManager.Instance.AddSpawnerToList(this);
     }
+
 
     private void Update()
     {
@@ -35,7 +35,7 @@ public class UnitSpawner : MonoBehaviour
                     //If the creep is NOT spawning, remove it from the active creep spawner list.
                     m_activeCreeps.RemoveAt(i);
                     --i;
-                    
+
                     //If we have NO active creep spawners, disable this spawner.
                     if (m_activeCreeps.Count == 0)
                     {
@@ -80,9 +80,16 @@ public class UnitSpawner : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
     }
 
-    private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
+    private void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        if (state == GameplayManager.GameplayState.SpawnEnemies)
+        if (newState == GameplayManager.GameplayState.PlaceObstacles)
+        {
+            GridCellOccupantUtil.SetOccupant(gameObject, true, 2, 2);
+            GameplayManager.Instance.AddSpawnerToList(this);
+        }
+
+
+        if (newState == GameplayManager.GameplayState.SpawnEnemies)
         {
             StartSpawning();
         }
@@ -130,7 +137,8 @@ public class Creep
             spawnPoint.x += xOffset;
             spawnPoint.z += zOffset;
 
-            Object.Instantiate(m_enemy.gameObject, spawnPoint, Quaternion.identity, GameplayManager.Instance.m_enemiesObjRoot);
+            Object.Instantiate(m_enemy.gameObject, spawnPoint, Quaternion.identity,
+                GameplayManager.Instance.m_enemiesObjRoot);
             m_unitsSpawned++;
             m_elapsedTime = 0;
 

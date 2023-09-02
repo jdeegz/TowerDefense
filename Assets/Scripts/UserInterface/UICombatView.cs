@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,6 +21,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_gameClockLabel;
     [SerializeField] private TextMeshProUGUI m_waveLabel;
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
+    [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
     [SerializeField] private GameObject m_alertRootObj;
@@ -36,9 +38,8 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
-        
     }
-    
+
     private void UpdateCastleHealthDisplay(int i)
     {
         m_curCastleHealth += i;
@@ -77,7 +78,7 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.Setup:
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                m_waveLabel.SetText("Wave: " + (GameplayManager.Instance.m_wave+1));
+                m_waveLabel.SetText("Wave: " + (GameplayManager.Instance.m_wave + 1));
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
@@ -113,7 +114,7 @@ public class UICombatView : MonoBehaviour
         m_stoneGathererLabel.SetText("0");
         m_woodBankLabel.SetText("0");
         m_stoneBankLabel.SetText("0");
-        
+
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_victoryButton.onClick.AddListener(OnVictoryButtonClicked);
@@ -175,7 +176,56 @@ public class UICombatView : MonoBehaviour
     {
         m_timeToNextWave -= Time.deltaTime;
         TimeSpan timeSpan = TimeSpan.FromSeconds(m_timeToNextWave);
-        string formattedTime = string.Format("{0:D2}:{1:D2}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
+        string formattedTime =
+            string.Format("{0:D2}:{1:D2}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
         m_gameClockLabel.SetText(formattedTime);
+
+        DebugMenu();
+    }
+
+
+    void DebugMenu()
+    {
+        //Debug Info
+        //Hovered Obj
+        Selectable hoveredOjb = GameplayManager.Instance.m_hoveredSelectable;
+        string hoveredObjString = "Null";
+        
+
+        //Precon Tower Position
+        Vector2Int preconTowerPos = GameplayManager.Instance.m_preconstructedTowerPos;
+        string preconTowerPosString = "0,0";
+        
+
+        //Can Afford
+        string canAffordString = "N/A";
+        //Can Place
+        string canPlaceString = "N/A";
+        //Interaction State
+        String interactionStateString = GameplayManager.Instance.m_interactionState.ToString();
+
+        GameplayManager.InteractionState interactionState = GameplayManager.Instance.m_interactionState;
+        if (interactionState == GameplayManager.InteractionState.PreconstructionTower)
+        {
+            if (hoveredOjb != null)
+            {
+                hoveredObjString = hoveredOjb.name;
+            }
+            if (preconTowerPos != null)
+            {
+                preconTowerPosString = GameplayManager.Instance.m_preconstructedTowerPos.ToString();
+            }
+            
+            canAffordString = GameplayManager.Instance.m_canAfford.ToString();
+            canPlaceString = GameplayManager.Instance.m_canPlace.ToString();
+        }
+        
+        string debugInfo = string.Format("Hovered Obj: {0}<br>" +
+                                         "Preconstructed Tower Pos: {1}<br>" +
+                                         "Can Afford: {2}<br>" +
+                                         "Can Place: {3}<br>" +
+                                         "Interaction State: {4}", hoveredObjString, preconTowerPosString, canAffordString,
+            canPlaceString, interactionStateString);
+        m_debugInfoLabel.SetText(debugInfo);
     }
 }

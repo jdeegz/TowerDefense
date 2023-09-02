@@ -8,20 +8,26 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 {
     [SerializeField] private int m_resourcesRemaining;
     [SerializeField] private Animator m_animator;
-    
+
     public ResourceManager.ResourceType m_type;
     public List<HarvestPoint> m_harvestPoints = new List<HarvestPoint>();
-    
+
     public event Action<ResourceNode> OnResourceNodeDepletion;
-    
+
     private int m_harvesters;
     private static int m_gatherersHarvestingHash = Animator.StringToHash("gatherersHarvesting");
 
-
-    public void Start()
+    void Awake()
     {
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-        //m_harvestPoints = new List<HarvestPoint>();
+        GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+    }
+
+    void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
+    {
+        if (newState == GameplayManager.GameplayState.PlaceObstacles)
+        {
+            GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        }
     }
 
     public int RequestResource(int i)

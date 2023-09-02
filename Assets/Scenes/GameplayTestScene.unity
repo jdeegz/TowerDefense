@@ -243,7 +243,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[0].m_spawnDelay
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[1].m_spawnCount
@@ -259,7 +259,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[1].m_unitsToSpawn
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[0].m_spawnInterval
@@ -448,37 +448,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: ea7f00e8117a7a14e9addc7a7f9544f1, type: 3}
   m_PrefabInstance: {fileID: 343678681}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &319533997
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 319533998}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &319533998
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 319533997}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 15, y: 0, z: 10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 456097240}
-  m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &342671792
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -745,6 +714,10 @@ MonoBehaviour:
   m_stoneGathererList: []
   m_towerObjRoot: {fileID: 770534015}
   m_towerList: []
+  m_hoveredSelectable: {fileID: 0}
+  m_canAfford: 0
+  m_canPlace: 0
+  m_canBuild: 1
   m_preconstructedTowerObj: {fileID: 0}
   m_preconstructedTower: {fileID: 0}
   m_preconstructedTowerPos: {x: 0, y: 0}
@@ -966,7 +939,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 110411549}
-  - {fileID: 319533998}
   m_Father: {fileID: 1389930049}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1470,7 +1442,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[0].m_spawnDelay
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[1].m_spawnCount
@@ -1486,7 +1458,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[1].m_unitsToSpawn
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[0].m_spawnInterval
@@ -1933,6 +1905,7 @@ GameObject:
   - component: {fileID: 956046122}
   - component: {fileID: 956046121}
   - component: {fileID: 956046120}
+  - component: {fileID: 956046123}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1980,7 +1953,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 20
-  far clip plane: 100
+  far clip plane: 45
   field of view: 15
   orthographic: 0
   orthographic size: 5
@@ -2014,6 +1987,50 @@ Transform:
   m_Father: {fileID: 1350161377}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &956046123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 956046119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
+  m_TaaSettings:
+    quality: 3
+    frameInfluence: 0.1
+    jitterScale: 1
+    mipBias: 0
+    varianceClampScale: 0.9
+    contrastAdaptiveSharpening: 0
 --- !u!1 &1037081933
 GameObject:
   m_ObjectHideFlags: 0
@@ -2365,6 +2382,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46bb1a73df749444ab228381fdc51655, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1357973246 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8053493432752523825, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
+  m_PrefabInstance: {fileID: 4907215787073837181}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1374373954 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: 7fd92bb02afe15f4db7a925440dd0a9d, type: 3}
@@ -3449,7 +3471,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[0].m_spawnDelay
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[1].m_spawnCount
@@ -3465,7 +3487,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[1].m_unitsToSpawn
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_creepWaves.Array.data[0].m_creeps.Array.data[0].m_spawnInterval
@@ -3530,13 +3552,120 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8053493432752523825, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4907215787073837185}
   m_SourcePrefab: {fileID: 100100000, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
 --- !u!4 &4907215787073837182 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6259160149619677486, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
   m_PrefabInstance: {fileID: 4907215787073837181}
   m_PrefabAsset: {fileID: 0}
+--- !u!120 &4907215787073837185
+LineRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357973246}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Positions:
+  - {x: 10.671881, y: 0.54764, z: 15.563801}
+  - {x: 10.195881, y: 0.70641, z: 15.048801}
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 1
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: -1
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    textureScale: {x: 1, y: 1}
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_MaskInteraction: 0
+  m_UseWorldSpace: 1
+  m_Loop: 0
+  m_ApplyActiveColorSpace: 1
 --- !u!1001 &7136376470468178560
 PrefabInstance:
   m_ObjectHideFlags: 0

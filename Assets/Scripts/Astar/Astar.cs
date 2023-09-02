@@ -38,7 +38,7 @@ public class AStar
                 }
 
                 path.Reverse(); // Reverse the path to get the correct order
-                Debug.Log("Path Found.");
+                //Debug.Log("Path Found.");
                 return path;
             }
 
@@ -146,9 +146,9 @@ public class AStar
 
         if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied)
         {
-            Debug.Log("Start is End: " + (start == end));
-            Debug.Log("Start is occupied: " + Util.GetCellFromPos(start).m_isOccupied);
-            Debug.Log("End is occupied: " + Util.GetCellFromPos(end).m_isOccupied);
+            //Debug.Log("Start is End: " + (start == end));
+            //Debug.Log("Start is occupied: " + Util.GetCellFromPos(start).m_isOccupied);
+            //Debug.Log("End is occupied: " + Util.GetCellFromPos(end).m_isOccupied);
             return null;
         }
 
@@ -178,7 +178,7 @@ public class AStar
                 }
 
                 path.Reverse(); // Reverse the path to get the correct order
-                Debug.Log($"Path Found. {start} - {end}");
+                //Debug.Log($"Path Found. {start} - {end}");
                 return path;
             }
 

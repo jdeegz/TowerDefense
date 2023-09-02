@@ -25,12 +25,20 @@ public class GridManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        BuildGrid();
+        GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
-    void Start()
+    void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        //BuildPathList();
+        if (newState == GameplayManager.GameplayState.BuildGrid)
+        {
+            BuildGrid();
+        }
+
+        if (newState == GameplayManager.GameplayState.CreatePaths)
+        {
+            BuildPathList();
+        }
     }
 
     void BuildGrid()
@@ -47,36 +55,45 @@ public class GridManager : MonoBehaviour
                 //Debug.Log("New Cell created at: " + index);
             }
         }
+
+        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);
     }
 
     public void BuildPathList()
     {
-        /*m_lineRenderers = new List<GameObject>();
-        m_shortestPathCells = new List<Vector2Int>();
-        m_shortestPathCells.AddRange(GetExitPathCells());
-        m_shortestPathCells.AddRange(GetSpawnerPaths());*/
-
-        GameObject goalObj = GameplayManager.Instance.m_castleController.gameObject;
+        CastleController castleController = GameplayManager.Instance.m_castleController;
         m_enemyGoalPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
-        m_spawners = new List<Vector2Int>();
 
-        //Build Exits to check.
+        //Build Exits Position List
         m_exits = new List<Vector2Int>();
         m_exits.Add(new Vector2Int(m_enemyGoalPos.x, m_enemyGoalPos.y + 1));
         m_exits.Add(new Vector2Int(m_enemyGoalPos.x + 1, m_enemyGoalPos.y));
         m_exits.Add(new Vector2Int(m_enemyGoalPos.x, m_enemyGoalPos.y - 1));
         m_exits.Add(new Vector2Int(m_enemyGoalPos.x - 1, m_enemyGoalPos.y));
 
-        foreach (Vector2Int pos in m_exits)
+        //Build Spawners Position List
+        m_spawners = new List<Vector2Int>();
+        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        {
+            m_spawners.Add(Util.GetVector2IntFrom3DPos(spawner.m_spawnPoint.position));
+        }
+
+        //Create Exit UnitPaths
+        foreach (GameObject obj in castleController.m_castleEntrancePoints)
         {
             UnitPath unitPath = new UnitPath();
-            unitPath.m_sourceObj = goalObj;
+            Vector2Int pos = Util.GetVector2IntFrom3DPos(obj.transform.position);
+            unitPath.m_sourceObj = obj;
             unitPath.m_startPos = pos;
             unitPath.m_isExit = true;
+            unitPath.m_exits = m_exits;
+            unitPath.m_spawners = m_spawners;
+            unitPath.m_enemyGoalPos = m_enemyGoalPos;
+            unitPath.Setup();
             m_unitPaths.Add(unitPath);
         }
 
-        //Build Spawners to check.
+        //Create Spawners UnitPaths
         foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
         {
             Vector2Int start = Util.GetVector2IntFrom3DPos(spawner.m_spawnPoint.position);
@@ -84,221 +101,14 @@ public class GridManager : MonoBehaviour
             unitPath.m_sourceObj = spawner.gameObject;
             unitPath.m_startPos = start;
             unitPath.m_isExit = false;
-            m_spawners.Add(start);
+            unitPath.m_exits = m_exits;
+            unitPath.m_spawners = m_spawners;
+            unitPath.m_enemyGoalPos = m_enemyGoalPos;
+            unitPath.Setup();
             m_unitPaths.Add(unitPath);
         }
         
-        //Check Exits paths.
-        UpdatePaths();
-    }
-
-    public void UpdatePaths()
-    {
-        //Delete exisiting paths.
-        foreach (Transform child in transform)
-        {
-            Destroy(child.gameObject);
-        }
-
-        //Reset the list.
-        m_lineRenderers.Clear();
-        Debug.Log("Paths cleared.");
-        
-        foreach (UnitPath unitPath in m_unitPaths)
-        {
-            GetExitPath(unitPath);
-        }
-    }
-
-    void GetExitPath(UnitPath unitPath)
-    {
-        int shortestPathCount = Int32.MaxValue;
-        unitPath.m_hasPath = false;
-        
-        //Path from the exit to each exit.
-        for (int i = 0; i < m_exits.Count; ++i)
-        {
-            if (unitPath.m_startPos == m_exits[i])
-            {
-                continue;
-            }
-            Debug.Log($"Checking path {unitPath.m_startPos} - {m_exits[i]}");
-            List<Vector2Int> testPath = AStar.FindExitPath(unitPath.m_startPos, m_exits[i], m_preconstructedTowerPos, m_enemyGoalPos);
-
-            if (testPath != null)
-            {
-                unitPath.m_hasPath = true;
-
-                //Compare to current shortest path found.
-                if (testPath.Count <= shortestPathCount)
-                {
-                    shortestPathCount = testPath.Count;
-                    unitPath.m_path = testPath;
-                    unitPath.m_endPos = m_exits[i];
-                }
-            }
-        }
-
-        //We did not find any path-able exits. Now try spawners.
-        if (!unitPath.m_hasPath && unitPath.m_isExit)
-        {
-            for (int i = 0; i < m_spawners.Count; ++i)
-            {
-                List<Vector2Int> testPath = AStar.FindExitPath(unitPath.m_startPos, m_spawners[i], m_preconstructedTowerPos, m_enemyGoalPos);
-                if (testPath != null)
-                {
-                    unitPath.m_hasPath = true;
-                
-                    //Compare to current shortest path found.
-                    if (testPath.Count <= shortestPathCount)
-                    {
-                        shortestPathCount = testPath.Count;
-                        unitPath.m_path = testPath;
-                        unitPath.m_endPos = m_exits[i];
-                    }
-                }
-            }
-        }
-
-        if (unitPath.m_hasPath)
-        {
-            DrawPathLineRenderer(unitPath.m_path);
-        }
-        else
-        {
-            Debug.Log("CANNOT BUILD.");
-        }
-    }
-    
-
-    List<Vector2Int> GetExitPathCells()
-    {
-        //Move most of these out of the function as the Exits and Goals never change. Precon tower cell does though.
-        List<Vector2Int> exitPathCells = new List<Vector2Int>();
-        Vector2Int precon = GameplayManager.Instance.m_preconstructedTowerPos;
-        Vector2Int goal = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
-
-        //Exits to check.
-        List<Vector2Int> exits = new List<Vector2Int>();
-        exits.Add(new Vector2Int(goal.x, goal.y + 1));
-        exits.Add(new Vector2Int(goal.x + 1, goal.y));
-        exits.Add(new Vector2Int(goal.x, goal.y - 1));
-        exits.Add(new Vector2Int(goal.x - 1, goal.y));
-
-        List<Vector2Int> starts = new List<Vector2Int>(exits);
-
-        for (int i = 0; i < starts.Count; ++i)
-        {
-            for (int x = 0; x < exits.Count; ++x)
-            {
-                if (starts[i] == exits[x])
-                {
-                    continue;
-                }
-
-                List<Vector2Int> testPath = AStar.FindExitPath(starts[i], exits[x], precon, goal);
-                if (testPath != null)
-                {
-                    //Add the cells to the list.
-                    exitPathCells.AddRange(testPath);
-
-                    //Remove the exit from the starts, because we dont need to check it (Eliminate duplicate checks)
-                    starts.Remove(exits[x]);
-
-                    DrawPathLineRenderer(testPath);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
-        return exitPathCells;
-    }
-
-    List<Vector2Int> GetSpawnerPaths()
-    {
-        //Move most of these out of the function as the Exits and Goals never change. Precon tower cell does though.
-        List<Vector2Int> exitPathCells = new List<Vector2Int>();
-        Vector2Int precon = GameplayManager.Instance.m_preconstructedTowerPos;
-        Vector2Int goal = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
-
-        //Exits to check.
-        List<Vector2Int> exits = new List<Vector2Int>();
-        exits.Add(new Vector2Int(goal.x, goal.y + 1));
-        exits.Add(new Vector2Int(goal.x + 1, goal.y));
-        exits.Add(new Vector2Int(goal.x, goal.y - 1));
-        exits.Add(new Vector2Int(goal.x - 1, goal.y));
-
-        //Spawners to start from.
-        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
-        {
-            Vector2Int start = Util.GetVector2IntFrom3DPos(spawner.m_spawnPoint.position);
-
-            List<Vector2Int> shortestPathFromSpawner = new List<Vector2Int>();
-            int shortestPathCount = Int32.MaxValue;
-
-            //Path form the spawner to each exit.
-            for (int i = 0; i < exits.Count; ++i)
-            {
-                List<Vector2Int> testPath = AStar.FindExitPath(start, exits[i], precon, goal);
-                if (testPath != null)
-                {
-                    //Compare to current shortest path found.
-                    if (testPath.Count <= shortestPathCount)
-                    {
-                        shortestPathCount = testPath.Count;
-                        shortestPathFromSpawner = testPath;
-                    }
-                }
-            }
-
-            if (shortestPathFromSpawner.Count > 0)
-            {
-                //Add the cells to the list.
-                exitPathCells.AddRange(shortestPathFromSpawner);
-
-                DrawPathLineRenderer(shortestPathFromSpawner);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        return exitPathCells;
-    }
-
-    void DrawPathLineRenderer(List<Vector2Int> points)
-    {
-        GameObject m_lineObj = new GameObject("Line");
-        m_lineObj.transform.SetParent(gameObject.transform);
-        m_lineRenderers.Add(m_lineObj);
-
-        TBLineRendererComponent m_lineRenderer = m_lineObj.AddComponent<TBLineRendererComponent>();
-
-        //Define desired properties of the line.
-        m_lineRenderer.lineRendererProperties = new TBLineRenderer();
-        m_lineRenderer.lineRendererProperties.linePoints = points.Count;
-        m_lineRenderer.lineRendererProperties.lineWidth = 0.5f;
-        m_lineRenderer.lineRendererProperties.startColor = Color.red;
-        m_lineRenderer.lineRendererProperties.endColor = Color.yellow;
-        m_lineRenderer.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
-
-        //Assign the properties.
-        m_lineRenderer.SetLineRendererProperties();
-
-        //Create the points.
-        for (int i = 0; i < points.Count; ++i)
-        {
-            GameObject point = new GameObject("Point: " + i);
-            point.transform.SetParent(m_lineObj.transform);
-            point.transform.position = new Vector3(points[i].x, 0.2f, points[i].y);
-        }
-
-        //Assign the child objects to the line renderer as points.
-        m_lineRenderer.SetPoints();
+        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Setup);
     }
 }
 
@@ -331,7 +141,137 @@ public class UnitPath
     public GameObject m_sourceObj;
     public Vector2Int m_startPos;
     public Vector2Int m_endPos;
+    public Vector2Int m_preconstructedTowerPos;
+    public Vector2Int m_enemyGoalPos;
     public List<Vector2Int> m_path;
+    public List<Vector2Int> m_exits;
+    public List<Vector2Int> m_spawners;
     public bool m_hasPath;
+    public bool m_pathChecked;
     public bool m_isExit;
+
+    public void Setup()
+    {
+        GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
+        UpdateExitPath();
+    }
+
+    void OnDestroy()
+    {
+        GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
+    }
+
+    void Start()
+    {
+    }
+
+    void PreconTowerMoved(Vector2Int newPos)
+    {
+        //Check to see if new position is in my list.
+        m_preconstructedTowerPos = newPos;
+
+        if (m_path.Contains(m_preconstructedTowerPos) || !m_hasPath)
+        {
+            UpdateExitPath();
+        }
+
+        //If true, try to update the path.
+    }
+
+    void UpdateExitPath()
+    {
+        int shortestPathCount = Int32.MaxValue;
+        m_hasPath = false;
+
+        //Path from the exit to each exit.
+        for (int i = 0; i < m_exits.Count; ++i)
+        {
+            if (m_startPos == m_exits[i])
+            {
+                continue;
+            }
+
+            Debug.Log($"Checking path of {m_sourceObj.name}: {m_startPos} - {m_exits[i]}");
+            List<Vector2Int> testPath =
+                AStar.FindExitPath(m_startPos, m_exits[i], m_preconstructedTowerPos, m_enemyGoalPos);
+
+            if (testPath != null)
+            {
+                m_hasPath = true;
+
+                //Compare to current shortest path found.
+                if (testPath.Count <= shortestPathCount)
+                {
+                    shortestPathCount = testPath.Count;
+                    m_path = testPath;
+                    m_endPos = m_exits[i];
+                }
+            }
+        }
+
+        //We did not find any path-able exits. Now try spawners.
+        if (!m_hasPath && m_isExit)
+        {
+            for (int i = 0; i < m_spawners.Count; ++i)
+            {
+                List<Vector2Int> testPath =
+                    AStar.FindExitPath(m_startPos, m_spawners[i], m_preconstructedTowerPos, m_enemyGoalPos);
+                if (testPath != null)
+                {
+                    m_hasPath = true;
+
+                    //Compare to current shortest path found.
+                    if (testPath.Count <= shortestPathCount)
+                    {
+                        shortestPathCount = testPath.Count;
+                        m_path = testPath;
+                        m_endPos = m_spawners[i];
+                    }
+                }
+            }
+        }
+
+        if (m_hasPath)
+        {
+            //DrawPathLineRenderer(unitPath.m_path);
+        }
+        else
+        {
+            //We dont have a path.
+            m_path.Clear();
+            Debug.Log("CANNOT BUILD.");
+        }
+
+        /*void DrawPathLineRenderer(List<Vector2Int> points)
+        {
+            GameObject m_lineObj = new GameObject("Line");
+            m_lineObj.transform.SetParent(gameObject.transform);
+            m_lineRenderers.Add(m_lineObj);
+
+            TBLineRendererComponent m_lineRenderer = m_lineObj.AddComponent<TBLineRendererComponent>();
+
+            //Define desired properties of the line.
+            m_lineRenderer.lineRendererProperties = new TBLineRenderer();
+            m_lineRenderer.lineRendererProperties.linePoints = points.Count;
+            m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
+            m_lineRenderer.lineRendererProperties.startColor = Color.red;
+            m_lineRenderer.lineRendererProperties.endColor = Color.yellow;
+            m_lineRenderer.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
+
+            //Assign the properties.
+            m_lineRenderer.SetLineRendererProperties();
+
+            //Create the points.
+            for (int i = 0; i < points.Count; ++i)
+            {
+                GameObject point = new GameObject("Point: " + i);
+                point.transform.SetParent(m_lineObj.transform);
+                point.transform.position = new Vector3(points[i].x, 0.2f, points[i].y);
+            }
+
+            //Assign the child objects to the line renderer as points.
+            m_lineRenderer.SetPoints();
+        }*/
+    }
+
 }
