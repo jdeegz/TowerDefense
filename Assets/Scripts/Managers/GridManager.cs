@@ -11,6 +11,7 @@ using UnityEngine.Serialization;
 public class GridManager : MonoBehaviour
 {
     public static GridManager Instance;
+    public Material m_lineRendererMaterial;
     public Cell[] m_gridCells;
     public int m_gridWidth;
     public int m_gridHeight;
@@ -182,6 +183,7 @@ public class UnitPath
         {
             m_lineRenderer.lineRendererProperties = new TBLineRenderer();
             //m_lineRenderer.lineRendererProperties.linePoints = m_path.Count;
+            m_lineRenderer.lineRendererProperties.texture = GridManager.Instance.m_lineRendererMaterial;
             m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
             ColorUtility.TryParseHtmlString( "#73B549" , out Color lineColor );
             m_lineRenderer.lineRendererProperties.startColor = lineColor;

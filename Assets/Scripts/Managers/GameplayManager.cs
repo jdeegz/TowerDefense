@@ -310,6 +310,7 @@ public class GameplayManager : MonoBehaviour
     public void UpdateInteractionState(InteractionState newState)
     {
         m_interactionState = newState;
+        Debug.Log($"Interaction state is now: {m_interactionState}");
 
         switch (m_interactionState)
         {
@@ -340,11 +341,11 @@ public class GameplayManager : MonoBehaviour
             case Selectable.SelectedObjectType.Tower:
                 if (m_preconstructedTowerObj)
                 {
-                    m_interactionState = InteractionState.PreconstructionTower;
+                    UpdateInteractionState(InteractionState.PreconstructionTower);
                 }
                 else
                 {
-                    m_interactionState = InteractionState.SelectedTower;
+                    UpdateInteractionState(InteractionState.SelectedTower);
                 }
 
                 break;
