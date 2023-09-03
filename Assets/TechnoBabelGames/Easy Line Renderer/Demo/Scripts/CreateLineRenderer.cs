@@ -39,7 +39,7 @@ public class CreateLineRenderer : MonoBehaviour
         }
 
         //Assign the child objects to the line renderer as points.
-        m_lineRenderer.SetPoints();
+        //m_lineRenderer.SetPoints();
     }
 
     // Update is called once per frame

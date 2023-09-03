@@ -33,6 +33,14 @@ public class CastleController : MonoBehaviour
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
+    void OnDestroy()
+    {
+        UpdateHealth -= OnUpdateHealth;
+        DestroyCastle -= OnCastleDestroyed;
+
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+    }
+
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
@@ -57,7 +65,7 @@ public class CastleController : MonoBehaviour
             {
                 m_repairElapsedTime = 0;
                 UpdateHealth?.Invoke(m_repairHealthAmount);
-                Debug.Log("Castle Repaired.");
+                //Debug.Log("Castle Repaired.");
             }
         }
     }

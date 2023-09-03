@@ -13,7 +13,6 @@ public class ScenePlayModeHotkey : EditorWindow
     private static void EnterPlayMode()
     {
         EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
-
         EditorSceneManager.OpenScene(scenePath);
         EditorApplication.isPlaying = true;
     }
@@ -26,10 +25,15 @@ public class ScenePlayModeHotkey : EditorWindow
 
     private static void CheckShortcut()
     {
-        if (Event.current != null && Event.current.type == EventType.KeyDown && Event.current.modifiers == EventModifiers.Control && Event.current.keyCode == KeyCode.G)
+        // Check for Ctrl+G only if the focused window is the scene view
+        if (EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.titleContent.text == "Scene")
         {
-            EnterPlayMode();
-            Event.current.Use();
+            if (Event.current != null && Event.current.type == EventType.KeyDown && Event.current.modifiers == EventModifiers.Control && Event.current.keyCode == KeyCode.G)
+            {
+                EnterPlayMode();
+                Event.current.Use();
+            }
         }
     }
 }
+

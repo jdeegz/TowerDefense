@@ -6,7 +6,6 @@ namespace TechnoBabelGames
     [RequireComponent(typeof(LineRenderer))]
     public class TBLineRendererComponent : MonoBehaviour
     {
-
         public TBLineRenderer lineRendererProperties;
         private LineRenderer lineRenderer;
 
@@ -23,7 +22,7 @@ namespace TechnoBabelGames
 
             UpdateLineRendererLineWidth();
             UpdateLineRendererLoop();
-            lineRenderer.positionCount = lineRendererProperties.linePoints;            
+            lineRenderer.positionCount = lineRendererProperties.linePoints;
             lineRenderer.startColor = lineRendererProperties.startColor;
             lineRenderer.endColor = lineRendererProperties.endColor;
 
@@ -75,7 +74,7 @@ namespace TechnoBabelGames
 
         public void DrawBasicShape()
         {
-            if(lineRendererProperties.shape == TBLineRenderer.Shape.None)
+            /*if (lineRendererProperties.shape == TBLineRenderer.Shape.None)
             {
                 RandomizeChildTransforms();
                 SetPoints();
@@ -88,26 +87,32 @@ namespace TechnoBabelGames
                 transform.GetChild(i).localPosition = points[i];
             }
 
-            SetPoints();
+            SetPoints();*/
         }
 
-        public void SetPoints()
+        public void SetPoints(List<Vector2Int> points)
         {
-            if (lineRenderer == null)
+            lineRenderer.positionCount = points.Count;
+            for (int i = 0; i < points.Count; ++i)
+            {
+                Vector3 pos = new Vector3(points[i].x, 0.1f, points[i].y);
+                lineRenderer.SetPosition(i, pos);
+            }
+            
+            /*if (lineRenderer == null)
                 lineRenderer = GetComponent<LineRenderer>();
 
             Vector3 v3;
-            
-            
+
+
             for (int i = 0; i < transform.childCount; i++)
             {
                 v3 = new Vector3(transform.GetChild(i).position.x, transform.GetChild(i).position.y, transform.GetChild(i).position.z);
                 lineRenderer.SetPosition(i, v3);
-            }
+            }*/
         }
 
-        public List<Vector2>
-        GetPolygonOnACircle(int numberOfPoints, float radius, Vector2 center)
+        public List<Vector2> GetPolygonOnACircle(int numberOfPoints, float radius, Vector2 center)
         {
             List<Vector2> points = new List<Vector2>();
 
@@ -140,7 +145,7 @@ namespace TechnoBabelGames
                     startingTransform.localPosition.x + Random.Range(-1f, 2f),
                     startingTransform.localPosition.y + Random.Range(-1f, 2f),
                     startingTransform.localPosition.z
-                    );
+                );
                 startingTransform = transform.GetChild(i);
             }
         }

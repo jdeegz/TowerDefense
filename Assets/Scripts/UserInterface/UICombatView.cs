@@ -10,10 +10,8 @@ public class UICombatView : MonoBehaviour
 {
     [SerializeField] private Button m_pauseButton;
     [SerializeField] private Button m_playButton;
-    [SerializeField] private Button m_victoryButton;
-    [SerializeField] private Button m_defeatButton;
-    [SerializeField] private Button m_exitButton;
     [SerializeField] private Button m_nextWaveButton;
+    [SerializeField] private Button m_exitMapButton;
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
@@ -26,13 +24,16 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
+    [SerializeField] private GameObject m_pausedDisplayObj;
     private float m_timeToNextWave;
     private int m_curCastleHealth;
     private int m_maxCastleHealth;
+    private List<Button> m_buttons;
 
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed += Alert;
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
@@ -69,6 +70,12 @@ public class UICombatView : MonoBehaviour
     void OnDestroy()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+        GameplayManager.OnGameSpeedChanged -= GameplaySpeedChanged;
+        GameplayManager.OnAlertDisplayed -= Alert;
+        ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
+        ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
+        ResourceManager.UpdateStoneGathererCount -= UpdateStoneGathererDisplay;
+        ResourceManager.UpdateWoodGathererCount -= UpdateWoodGathererDisplay;
     }
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
@@ -99,8 +106,39 @@ public class UICombatView : MonoBehaviour
 
         gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
         m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build);
-        //m_playButton.gameObject.SetActive(state == GameplayManager.GameplayState.Paused);
-        //m_pauseButton.gameObject.SetActive(state == GameplayManager.GameplayState.Combat);
+    }
+
+    private void GameplaySpeedChanged(GameplayManager.GameSpeed newSpeed)
+    {
+        switch (newSpeed)
+        {
+            case GameplayManager.GameSpeed.Paused:
+                foreach (Button button in m_buttons)
+                {
+                    button.interactable = false;
+                }
+                break;
+            case GameplayManager.GameSpeed.Normal:
+                foreach (Button button in m_buttons)
+                {
+                    button.interactable = true;
+                }
+                break;
+            case GameplayManager.GameSpeed.Fast:
+                foreach (Button button in m_buttons)
+                {
+                    button.interactable = true;
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
+        }
+
+
+        m_playButton.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
+        m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
+
+        m_pauseButton.gameObject.SetActive(newSpeed != GameplayManager.GameSpeed.Paused);
     }
 
     // Start is called before the first frame update
@@ -117,10 +155,15 @@ public class UICombatView : MonoBehaviour
 
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
-        m_victoryButton.onClick.AddListener(OnVictoryButtonClicked);
-        m_defeatButton.onClick.AddListener(OnDefeatButtonClick);
-        m_exitButton.onClick.AddListener(OnExitButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
+        m_exitMapButton.onClick.AddListener(OnExitButtonClicked);
+        
+        if (m_buttons == null)
+        {
+            m_buttons = new List<Button>();
+        }
+        
+        m_buttons.Add(m_nextWaveButton);
 
         BuildTowerTrayDisplay();
     }
@@ -130,8 +173,19 @@ public class UICombatView : MonoBehaviour
         for (int i = 0; i < GameplayManager.Instance.m_equippedTowers.Length; ++i)
         {
             GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_towerTrayLayoutObj);
-            TowerTrayButton buttonScript = buttonPrefab.GetComponent<TowerTrayButton>();
-            buttonScript.SetupData(GameplayManager.Instance.m_equippedTowers[i], i);
+            TowerTrayButton towerTrayButtonScript = buttonPrefab.GetComponent<TowerTrayButton>();
+
+            if (towerTrayButtonScript)
+            {
+                towerTrayButtonScript.SetupData(GameplayManager.Instance.m_equippedTowers[i], i);
+            }
+
+            Button buttonScript = buttonPrefab.GetComponent<Button>();
+            
+            if (buttonScript)
+            {
+                m_buttons.Add(buttonScript);
+            }
         }
     }
 
@@ -143,32 +197,22 @@ public class UICombatView : MonoBehaviour
 
     private void OnPlayButtonClicked()
     {
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Combat);
+        GameplayManager.Instance.UpdateGameSpeed(GameplayManager.GameSpeed.Normal);
     }
 
     private void OnPauseButtonClicked()
     {
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Paused);
-    }
-
-    private void OnExitButtonClicked()
-    {
-        GameManager.Instance.UpdateGameState(GameManager.GameState.Menus);
-    }
-
-    private void OnDefeatButtonClick()
-    {
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Defeat);
-    }
-
-    private void OnVictoryButtonClicked()
-    {
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Victory);
+        GameplayManager.Instance.UpdateGameSpeed(GameplayManager.GameSpeed.Paused);
     }
 
     private void OnNextWaveButtonClicked()
     {
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.SpawnEnemies);
+    }
+    
+    private void OnExitButtonClicked()
+    {
+        GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
     }
 
     // Update is called once per frame
@@ -190,12 +234,12 @@ public class UICombatView : MonoBehaviour
         //Hovered Obj
         Selectable hoveredOjb = GameplayManager.Instance.m_hoveredSelectable;
         string hoveredObjString = "Null";
-        
+
 
         //Precon Tower Position
         Vector2Int preconTowerPos = GameplayManager.Instance.m_preconstructedTowerPos;
         string preconTowerPosString = "0,0";
-        
+
 
         //Can Afford
         string canAffordString = "N/A";
@@ -211,20 +255,22 @@ public class UICombatView : MonoBehaviour
             {
                 hoveredObjString = hoveredOjb.name;
             }
+
             if (preconTowerPos != null)
             {
                 preconTowerPosString = GameplayManager.Instance.m_preconstructedTowerPos.ToString();
             }
-            
+
             canAffordString = GameplayManager.Instance.m_canAfford.ToString();
             canPlaceString = GameplayManager.Instance.m_canPlace.ToString();
         }
-        
+
         string debugInfo = string.Format("Hovered Obj: {0}<br>" +
                                          "Preconstructed Tower Pos: {1}<br>" +
                                          "Can Afford: {2}<br>" +
                                          "Can Place: {3}<br>" +
-                                         "Interaction State: {4}", hoveredObjString, preconTowerPosString, canAffordString,
+                                         "Interaction State: {4}", hoveredObjString, preconTowerPosString,
+            canAffordString,
             canPlaceString, interactionStateString);
         m_debugInfoLabel.SetText(debugInfo);
     }

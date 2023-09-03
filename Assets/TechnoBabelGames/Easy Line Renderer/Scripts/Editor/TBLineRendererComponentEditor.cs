@@ -180,7 +180,7 @@ namespace TechnoBabelGames
         {
             if (Event.current.type == EventType.Repaint)
             {
-                lineRendererComponent.SetPoints();
+                //lineRendererComponent.SetPoints();
             }
 
             if(m_HandlePosition == null)

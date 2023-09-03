@@ -27,6 +27,6 @@ public class UIMissionSelectButton : MonoBehaviour
 
     private void OnButtonClick()
     {
-        GameManager.Instance.RequestChangeScene(m_missionScene);
+        GameManager.Instance.RequestChangeScene(m_missionScene, GameManager.GameState.Gameplay);
     }
 }

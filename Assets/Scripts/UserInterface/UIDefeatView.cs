@@ -29,6 +29,6 @@ public class UIDefeatView : MonoBehaviour
 
     private void OnExitButtonClicked()
     {
-        GameManager.Instance.UpdateGameState(GameManager.GameState.Menus);
+        GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
     }
 }

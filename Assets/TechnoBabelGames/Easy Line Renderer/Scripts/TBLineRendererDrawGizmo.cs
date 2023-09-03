@@ -23,7 +23,7 @@ namespace TechnoBabelGames
                 Gizmos.DrawWireSphere(this.transform.position, 0.2f);
             }            
 
-            parent.SetPoints();
+            //parent.SetPoints();
         }
     }
 }

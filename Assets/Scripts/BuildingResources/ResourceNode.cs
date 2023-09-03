@@ -22,6 +22,11 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
+    void OnDestroy()
+    {
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+    }
+
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
@@ -63,6 +68,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     private void OnDepletion()
     {
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
+        GridManager.Instance.ResourceNodeRemoved();
         OnResourceNodeDepletion?.Invoke(this);
         Destroy(gameObject);
     }

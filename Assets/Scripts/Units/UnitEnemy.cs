@@ -36,7 +36,8 @@ public class UnitEnemy : MonoBehaviour
 
         StartMoving(m_goal.position);
 
-        m_curHealth = m_maxHealth;
+        //Health Scaling.
+        m_curHealth = (int)MathF.Floor(m_maxHealth * Mathf.Pow(1.1f, GameplayManager.Instance.m_wave));
         UpdateHealth += OnUpdateHealth;
         DestroyEnemy += OnEnemyDestroyed;
         
@@ -94,12 +95,6 @@ public class UnitEnemy : MonoBehaviour
 
     void Update()
     {
-        if (m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
-        {
-            GameplayManager.Instance.m_castleController.TakeDamage(1);
-            DestroyEnemy?.Invoke();
-        }
-
         Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
         
         if(newPos != m_curPos){
@@ -143,6 +138,15 @@ public class UnitEnemy : MonoBehaviour
         Destroy(gameObject);
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Exit"))
+        {
+            GameplayManager.Instance.m_castleController.TakeDamage(1);
+            DestroyEnemy?.Invoke();
+        }
+    }
+
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
@@ -155,7 +159,7 @@ public class UnitEnemy : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
     {
-        m_navMeshAgent.isStopped = GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Paused;
+        //m_navMeshAgent.isStopped = GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Paused;
     }
 
     private IEnumerator HitFlash()

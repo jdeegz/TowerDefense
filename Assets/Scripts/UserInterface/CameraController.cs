@@ -101,6 +101,12 @@ public class CameraController : MonoBehaviour
 
     void HandleScreenEdgePan()
     {
+        
+        if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
+        {
+            m_isDragging = false;
+        }
+        
         if (m_isDragging) return;
         
         Vector3 mousePos = Input.mousePosition;

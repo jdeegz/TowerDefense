@@ -84,7 +84,7 @@ public class UnitSpawner : MonoBehaviour
     {
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
-            GridCellOccupantUtil.SetOccupant(gameObject, true, 2, 2);
+            GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
             GameplayManager.Instance.AddSpawnerToList(this);
         }
 

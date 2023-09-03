@@ -38,10 +38,8 @@ public class GameManager : MonoBehaviour
                 HandleInitialize();
                 break;
             case GameState.Menus:
-                RequestChangeScene("MenusTestScene");
                 break;
             case GameState.Gameplay:
-                RequestChangeScene("GameplayTestScene");
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -53,10 +51,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        UpdateGameState(GameState.Menus);
+        UpdateGameState(GameState.Initialize);
     }
 
-    public void RequestChangeScene(String sceneName)
+    public void RequestChangeScene(String sceneName, GameState newState)
     {
         if (sceneName == m_curScene)
         {
@@ -66,6 +64,7 @@ public class GameManager : MonoBehaviour
         {
             m_loadingView.SetActive(true);
             StartCoroutine(ChangeSceneAsync(sceneName));
+            UpdateGameState(newState);
             Debug.Log("Scene Loading: " + sceneName);
         }
     }
@@ -95,12 +94,13 @@ public class GameManager : MonoBehaviour
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
 
         m_loadingView.SetActive(false);
-
+        
         Debug.Log("Scene Loaded: " + m_curScene);
     }
 
     private void HandleInitialize()
     {
         //do stuff
+        RequestChangeScene("Menus", GameState.Menus);
     }
 }

@@ -240,7 +240,7 @@ public static class Util
             return null;
         }
         
-        int index = x * GridManager.Instance.m_gridWidth + z;
+        int index = z * GridManager.Instance.m_gridWidth + x;
         //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
         return GridManager.Instance.m_gridCells[index];

@@ -16,12 +16,17 @@ public class GameplayManager : MonoBehaviour
     public int m_wave;
 
     public static event Action<GameplayState> OnGameplayStateChanged;
+    public static event Action<GameSpeed> OnGameSpeedChanged;
     public static event Action<GameObject> OnGameObjectSelected;
     public static event Action<GameObject> OnGameObjectDeselected;
     public static event Action<GameObject> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
     public static event Action<Vector2Int> OnPreconTowerMoved;
+    public static event Action OnPreconstructedTowerClear;
+    public static event Action OnTowerBuild;
+    
+    
 
     [Header("Castle")] public CastleController m_castleController;
     [FormerlySerializedAs("m_enemyGoals")] public Transform m_enemyGoal;
@@ -191,7 +196,6 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-
         if (m_interactionState == InteractionState.PreconstructionTower)
         {
             DrawPreconstructedTower();
@@ -210,6 +214,7 @@ public class GameplayManager : MonoBehaviour
         m_mainCamera = Camera.main;
         m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
         OnGameplayStateChanged += GameplayManagerStateChanged;
+        OnGameSpeedChanged += GameplaySpeedChanged;
         OnGameObjectSelected += GameObjectSelected;
         OnGameObjectDeselected += GameObjectDeselected;
     }
@@ -217,8 +222,14 @@ public class GameplayManager : MonoBehaviour
     void OnDestroy()
     {
         OnGameplayStateChanged -= GameplayManagerStateChanged;
+        OnGameSpeedChanged -= GameplaySpeedChanged;
         OnGameObjectSelected -= GameObjectSelected;
         OnGameObjectDeselected -= GameObjectDeselected;
+    }
+
+    private void GameplaySpeedChanged(GameSpeed state)
+    {
+        //
     }
 
     private void GameplayManagerStateChanged(GameplayState state)
@@ -229,6 +240,35 @@ public class GameplayManager : MonoBehaviour
     void Start()
     {
         UpdateGameplayState(GameplayState.BuildGrid);
+    }
+
+    public enum GameSpeed
+    {
+        Paused,
+        Normal,
+        Fast,
+    }
+
+    public GameSpeed m_gameSpeed;
+    
+    public void UpdateGameSpeed(GameSpeed newSpeed)
+    {
+        switch (newSpeed)
+        {
+            case GameSpeed.Paused:
+                Time.timeScale = 0;
+                break;
+            case GameSpeed.Normal:
+                Time.timeScale = 1;
+                break;
+            case GameSpeed.Fast:
+                Time.timeScale = 1.5f;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
+        }
+        
+        OnGameSpeedChanged?.Invoke(newSpeed);
     }
 
     public void UpdateGameplayState(GameplayState newState)
@@ -388,8 +428,7 @@ public class GameplayManager : MonoBehaviour
         {
             //Raycast has hit the ground, round that point to the nearest int.
             Vector3 gridPos = raycastHit.point;
-            Debug.Log($"Precon raycast point: {gridPos}");
-
+            
             //Convert hit point to 2d grid position
             Vector2Int newPos =
                 new Vector2Int(Mathf.FloorToInt(gridPos.x + 0.5f), Mathf.FloorToInt(gridPos.z + 0.5f));
@@ -539,6 +578,7 @@ public class GameplayManager : MonoBehaviour
 
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
+        OnPreconstructedTowerClear?.Invoke();
     }
 
     public void BuildTower()
@@ -552,6 +592,7 @@ public class GameplayManager : MonoBehaviour
         ValueTuple<int, int> cost = newTower.GetTowercost();
         ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
         ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
+        OnTowerBuild?.Invoke();
     }
 
     public void AddTowerToList(TowerController tower)

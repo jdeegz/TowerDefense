@@ -36,6 +36,7 @@ public class GathererController : MonoBehaviour
         m_navMeshAgent = GetComponent<NavMeshAgent>();
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnCommandRequested += RequestedHarvest;
+        
     }
 
     private void OnDestroy()
@@ -89,6 +90,12 @@ public class GathererController : MonoBehaviour
             //If i am currently harvesting, clear variables, clear coroutine.
             if (m_gathererTask == GathererTask.Harvesting)
             {
+                //Make sure we stop the current coroutine so we dont accidentally harvest the newly selected tree.
+                if (m_curCoroutine != null)
+                {
+                    StopCoroutine(m_curCoroutine);
+                    m_curCoroutine = null;
+                }
                 ClearHarvestVars();
             }
 
@@ -120,7 +127,7 @@ public class GathererController : MonoBehaviour
                 if (vars.Item1)
                 {
                     SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
-                    Debug.Log("Harvestable Point Found: " + vars.Item1 + vars.Item2 + vars.Item3);
+                    //Debug.Log("Harvestable Point Found: " + vars.Item1 + vars.Item2 + vars.Item3);
                     UpdateTask(GathererTask.TravelingToHarvest);
                 }
                 else
