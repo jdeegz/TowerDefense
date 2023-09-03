@@ -1,5 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
+#if UNITY_EDITOR
+// Code to exclude from the build
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -36,4 +36,4 @@ public class ScenePlayModeHotkey : EditorWindow
         }
     }
 }
-
+#endif

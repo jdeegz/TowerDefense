@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+// Code to exclude from the build
 using UnityEditor;
 using UnityEngine;
 
@@ -317,3 +319,4 @@ namespace TechnoBabelGames
         }
     }
 }
+#endif

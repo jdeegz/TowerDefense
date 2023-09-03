@@ -39,6 +39,7 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
+        gameObject.SetActive(false);
     }
 
     private void UpdateCastleHealthDisplay(int i)
@@ -90,6 +91,8 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
+                if(!gameObject.activeSelf){ gameObject.SetActive(true);}
+                Debug.Log("Combat View Active");
                 m_timeToNextWave = GameplayManager.Instance.m_buildDuration;
                 break;
             case GameplayManager.GameplayState.Paused:
@@ -104,7 +107,7 @@ public class UICombatView : MonoBehaviour
                 break;
         }
 
-        gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
+        //gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
         m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build);
     }
 

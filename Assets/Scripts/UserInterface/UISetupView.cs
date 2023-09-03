@@ -10,6 +10,7 @@ public class UISetupView : MonoBehaviour
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        
     }
 
     void OnDestroy()
@@ -19,7 +20,7 @@ public class UISetupView : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
     {
-        gameObject.SetActive(state == GameplayManager.GameplayState.Setup);
+        //
     }
 
     void Start()
@@ -30,6 +31,7 @@ public class UISetupView : MonoBehaviour
     private void OnReadyButtonClicked()
     {
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Build);
+        gameObject.SetActive(false);
     }
 
     // Update is called once per frame

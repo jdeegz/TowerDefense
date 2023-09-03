@@ -33,19 +33,32 @@ public class GathererController : MonoBehaviour
 
     private void Awake()
     {
+        gameObject.SetActive(false);
         m_navMeshAgent = GetComponent<NavMeshAgent>();
+        GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnCommandRequested += RequestedHarvest;
         
     }
 
+
     private void OnDestroy()
     {
+        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
         GameplayManager.OnGameObjectSelected -= GathererSelected;
         GameplayManager.OnCommandRequested -= RequestedHarvest;
         GameplayManager.Instance.RemoveGathererFromList(this, m_gatherer.m_type);
     }
 
+    private void GameplayStateChanged(GameplayManager.GameplayState newState)
+    {
+        /*
+        if (!gameObject.active && newState == GameplayManager.GameplayState.PlaceObstacles)
+        {
+            gameObject.SetActive(true);
+        }*/
+    }
+    
     void Start()
     {
         switch (m_gatherer.m_type)
