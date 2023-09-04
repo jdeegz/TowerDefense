@@ -33,12 +33,10 @@ public class GathererController : MonoBehaviour
 
     private void Awake()
     {
-        gameObject.SetActive(false);
         m_navMeshAgent = GetComponent<NavMeshAgent>();
         GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnCommandRequested += RequestedHarvest;
-        
     }
 
 
@@ -52,13 +50,12 @@ public class GathererController : MonoBehaviour
 
     private void GameplayStateChanged(GameplayManager.GameplayState newState)
     {
-        /*
-        if (!gameObject.active && newState == GameplayManager.GameplayState.PlaceObstacles)
+        if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
-            gameObject.SetActive(true);
-        }*/
+            m_navMeshAgent.enabled = true;
+        }
     }
-    
+
     void Start()
     {
         switch (m_gatherer.m_type)
@@ -109,11 +106,13 @@ public class GathererController : MonoBehaviour
                     StopCoroutine(m_curCoroutine);
                     m_curCoroutine = null;
                 }
+
                 ClearHarvestVars();
             }
 
             //Find and set variables for this script.
-            ValueTuple<ResourceNode, Transform, int> vars = GetHarvestPoint(GetHarvestNodes(requestObj.transform.position, 0.2f));
+            ValueTuple<ResourceNode, Transform, int> vars =
+                GetHarvestPoint(GetHarvestNodes(requestObj.transform.position, 0.2f));
 
 
             if (vars.Item1)
@@ -134,7 +133,8 @@ public class GathererController : MonoBehaviour
                 break;
             case GathererTask.FindingHarvestablePoint:
                 //Set new variables.
-                ValueTuple<ResourceNode, Transform, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 2f));
+                ValueTuple<ResourceNode, Transform, int> vars =
+                    GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 2f));
 
                 //If we found a node start moving.
                 if (vars.Item1)

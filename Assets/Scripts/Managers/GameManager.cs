@@ -69,6 +69,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void RequestSceneRestart()
+    {
+        String sceneName = SceneManager.GetActiveScene().name;
+        m_loadingView.SetActive(true);
+        StartCoroutine(ChangeSceneAsync(sceneName));
+        Debug.Log("Scene Loading: " + sceneName);
+    }
+
     private IEnumerator ChangeSceneAsync(String newScene)
     {
         if (m_curScene != null)

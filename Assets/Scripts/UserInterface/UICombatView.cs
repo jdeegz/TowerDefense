@@ -11,7 +11,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private Button m_pauseButton;
     [SerializeField] private Button m_playButton;
     [SerializeField] private Button m_nextWaveButton;
-    [SerializeField] private Button m_exitMapButton;
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
@@ -116,22 +115,13 @@ public class UICombatView : MonoBehaviour
         switch (newSpeed)
         {
             case GameplayManager.GameSpeed.Paused:
-                foreach (Button button in m_buttons)
-                {
-                    button.interactable = false;
-                }
+                ToggleButtonInteractivity(false);
                 break;
             case GameplayManager.GameSpeed.Normal:
-                foreach (Button button in m_buttons)
-                {
-                    button.interactable = true;
-                }
+                ToggleButtonInteractivity(true);
                 break;
             case GameplayManager.GameSpeed.Fast:
-                foreach (Button button in m_buttons)
-                {
-                    button.interactable = true;
-                }
+                ToggleButtonInteractivity(true);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
@@ -142,6 +132,17 @@ public class UICombatView : MonoBehaviour
         m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
 
         m_pauseButton.gameObject.SetActive(newSpeed != GameplayManager.GameSpeed.Paused);
+    }
+
+    private void ToggleButtonInteractivity(bool b)
+    {
+        if (m_buttons != null)
+        {
+            foreach (Button button in m_buttons)
+            {
+                button.interactable = b;
+            }
+        }
     }
 
     // Start is called before the first frame update
@@ -159,7 +160,6 @@ public class UICombatView : MonoBehaviour
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
-        m_exitMapButton.onClick.AddListener(OnExitButtonClicked);
         
         if (m_buttons == null)
         {
@@ -211,11 +211,6 @@ public class UICombatView : MonoBehaviour
     private void OnNextWaveButtonClicked()
     {
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.SpawnEnemies);
-    }
-    
-    private void OnExitButtonClicked()
-    {
-        GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
     }
 
     // Update is called once per frame

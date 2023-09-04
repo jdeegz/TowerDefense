@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 public class UnitSpawner : MonoBehaviour
 {
@@ -82,16 +85,34 @@ public class UnitSpawner : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        if (newState == GameplayManager.GameplayState.PlaceObstacles)
-        {
-            GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-            GameplayManager.Instance.AddSpawnerToList(this);
-        }
 
-
-        if (newState == GameplayManager.GameplayState.SpawnEnemies)
+        switch (newState)
         {
-            StartSpawning();
+            case GameplayManager.GameplayState.BuildGrid:
+                break;
+            case GameplayManager.GameplayState.PlaceObstacles:
+                GameplayManager.Instance.AddSpawnerToList(this);
+                GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+                break;
+            case GameplayManager.GameplayState.CreatePaths:
+                break;
+            case GameplayManager.GameplayState.Setup:
+                break;
+            case GameplayManager.GameplayState.SpawnEnemies:
+                StartSpawning();
+                break;
+            case GameplayManager.GameplayState.Combat:
+                break;
+            case GameplayManager.GameplayState.Build:
+                break;
+            case GameplayManager.GameplayState.Paused:
+                break;
+            case GameplayManager.GameplayState.Victory:
+                break;
+            case GameplayManager.GameplayState.Defeat:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
     }
 }

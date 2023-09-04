@@ -63,8 +63,12 @@ public class GridManager : MonoBehaviour
                 //Debug.Log($"New Cell created at: {x},{z} with an index value of: {index}");
             }
         }
-
+        
+        Debug.Log("Grid Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);
+            
+        Debug.Log("Obstacles Placed.");
+        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
     }
 
     public void ResourceNodeRemoved()
@@ -105,6 +109,7 @@ public class GridManager : MonoBehaviour
             unitPath.m_lineRenderer = null;
             unitPath.Setup();
             m_unitPaths.Add(unitPath);
+            Debug.Log($"Added Unit Path for {obj.name}");
         }
 
         //Create Spawners UnitPaths
@@ -120,11 +125,14 @@ public class GridManager : MonoBehaviour
             unitPath.m_enemyGoalPos = m_enemyGoalPos;
             GameObject lineObj = new GameObject("Line");
             lineObj.transform.SetParent(spawner.gameObject.transform);
+            Debug.Log($"Line Renderer Made.");
             unitPath.m_lineRenderer = lineObj.AddComponent<TBLineRendererComponent>();
             unitPath.Setup();
             m_unitPaths.Add(unitPath);
+            Debug.Log($"Added Unit Path for {spawner.gameObject.name}");
         }
 
+        Debug.Log("Path List Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Setup);
     }
 }
@@ -341,6 +349,7 @@ public class UnitPath
             //DrawPathLineRenderer(unitPath.m_path);
             if (m_lineRenderer != null)
             {
+                Debug.Log("Drawing Line Renderer.");
                 m_lineRenderer.SetPoints(m_path);
             }
         }

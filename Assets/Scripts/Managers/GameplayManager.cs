@@ -636,7 +636,7 @@ public class GameplayManager : MonoBehaviour
     public void AddSpawnerToList(UnitSpawner unitSpawner)
     {
         m_unitSpawners.Add(unitSpawner);
-        //Debug.Log("Added creep spawner: " + m_unitSpawners.Count);
+        Debug.Log($"Added creep spawner: {m_unitSpawners.Count}");
     }
 
     public void DisableSpawner()
