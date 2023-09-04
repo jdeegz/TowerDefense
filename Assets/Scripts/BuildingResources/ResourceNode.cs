@@ -59,6 +59,11 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         return m_resourcesRemaining > 0;
     }
 
+    public void WasSelected()
+    {
+        m_animator.SetTrigger("isSelected");
+    }
+
     public void SetIsHarvesting(int i)
     {
         m_harvesters += i;

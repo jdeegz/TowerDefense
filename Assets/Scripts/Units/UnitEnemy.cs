@@ -37,7 +37,7 @@ public class UnitEnemy : MonoBehaviour
         StartMoving(m_goal.position);
 
         //Health Scaling.
-        m_curHealth = (int)MathF.Floor(m_maxHealth * Mathf.Pow(1.1f, GameplayManager.Instance.m_wave));
+        m_curHealth = (int)MathF.Floor(m_maxHealth * Mathf.Pow(1.15f, GameplayManager.Instance.m_wave));
         UpdateHealth += OnUpdateHealth;
         DestroyEnemy += OnEnemyDestroyed;
         

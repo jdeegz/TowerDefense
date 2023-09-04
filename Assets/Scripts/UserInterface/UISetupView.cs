@@ -31,6 +31,7 @@ public class UISetupView : MonoBehaviour
     private void OnReadyButtonClicked()
     {
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Build);
+        GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Idle);
         gameObject.SetActive(false);
     }
 

@@ -85,6 +85,7 @@ public class GameplayManager : MonoBehaviour
 
     public enum InteractionState
     {
+        Disabled,
         Idle,
         SelectedGatherer,
         SelectedTower,
@@ -110,6 +111,8 @@ public class GameplayManager : MonoBehaviour
             {
                 switch (m_interactionState)
                 {
+                    case InteractionState.Disabled:
+                        break;
                     case InteractionState.Idle:
                         break;
                     case InteractionState.SelectedGatherer:
@@ -124,7 +127,7 @@ public class GameplayManager : MonoBehaviour
             }
 
             //Mouse 1 Clicking
-            if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp(0) && m_interactionState != InteractionState.Disabled)
             {
                 //Based on the interaction state we're in, when mouse 1 is pressed, do X.
                 //If the object we're hovering is not currently the selected object.
@@ -160,7 +163,7 @@ public class GameplayManager : MonoBehaviour
             }
 
             //Mouse 2 Clicking
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(1) && m_interactionState != InteractionState.Disabled)
             {
                 //If something is selected.
                 if (m_hoveredSelectable != null || m_preconstructedTowerObj != null)
@@ -279,6 +282,7 @@ public class GameplayManager : MonoBehaviour
         switch (m_gameplayState)
         {
             case GameplayState.BuildGrid:
+                m_interactionState = InteractionState.Disabled;
                 break;
             case GameplayState.PlaceObstacles:
                 break;
@@ -297,8 +301,10 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Paused:
                 break;
             case GameplayState.Victory:
+                m_interactionState = InteractionState.Disabled;
                 break;
             case GameplayState.Defeat:
+                m_interactionState = InteractionState.Disabled;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

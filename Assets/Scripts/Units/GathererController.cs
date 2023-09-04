@@ -7,9 +7,10 @@ using UnityEngine.AI;
 public class GathererController : MonoBehaviour
 {
     [SerializeField] private ScriptableGatherer m_gatherer;
+    [SerializeField] private ParticleSystem m_idleStateVFX;
     public GathererTask m_gathererTask;
     public Animator m_animator;
-
+    
     public enum GathererTask
     {
         Idling,
@@ -119,6 +120,7 @@ public class GathererController : MonoBehaviour
             {
                 SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                 UpdateTask(GathererTask.TravelingToHarvest);
+                m_curHarvestNode.WasSelected();
             }
         }
     }
@@ -166,6 +168,7 @@ public class GathererController : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
 
+        m_idleStateVFX.gameObject.SetActive(m_gathererTask == GathererTask.Idling);
         //Debug.Log(gameObject.name + " : " + m_gathererTask);
     }
 
