@@ -226,7 +226,7 @@ public class GathererController : MonoBehaviour
             UpdateTask(GathererTask.FindingHarvestablePoint);
         }
     }
-
+    
     private List<ResourceNode> GetHarvestNodes(Vector3 pos, float searchRange)
     {
         LayerMask layerMask = LayerMask.GetMask("Actors");
