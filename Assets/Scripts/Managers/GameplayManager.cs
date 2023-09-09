@@ -19,7 +19,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameSpeed> OnGameSpeedChanged;
     public static event Action<GameObject> OnGameObjectSelected;
     public static event Action<GameObject> OnGameObjectDeselected;
-    public static event Action<GameObject> OnCommandRequested;
+    public static event Action<GameObject, Selectable.SelectedObjectType> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
     public static event Action<Vector2Int> OnPreconTowerMoved;
@@ -90,6 +90,7 @@ public class GameplayManager : MonoBehaviour
         SelectedGatherer,
         SelectedTower,
         PreconstructionTower,
+        SelectedCastle,
     }
 
     void Update()
@@ -120,6 +121,8 @@ public class GameplayManager : MonoBehaviour
                     case InteractionState.SelectedTower:
                         break;
                     case InteractionState.PreconstructionTower:
+                        break;
+                    case InteractionState.SelectedCastle:
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -173,11 +176,8 @@ public class GameplayManager : MonoBehaviour
                         case InteractionState.Idle:
                             break;
                         case InteractionState.SelectedGatherer:
-                            if (m_hoveredSelectable.m_selectedObjectType == Selectable.SelectedObjectType.ResourceWood)
-                            {
-                                OnCommandRequested?.Invoke(m_hoveredSelectable.gameObject);
-                            }
-
+                            Debug.Log("Command Requested on Gatherer.");
+                            OnCommandRequested?.Invoke(m_hoveredSelectable.gameObject, m_hoveredSelectable.m_selectedObjectType);
                             break;
                         case InteractionState.SelectedTower:
                             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
@@ -187,6 +187,9 @@ public class GameplayManager : MonoBehaviour
                             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                             ClearPreconstructedTower();
                             m_interactionState = InteractionState.Idle;
+                            break;
+                        case InteractionState.SelectedCastle:
+                            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -320,6 +323,8 @@ public class GameplayManager : MonoBehaviour
 
         switch (m_interactionState)
         {
+            case InteractionState.Disabled:
+                break;
             case InteractionState.Idle:
                 break;
             case InteractionState.SelectedGatherer:
@@ -327,6 +332,8 @@ public class GameplayManager : MonoBehaviour
             case InteractionState.SelectedTower:
                 break;
             case InteractionState.PreconstructionTower:
+                break;
+            case InteractionState.SelectedCastle:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -353,10 +360,12 @@ public class GameplayManager : MonoBehaviour
                 {
                     UpdateInteractionState(InteractionState.SelectedTower);
                 }
-
                 break;
             case Selectable.SelectedObjectType.Gatherer:
-                m_interactionState = InteractionState.SelectedGatherer;
+                UpdateInteractionState(InteractionState.SelectedGatherer);
+                break;
+            case Selectable.SelectedObjectType.Castle:
+                UpdateInteractionState(InteractionState.SelectedCastle);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -647,13 +656,16 @@ public class GameplayManager : MonoBehaviour
 
     public void DisableSpawner()
     {
-        bool spawning = false;
+        int activeSpawners = m_unitSpawners.Count;
         foreach (UnitSpawner unitSpawner in m_unitSpawners)
         {
-            spawning = unitSpawner.IsSpawning();
+            if(!unitSpawner.IsSpawning())
+            {
+                activeSpawners--;
+            }
         }
 
-        if (!spawning)
+        if (activeSpawners == 0)
         {
             //Debug.Log("Spawning Completed.");
             UpdateGameplayState(GameplayState.Combat);

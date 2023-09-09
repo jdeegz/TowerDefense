@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -10,7 +11,7 @@ public class GathererController : MonoBehaviour
     [SerializeField] private ParticleSystem m_idleStateVFX;
     public GathererTask m_gathererTask;
     public Animator m_animator;
-    
+
     public enum GathererTask
     {
         Idling,
@@ -22,11 +23,12 @@ public class GathererController : MonoBehaviour
     }
 
     private bool m_isSelected;
+    private bool m_isMoving;
     private int m_resourceCarried;
     private int m_curHarvestPointIndex;
     private Vector3 m_curHarvestNodePos;
     private ResourceNode m_curHarvestNode;
-    private Transform m_curHarvestPoint;
+    private Vector3 m_curHarvestPointPos;
     private NavMeshAgent m_navMeshAgent;
     private Coroutine m_curCoroutine;
 
@@ -37,15 +39,14 @@ public class GathererController : MonoBehaviour
         m_navMeshAgent = GetComponent<NavMeshAgent>();
         GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
         GameplayManager.OnGameObjectSelected += GathererSelected;
-        GameplayManager.OnCommandRequested += RequestedHarvest;
+        GameplayManager.OnCommandRequested += CommandRequested;
     }
-
 
     private void OnDestroy()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
         GameplayManager.OnGameObjectSelected -= GathererSelected;
-        GameplayManager.OnCommandRequested -= RequestedHarvest;
+        GameplayManager.OnCommandRequested -= CommandRequested;
         GameplayManager.Instance.RemoveGathererFromList(this, m_gatherer.m_type);
     }
 
@@ -76,16 +77,30 @@ public class GathererController : MonoBehaviour
 
     void Update()
     {
-        if (m_gathererTask == GathererTask.TravelingToHarvest && !m_navMeshAgent.pathPending &&
-            m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
+        if (m_isMoving && m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance && !m_navMeshAgent.pathPending)
         {
-            UpdateTask(GathererTask.Harvesting);
-        }
+            m_isMoving = false;
 
-        if (m_gathererTask == GathererTask.TravelingToCastle && !m_navMeshAgent.pathPending &&
-            m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance)
-        {
-            UpdateTask(GathererTask.Storing);
+            switch (m_gathererTask)
+            {
+                case GathererTask.Idling:
+                    ToggleDisplayIdleVFX();
+                    break;
+                case GathererTask.FindingHarvestablePoint:
+                    break;
+                case GathererTask.TravelingToHarvest:
+                    UpdateTask(GathererTask.Harvesting);
+                    break;
+                case GathererTask.Harvesting:
+                    break;
+                case GathererTask.TravelingToCastle:
+                    UpdateTask(GathererTask.Storing);
+                    break;
+                case GathererTask.Storing:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 
@@ -94,66 +109,105 @@ public class GathererController : MonoBehaviour
         m_isSelected = selectedObj == gameObject;
     }
 
-    private void RequestedHarvest(GameObject requestObj)
+    private void CommandRequested(GameObject requestObj, Selectable.SelectedObjectType type)
     {
-        if (m_isSelected)
+        if (!m_isSelected)
         {
-            //If i am currently harvesting, clear variables, clear coroutine.
-            if (m_gathererTask == GathererTask.Harvesting)
-            {
-                //Make sure we stop the current coroutine so we dont accidentally harvest the newly selected tree.
-                if (m_curCoroutine != null)
+            return;
+        }
+
+        switch (type)
+        {
+            case Selectable.SelectedObjectType.ResourceWood:
+                if (m_gatherer.m_type == ResourceManager.ResourceType.Wood)
                 {
-                    StopCoroutine(m_curCoroutine);
-                    m_curCoroutine = null;
+                    RequestedHarvest(requestObj);
                 }
 
-                ClearHarvestVars();
-            }
+                break;
+            case Selectable.SelectedObjectType.ResourceStone:
+                if (m_gatherer.m_type == ResourceManager.ResourceType.Stone)
+                {
+                    RequestedHarvest(requestObj);
+                }
 
-            //Find and set variables for this script.
-            ValueTuple<ResourceNode, Transform, int> vars =
-                GetHarvestPoint(GetHarvestNodes(requestObj.transform.position, 0.2f));
+                break;
+            case Selectable.SelectedObjectType.Tower:
+                break;
+            case Selectable.SelectedObjectType.Gatherer:
+                break;
+            case Selectable.SelectedObjectType.Castle:
+                Debug.Log("Gatherer going to castle.");
+                RequestedIdle();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        }
+    }
 
+    private void RequestedIdle()
+    {
+        ClearHarvestVars();
+        if (m_curCoroutine != null)
+        {
+            StopCoroutine(m_curCoroutine);
+            m_curCoroutine = null;
+        }
 
-            if (vars.Item1)
+        UpdateTask(GathererTask.Idling);
+    }
+
+    private void RequestedHarvest(GameObject requestObj)
+    {
+        // //Find and set variables for this script.
+        ValueTuple<ResourceNode, Vector3, int> vars = GetHarvestPointFromObj(requestObj);
+
+        if (vars.Item1)
+        {
+            ClearHarvestVars();
+            if (m_curCoroutine != null)
             {
-                SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
-                UpdateTask(GathererTask.TravelingToHarvest);
-                m_curHarvestNode.WasSelected();
+                StopCoroutine(m_curCoroutine);
+                m_curCoroutine = null;
             }
+
+            SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+            UpdateTask(GathererTask.TravelingToHarvest);
+            m_curHarvestNode.WasSelected();
         }
     }
 
     private void UpdateTask(GathererTask newTask)
     {
         m_gathererTask = newTask;
+        
+        Debug.Log($"{gameObject.name}'s task updated to: {m_gathererTask}");
         switch (m_gathererTask)
         {
             case GathererTask.Idling:
-                StartMoving(GameplayManager.Instance.m_enemyGoal.position);
+                StartMoving(GetClosestObject(GameplayManager.Instance.m_castleController.m_castleEntrancePoints).transform.position);
                 break;
             case GathererTask.FindingHarvestablePoint:
-                //Set new variables.
-                ValueTuple<ResourceNode, Transform, int> vars =
-                    GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 2f));
-
-                //If we found a node start moving.
-                if (vars.Item1)
+                if (m_curHarvestNode)
                 {
+                    Debug.Log("Finding point to harvest from.");
+                    ValueTuple<ResourceNode, Vector3, int> vars = GetHarvestPointFromObj(m_curHarvestNode.gameObject);
                     SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
-                    //Debug.Log("Harvestable Point Found: " + vars.Item1 + vars.Item2 + vars.Item3);
-                    UpdateTask(GathererTask.TravelingToHarvest);
                 }
                 else
                 {
-                    ClearHarvestVars();
-                    UpdateTask(GathererTask.Idling);
+                    //If we dont have a node, find a nearby node.
+                    //Get Neighbor Cells.
+                    Debug.Log("Finding new nearby node & point.");
+                    ValueTuple<ResourceNode, Vector3, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 1f));
+                    SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                 }
 
+                Debug.Log($"Moving to {m_curHarvestNode.gameObject.name}");
+                UpdateTask(GathererTask.TravelingToHarvest);
                 break;
             case GathererTask.TravelingToHarvest:
-                StartMoving(m_curHarvestPoint.position);
+                StartMoving(m_curHarvestPointPos);
                 break;
             case GathererTask.Harvesting:
                 m_curCoroutine = StartCoroutine(Harvesting());
@@ -167,27 +221,35 @@ public class GathererController : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+        
+    }
 
+    private void ToggleDisplayIdleVFX()
+    {
         m_idleStateVFX.gameObject.SetActive(m_gathererTask == GathererTask.Idling);
-        //Debug.Log(gameObject.name + " : " + m_gathererTask);
     }
 
     private void StartMoving(Vector3 pos)
     {
+        m_isMoving = true;
+        ToggleDisplayIdleVFX();
         m_navMeshAgent.SetDestination(pos);
     }
 
-    private void SetHarvestVars(ResourceNode harvestNode, Transform harvestPoint, int harvestPointIndex)
+    private void SetHarvestVars(ResourceNode harvestNode, Vector3 harvestPointPos, int harvestPointIndex)
     {
         //Setup this script
+        Debug.Log($"{gameObject.name} Vars set to {harvestNode.gameObject.name} at {harvestPointPos} at index {harvestPointIndex}");
         m_curHarvestNodePos = harvestNode.transform.position;
         m_curHarvestNode = harvestNode;
-        m_curHarvestPoint = harvestPoint;
+        m_curHarvestPointPos = harvestPointPos;
         m_curHarvestPointIndex = harvestPointIndex;
 
         //Sign up to the node.
         m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_isOccupied = true;
+
         m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_gatherer = this;
+
         m_curHarvestNode.OnResourceNodeDepletion += OnNodeDepleted;
     }
 
@@ -196,37 +258,46 @@ public class GathererController : MonoBehaviour
         //Unassign from the node (used for Player interupting the Harvesting state)
         if (m_curHarvestNode)
         {
+            Debug.Log($"Clearing {m_curHarvestNode.gameObject.name} from {gameObject.name} vars.");
             m_curHarvestNode.SetIsHarvesting(-1);
             m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_isOccupied = false;
             m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_gatherer = null;
+            m_curHarvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
         }
 
         //Unset this script
         m_animator.SetBool(m_isHarvestingHash, false);
         m_curHarvestNode = null;
-        m_curHarvestPoint = null;
+        m_curHarvestPointPos = new Vector3();
         m_curHarvestPointIndex = -1;
     }
 
-    private void OnNodeDepleted(ResourceNode obj)
+    private void OnNodeDepleted(ResourceNode node)
     {
-        //Clear current variables.
-        ClearHarvestVars();
-
-        //If harvesting, stop cur coroutine.
-        if (m_gathererTask == GathererTask.Harvesting && m_curCoroutine != null)
+        if (node != m_curHarvestNode)
         {
-            StopCoroutine(m_curCoroutine);
-            m_curCoroutine = null;
+            return;
         }
 
+        Debug.Log($"{gameObject.name}'s resource node depleted.");
+
+        //If harvesting, stop cur coroutine.
+        if (m_resourceCarried == 0 && m_curCoroutine != null)
+        {
+            StopCoroutine(m_curCoroutine);
+            Debug.Log($"{gameObject.name}'s Harvesting coroutine stopped.");
+            m_curCoroutine = null;
+        }
+        
+        ClearHarvestVars();
+
         //Interrupt flow if we're not currently carrying or storing resources.
-        if (m_gathererTask != GathererTask.TravelingToCastle || m_gathererTask != GathererTask.Storing)
+        if (m_resourceCarried == 0)
         {
             UpdateTask(GathererTask.FindingHarvestablePoint);
         }
     }
-    
+
     private List<ResourceNode> GetHarvestNodes(Vector3 pos, float searchRange)
     {
         LayerMask layerMask = LayerMask.GetMask("Actors");
@@ -253,62 +324,89 @@ public class GathererController : MonoBehaviour
         return nearbyNodes;
     }
 
-    private (ResourceNode, Transform, int) GetHarvestPoint(List<ResourceNode> nodes)
+    private (ResourceNode, Vector3, int) GetHarvestPoint(List<ResourceNode> nodes)
     {
-        float closestDistance = float.MaxValue;
         ResourceNode closestNode = null;
-        Transform closestNodePointTransform = null;
-        int closestNodePointIndex = -1;
+        Vector3 closestNodePointPos = new Vector3();
+        int harvestPointIndex = -1;
 
+        Vector2Int curPos = Util.GetVector2IntFrom3DPos(transform.position);
+        int shortestDistance = 99999;
+
+        //Loop through nodes.
         for (var i = 0; i < nodes.Count; ++i)
         {
             ResourceNode node = nodes[i];
 
+            //Loop through points.
             for (int x = 0; x < node.m_harvestPoints.Count; ++x)
             {
                 //If it's occupied by another gatherer, go next.
-                if (node.m_harvestPoints[x].m_isOccupied)
+                bool harvestPointOccupied = node.m_harvestPoints[x].m_isOccupied;
+                bool cellOccupied = node.m_harvestPoints[x].m_harvestPointCell.m_isOccupied;
+
+                if (harvestPointOccupied || cellOccupied)
                 {
                     continue;
                 }
 
-                Transform harvestPointTransform = node.m_harvestPoints[x].m_transform;
-                float distance = Vector3.Distance(transform.position, harvestPointTransform.position);
+                //Check path to the cell, not the Harvest Point Position.
+                List<Vector2Int> path = AStar.FindPath(curPos, node.m_harvestPoints[x].m_harvestPointCell.m_cellPos);
 
-                if (CanPath(harvestPointTransform.position) && distance < closestDistance)
+                if (path == null)
                 {
-                    closestDistance = distance;
+                    continue;
+                }
+
+                if (path.Count <= shortestDistance)
+                {
                     closestNode = node;
-                    closestNodePointTransform = harvestPointTransform;
-                    closestNodePointIndex = x;
+                    shortestDistance = path.Count;
+                    closestNodePointPos = node.m_harvestPoints[x].m_harvestPointPos;
+                    harvestPointIndex = x;
                 }
             }
         }
 
-        return (closestNode, closestNodePointTransform, closestNodePointIndex);
+        return (closestNode, closestNodePointPos, harvestPointIndex);
     }
 
-    private bool CanPath(Vector3 pos)
+    private (ResourceNode, Vector3, int) GetHarvestPointFromObj(GameObject obj)
     {
-        bool canPath = false;
-        NavMeshPath path = new NavMeshPath();
-        float maxDistance = 1f;
+        ResourceNode node = obj.GetComponent<ResourceNode>();
+        Vector3 closestNodePointPos = new Vector3();
+        int harvestPointIndex = -1;
 
-        // Sample the position to find the closest point on the NavMesh
-        NavMeshHit navMeshHit;
-        if (NavMesh.SamplePosition(pos, out navMeshHit, maxDistance, NavMesh.AllAreas))
+        Vector2Int curPos = Util.GetVector2IntFrom3DPos(transform.position);
+        int shortestDistance = 99999;
+
+        for (var i = 0; i < node.m_harvestPoints.Count; ++i)
         {
-            // Use the closest point as the destination for path calculation
-            Vector3 closestPoint = navMeshHit.position;
-            if (Vector3.Distance(closestPoint, navMeshHit.position) <= maxDistance)
+            bool harvestPointOccupied = node.m_harvestPoints[i].m_isOccupied;
+            bool cellOccupied = node.m_harvestPoints[i].m_harvestPointCell.m_isOccupied;
+            //Debug.Log($"Harvest Point {i} occupancy: {harvestPointOccupied}");
+            if (harvestPointOccupied || cellOccupied)
             {
-                // Calculate the path
-                m_navMeshAgent.CalculatePath(closestPoint, path);
-                canPath = path.status == NavMeshPathStatus.PathComplete;
+                continue;
+            }
+
+            //Check path to the cell, not the Harvest Point Position.
+            List<Vector2Int> path = AStar.FindPath(curPos, node.m_harvestPoints[i].m_harvestPointCell.m_cellPos);
+
+            if (path == null)
+            {
+                continue;
+            }
+
+            if (path.Count <= shortestDistance)
+            {
+                shortestDistance = path.Count;
+                closestNodePointPos = node.m_harvestPoints[i].m_harvestPointPos;
+                harvestPointIndex = i;
             }
         }
 
-        return canPath;
+        return (node, closestNodePointPos, harvestPointIndex);
     }
 
     private IEnumerator Harvesting()
@@ -335,14 +433,7 @@ public class GathererController : MonoBehaviour
 
         m_resourceCarried = 0;
 
-        if (m_curHarvestNode)
-        {
-            UpdateTask(GathererTask.TravelingToHarvest);
-        }
-        else
-        {
-            UpdateTask(GathererTask.FindingHarvestablePoint);
-        }
+        UpdateTask(GathererTask.FindingHarvestablePoint);
     }
 
     private void StartHarvesting()
@@ -353,34 +444,65 @@ public class GathererController : MonoBehaviour
 
     private void CompletedHarvest()
     {
-        //Unsub from the node so if it depletes when we RequestResource we dont react to the invokation.
-        m_curHarvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
+        Debug.Log($"{gameObject.name}'s harvesting completed.");
+        ValueTuple<int, int> vars = m_curHarvestNode.RequestResource(m_gatherer.m_carryCapacity);
+        m_resourceCarried = vars.Item1;
+        int resourceRemaining = vars.Item2;
 
-        //Update this script
-        m_resourceCarried = m_curHarvestNode.RequestResource(m_gatherer.m_carryCapacity);
+        if (resourceRemaining > 0 && m_resourceCarried > 0)
+        {
+            m_curHarvestNode.SetIsHarvesting(-1);
+            m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_isOccupied = false;
+            m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_gatherer = null;
+        }
 
-        //Clear the vars, so we know to find a new point after we store.
-        ClearHarvestVars();
-
+        m_animator.SetBool(m_isHarvestingHash, false);
         UpdateTask(GathererTask.TravelingToCastle);
     }
 
-    private Transform GetClosestTransform(Transform[] transforms)
+    private GameObject GetClosestObject(List<GameObject> objs)
     {
-        Transform closestTransform = null;
-        float closestDistance = Mathf.Infinity;
-        Vector3 curPos = transform.position;
+        GameObject closestGameObject = null;
+        int shortestDistance = 9999;
+        Vector2Int curPos = Util.GetVector2IntFrom3DPos(transform.position);
 
-        foreach (Transform t in transforms)
+        foreach (GameObject obj in objs)
         {
-            float distance = Vector3.Distance(t.position, curPos);
-            if (distance < closestDistance)
+            Vector2Int objPos = Util.GetVector2IntFrom3DPos(obj.transform.position);
+            List<Vector2Int> path = AStar.FindPath(curPos, objPos);
+
+            if (path == null)
             {
-                closestDistance = distance;
-                closestTransform = t;
+                continue;
+            }
+
+            if (path.Count <= shortestDistance)
+            {
+                shortestDistance = path.Count;
+                closestGameObject = obj;
             }
         }
 
-        return closestTransform;
+        return closestGameObject;
+    }
+
+    private float CalculatePathLength(Vector3 targetPosition)
+    {
+        // Calculate the length of the path to the specified target position.
+        NavMeshPath path = new NavMeshPath();
+        if (m_navMeshAgent.CalculatePath(targetPosition, path))
+        {
+            float pathLength = 0f;
+            for (int i = 1; i < path.corners.Length; i++)
+            {
+                pathLength += Vector3.Distance(path.corners[i - 1], path.corners[i]);
+            }
+
+            return pathLength;
+        }
+        else
+        {
+            return Mathf.Infinity; // Return a large value if path calculation fails.
+        }
     }
 }

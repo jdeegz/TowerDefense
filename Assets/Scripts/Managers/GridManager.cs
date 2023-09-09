@@ -59,7 +59,9 @@ public class GridManager : MonoBehaviour
             for (int z = 0; z < m_gridHeight; ++z)
             {
                 int index = z * m_gridWidth + x;
-                m_gridCells[index] = new Cell();
+                Cell cell = new Cell();
+                cell.m_cellPos = new Vector2Int(x, z);
+                m_gridCells[index] = cell;
                 //Debug.Log($"New Cell created at: {x},{z} with an index value of: {index}");
             }
         }
@@ -139,6 +141,7 @@ public class GridManager : MonoBehaviour
 
 public class Cell
 {
+    public Vector2Int m_cellPos;
     public bool m_isGoal;
     public bool m_isOccupied;
     public int m_actorCount;
@@ -349,7 +352,7 @@ public class UnitPath
             //DrawPathLineRenderer(unitPath.m_path);
             if (m_lineRenderer != null)
             {
-                Debug.Log("Drawing Line Renderer.");
+                //Debug.Log("Drawing Line Renderer.");
                 m_lineRenderer.SetPoints(m_path);
             }
         }

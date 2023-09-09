@@ -15,7 +15,8 @@ public class Selectable : MonoBehaviour
         ResourceWood,
         ResourceStone,
         Tower,
-        Gatherer
+        Gatherer,
+        Castle
     }
 
     void Awake()

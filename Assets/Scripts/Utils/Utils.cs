@@ -248,6 +248,7 @@ public static class Util
     
     public static Cell GetCellFrom3DPos(Vector3 pos)
     {
+        Debug.Log($"Getting cell from {pos}");
         int x = Mathf.FloorToInt(pos.x + 0.5f);
         int z = Mathf.FloorToInt(pos.z + 0.5f);
         
@@ -265,12 +266,43 @@ public static class Util
             return null;
         }
         
+        Debug.Log($"Returning cell from {x},{z}");
         int index = x * GridManager.Instance.m_gridWidth + z;
         //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
         return GridManager.Instance.m_gridCells[index];
     }
 
+    public static (List<Cell>, List<Vector3>) GetNeighborCells(Vector2Int pos)
+    {
+        List<Vector2Int> neighborPos = new List<Vector2Int>();
+        neighborPos.Add(new Vector2Int(pos.x, pos.y+1)); //N
+        neighborPos.Add(new Vector2Int(pos.x+1, pos.y+1)); //NE
+        neighborPos.Add(new Vector2Int(pos.x+1, pos.y)); //E
+        neighborPos.Add(new Vector2Int(pos.x+1, pos.y-1)); //SE
+        neighborPos.Add(new Vector2Int(pos.x, pos.y-1)); //S
+        neighborPos.Add(new Vector2Int(pos.x-1, pos.y-1)); //SW
+        neighborPos.Add(new Vector2Int(pos.x-1, pos.y)); //W
+        neighborPos.Add(new Vector2Int(pos.x-1, pos.y+1)); //NW
+        
+        List<Cell> neighborCells = new List<Cell>();
+        List<Vector3> harvestPos = new List<Vector3>();
+        
+        foreach (Vector2Int neighborCellPos in neighborPos)
+        {
+            Cell cell = GetCellFromPos(neighborCellPos);
+            if (cell != null)
+            {
+                neighborCells.Add(cell);
+                //Get the mid point between the neighbor and source.
+                Vector2 midPoint = ((Vector2)pos + neighborCellPos) / 2;
+                Vector3 harvestPointPos = new Vector3(midPoint.x, 0, midPoint.y);
+                harvestPos.Add(harvestPointPos);
+            }
+        }
+        return (neighborCells, harvestPos);
+    }
+    
     public static Vector2Int GetVector2IntFrom3DPos(Vector3 pos)
     {
         int x = Mathf.FloorToInt(pos.x + 0.5f);

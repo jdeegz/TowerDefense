@@ -29,7 +29,7 @@ public class Projectile : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        Debug.Log(gameObject.name + " has hit : " + other.gameObject.name);
+        //Debug.Log(gameObject.name + " has hit : " + other.gameObject.name);
         other.gameObject.GetComponent<UnitEnemy>().TakeDamage(m_projectileDamage);
         Destroy(gameObject);
     }

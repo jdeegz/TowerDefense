@@ -35,10 +35,13 @@ public class UIOptionsMenu : MonoBehaviour
         m_closeMenuButton.onClick.AddListener(OnCloseMenuButtonClicked);
         m_screenModeDropdown.onValueChanged.AddListener(new UnityAction<int>(OnDropdownValueChanged));
 
-        if (GameManager.Instance.m_gameState == GameManager.GameState.Menus)
+        if (GameManager.Instance != null)
         {
-            m_surrenderButton.gameObject.SetActive(false);
-            m_restartButton.gameObject.SetActive(false);
+            if (GameManager.Instance.m_gameState == GameManager.GameState.Menus)
+            {
+                m_surrenderButton.gameObject.SetActive(false);
+                m_restartButton.gameObject.SetActive(false);
+            }
         }
 
         //Set the dropdown to show the correct option on start.
