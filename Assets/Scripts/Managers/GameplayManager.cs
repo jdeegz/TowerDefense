@@ -13,6 +13,7 @@ public class GameplayManager : MonoBehaviour
 {
     public static GameplayManager Instance;
     public GameplayState m_gameplayState;
+    public GameSpeed m_gameSpeed;
     public int m_wave;
 
     public static event Action<GameplayState> OnGameplayStateChanged;
@@ -25,8 +26,8 @@ public class GameplayManager : MonoBehaviour
     public static event Action<Vector2Int> OnPreconTowerMoved;
     public static event Action OnPreconstructedTowerClear;
     public static event Action OnTowerBuild;
-    
-    
+    public static event Action OnTowerSell;
+
 
     [Header("Castle")] public CastleController m_castleController;
     [FormerlySerializedAs("m_enemyGoals")] public Transform m_enemyGoal;
@@ -255,8 +256,6 @@ public class GameplayManager : MonoBehaviour
         Fast,
     }
 
-    public GameSpeed m_gameSpeed;
-    
     public void UpdateGameSpeed(GameSpeed newSpeed)
     {
         switch (newSpeed)
@@ -273,7 +272,7 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
         }
-        
+
         OnGameSpeedChanged?.Invoke(newSpeed);
     }
 
@@ -320,7 +319,7 @@ public class GameplayManager : MonoBehaviour
     public void UpdateInteractionState(InteractionState newState)
     {
         m_interactionState = newState;
-        Debug.Log($"Interaction state is now: {m_interactionState}");
+        //Debug.Log($"Interaction state is now: {m_interactionState}");
 
         switch (m_interactionState)
         {
@@ -343,6 +342,12 @@ public class GameplayManager : MonoBehaviour
 
     private void GameObjectSelected(GameObject obj)
     {
+        //Deselect current selection.
+        if (m_curSelectable)
+        {
+            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+        }
+        
         Selectable objSelectable = obj.GetComponent<Selectable>();
         m_curSelectable = objSelectable;
 
@@ -361,6 +366,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     UpdateInteractionState(InteractionState.SelectedTower);
                 }
+
                 break;
             case Selectable.SelectedObjectType.Gatherer:
                 UpdateInteractionState(InteractionState.SelectedGatherer);
@@ -447,7 +453,7 @@ public class GameplayManager : MonoBehaviour
         {
             //Raycast has hit the ground, round that point to the nearest int.
             Vector3 gridPos = raycastHit.point;
-            
+
             //Convert hit point to 2d grid position
             Vector2Int newPos =
                 new Vector2Int(Mathf.FloorToInt(gridPos.x + 0.5f), Mathf.FloorToInt(gridPos.z + 0.5f));
@@ -575,24 +581,6 @@ public class GameplayManager : MonoBehaviour
         return true;
     }
 
-    bool CheckExitToSpawnerPathing()
-    {
-        //List of Exit Points to use a the start.
-        Vector2Int goal = Util.GetVector2IntFrom3DPos(m_enemyGoal.transform.position);
-        Vector2Int[] exits =
-        {
-            new Vector2Int(goal.x, goal.y + 1), //North
-            new Vector2Int(goal.x + 1, goal.y), //East
-            new Vector2Int(goal.x, goal.y - 1), //South
-            new Vector2Int(goal.x - 1, goal.y) //West
-        };
-
-        //List of Spawner Points to use as the destination.
-        //m_unitSpawners
-
-        return true;
-    }
-
     public void ClearPreconstructedTower()
     {
         if (m_preconstructedTowerObj)
@@ -635,6 +623,19 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
+    public void SellTower(TowerController tower, int stoneValue, int woodValue)
+    {
+        GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
+        RemoveTowerFromList(tower);
+        ResourceManager.Instance.UpdateStoneAmount(stoneValue);
+        ResourceManager.Instance.UpdateWoodAmount(woodValue);
+        Destroy(tower.gameObject);
+        m_curSelectable = null;
+        UpdateInteractionState(InteractionState.Idle);
+        Debug.Log("Tower sold.");
+        OnTowerSell?.Invoke();
+    }
+
     public void AddEnemyToList(UnitEnemy enemy)
     {
         m_enemyList.Add(enemy);
@@ -667,7 +668,7 @@ public class GameplayManager : MonoBehaviour
         int activeSpawners = m_unitSpawners.Count;
         foreach (UnitSpawner unitSpawner in m_unitSpawners)
         {
-            if(!unitSpawner.IsSpawning())
+            if (!unitSpawner.IsSpawning())
             {
                 activeSpawners--;
             }

@@ -51,6 +51,11 @@ public class TowerController : MonoBehaviour
     {
         return (m_towerData.m_stoneCost, m_towerData.m_woodCost);
     }
+    
+    public (int, int) GetTowerSellCost()
+    {
+        return (m_towerData.m_stoneSellCost, m_towerData.m_woodSellCost);
+    }
 
     private void Fire()
     {
@@ -101,5 +106,9 @@ public class TowerController : MonoBehaviour
         gameObject.GetComponent<Collider>().enabled = true;
         gameObject.GetComponent<NavMeshObstacle>().enabled = true;
         m_isBuilt = true;
+    }
+
+    public void OnDestroy()
+    {
     }
 }

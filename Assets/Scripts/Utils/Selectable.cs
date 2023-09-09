@@ -24,7 +24,7 @@ public class Selectable : MonoBehaviour
         GameplayManager.OnObjRestricted += SetOutlineColor;
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
-        
+
         for (int i = 0; i < m_outlines.Length; ++i)
         {
             m_outlines[i].OutlineColor = m_selectionColors.m_outlineBaseColor;
@@ -39,7 +39,20 @@ public class Selectable : MonoBehaviour
 
     private void GameObjectSelected(GameObject obj)
     {
-        EnableOutlines(obj == gameObject);
+        if (obj == gameObject)
+        {
+            EnableOutlines(true);
+
+            if (m_selectedObjectType == SelectedObjectType.Tower && GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.SelectedTower)
+            {
+                IngameUIController.Instance.m_towerSelectHUD.SelectTower(obj);
+                //Put Tower Radius here.
+            }
+        }
+        else
+        {
+            EnableOutlines(false);
+        }
     }
 
     private void GameObjectDeselected(GameObject obj)
@@ -47,6 +60,11 @@ public class Selectable : MonoBehaviour
         if (obj == gameObject)
         {
             EnableOutlines(false);
+            
+            if (m_selectedObjectType == SelectedObjectType.Tower)
+            {
+                IngameUIController.Instance.m_towerSelectHUD.DeselectTower();
+            }
         }
     }
 
@@ -60,8 +78,11 @@ public class Selectable : MonoBehaviour
 
     private void SetOutlineColor(GameObject obj, bool isRestricted)
     {
-        
-        if (obj != gameObject) { return; }
+        if (obj != gameObject)
+        {
+            return;
+        }
+
         //Debug.Log("Trying to change colors");
         for (int i = 0; i < m_outlines.Length; ++i)
         {

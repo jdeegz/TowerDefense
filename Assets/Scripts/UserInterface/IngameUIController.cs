@@ -7,6 +7,7 @@ public class IngameUIController : MonoBehaviour
 
     public static IngameUIController Instance;
 
+    public UITowerSelectHUD m_towerSelectHUD;
     public UIHealthMeter m_healthMeter;
     
     // Start is called before the first frame update

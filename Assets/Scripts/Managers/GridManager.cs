@@ -21,7 +21,7 @@ public class GridManager : MonoBehaviour
     private List<Vector2Int> m_spawners;
     private Vector2Int m_enemyGoalPos;
     private Vector2Int m_preconstructedTowerPos;
-    
+
     public static event Action OnResourceNodeRemoved;
 
 
@@ -65,10 +65,10 @@ public class GridManager : MonoBehaviour
                 //Debug.Log($"New Cell created at: {x},{z} with an index value of: {index}");
             }
         }
-        
+
         Debug.Log("Grid Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);
-            
+
         Debug.Log("Obstacles Placed.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
     }
@@ -77,7 +77,7 @@ public class GridManager : MonoBehaviour
     {
         OnResourceNodeRemoved?.Invoke();
     }
-    
+
     public void BuildPathList()
     {
         CastleController castleController = GameplayManager.Instance.m_castleController;
@@ -179,13 +179,14 @@ public class UnitPath
     public bool m_isExit;
     public bool m_preconState;
     public bool m_pathDirty;
-    
+
 
     public void Setup()
     {
         GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
         GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
         GameplayManager.OnTowerBuild += SetLastGoodPath;
+        GameplayManager.OnTowerSell += UpdateSpawnerPaths;
 
         GridManager.OnResourceNodeRemoved += ResourceNodeRemoved;
 
@@ -196,7 +197,7 @@ public class UnitPath
             //m_lineRenderer.lineRendererProperties.linePoints = m_path.Count;
             m_lineRenderer.lineRendererProperties.texture = GridManager.Instance.m_lineRendererMaterial;
             m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
-            ColorUtility.TryParseHtmlString( "#73B549" , out Color lineColor );
+            ColorUtility.TryParseHtmlString("#73B549", out Color lineColor);
             m_lineRenderer.lineRendererProperties.startColor = lineColor;
             m_lineRenderer.lineRendererProperties.endColor = lineColor;
             m_lineRenderer.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
@@ -208,12 +209,14 @@ public class UnitPath
         UpdateExitPath();
     }
 
+
     void OnDestroy()
     {
         GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
         GameplayManager.OnPreconstructedTowerClear -= PreconstructedTowerClear;
         GameplayManager.OnTowerBuild -= PreconstructedTowerClear;
-        
+        GameplayManager.OnTowerSell -= UpdateSpawnerPaths;
+
         GridManager.OnResourceNodeRemoved -= ResourceNodeRemoved;
     }
 
@@ -227,14 +230,14 @@ public class UnitPath
         UpdateExitPath();
         SetLastGoodPath();
     }
-    
+
     void PreconstructedTowerClear()
     {
         if (m_preconState)
         {
             m_preconState = false;
             m_path = new List<Vector2Int>(m_lastGoodPath);
-            
+
             if (m_lineRenderer != null)
             {
                 m_lineRenderer.SetPoints(m_path);
@@ -253,25 +256,25 @@ public class UnitPath
         //A. Find a new path if we're in the current path.
         //B. Revert to last good path if we know we've changed the path during this precon phase, and we're not in the path.
         //C. Find a new path if we know we've changed the path and move the precon tower.
-        
+
         //If we are entering precon, stash the path we had before we entered.
         if (!m_preconState)
         {
             m_preconState = true;
             SetLastGoodPath();
         }
-        
+
         //Check to see if new position is in my list.
         m_preconstructedTowerPos = newPos;
         bool towerIsInPath = m_path.Contains(m_preconstructedTowerPos);
-        
+
         if (towerIsInPath)
         {
             //Since we have found the cell in the list, we want to mark this unitPath as dirty, so we know
             m_pathDirty = true;
             UpdateExitPath();
         }
-        
+
         //Reset back to previous path, since we're dirty we know the path has changed from when we started precon tower phase.
         //If the new position is within the last good path, we need to find a new path, else we can revert back to last good path.
         if (!towerIsInPath && m_pathDirty)
@@ -300,7 +303,7 @@ public class UnitPath
         int shortestPathCount = Int32.MaxValue;
         m_hasPath = false;
 
-        //Path from the exit to each exit.
+        //Path from the UnitPath Start position (can be spawner OR exit, to each exit)
         for (int i = 0; i < m_exits.Count; ++i)
         {
             if (m_startPos == m_exits[i])
@@ -362,5 +365,44 @@ public class UnitPath
             //m_path.Clear();
             Debug.Log("CANNOT BUILD.");
         }
+    }
+
+
+    private void UpdateSpawnerPaths()
+    {
+        if (m_isExit)
+        {
+            return;
+        }
+
+        Debug.Log("Updating Path.");
+        int shortestPathCount = Int32.MaxValue;
+        m_hasPath = false;
+        m_lineRenderer.SetPoints(new List<Vector2Int>());
+
+        //Path from each spawner to each exit, and find the shortest path.
+        for (int i = 0; i < m_exits.Count; ++i)
+        {
+            if (m_startPos == m_exits[i])
+            {
+                continue;
+            }
+
+            List<Vector2Int> testPath = AStar.FindPath(m_startPos, m_exits[i]);
+
+            if (testPath != null)
+            {
+                m_hasPath = true;
+
+                //Compare to current shortest path found.
+                if (testPath.Count <= shortestPathCount)
+                {
+                    shortestPathCount = testPath.Count;
+                    m_path = testPath;
+                    m_endPos = m_exits[i];
+                }
+            }
+        }
+        m_lineRenderer.SetPoints(m_path);
     }
 }

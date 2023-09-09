@@ -12,6 +12,8 @@ public class ScriptableTowerDataObject : ScriptableObject
     public float m_rotationSpeed;
     public int m_woodCost;
     public int m_stoneCost;
+    public int m_woodSellCost;
+    public int m_stoneSellCost;
     public Sprite m_uiIcon;
     public GameObject m_prefab;
     public GameObject m_projectilePrefab;

@@ -11,16 +11,25 @@ public class Track3dObject : MonoBehaviour
     private Camera m_camera;
     private float m_screenWidth;
     private float m_screenHeight;
-    private bool m_trackObj = false;
+    private bool m_trackObj;
+
+    void Start()
+    {
+        m_camera = Camera.main;
+    }
     
     public void SetupTracking(GameObject target, RectTransform rect)
     { 
-        m_camera = Camera.main;
         m_targetObj = target;
         m_rectTransform = rect;
         m_screenWidth = Screen.width;
         m_screenHeight = Screen.height;
         m_trackObj = true;
+    }
+
+    public void StopTracking()
+    {
+        m_trackObj = false;
     }
 
     void LateUpdate()
@@ -32,5 +41,5 @@ public class Track3dObject : MonoBehaviour
         m_screenPos.y -= m_screenHeight / 2 - 35f;
         m_rectTransform.anchoredPosition = new Vector2(m_screenPos.x, m_screenPos.y);
     }
-    
+   
 }
