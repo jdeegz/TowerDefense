@@ -292,6 +292,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CreatePaths:
                 break;
             case GameplayState.Setup:
+                UpdateGameSpeed(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
                 m_wave++;
@@ -384,9 +385,11 @@ public class GameplayManager : MonoBehaviour
         {
             case ResourceManager.ResourceType.Wood:
                 m_woodGathererList.Add(gatherer);
+                ResourceManager.Instance.UpdateWoodGathererAmount(1);
                 break;
             case ResourceManager.ResourceType.Stone:
                 m_stoneGathererList.Add(gatherer);
+                ResourceManager.Instance.UpdateStoneGathererAmount(1);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

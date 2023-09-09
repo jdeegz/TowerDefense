@@ -64,11 +64,9 @@ public class GathererController : MonoBehaviour
         {
             case ResourceManager.ResourceType.Wood:
                 GameplayManager.Instance.AddGathererToList(this, m_gatherer.m_type);
-                ResourceManager.Instance.UpdateWoodGathererAmount(1);
                 break;
             case ResourceManager.ResourceType.Stone:
                 GameplayManager.Instance.AddGathererToList(this, m_gatherer.m_type);
-                ResourceManager.Instance.UpdateStoneGathererAmount(1);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -185,7 +183,9 @@ public class GathererController : MonoBehaviour
         switch (m_gathererTask)
         {
             case GathererTask.Idling:
-                StartMoving(GetClosestObject(GameplayManager.Instance.m_castleController.m_castleEntrancePoints).transform.position);
+                Vector3 idlePos = GameplayManager.Instance.m_castleController.gameObject.transform.position;
+                idlePos = new Vector3(idlePos.x, 0, idlePos.z-2f);
+                StartMoving(idlePos);
                 break;
             case GathererTask.FindingHarvestablePoint:
                 if (m_curHarvestNode)

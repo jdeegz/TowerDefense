@@ -43,7 +43,8 @@ public class ResourceManager : MonoBehaviour
 
     public void UpdateStoneAmount(int amount)
     {
-        UpdateStoneBank?.Invoke(m_stoneBank += amount);
+        m_stoneBank += amount;
+        UpdateStoneBank?.Invoke(m_stoneBank);
     }
 
     public int GetStoneAmount()
@@ -53,7 +54,8 @@ public class ResourceManager : MonoBehaviour
 
     public void UpdateWoodAmount(int amount)
     {
-        UpdateWoodBank?.Invoke(m_woodBank += amount);
+        m_woodBank += amount;
+        UpdateWoodBank?.Invoke(m_woodBank);
     }
 
     public int GetWoodAmount()
@@ -63,7 +65,8 @@ public class ResourceManager : MonoBehaviour
 
     public void UpdateStoneGathererAmount(int amount)
     {
-        UpdateStoneGathererCount?.Invoke(m_stoneGathererCount += amount);
+        m_stoneGathererCount += amount;
+        UpdateStoneGathererCount?.Invoke(m_stoneGathererCount);
     }
 
     public int GetStoneGathererAmount()
@@ -73,7 +76,8 @@ public class ResourceManager : MonoBehaviour
 
     public void UpdateWoodGathererAmount(int amount)
     {
-        UpdateWoodGathererCount?.Invoke(m_woodGathererCount+= amount);
+        m_woodGathererCount += amount;
+        UpdateWoodGathererCount?.Invoke(m_woodGathererCount);
     }
 
     public int GetWoodGathererAmount()

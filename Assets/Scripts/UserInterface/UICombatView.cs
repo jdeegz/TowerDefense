@@ -152,11 +152,6 @@ public class UICombatView : MonoBehaviour
         m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_maxHealth;
         m_curCastleHealth = m_maxCastleHealth;
         m_castleHealthLabel.SetText("Castle Health: " + m_curCastleHealth + "/" + m_maxCastleHealth);
-        m_woodGathererLabel.SetText("0");
-        m_stoneGathererLabel.SetText("0");
-        m_woodBankLabel.SetText("0");
-        m_stoneBankLabel.SetText("0");
-
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
