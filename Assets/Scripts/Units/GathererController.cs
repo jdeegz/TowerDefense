@@ -11,6 +11,8 @@ public class GathererController : MonoBehaviour
     [SerializeField] private ParticleSystem m_idleStateVFX;
     public GathererTask m_gathererTask;
     public Animator m_animator;
+    [SerializeField] private Vector2Int m_curPos;
+    [SerializeField] private Cell m_curCell;
 
     public enum GathererTask
     {
@@ -54,6 +56,9 @@ public class GathererController : MonoBehaviour
     {
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
+            m_curPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
+            m_curCell = Util.GetCellFromPos(m_curPos);
+            m_curCell.UpdateActorCount(1);
             m_navMeshAgent.enabled = true;
         }
     }
@@ -99,6 +104,15 @@ public class GathererController : MonoBehaviour
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+        
+        Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
+        
+        if(newPos != m_curPos){
+            m_curCell.UpdateActorCount(-1);
+            m_curPos = newPos;
+            m_curCell = Util.GetCellFromPos(m_curPos);
+            m_curCell.UpdateActorCount(1);
         }
     }
 

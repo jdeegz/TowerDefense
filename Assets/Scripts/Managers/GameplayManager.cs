@@ -504,6 +504,11 @@ public class GameplayManager : MonoBehaviour
             return false;
         }
 
+        if (curCell.m_actorCount > 0)
+        {
+            return false;
+        }
+
         //If the currenct cell is occupied (by a structure), not a valid spot.
         if (curCell.m_isOccupied)
         {
