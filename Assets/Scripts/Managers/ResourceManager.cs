@@ -22,8 +22,8 @@ public class ResourceManager : MonoBehaviour
     public static event Action<int> UpdateStoneGathererCount;
     public static event Action<int> UpdateWoodGathererCount;
 
-    public static event Action<int> UpdateWoodBank;
-    public static event Action<int> UpdateStoneBank;
+    public static event Action<int, int> UpdateWoodBank;
+    public static event Action<int, int> UpdateStoneBank;
 
     public int m_startingStone;
     public int m_startingWood;
@@ -44,7 +44,7 @@ public class ResourceManager : MonoBehaviour
     public void UpdateStoneAmount(int amount)
     {
         m_stoneBank += amount;
-        UpdateStoneBank?.Invoke(m_stoneBank);
+        UpdateStoneBank?.Invoke(m_stoneBank, amount);
     }
 
     public int GetStoneAmount()
@@ -55,7 +55,7 @@ public class ResourceManager : MonoBehaviour
     public void UpdateWoodAmount(int amount)
     {
         m_woodBank += amount;
-        UpdateWoodBank?.Invoke(m_woodBank);
+        UpdateWoodBank?.Invoke(m_woodBank, amount);
     }
 
     public int GetWoodAmount()

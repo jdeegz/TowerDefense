@@ -604,6 +604,7 @@ public class GameplayManager : MonoBehaviour
         ValueTuple<int, int> cost = newTower.GetTowercost();
         ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
         ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
+        IngameUIController.Instance.SpawnCurrencyAlert(cost.Item2, cost.Item1, false, newTowerObj.transform.position);
         OnTowerBuild?.Invoke();
     }
 
@@ -629,6 +630,7 @@ public class GameplayManager : MonoBehaviour
         RemoveTowerFromList(tower);
         ResourceManager.Instance.UpdateStoneAmount(stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(woodValue);
+        IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, true, tower.transform.position);
         Destroy(tower.gameObject);
         m_curSelectable = null;
         UpdateInteractionState(InteractionState.Idle);

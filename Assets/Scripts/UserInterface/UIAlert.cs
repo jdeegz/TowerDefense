@@ -27,8 +27,9 @@ public class UIAlert : MonoBehaviour
         }
     }
 
-    public void SetLabelText(string text)
+    public void SetLabelText(string text, Color color)
     {
         m_label.SetText(text);
+        m_label.color = color;
     }
 }

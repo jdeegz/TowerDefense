@@ -437,9 +437,11 @@ public class GathererController : MonoBehaviour
         {
             case ResourceManager.ResourceType.Wood:
                 ResourceManager.Instance.UpdateWoodAmount(m_resourceCarried);
+                IngameUIController.Instance.SpawnCurrencyAlert(m_resourceCarried, 0, true, transform.position);
                 break;
             case ResourceManager.ResourceType.Stone:
                 ResourceManager.Instance.UpdateStoneAmount(m_resourceCarried);
+                IngameUIController.Instance.SpawnCurrencyAlert(0, m_resourceCarried, true, transform.position);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

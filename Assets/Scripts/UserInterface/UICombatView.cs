@@ -57,14 +57,14 @@ public class UICombatView : MonoBehaviour
         m_stoneGathererLabel.SetText(i.ToString());
     }
 
-    private void UpdateWoodDisplay(int i)
+    private void UpdateWoodDisplay(int total, int delta)
     {
-        m_woodBankLabel.SetText(i.ToString());
+        m_woodBankLabel.SetText(total.ToString());
     }
 
-    private void UpdateStoneDisplay(int i)
+    private void UpdateStoneDisplay(int total, int delta)
     {
-        m_stoneBankLabel.SetText(i.ToString());
+        m_stoneBankLabel.SetText(total.ToString());
     }
 
     void OnDestroy()
@@ -190,7 +190,7 @@ public class UICombatView : MonoBehaviour
     private void Alert(string text)
     {
         GameObject curAlert = Instantiate(m_alertPrefab, m_alertRootObj.transform);
-        curAlert.GetComponent<UIAlert>().SetLabelText(text);
+        curAlert.GetComponent<UIAlert>().SetLabelText(text, Color.red);
     }
 
     private void OnPlayButtonClicked()

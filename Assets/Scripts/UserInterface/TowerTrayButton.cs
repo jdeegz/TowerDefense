@@ -25,22 +25,22 @@ public class TowerTrayButton : MonoBehaviour
         m_button = GetComponent<Button>();
         ResourceManager.UpdateStoneBank += CheckStoneCost;
         ResourceManager.UpdateWoodBank += CheckWoodCost;
-        CheckStoneCost(ResourceManager.Instance.GetStoneAmount());
-        CheckWoodCost(ResourceManager.Instance.GetWoodAmount());
+        CheckStoneCost(ResourceManager.Instance.GetStoneAmount(), 0);
+        CheckWoodCost(ResourceManager.Instance.GetWoodAmount(), 0);
         
        m_button.onClick.AddListener(SelectTowerButton);
     }
 
-    private void CheckStoneCost(int i)
+    private void CheckStoneCost(int total, int delta)
     {
-        m_canAffordStone = i >= m_towerData.m_stoneCost;
+        m_canAffordStone = total >= m_towerData.m_stoneCost;
         //Debug.Log("Check stone cost: " + i);
         CanAffordToBuildTower();
     }
 
-    private void CheckWoodCost(int i)
+    private void CheckWoodCost(int total, int delta)
     {
-        m_canAffordWood = i >= m_towerData.m_woodCost;
+        m_canAffordWood = total >= m_towerData.m_woodCost;
         //Debug.Log("Check wood cost: " + i);
         CanAffordToBuildTower();
     }
