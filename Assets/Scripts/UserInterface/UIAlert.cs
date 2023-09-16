@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class UIAlert : MonoBehaviour
@@ -9,22 +11,17 @@ public class UIAlert : MonoBehaviour
 
     [SerializeField] private float m_lifeTime;
 
-    private float m_age;
+    private RectTransform m_objRectTransform;
     
-    // Start is called before the first frame update
     void Start()
     {
-            
+        m_objRectTransform = gameObject.GetComponent<RectTransform>();
+        Vector2 endPos = new Vector2(m_objRectTransform.anchoredPosition.x, m_objRectTransform.anchoredPosition.y + 100f);
+        m_objRectTransform.DOAnchorPos(endPos, m_lifeTime).OnComplete(OnDestroy);
     }
-
-    // Update is called once per frame
-    void Update()
+    void OnDestroy()
     {
-        m_age += Time.deltaTime;
-        if (m_age >= m_lifeTime)
-        {
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
 
     public void SetLabelText(string text, Color color)

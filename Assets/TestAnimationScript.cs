@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,10 +10,12 @@ public class TestAnimationScript : MonoBehaviour
     public RectTransform m_rect;
     public Image m_image;
     public Gradient m_gradient;
+    public RectTransform m_endRect;
+    public GameObject m_alert;
 
     public Button m_moveButton, m_stretchButton, m_fadeButton, m_shakeButton, m_punchButton, m_sizeButton;
     private bool m_moved, m_colored, m_faded, m_shaked, m_punched, m_sized;
-    private Tween m_moveTween, m_colorTween, m_fadeTween, m_shakeTween, m_punchTween, m_sizeTween;
+    private Tween m_moveTween, m_colorTween, m_fadeTween, m_shakeTween, m_punchTween, m_sizeTween, m_spawnTween;
     private Sequence m_tweenSequence;
 
     // Start is called before the first frame update
@@ -20,7 +23,7 @@ public class TestAnimationScript : MonoBehaviour
     {
         m_moveButton.onClick.AddListener(OnMovePressed);
         m_stretchButton.onClick.AddListener(OnColorPressed);
-        m_fadeButton.onClick.AddListener(OnFadePressed);
+        m_fadeButton.onClick.AddListener(OnSpawnPressed);
         m_shakeButton.onClick.AddListener(OnShakePressed);
         m_punchButton.onClick.AddListener(OnPunchPressed);
         m_sizeButton.onClick.AddListener(OnSizePressed);
@@ -109,8 +112,37 @@ public class TestAnimationScript : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
+    private RectTransform m_target = null;
+    private RectTransform m_spawnedObj;
+    private void OnSpawnPressed()
+    {
+        
+        GameObject obj = Instantiate(m_alert, transform);
+        m_spawnedObj = obj.GetComponent<RectTransform>();
+        m_spawnedObj.anchoredPosition = m_rect.anchoredPosition;
+        
+        UpdateTarget();
+        
+    }
+
+    void UpdateTarget()
+    {
+        if (m_target == m_endRect)
+        {
+            m_target = m_rect;
+        }
+        else
+        {
+            m_target = m_endRect;
+        }
+        Debug.Log($"{m_target} is target.");
+    }
     void Update()
     {
+        if (m_target != null && m_spawnedObj != null)
+        {
+            m_moveTween = m_spawnedObj.DOAnchorPos(m_target.anchoredPosition, 1).SetLoops(-1);
+        }
+        
     }
 }
