@@ -72,8 +72,8 @@ public class UITowerSelectHUD : MonoBehaviour
 
     public void DeselectTower()
     {
-        m_curTower = null;
         m_track3dObject.StopTracking();
+        m_curTower = null;
         ToggleTowerSelectHUD(false);
     }
 }

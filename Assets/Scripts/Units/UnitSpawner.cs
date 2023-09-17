@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 public class UnitSpawner : MonoBehaviour
 {
     public Transform m_spawnPoint;
+    public List<CreepWave> m_trainingCreepWaves;
     public List<CreepWave> m_creepWaves;
 
     private bool m_isSpawnerActive = false;
@@ -52,12 +53,18 @@ public class UnitSpawner : MonoBehaviour
 
     private void StartSpawning()
     {
-        //Tell this spawner what creeps we'll be spawning.
-        int wave = GameplayManager.Instance.m_wave % m_creepWaves.Count;
-        //Debug.Log("Modulo wave number is : " + wave);
-
-        m_activeCreeps = new List<Creep>(m_creepWaves[wave].m_creeps);
-        //Debug.Log("Active Creeps List Created. Count: " + m_activeCreeps.Count);
+        //Creep waves start at wave 0, are shown as wave 1.
+        //If we have training waves, use them.
+        int gameplayWave = GameplayManager.Instance.m_wave;
+        if (gameplayWave < m_trainingCreepWaves.Count)
+        {
+            m_activeCreeps = new List<Creep>(m_trainingCreepWaves[gameplayWave].m_creeps);
+        }
+        else
+        {
+            int wave = (gameplayWave - m_trainingCreepWaves.Count) % m_creepWaves.Count;
+            m_activeCreeps = new List<Creep>(m_creepWaves[wave].m_creeps);
+        }
 
         //Assure each creep has a point to spawn to.
         for (int i = 0; i < m_activeCreeps.Count; ++i)
@@ -85,7 +92,6 @@ public class UnitSpawner : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-
         switch (newState)
         {
             case GameplayManager.GameplayState.BuildGrid:
