@@ -347,7 +347,7 @@ public class GameplayManager : MonoBehaviour
         {
             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
         }
-        
+
         Selectable objSelectable = obj.GetComponent<Selectable>();
         m_curSelectable = objSelectable;
 
@@ -602,8 +602,16 @@ public class GameplayManager : MonoBehaviour
 
         //Update banks
         ValueTuple<int, int> cost = newTower.GetTowercost();
-        ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
-        ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
+        if (cost.Item1 > 0)
+        {
+            ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
+        }
+
+        if (cost.Item2 > 0)
+        {
+            ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
+        }
+
         IngameUIController.Instance.SpawnCurrencyAlert(cost.Item2, cost.Item1, false, newTowerObj.transform.position);
         OnTowerBuild?.Invoke();
     }

@@ -68,6 +68,11 @@ public class CastleController : MonoBehaviour
         }
     }
 
+    public float RepairProgress()
+    {
+        return m_repairElapsedTime / m_repairHealthInterval;
+    }
+
     public void TakeDamage(int dmg)
     {
         if (m_hitFlashCoroutine != null)

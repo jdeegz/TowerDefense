@@ -30,6 +30,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
+    [SerializeField] private GameObject m_castleRepairDisplayObj;
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
@@ -39,6 +40,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_woodGathererDisplay;
     [SerializeField] private RectTransform m_stoneGathererDisplay;
 
+    [SerializeField] private Image m_castleRepairFill;
 
     private float m_timeToNextWave;
     private int m_curCastleHealth;
@@ -49,6 +51,7 @@ public class UICombatView : MonoBehaviour
     private Tween m_stoneBankShake;
     private Tween m_woodGathererShake;
     private Tween m_stoneGathererShake;
+    private CastleController m_castleController;
 
     void Awake()
     {
@@ -165,6 +168,7 @@ public class UICombatView : MonoBehaviour
 
         //gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
         m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build);
+        m_castleRepairDisplayObj.SetActive(state == GameplayManager.GameplayState.Build && m_curCastleHealth < m_maxCastleHealth);
     }
 
     private void GameplaySpeedChanged(GameplayManager.GameSpeed newSpeed)
@@ -205,7 +209,8 @@ public class UICombatView : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GameplayManager.Instance.m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
+        m_castleController = GameplayManager.Instance.m_castleController;
+        m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
         m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_maxHealth;
         m_curCastleHealth = m_maxCastleHealth;
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
@@ -274,6 +279,16 @@ public class UICombatView : MonoBehaviour
             string.Format("{0:D2}:{1:D2}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
         m_gameClockLabel.SetText(formattedTime);
 
+        if (m_castleRepairDisplayObj.activeSelf)
+        {
+            m_castleRepairFill.fillAmount = m_castleController.RepairProgress();
+
+            if (m_curCastleHealth >= m_maxCastleHealth)
+            {
+                m_castleRepairDisplayObj.SetActive(false);
+            }
+        }
+        
         DebugMenu();
     }
 
