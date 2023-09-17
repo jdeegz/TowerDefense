@@ -2,15 +2,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UICombatView : MonoBehaviour
 {
+    [Header("Buttons")]
     [SerializeField] private Button m_pauseButton;
     [SerializeField] private Button m_playButton;
     [SerializeField] private Button m_nextWaveButton;
+
+    [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
@@ -19,15 +24,31 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_waveLabel;
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
+
+    [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
-    [SerializeField] private RectTransform m_towerTrayLayoutObj;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
+
+    [Header("Rect Transforms")]
+    [SerializeField] private RectTransform m_towerTrayLayoutObj;
+    [SerializeField] private RectTransform m_healthDisplay;
+    [SerializeField] private RectTransform m_woodBankDisplay;
+    [SerializeField] private RectTransform m_stoneBankDisplay;
+    [SerializeField] private RectTransform m_woodGathererDisplay;
+    [SerializeField] private RectTransform m_stoneGathererDisplay;
+
+
     private float m_timeToNextWave;
     private int m_curCastleHealth;
     private int m_maxCastleHealth;
     private List<Button> m_buttons;
+    private Tween m_healthShake;
+    private Tween m_woodBankShake;
+    private Tween m_stoneBankShake;
+    private Tween m_woodGathererShake;
+    private Tween m_stoneGathererShake;
 
     void Awake()
     {
@@ -43,28 +64,60 @@ public class UICombatView : MonoBehaviour
 
     private void UpdateCastleHealthDisplay(int i)
     {
+        if (m_healthShake.IsActive())
+        {
+            m_healthShake.Kill();
+        }
+
         m_curCastleHealth += i;
-        m_castleHealthLabel.SetText("Castle Health: " + m_curCastleHealth + "/" + m_maxCastleHealth);
+        m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
+        m_healthShake = m_healthDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_healthShake.Play();
     }
 
     private void UpdateWoodGathererDisplay(int i)
     {
+        if (m_woodGathererShake.IsActive())
+        {
+            m_woodGathererShake.Kill();
+        }
         m_woodGathererLabel.SetText(i.ToString());
+        m_woodGathererShake = m_woodGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_woodGathererShake.Play();
     }
 
     private void UpdateStoneGathererDisplay(int i)
     {
+        if (m_stoneGathererShake.IsActive())
+        {
+            m_stoneGathererShake.Kill();
+        }
         m_stoneGathererLabel.SetText(i.ToString());
+        m_stoneGathererShake = m_stoneGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_stoneGathererShake.Play();
     }
 
     private void UpdateWoodDisplay(int total, int delta)
     {
+        if (m_woodBankShake.IsActive())
+        {
+            m_woodBankShake.Kill();
+        }
+
         m_woodBankLabel.SetText(total.ToString());
+        m_woodBankShake = m_woodBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_woodBankShake.Play();
     }
 
     private void UpdateStoneDisplay(int total, int delta)
     {
+        if (m_stoneBankShake.IsActive())
+        {
+            m_stoneBankShake.Kill();
+        }
         m_stoneBankLabel.SetText(total.ToString());
+        m_stoneBankShake = m_stoneBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_stoneBankShake.Play();
     }
 
     void OnDestroy()
@@ -90,7 +143,11 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
-                if(!gameObject.activeSelf){ gameObject.SetActive(true);}
+                if (!gameObject.activeSelf)
+                {
+                    gameObject.SetActive(true);
+                }
+
                 Debug.Log("Combat View Active");
                 m_timeToNextWave = GameplayManager.Instance.m_buildDuration;
                 break;
@@ -151,16 +208,16 @@ public class UICombatView : MonoBehaviour
         GameplayManager.Instance.m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
         m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_maxHealth;
         m_curCastleHealth = m_maxCastleHealth;
-        m_castleHealthLabel.SetText("Castle Health: " + m_curCastleHealth + "/" + m_maxCastleHealth);
+        m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
-        
+
         if (m_buttons == null)
         {
             m_buttons = new List<Button>();
         }
-        
+
         m_buttons.Add(m_nextWaveButton);
 
         BuildTowerTrayDisplay();
@@ -179,7 +236,7 @@ public class UICombatView : MonoBehaviour
             }
 
             Button buttonScript = buttonPrefab.GetComponent<Button>();
-            
+
             if (buttonScript)
             {
                 m_buttons.Add(buttonScript);

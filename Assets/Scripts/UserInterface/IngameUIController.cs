@@ -38,11 +38,8 @@ public class IngameUIController : MonoBehaviour
     {
         UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
         RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
-        m_screenWidth = Screen.width;
-        m_screenHeight = Screen.height;
-        Vector2 screenPos = m_camera.WorldToScreenPoint(worldPos);
-        screenPos.x -= m_screenWidth / 2;
-        screenPos.y -= m_screenHeight / 2 - 35f;
+        
+        Vector2 screenPos = GetScreenPosition(worldPos);
         rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
 
         Color textColor = isGood ? m_currencyGoodcolor : m_currencyBadcolor;
@@ -71,5 +68,26 @@ public class IngameUIController : MonoBehaviour
         }
         
         uiAlert.SetLabelText($"{alertString}", textColor);
+    }
+
+    public void SpawnHealthAlert(int healthValue, Vector3 worldPos)
+    {
+        UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
+        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
+        
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
+        string alertString = $"-{healthValue}<sprite name=\"ResourceHealth\">";
+        uiAlert.SetLabelText($"{alertString}", m_currencyBadcolor);
+    }
+
+    private Vector2 GetScreenPosition(Vector3 pos)
+    {
+        m_screenWidth = Screen.width;
+        m_screenHeight = Screen.height;
+        Vector2 screenPos = m_camera.WorldToScreenPoint(pos);
+        screenPos.x -= m_screenWidth / 2;
+        screenPos.y -= m_screenHeight / 2 - 35f;
+        return screenPos;
     }
 }

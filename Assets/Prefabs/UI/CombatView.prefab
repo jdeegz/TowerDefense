@@ -218,7 +218,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0<sprite name"
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1152,7 +1152,7 @@ RectTransform:
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 34}
-  m_Pivot: {x: 1, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2674843369782191709
 GameObject:
   m_ObjectHideFlags: 0
@@ -1529,10 +1529,15 @@ MonoBehaviour:
   m_castleHealthLabel: {fileID: 8043211634134099290}
   m_debugInfoLabel: {fileID: 8371430940947547457}
   m_towerTrayButtonPrefab: {fileID: 1338795559678056421, guid: 04284a80e0d40af4fb45124034f8c77e, type: 3}
-  m_towerTrayLayoutObj: {fileID: 5512446226814822863}
   m_alertRootObj: {fileID: 5146570696094432079}
   m_alertPrefab: {fileID: 3818641833424345620, guid: 8d1aef97a1be9e343a4d10f92d1ea0e0, type: 3}
   m_pausedDisplayObj: {fileID: 175418564362473737}
+  m_towerTrayLayoutObj: {fileID: 5512446226814822863}
+  m_healthDisplay: {fileID: 5876194687918785849}
+  m_woodBankDisplay: {fileID: 9116292513957194190}
+  m_stoneBankDisplay: {fileID: 4437853072421838833}
+  m_woodGathererDisplay: {fileID: 516981332650205551}
+  m_stoneGathererDisplay: {fileID: 3361926050920379464}
 --- !u!1 &3240179249797848962
 GameObject:
   m_ObjectHideFlags: 0
@@ -1820,7 +1825,7 @@ RectTransform:
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 34}
-  m_Pivot: {x: 1, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &4936488474206357345
 GameObject:
   m_ObjectHideFlags: 0
@@ -1927,7 +1932,7 @@ RectTransform:
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 60, y: 34}
-  m_Pivot: {x: 1, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &5146570696094432079
 GameObject:
   m_ObjectHideFlags: 0
@@ -2472,7 +2477,7 @@ RectTransform:
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 60, y: 34}
-  m_Pivot: {x: 1, y: 1}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &7265659549022606811
 GameObject:
   m_ObjectHideFlags: 0
@@ -3157,7 +3162,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Castle Health: 20/20'
+  m_text: 20/20<sprite name="ResourceHealth">
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

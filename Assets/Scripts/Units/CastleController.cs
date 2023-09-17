@@ -76,7 +76,7 @@ public class CastleController : MonoBehaviour
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
-
+        IngameUIController.Instance.SpawnHealthAlert(1, transform.position);
         UpdateHealth?.Invoke(-dmg);
     }
 
