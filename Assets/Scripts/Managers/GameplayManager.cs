@@ -434,6 +434,8 @@ public class GameplayManager : MonoBehaviour
 
     public void PreconstructTower(int i)
     {
+        if (i >= m_equippedTowers.Length) return;
+        
         ClearPreconstructedTower();
 
         //Set up the objects

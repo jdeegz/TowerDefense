@@ -228,8 +228,24 @@ public class UICombatView : MonoBehaviour
         BuildTowerTrayDisplay();
     }
 
+    private Dictionary<KeyCode, int> m_towerKeyMap;
+    
     private void BuildTowerTrayDisplay()
     {
+        m_towerKeyMap = new Dictionary<KeyCode, int>
+        {
+            { KeyCode.Alpha1, 0 },
+            { KeyCode.Alpha2, 1 },
+            { KeyCode.Alpha3, 2 },
+            { KeyCode.Alpha4, 3 },
+            { KeyCode.Alpha5, 4 },
+            { KeyCode.Alpha6, 5 },
+            { KeyCode.Alpha7, 6 },
+            { KeyCode.Alpha8, 7 },
+            { KeyCode.Alpha9, 8 },
+            { KeyCode.Alpha0, 9 },
+        };
+        
         for (int i = 0; i < GameplayManager.Instance.m_equippedTowers.Length; ++i)
         {
             GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_towerTrayLayoutObj);
@@ -290,6 +306,14 @@ public class UICombatView : MonoBehaviour
         }
         
         DebugMenu();
+
+        foreach (var kvp in m_towerKeyMap)
+        {
+            if (Input.GetKeyDown(kvp.Key))
+            {
+                GameplayManager.Instance.PreconstructTower(kvp.Value);
+            }
+        }
     }
 
 
