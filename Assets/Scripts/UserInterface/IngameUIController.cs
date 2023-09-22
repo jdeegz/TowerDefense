@@ -31,7 +31,9 @@ public class IngameUIController : MonoBehaviour
     {
         Instance = this;
         m_camera = Camera.main;
-        m_canvas = GetComponent<Canvas>();
+        m_canvas = GetComponentInParent<Canvas>();
+        m_screenWidth = Screen.width / m_canvas.scaleFactor;
+        m_screenHeight = Screen.height / m_canvas.scaleFactor;
     }
 
     public void SpawnCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)
@@ -39,9 +41,11 @@ public class IngameUIController : MonoBehaviour
         UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
         RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
         
-        Vector2 screenPos = GetScreenPosition(worldPos);
-        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
-
+        Vector2 viewportPos = m_camera.WorldToViewportPoint(worldPos);
+        viewportPos.x = viewportPos.x * m_screenWidth - m_screenWidth * 0.5f;
+        viewportPos.y = viewportPos.y * m_screenHeight - m_screenHeight * 0.5f;
+        rectTransform.anchoredPosition = viewportPos;
+        
         Color textColor = isGood ? m_currencyGoodcolor : m_currencyBadcolor;
 
         string woodMagnitude;

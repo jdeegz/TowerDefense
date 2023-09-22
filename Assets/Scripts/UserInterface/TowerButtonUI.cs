@@ -6,6 +6,11 @@ using UnityEngine.UI;
 
 public class TowerButtonUI : MonoBehaviour
 {
+    
+    /// <summary>
+    ///
+    /// THIS ISNT USED...???
+    /// </summary>
     public enum ButtonState
     {
         CanBuild,

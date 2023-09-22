@@ -13,6 +13,7 @@ public class UnitEnemy : MonoBehaviour
     public Transform m_targetPoint;
     public float m_moveSpeed;
     public int m_maxHealth = 2;
+    public float m_healthMeterOffset;
     
     private int m_curHealth;
     private Transform m_goal;

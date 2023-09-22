@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    /// <summary>
+    /// THIS ISNT USED???
+    /// </summary>
     //to change into Tower data
     public GameObject m_preconstructedTower;
     public TowerButtonUI[] m_towerButtons;
@@ -15,7 +18,7 @@ public class UIManager : MonoBehaviour
 
     void Update()
     {
-        //Spawn the preconstructedTower and stick it to the mouse / grid.
+        /*//Spawn the preconstructedTower and stick it to the mouse / grid.
         if (m_preconstructedTower)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -25,7 +28,7 @@ public class UIManager : MonoBehaviour
                 gridPos.y = .02f;
                 m_preconstructedTower.transform.position = gridPos;
             }
-        }
+        }*/
     }
 
     public void SelectTower(TowerButtonUI towerSelected)

@@ -21,7 +21,7 @@ public class UIHealthMeter : MonoBehaviour
         m_enemy = enemy;
         m_maxHealth = m_enemy.m_maxHealth;
         m_curHealth = m_enemy.m_maxHealth;
-        m_track3dObject.SetupTracking(m_enemy.gameObject, GetComponent<RectTransform>());
+        m_track3dObject.SetupTracking(m_enemy.gameObject, GetComponent<RectTransform>(), m_enemy.m_healthMeterOffset);
         m_enemy.UpdateHealth += OnUpdateHealth;
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
     }

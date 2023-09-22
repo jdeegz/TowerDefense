@@ -309,8 +309,8 @@ public static class Util
         int z = Mathf.FloorToInt(pos.z + 0.5f);
         return  new Vector2Int(x, z);
     } 
-
-    /*public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)
+    
+   /*public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)
     {
         int row = (int) obj.transform.position.x;
         int col = (int) obj.transform.position.y;

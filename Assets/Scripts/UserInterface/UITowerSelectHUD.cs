@@ -38,7 +38,7 @@ public class UITowerSelectHUD : MonoBehaviour
     public void SelectTower(GameObject obj)
     {
         m_curTower = obj.GetComponent<TowerController>();
-        m_track3dObject.SetupTracking(obj, GetComponent<RectTransform>());
+        m_track3dObject.SetupTracking(obj, GetComponent<RectTransform>(), 0);
         
         //Set assets
         ValueTuple<int, int> vars = m_curTower.GetTowerSellCost();
