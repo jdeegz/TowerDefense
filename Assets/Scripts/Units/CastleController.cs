@@ -11,6 +11,13 @@ public class CastleController : MonoBehaviour
     [SerializeField] private float m_repairHealthInterval;
     [SerializeField] private List<GameObject> m_castleCorners;
     [SerializeField] public List<GameObject> m_castleEntrancePoints;
+    [SerializeField] private AudioSource m_audioSource;
+    [SerializeField] private AudioClip m_audioHealthGained;
+    [SerializeField] private AudioClip m_audioHealthLost;
+    [SerializeField] private AudioClip m_audioResourceGained;
+    [SerializeField] private AudioClip m_audioResourceLost;
+    [SerializeField] private AudioClip m_audioWaveStart;
+    [SerializeField] private AudioClip m_audioWaveEnd;
 
     private List<MeshRenderer> m_allMeshRenderers;
     private List<Color> m_allOrigColors;
@@ -31,6 +38,26 @@ public class CastleController : MonoBehaviour
         DestroyCastle += OnCastleDestroyed;
 
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        ResourceManager.UpdateStoneBank += OnBankUpdated;
+        ResourceManager.UpdateWoodBank += OnBankUpdated;
+        m_audioSource = GetComponent<AudioSource>();
+    }
+
+    void OnBankUpdated(int amount, int total)
+    {
+        if (amount > 0)
+        {
+            PlayAudio(m_audioResourceGained);
+        }
+        else
+        {
+            PlayAudio(m_audioResourceLost);
+        }
+    }
+
+    public void PlayAudio(AudioClip audioClip)
+    {
+        m_audioSource.PlayOneShot(audioClip);
     }
 
     void OnDestroy()
@@ -39,16 +66,42 @@ public class CastleController : MonoBehaviour
         DestroyCastle -= OnCastleDestroyed;
 
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+        ResourceManager.UpdateStoneBank -= OnBankUpdated;
+        ResourceManager.UpdateWoodBank -= OnBankUpdated;
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        if (newState == GameplayManager.GameplayState.PlaceObstacles)
+        switch (newState)
         {
-            foreach (GameObject obj in m_castleCorners)
-            {
-                GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
-            }
+            case GameplayManager.GameplayState.BuildGrid:
+                break;
+            case GameplayManager.GameplayState.PlaceObstacles:
+                foreach (GameObject obj in m_castleCorners)
+                {
+                    GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
+                }
+                break;
+            case GameplayManager.GameplayState.CreatePaths:
+                break;
+            case GameplayManager.GameplayState.Setup:
+                break;
+            case GameplayManager.GameplayState.SpawnEnemies:
+                PlayAudio(m_audioWaveStart);
+                break;
+            case GameplayManager.GameplayState.Combat:
+                break;
+            case GameplayManager.GameplayState.Build:
+                PlayAudio(m_audioWaveEnd);
+                break;
+            case GameplayManager.GameplayState.Paused:
+                break;
+            case GameplayManager.GameplayState.Victory:
+                break;
+            case GameplayManager.GameplayState.Defeat:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
     }
 
@@ -88,6 +141,15 @@ public class CastleController : MonoBehaviour
     void OnUpdateHealth(int i)
     {
         m_curHealth += i;
+
+        if (i > 0)
+        {
+            PlayAudio(m_audioHealthGained);
+        }
+        else
+        {
+            PlayAudio(m_audioHealthLost);
+        }
 
         if (m_curHealth <= 0)
         {

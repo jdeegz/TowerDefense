@@ -61,7 +61,7 @@ public class GameplayManager : MonoBehaviour
     private int m_preconstructedTowerIndex;
 
     [SerializeField] private ScriptableUIStrings m_uiStrings;
-
+    
     private Camera m_mainCamera;
     public float m_buildDuration;
     private float m_timeToNextWave;

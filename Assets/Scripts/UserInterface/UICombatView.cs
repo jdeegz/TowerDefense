@@ -41,6 +41,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_stoneGathererDisplay;
 
     [SerializeField] private Image m_castleRepairFill;
+    [SerializeField] private AudioSource m_audioSource;
 
     private float m_timeToNextWave;
     private int m_curCastleHealth;

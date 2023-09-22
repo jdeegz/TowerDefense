@@ -17,4 +17,8 @@ public class ScriptableTowerDataObject : ScriptableObject
     public Sprite m_uiIcon;
     public GameObject m_prefab;
     public GameObject m_projectilePrefab;
+
+    public List<AudioClip> m_audioFireClips;
+    public AudioClip m_audioBuildClip;
+    public AudioClip m_audioDestroyClip;
 }

@@ -9,6 +9,7 @@ public class Projectile : MonoBehaviour
     [SerializeField] private float m_projectileSpeed = 4f;
     [SerializeField] private int m_projectileDamage = 1;
     [SerializeField] private Rigidbody m_rb;
+    [SerializeField] private AudioClip m_audioImpactSound;
 
     private void FixedUpdate()
     {
@@ -30,7 +31,7 @@ public class Projectile : MonoBehaviour
     private void OnCollisionEnter(Collision other)
     {
         //Debug.Log(gameObject.name + " has hit : " + other.gameObject.name);
-        other.gameObject.GetComponent<UnitEnemy>().TakeDamage(m_projectileDamage);
+        other.gameObject.GetComponent<UnitEnemy>().TakeDamage(m_projectileDamage, m_audioImpactSound);
         Destroy(gameObject);
     }
 }

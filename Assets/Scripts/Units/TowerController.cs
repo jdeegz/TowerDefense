@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class TowerController : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class TowerController : MonoBehaviour
     private UnitEnemy m_curTarget;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
+    private AudioSource m_audioSource;
     
     
 
@@ -27,6 +29,7 @@ public class TowerController : MonoBehaviour
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
         m_towerRangeCircle.enabled = false;
         SetupRangeCircle(m_towerRangeCircleSegments, m_towerData.m_fireRange);
+        m_audioSource = GetComponent<AudioSource>();
     }
     
     private void GameObjectSelected(GameObject obj)
@@ -96,6 +99,9 @@ public class TowerController : MonoBehaviour
             Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
         projectileScript.SetTarget(m_curTarget.m_targetPoint);
+
+        int i = Random.Range(0, m_towerData.m_audioFireClips.Count);
+        m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
     }
 
     private void FindTarget()
@@ -140,10 +146,13 @@ public class TowerController : MonoBehaviour
         gameObject.GetComponent<NavMeshObstacle>().enabled = true;
         m_isBuilt = true;
         
+        m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
+        
     }
 
     public void OnDestroy()
     {
+        m_audioSource.PlayOneShot(m_towerData.m_audioDestroyClip);
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }

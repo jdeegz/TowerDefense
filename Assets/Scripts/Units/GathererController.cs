@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class GathererController : MonoBehaviour
 {
@@ -13,7 +14,11 @@ public class GathererController : MonoBehaviour
     public Animator m_animator;
     [SerializeField] private Vector2Int m_curPos;
     [SerializeField] private Cell m_curCell;
-
+    
+    [Header("Audio")]
+    [SerializeField] private List<AudioClip> m_woodChopClips;
+    private AudioSource m_audioSource;
+    
     public enum GathererTask
     {
         Idling,
@@ -42,6 +47,7 @@ public class GathererController : MonoBehaviour
         GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnCommandRequested += CommandRequested;
+        m_audioSource = GetComponent<AudioSource>();
     }
 
     private void OnDestroy()
@@ -121,6 +127,12 @@ public class GathererController : MonoBehaviour
         m_isSelected = selectedObj == gameObject;
     }
 
+    public void AudioPlayWoodChop()
+    {
+        int i = Random.Range(0, m_woodChopClips.Count);
+        m_audioSource.PlayOneShot(m_woodChopClips[i]);
+    }
+    
     private void CommandRequested(GameObject requestObj, Selectable.SelectedObjectType type)
     {
         if (!m_isSelected)

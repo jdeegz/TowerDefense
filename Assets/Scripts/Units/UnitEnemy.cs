@@ -22,6 +22,7 @@ public class UnitEnemy : MonoBehaviour
     private Coroutine m_hitFlashCoroutine;
     private Vector2Int m_curPos;
     private Cell m_curCell;
+    private AudioSource m_audioSource;
 
     public event Action<int> UpdateHealth;
     public event Action DestroyEnemy;
@@ -45,6 +46,8 @@ public class UnitEnemy : MonoBehaviour
         m_curPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
         m_curCell = Util.GetCellFromPos(m_curPos);
         m_curCell.UpdateActorCount(1);
+
+        m_audioSource = GetComponent<AudioSource>();
     }
 
     private void CollectMeshRenderers(Transform parent)
@@ -111,7 +114,7 @@ public class UnitEnemy : MonoBehaviour
         m_navMeshAgent.SetDestination(pos);
     }
 
-    public void TakeDamage(int dmg)
+    public void TakeDamage(int dmg, AudioClip audioClip)
     {
         if (m_hitFlashCoroutine != null)
         {
@@ -119,7 +122,7 @@ public class UnitEnemy : MonoBehaviour
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
-        
+        m_audioSource.PlayOneShot(audioClip);
         UpdateHealth?.Invoke(-dmg);
     }
 
