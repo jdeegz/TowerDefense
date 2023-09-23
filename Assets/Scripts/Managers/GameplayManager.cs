@@ -219,7 +219,11 @@ public class GameplayManager : MonoBehaviour
     {
         Instance = this;
         m_mainCamera = Camera.main;
-        m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
+        if (m_enemyGoal != null)
+        {
+            m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
+        }
+
         OnGameplayStateChanged += GameplayManagerStateChanged;
         OnGameSpeedChanged += GameplaySpeedChanged;
         OnGameObjectSelected += GameObjectSelected;

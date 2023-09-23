@@ -10,7 +10,7 @@ public class ArcTowerController : MonoBehaviour
     [SerializeField] private LayerMask m_layerMask;
 
 
-    private bool m_isBuilt;
+    public bool m_isBuilt;
     private UnitTargetDummy m_curTarget;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
@@ -20,15 +20,14 @@ public class ArcTowerController : MonoBehaviour
     void Update()
     {
         //Dont do anything until we're built.
-        /*if (!m_isBuilt)
+        if (!m_isBuilt)
         {
             return;
-        }*/
+        }
 
         if (m_curTarget == null)
         {
             //Look away from base.
-            Debug.Log("Looking for enemy.");
             FindTarget();
             return;
         }
