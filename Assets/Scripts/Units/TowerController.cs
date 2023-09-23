@@ -100,7 +100,7 @@ public class TowerController : MonoBehaviour
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
         projectileScript.SetTarget(m_curTarget.m_targetPoint);
 
-        int i = Random.Range(0, m_towerData.m_audioFireClips.Count);
+        int i = Random.Range(0, m_towerData.m_audioFireClips.Count-1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
     }
 

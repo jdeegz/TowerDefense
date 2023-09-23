@@ -8,7 +8,9 @@ public class ScriptableTowerDataObject : ScriptableObject
     public string m_name;
     public int m_targetRange;
     public int m_fireRange;
+    public float m_fireConeAngle;
     public float m_fireRate;
+    public int m_baseDamage;
     public float m_rotationSpeed;
     public int m_woodCost;
     public int m_stoneCost;
