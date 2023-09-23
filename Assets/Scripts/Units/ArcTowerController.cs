@@ -11,7 +11,7 @@ public class ArcTowerController : MonoBehaviour
 
 
     public bool m_isBuilt;
-    private UnitTargetDummy m_curTarget;
+    private UnitEnemy m_curTarget;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
     private AudioSource m_audioSource;
@@ -81,8 +81,8 @@ public class ArcTowerController : MonoBehaviour
             if (Vector3.Dot(direction.normalized, m_turretPivot.forward.normalized) > coneAngleCosine && IsTargetInRange(hits[i].transform.position))
             {
                 // Target is within the cone.
-                UnitTargetDummy enemyHit = hits[i].transform.GetComponent<UnitTargetDummy>();
-                enemyHit.TakeDamage(m_towerData.m_baseDamage);
+                UnitEnemy enemyHit = hits[i].transform.GetComponent<UnitEnemy>();
+                enemyHit.OnTakeDamage(m_towerData.m_baseDamage);
             }
         }
     }
@@ -104,7 +104,7 @@ public class ArcTowerController : MonoBehaviour
                     closestDistance = distance;
                 }
             }
-            m_curTarget = hits[closestIndex].transform.GetComponent<UnitTargetDummy>();
+            m_curTarget = hits[closestIndex].transform.GetComponent<UnitEnemy>();
         }
     }
 

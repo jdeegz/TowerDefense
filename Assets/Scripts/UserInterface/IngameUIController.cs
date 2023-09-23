@@ -23,13 +23,15 @@ public class IngameUIController : MonoBehaviour
     private Canvas m_canvas;
     private float m_screenWidth;
     private float m_screenHeight;
-    
-        
-    
-    // Start is called before the first frame update
-    void Start()
+
+
+    void Awake()
     {
         Instance = this;
+    }
+    
+    void Start()
+    {
         m_camera = Camera.main;
         m_canvas = GetComponentInParent<Canvas>();
         m_screenWidth = Screen.width / m_canvas.scaleFactor;

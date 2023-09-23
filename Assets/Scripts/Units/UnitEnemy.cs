@@ -5,31 +5,34 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class UnitEnemy : MonoBehaviour
 {
     [SerializeField] private NavMeshAgent m_navMeshAgent;
-
+    [SerializeField] private ScriptableUnitEnemy m_enemyData;
+    
     public Transform m_targetPoint;
-    public float m_moveSpeed;
-    public int m_maxHealth = 2;
-    public float m_healthMeterOffset;
-
-    private int m_curHealth;
+    
+    private float m_curMaxHealth;
+    private float m_curHealth;
+    private float m_curDamageReduction;
+    
+    private Vector2Int m_curPos;
+    private Cell m_curCell;
     private Transform m_goal;
     private List<MeshRenderer> m_allMeshRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
-    private Vector2Int m_curPos;
-    private Cell m_curCell;
     private AudioSource m_audioSource;
 
-    public event Action<int> UpdateHealth;
+    public event Action<float> UpdateHealth;
     public event Action DestroyEnemy;
 
     void Start()
     {
         //Setup with Gameplay Manager
+        m_navMeshAgent.speed = m_enemyData.m_moveSpeed;
         m_goal = GameplayManager.Instance.m_enemyGoal;
         StartMoving(m_goal.position);
         GameplayManager.Instance.AddEnemyToList(this);
@@ -38,9 +41,11 @@ public class UnitEnemy : MonoBehaviour
         m_curPos = Vector2Int.zero;
 
         //Setup Life & Damage
+        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.15f, GameplayManager.Instance.m_wave));
+        m_curHealth = m_curMaxHealth;
+        m_curDamageReduction = m_enemyData.m_damageReduction;
         UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
-        lifeMeter.SetEnemy(this);
-        m_curHealth = (int)MathF.Floor(m_maxHealth * Mathf.Pow(1.15f, GameplayManager.Instance.m_wave));
+        lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
         CollectMeshRenderers(transform);
 
         //Subscription to events
@@ -49,6 +54,7 @@ public class UnitEnemy : MonoBehaviour
 
         //Define AudioSource
         m_audioSource = GetComponent<AudioSource>();
+        m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
     }
 
     private void CollectMeshRenderers(Transform parent)
@@ -82,7 +88,6 @@ public class UnitEnemy : MonoBehaviour
     void Update()
     {
         //Setup Cell occupancy
-        //Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
         Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
         if (newPos != m_curPos)
         {
@@ -98,7 +103,7 @@ public class UnitEnemy : MonoBehaviour
         m_navMeshAgent.SetDestination(pos);
     }
 
-    public void TakeDamage(int dmg, AudioClip audioClip)
+    public void OnTakeDamage(float dmg)
     {
         if (m_hitFlashCoroutine != null)
         {
@@ -106,11 +111,12 @@ public class UnitEnemy : MonoBehaviour
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
-        m_audioSource.PlayOneShot(audioClip);
-        UpdateHealth?.Invoke(-dmg);
+        int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
+        m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
+        UpdateHealth?.Invoke(-dmg * m_curDamageReduction);
     }
 
-    void OnUpdateHealth(int i)
+    void OnUpdateHealth(float i)
     {
         m_curHealth += i;
 

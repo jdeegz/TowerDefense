@@ -8,32 +8,35 @@ public class UIHealthMeter : MonoBehaviour
 {
     [SerializeField] private Track3dObject m_track3dObject;
     [SerializeField] private Image m_lifeImage;
+    [SerializeField] private RectTransform m_rootRectTransform;
 
-    private int m_maxHealth;
-    private int m_curHealth;
+    private float m_maxHealth;
+    private float m_curHealth;
     private int m_newHealth;
 
     //Health needs to be abstracted out so a Castle and Enemy can use this same script.
     private UnitEnemy m_enemy;
 
-    public void SetEnemy(UnitEnemy enemy)
+    public void SetEnemy(UnitEnemy enemy, float health, float yOffset, float xScale)
     {
         m_enemy = enemy;
-        m_maxHealth = m_enemy.m_maxHealth;
-        m_curHealth = m_enemy.m_maxHealth;
-        m_track3dObject.SetupTracking(m_enemy.gameObject, GetComponent<RectTransform>(), m_enemy.m_healthMeterOffset);
+        m_maxHealth = health;
+        m_curHealth = health;
+        float originalWidth = m_rootRectTransform.rect.width;
+        m_rootRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalWidth * xScale);
+        m_track3dObject.SetupTracking(m_enemy.gameObject, GetComponent<RectTransform>(), yOffset);
         m_enemy.UpdateHealth += OnUpdateHealth;
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
     }
 
-    void OnUpdateHealth(int i)
+    void OnUpdateHealth(float i)
     {
         m_curHealth += i;
     }
 
     void Update()
     {
-        m_lifeImage.fillAmount = Mathf.Lerp(m_lifeImage.fillAmount, (float)m_curHealth / m_maxHealth, 10 * Time.deltaTime);
+        m_lifeImage.fillAmount = Mathf.Lerp(m_lifeImage.fillAmount, m_curHealth / m_maxHealth, 10 * Time.deltaTime);
     }
 
     void OnEnemyDestroyed()
