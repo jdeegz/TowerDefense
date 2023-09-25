@@ -28,6 +28,11 @@ public class Projectile : MonoBehaviour
         m_target = target;
     }
 
+    public void SetDamage(float dmg)
+    {
+        m_projectileDamage = dmg;
+    }
+
     private void OnCollisionEnter(Collision other)
     {
         other.gameObject.GetComponent<UnitEnemy>().OnTakeDamage(m_projectileDamage);

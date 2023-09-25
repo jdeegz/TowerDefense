@@ -65,7 +65,7 @@ public class TowerController : MonoBehaviour
 
         RotateTowardsTarget();
 
-        if (!IsTargetInRange())
+        if (!IsTargetInRange(m_curTarget.transform.position))
         {
             m_curTarget = null;
         }
@@ -95,8 +95,7 @@ public class TowerController : MonoBehaviour
 
     private void Fire()
     {
-        GameObject projectileObj =
-            Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
+        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
         projectileScript.SetTarget(m_curTarget.m_targetPoint);
 
@@ -106,20 +105,21 @@ public class TowerController : MonoBehaviour
 
     private void FindTarget()
     {
-        RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_targetRange, transform.forward,
-            m_layerMask);
-
+        RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_targetRange, transform.forward, m_layerMask);
+        float closestDistance = 999;
+        int closestIndex = -1;
         if (hits.Length > 0)
         {
             for (int i = 0; i < hits.Length; ++i)
             {
-                if (hits[i].transform.CompareTag("Enemy"))
+                float distance = Vector3.Distance(transform.position, hits[i].transform.position);
+                if (distance <= closestDistance)
                 {
-                    m_curTarget = hits[i].transform.GetComponent<UnitEnemy>();
-                    //Just gimmie the first and gtfo. Can refine later.
-                    break;
+                    closestIndex = i;
+                    closestDistance = distance;
                 }
             }
+            m_curTarget = hits[closestIndex].transform.GetComponent<UnitEnemy>();
         }
     }
 
@@ -133,9 +133,9 @@ public class TowerController : MonoBehaviour
             m_towerData.m_rotationSpeed * Time.deltaTime);
     }
 
-    private bool IsTargetInRange()
+    private bool IsTargetInRange(Vector3 targetPos)
     {
-        return Vector3.Distance(transform.position, m_curTarget.transform.position) < m_towerData.m_fireRange;
+        return Vector3.Distance(transform.position, targetPos) < m_towerData.m_fireRange;
     }
 
     public void SetupTower()
