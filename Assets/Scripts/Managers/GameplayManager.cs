@@ -43,7 +43,7 @@ public class GameplayManager : MonoBehaviour
     public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
     public Transform m_towerObjRoot;
-    public List<TowerController> m_towerList;
+    public List<Tower> m_towerList;
 
 
     [Header("Selected Object Info")] private Selectable m_curSelectable;
@@ -622,7 +622,7 @@ public class GameplayManager : MonoBehaviour
         OnTowerBuild?.Invoke();
     }
 
-    public void AddTowerToList(TowerController tower)
+    public void AddTowerToList(Tower tower)
     {
         m_towerList.Add(tower);
     }

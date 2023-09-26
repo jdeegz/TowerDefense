@@ -2,20 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VoidRayTowerController : MonoBehaviour
+public class VoidRayTowerController : Tower
 {
-    [SerializeField] private Transform m_turretPivot;
-    [SerializeField] private Transform m_muzzlePoint;
-    [SerializeField] private ScriptableTowerDataObject m_towerData;
-    [SerializeField] private LayerMask m_layerMask;
-
-
-    public bool m_isBuilt;
-    private UnitEnemy m_curTarget;
-    private float m_timeUntilFire;
-    private float m_facingThreshold = 10f;
-    private AudioSource m_audioSource;
-
     [Header("Edit")]
     public LineRenderer m_projectileLineRenderer;
     public float m_stackDropDelayTime;
@@ -34,16 +22,11 @@ public class VoidRayTowerController : MonoBehaviour
     public int m_curStacks;
     public float m_curDamage;
     public float m_curFireRate;
+    
     private Vector2 m_scrollOffset;
+    private float m_timeUntilFire;
+    private float m_facingThreshold = 10f;
 
-    //When the gun starts firing.
-    //Increment stacks(x) each time it fires.
-    //Attack Speed and Attack Damage is multiplied by X.
-    //When the tower has not fired for m_stackDropDelay(2s) remove 1 stack every m_totalResetTime(2s) / m_curStacks(x)
-    void Start()
-    {
-        m_audioSource = GetComponent<AudioSource>();
-    }
 
     void Update()
     {

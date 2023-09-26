@@ -179,12 +179,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8795141251248142417}
+  - component: {fileID: -6280129621682787800}
   - component: {fileID: 4478089951611948086}
   - component: {fileID: -8462519795219939483}
   - component: {fileID: 347791572052040698}
   - component: {fileID: 6278354036822932288}
   - component: {fileID: 7339216002131912985}
-  - component: {fileID: -6280129621682787800}
   m_Layer: 7
   m_Name: VoidTower
   m_TagString: Untagged
@@ -208,8 +208,71 @@ Transform:
   - {fileID: 4096268039680152604}
   - {fileID: 6212567473758362913}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-6280129621682787800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9140437940615734701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d35d2c9e15ef1b4abb2fbe8267f861d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_turretPivot: {fileID: 6212567473758362913}
+  m_muzzlePoint: {fileID: 3264323719037755305}
+  m_towerData: {fileID: 11400000, guid: 86a39f62503116942b0a2f6cbcc243ad, type: 2}
+  m_layerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  m_towerRangeCircle: {fileID: 6278354036822932288}
+  m_towerRangeCircleSegments: 0
+  m_isBuilt: 0
+  m_projectileLineRenderer: {fileID: 2878355285551236588}
+  m_stackDropDelayTime: 2
+  m_curStackDropDelay: 0
+  m_totalResetTime: 3
+  m_damagePower: 1.05
+  m_speedPower: 1.05
+  m_damageCap: 4
+  m_speedCap: 8
+  m_maxStacks: 30
+  m_beamGradient:
+    serializedVersion: 2
+    key0: {r: 0.03274554, g: 0, b: 0.8301887, a: 1}
+    key1: {r: 0.1254902, g: 0.20784315, b: 0.8705883, a: 1}
+    key2: {r: 0.20392159, g: 0.3921569, b: 0.9058824, a: 0}
+    key3: {r: 0.29803923, g: 0.6117647, b: 0.9450981, a: 0}
+    key4: {r: 0.4198113, g: 0.89485514, b: 1, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 17348
+    ctime2: 31226
+    ctime3: 47031
+    ctime4: 65535
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 5
+    m_NumAlphaKeys: 2
+  m_curStacks: 0
+  m_curDamage: 0
+  m_curFireRate: 0
 --- !u!65 &4478089951611948086
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -464,67 +527,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &-6280129621682787800
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9140437940615734701}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d35d2c9e15ef1b4abb2fbe8267f861d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_turretPivot: {fileID: 6212567473758362913}
-  m_muzzlePoint: {fileID: 3264323719037755305}
-  m_towerData: {fileID: 11400000, guid: 86a39f62503116942b0a2f6cbcc243ad, type: 2}
-  m_layerMask:
-    serializedVersion: 2
-    m_Bits: 1024
-  m_isBuilt: 1
-  m_projectileLineRenderer: {fileID: 2878355285551236588}
-  m_stackDropDelayTime: 2
-  m_curStackDropDelay: 0
-  m_totalResetTime: 3
-  m_damagePower: 1.05
-  m_speedPower: 1.05
-  m_damageCap: 4
-  m_speedCap: 8
-  m_maxStacks: 30
-  m_beamGradient:
-    serializedVersion: 2
-    key0: {r: 0.03274554, g: 0, b: 0.8301887, a: 1}
-    key1: {r: 0.1254902, g: 0.20784315, b: 0.8705883, a: 1}
-    key2: {r: 0.20392159, g: 0.3921569, b: 0.9058824, a: 0}
-    key3: {r: 0.29803923, g: 0.6117647, b: 0.9450981, a: 0}
-    key4: {r: 0.4198113, g: 0.89485514, b: 1, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 17348
-    ctime2: 31226
-    ctime3: 47031
-    ctime4: 65535
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 5
-    m_NumAlphaKeys: 2
-  m_curStacks: 0
-  m_curDamage: 0
-  m_curFireRate: 0
 --- !u!1001 &3540245180873034218
 PrefabInstance:
   m_ObjectHideFlags: 0

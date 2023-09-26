@@ -2,19 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArcTowerController : MonoBehaviour
+public class ArcTowerController : Tower
 {
-    [SerializeField] private Transform m_turretPivot;
-    [SerializeField] private Transform m_muzzlePoint;
-    [SerializeField] private ScriptableTowerDataObject m_towerData;
-    [SerializeField] private LayerMask m_layerMask;
-
-
-    public bool m_isBuilt;
-    private UnitEnemy m_curTarget;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
-    private AudioSource m_audioSource;
     private GameObject m_activeProjectileObj;
 
     void Update()
