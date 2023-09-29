@@ -69,7 +69,10 @@ public abstract class Tower : MonoBehaviour
 
     public void OnDestroy()
     {
-        m_audioSource.PlayOneShot(m_towerData.m_audioDestroyClip);
+        if (m_audioSource.enabled)
+        {
+            m_audioSource.PlayOneShot(m_towerData.m_audioDestroyClip);
+        }
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }

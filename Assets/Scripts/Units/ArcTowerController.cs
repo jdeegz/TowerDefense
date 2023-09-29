@@ -59,9 +59,7 @@ public class ArcTowerController : Tower
     private void Fire()
     {
         //Get all the enemies in the cone and deal damage to them. VFX is visual layer ontop of that.
-        RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_fireRange, transform.forward,
-            m_layerMask);
-
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
         if (hits.Length <= 0) return;
 
         for (int i = 0; i < hits.Length; ++i)
@@ -80,8 +78,7 @@ public class ArcTowerController : Tower
 
     private void FindTarget()
     {
-        RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_targetRange, transform.forward,
-            m_layerMask);
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
         if (hits.Length > 0)

@@ -52,7 +52,7 @@ public class TowerController : Tower
 
     private void FindTarget()
     {
-        RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_targetRange, transform.forward, m_layerMask);
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
         if (hits.Length > 0)

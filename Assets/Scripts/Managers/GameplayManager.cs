@@ -54,7 +54,7 @@ public class GameplayManager : MonoBehaviour
     public bool m_canBuild = true;
 
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
-    public TowerController m_preconstructedTower;
+    public Tower m_preconstructedTower;
     public Vector2Int m_preconstructedTowerPos;
     [SerializeField] private LayerMask m_buildSurface;
     [SerializeField] private LayerMask m_pathObstructableLayer;
@@ -444,7 +444,7 @@ public class GameplayManager : MonoBehaviour
 
         //Set up the objects
         m_preconstructedTowerObj = Instantiate(m_equippedTowers[i].m_prefab, Vector3.zero, Quaternion.identity);
-        m_preconstructedTower = m_preconstructedTowerObj.GetComponent<TowerController>();
+        m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
         m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
         m_canAfford = true;
@@ -603,7 +603,7 @@ public class GameplayManager : MonoBehaviour
     {
         Vector3 gridPos = new Vector3(m_preconstructedTowerPos.x, 0, m_preconstructedTowerPos.y);
         GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
-        TowerController newTower = newTowerObj.GetComponent<TowerController>();
+        Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.SetupTower();
 
         //Update banks
@@ -627,7 +627,7 @@ public class GameplayManager : MonoBehaviour
         m_towerList.Add(tower);
     }
 
-    public void RemoveTowerFromList(TowerController tower)
+    public void RemoveTowerFromList(Tower tower)
     {
         for (int i = 0; i < m_towerList.Count; ++i)
         {
@@ -638,7 +638,7 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    public void SellTower(TowerController tower, int stoneValue, int woodValue)
+    public void SellTower(Tower tower, int stoneValue, int woodValue)
     {
         GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
         RemoveTowerFromList(tower);

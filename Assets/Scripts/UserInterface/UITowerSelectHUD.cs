@@ -14,7 +14,7 @@ public class UITowerSelectHUD : MonoBehaviour
     [SerializeField] private int m_stoneValue;
     [SerializeField] private int m_woodValue;
     
-    private TowerController m_curTower;
+    private Tower m_curTower;
 
 
     void Awake()
@@ -37,7 +37,7 @@ public class UITowerSelectHUD : MonoBehaviour
 
     public void SelectTower(GameObject obj)
     {
-        m_curTower = obj.GetComponent<TowerController>();
+        m_curTower = obj.GetComponent<Tower>();
         m_track3dObject.SetupTracking(obj, GetComponent<RectTransform>(), 0);
         
         //Set assets

@@ -17,16 +17,18 @@ public class VoidRayTowerController : Tower
     public float m_speedCap;
     public int m_maxStacks;
     public Gradient m_beamGradient;
+    public Gradient m_panelGradient;
+    public MeshRenderer m_panelMeshRenderer;
 
     [Header("Dont Edit")]
     public int m_curStacks;
     public float m_curDamage;
     public float m_curFireRate;
-    
-    private Vector2 m_scrollOffset;
-    private float m_timeUntilFire;
-    private float m_facingThreshold = 10f;
 
+    private Vector2 m_scrollOffset;
+    private float m_timeUntilFire = 99f;
+    private float m_facingThreshold = 10f;
+    private int m_lastStacks;
 
     void Update()
     {
@@ -71,7 +73,7 @@ public class VoidRayTowerController : Tower
         else
         {
             m_timeUntilFire += Time.deltaTime;
-                
+
             HandleBeamVisual();
 
             //If we have elapsed time, and are looking at the target, fire.
@@ -86,33 +88,46 @@ public class VoidRayTowerController : Tower
             if (m_timeUntilFire >= 1f / m_curFireRate && Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold)
             {
                 if (m_curStacks < m_maxStacks) m_curStacks++;
-                
+
                 m_projectileLineRenderer.enabled = true;
-                
+
                 Fire();
-                
+
                 m_timeUntilFire = 0;
             }
         }
+
+        HandlePanelColor();
+    }
+
+    private void HandlePanelColor()
+    {
+        if (m_curStacks == m_lastStacks) return;
+
+        float normalizedTime = (float)m_curStacks / m_maxStacks;
+        Color color = m_panelGradient.Evaluate(normalizedTime);
+        m_panelMeshRenderer.materials[0].SetColor("_BaseColor", color);
+        m_panelMeshRenderer.materials[1].SetColor("_BaseColor", color);
+
+        m_lastStacks = m_curStacks;
     }
 
     private void Fire()
     {
-        
         //Calculate Damage.
         m_curDamage = m_towerData.m_baseDamage * Mathf.Pow(m_damagePower, m_curStacks);
         if (m_curDamage > m_damageCap)
         {
             m_curDamage = m_damageCap;
         }
-        
+
         //Deal Damage.
         m_curTarget.OnTakeDamage(m_curDamage);
-        
+
         //Play Audio.
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
-        
+
         //Reset Counters.
         m_curStackDropDelay = 0;
         m_resetStep = m_totalResetTime / m_curStacks;
@@ -123,21 +138,24 @@ public class VoidRayTowerController : Tower
         //Setup LineRenderer Data.
         m_projectileLineRenderer.SetPosition(0, m_muzzlePoint.position);
         m_projectileLineRenderer.SetPosition(1, m_curTarget.m_targetPoint.position);
-        
+
         //Scroll the texture.
         m_scrollOffset -= new Vector2(m_curFireRate * Time.deltaTime, 0);
         m_projectileLineRenderer.material.SetTextureOffset("_BaseMap", m_scrollOffset);
-        
+
         //Color the texture.
         float normalizedTime = (float)m_curStacks / m_maxStacks;
         Color color = m_beamGradient.Evaluate(normalizedTime);
         m_projectileLineRenderer.material.SetColor("_BaseColor", color);
-        
     }
 
     private bool IsTargetInRange(Vector3 targetPos)
     {
-        return Vector3.Distance(transform.position, targetPos) < m_towerData.m_fireRange;
+        Vector2 target2d = new Vector2(targetPos.x, targetPos.z);
+        Vector2 tower2d = new Vector2(transform.position.x, transform.position.z);
+        //float distance = Vector2.Distance(tower2d, target2d);
+        float distance = Vector3.Distance(transform.position, targetPos);
+        return distance <= m_towerData.m_fireRange;
     }
 
     private void RotateTowardsTarget()
@@ -152,11 +170,14 @@ public class VoidRayTowerController : Tower
 
     private void FindTarget()
     {
-        RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_targetRange, transform.forward, m_layerMask);
+        //RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_targetRange, transform.forward, m_layerMask.value);
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
         if (hits.Length > 0)
         {
+            Debug.Log($"Hits: {hits.Length} and Layers: {m_layerMask.value}");
             for (int i = 0; i < hits.Length; ++i)
             {
                 float distance = Vector3.Distance(transform.position, hits[i].transform.position);
