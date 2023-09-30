@@ -1,41 +1,30 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using DG.Tweening;
+using DG.Tweening.Core.Easing;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-public class Projectile : MonoBehaviour
+public abstract class Projectile : MonoBehaviour
 {
-    private Transform m_target;
-    [SerializeField] private float m_projectileSpeed = 4f;
-    [SerializeField] private float m_projectileDamage = 1;
-    [SerializeField] private Rigidbody m_rb;
-    [SerializeField] private AudioClip m_audioImpactSound;
-
-    private void FixedUpdate()
+    [SerializeField] protected float m_projectileSpeed = .5f;
+    [SerializeField] protected float m_stoppingDistance = .1f;
+    
+    protected Transform m_target;
+    protected UnitEnemy m_enemy;
+    protected float m_projectileDamage = 1;
+    protected float m_elapsedTime;
+    protected float m_projectileLifetime;
+    protected Vector3 m_startPos;
+    protected Vector3 m_directPos;
+    
+    public void SetProjectileData(UnitEnemy enemy, Transform target, float dmg, Vector3 pos)
     {
-        if (!m_target)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Vector3 direction = (m_target.position - transform.position).normalized;
-
-        m_rb.velocity = direction * m_projectileSpeed;
-    }
-
-    public void SetTarget(Transform target)
-    {
-        m_target = target;
-    }
-
-    public void SetDamage(float dmg)
-    {
+        m_startPos = pos;
+        m_enemy = enemy;
         m_projectileDamage = dmg;
-    }
-
-    private void OnCollisionEnter(Collision other)
-    {
-        other.gameObject.GetComponent<UnitEnemy>().OnTakeDamage(m_projectileDamage);
-        Destroy(gameObject);
+        m_target = target;
     }
 }

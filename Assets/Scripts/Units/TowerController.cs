@@ -44,7 +44,7 @@ public class TowerController : Tower
     {
         GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-        projectileScript.SetTarget(m_curTarget.m_targetPoint);
+        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position);
 
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count-1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);

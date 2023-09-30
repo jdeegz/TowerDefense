@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 5220714862920923154}
   - component: {fileID: 6455735969001494764}
   - component: {fileID: 7353386523632601420}
-  - component: {fileID: 4024563568893657874}
+  - component: {fileID: 1850874239441104158}
   m_Layer: 9
   m_Name: Projectile_LanternTower
   m_TagString: Untagged
@@ -168,7 +168,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &4024563568893657874
+--- !u!114 &1850874239441104158
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -177,10 +177,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 8933404775076088512}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1f1b6cfc17aaa4419f66bb56054ecac, type: 3}
+  m_Script: {fileID: 11500000, guid: 55bfa84a9c55fdd4ab92f68049b7053a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_projectileSpeed: 8
-  m_projectileDamage: 1
-  m_rb: {fileID: 7353386523632601420}
-  m_audioImpactSound: {fileID: 8300000, guid: 6b6afa343da9ec4418fe5ee9ffac63af, type: 3}
+  m_projectileSpeed: 4
+  m_stoppingDistance: 0.1
