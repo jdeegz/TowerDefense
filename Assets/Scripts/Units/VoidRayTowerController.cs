@@ -59,6 +59,7 @@ public class VoidRayTowerController : Tower
         //FINDING TARGET
         if (m_curTarget == null)
         {
+            m_projectileLineRenderer.enabled = false;
             FindTarget();
             return;
         }
@@ -67,7 +68,6 @@ public class VoidRayTowerController : Tower
 
         if (!IsTargetInRange(m_curTarget.transform.position))
         {
-            m_projectileLineRenderer.enabled = false;
             m_curTarget = null;
         }
         else

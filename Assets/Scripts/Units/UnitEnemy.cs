@@ -27,7 +27,7 @@ public class UnitEnemy : MonoBehaviour
     private AudioSource m_audioSource;
 
     public event Action<float> UpdateHealth;
-    public event Action DestroyEnemy;
+    public event Action<Vector3> DestroyEnemy;
 
     void Start()
     {
@@ -122,11 +122,11 @@ public class UnitEnemy : MonoBehaviour
 
         if (m_curHealth <= 0)
         {
-            DestroyEnemy?.Invoke();
+            DestroyEnemy?.Invoke(transform.position);
         }
     }
 
-    void OnEnemyDestroyed()
+    void OnEnemyDestroyed(Vector3 pos)
     {
         GameplayManager.Instance.RemoveEnemyFromList(this);
         Destroy(gameObject);
@@ -137,7 +137,7 @@ public class UnitEnemy : MonoBehaviour
         if (other.CompareTag("Exit"))
         {
             GameplayManager.Instance.m_castleController.TakeDamage(1);
-            DestroyEnemy?.Invoke();
+            DestroyEnemy?.Invoke(transform.position);
         }
     }
 

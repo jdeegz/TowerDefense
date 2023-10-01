@@ -18,7 +18,11 @@ public class ArcTowerController : Tower
 
         if (m_curTarget == null)
         {
-            //Look away from base.
+            //If target is not in range, destroy the flame cone if there is one.
+            if (m_activeProjectileObj != null)
+            {
+                Destroy(m_activeProjectileObj);
+            }
             FindTarget();
             return;
         }
@@ -27,11 +31,7 @@ public class ArcTowerController : Tower
 
         if (!IsTargetInRange(m_curTarget.transform.position))
         {
-            //If target is not in range, destroy the flame cone if there is one.
-            if (m_activeProjectileObj != null)
-            {
-                Destroy(m_activeProjectileObj);
-            }
+            
 
             m_curTarget = null;
         }

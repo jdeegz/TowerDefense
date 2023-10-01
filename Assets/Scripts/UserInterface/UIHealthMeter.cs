@@ -39,7 +39,7 @@ public class UIHealthMeter : MonoBehaviour
         m_lifeImage.fillAmount = Mathf.Lerp(m_lifeImage.fillAmount, m_curHealth / m_maxHealth, 10 * Time.deltaTime);
     }
 
-    void OnEnemyDestroyed()
+    void OnEnemyDestroyed(Vector3 pos)
     {
         Destroy(gameObject);
     }

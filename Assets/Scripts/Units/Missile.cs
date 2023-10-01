@@ -14,6 +14,8 @@ public class Missile : Projectile
     
     void Update()
     {
+        if (m_enemy) m_targetPos = m_enemy.transform.position;
+        
         if (CheckTargetDistance())
         {
             DestroyProjectile();
@@ -25,7 +27,7 @@ public class Missile : Projectile
 
     private bool CheckTargetDistance()
     {
-        float distanceToTarget = Vector3.Distance(transform.position, m_target.position);
+        float distanceToTarget = Vector3.Distance(transform.position, m_targetPos);
         return distanceToTarget <= m_stoppingDistance;
     }
 
@@ -34,10 +36,10 @@ public class Missile : Projectile
         float t = m_elapsedTime;
 
         //Straight line position at this step.
-        m_directPos = Vector3.LerpUnclamped(m_startPos, m_target.position, m_curveDistance.Evaluate(t));
+        m_directPos = Vector3.LerpUnclamped(m_startPos, m_targetPos, m_curveDistance.Evaluate(t));
 
         //Lateral adjustment.
-        Quaternion beeLineRotation = Quaternion.LookRotation(m_target.position - m_startPos, Vector3.up);
+        Quaternion beeLineRotation = Quaternion.LookRotation(m_targetPos - m_startPos, Vector3.up);
         Vector3 localRightInWorldSpace = beeLineRotation * Vector3.right;
         Vector3 offsetLateral = localRightInWorldSpace * m_curveLateral.Evaluate(t);
 
@@ -60,11 +62,13 @@ public class Missile : Projectile
     {
         //Deal Damage
         Collider[] hits = Physics.OverlapSphere(transform.position, m_impactRadius, m_layerMask.value);
-        if (hits.Length <= 0) return;
-        foreach (Collider col in hits)
+        if (hits.Length > 0)
         {
-            UnitEnemy enemyHit = col.GetComponent<UnitEnemy>();
-            enemyHit.OnTakeDamage(m_projectileDamage);
+            foreach (Collider col in hits)
+            {
+                UnitEnemy enemyHit = col.GetComponent<UnitEnemy>();
+                enemyHit.OnTakeDamage(m_projectileDamage);
+            }
         }
 
         //Spawn VFX

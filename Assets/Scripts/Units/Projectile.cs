@@ -12,7 +12,8 @@ public abstract class Projectile : MonoBehaviour
     [SerializeField] protected float m_projectileSpeed = .5f;
     [SerializeField] protected float m_stoppingDistance = .1f;
     
-    protected Transform m_target;
+    
+    protected Vector3 m_targetPos;
     protected UnitEnemy m_enemy;
     protected float m_projectileDamage = 1;
     protected float m_elapsedTime;
@@ -25,6 +26,22 @@ public abstract class Projectile : MonoBehaviour
         m_startPos = pos;
         m_enemy = enemy;
         m_projectileDamage = dmg;
-        m_target = target;
+        m_enemy.DestroyEnemy += OnEnemyDestroyed;
+    }
+
+    private void OnEnemyDestroyed(Vector3 pos)
+    {
+        m_enemy = null;
+        m_targetPos = pos;
+    }
+
+    void Update()
+    {
+        if(!m_enemy) Destroy(gameObject);
+    }
+
+    void Awake()
+    {
+        
     }
 }

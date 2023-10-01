@@ -7,6 +7,8 @@ public class Bullet : Projectile
     // Update is called once per frame
     void Update()
     {
+        if (m_enemy) m_targetPos = m_enemy.transform.position;
+        
         if (CheckTargetDistance())
         {
             DestroyProjectile();
@@ -18,7 +20,7 @@ public class Bullet : Projectile
 
     private bool CheckTargetDistance()
     {
-        float distanceToTarget = Vector3.Distance(transform.position, m_target.position);
+        float distanceToTarget = Vector3.Distance(transform.position, m_targetPos);
         return distanceToTarget <= m_stoppingDistance;
     }
 
@@ -27,7 +29,7 @@ public class Bullet : Projectile
         float t = m_elapsedTime;
 
         //Straight line position at this step.
-        m_directPos = Vector3.LerpUnclamped(m_startPos, m_target.position, t);
+        m_directPos = Vector3.Lerp(m_startPos, m_targetPos, t);
 
         //Rotation
         Quaternion lookRotation = Quaternion.LookRotation((m_directPos - transform.position).normalized);
@@ -41,7 +43,10 @@ public class Bullet : Projectile
     void DestroyProjectile()
     {
         //Deal Damage
-        m_enemy.OnTakeDamage(m_projectileDamage);
+        if (m_enemy)
+        {
+            m_enemy.OnTakeDamage(m_projectileDamage);
+        }
 
         //Destroy this missile.
         Destroy(gameObject);
