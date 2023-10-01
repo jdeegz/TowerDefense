@@ -8,6 +8,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected Transform m_turretPivot;
     [SerializeField] protected Transform m_muzzlePoint;
     [SerializeField] protected ScriptableTowerDataObject m_towerData;
+    [SerializeField] protected StatusEffectData m_statusEffectData;
     [SerializeField] protected LayerMask m_layerMask;
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-public class TowerController : Tower
+public class BasicTower : Tower
 {
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
@@ -44,7 +44,8 @@ public class TowerController : Tower
     {
         GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position);
+        m_statusEffectData.m_sender = this;
+        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position, m_statusEffectData);
 
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count-1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);

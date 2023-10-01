@@ -68,9 +68,15 @@ public class Missile : Projectile
             {
                 UnitEnemy enemyHit = col.GetComponent<UnitEnemy>();
                 enemyHit.OnTakeDamage(m_projectileDamage);
+                
+                //Apply Status Effect
+                if (m_statusEffect)
+                {
+                    enemyHit.ApplyEffect(m_statusEffect);
+                }
             }
         }
-
+        
         //Spawn VFX
         Vector3 groundPos = new Vector3(transform.position.x, 0.1f, transform.position.z);
         Instantiate(m_impactEffect, groundPos, Quaternion.identity);

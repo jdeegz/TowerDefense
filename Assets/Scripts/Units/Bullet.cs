@@ -31,9 +31,9 @@ public class Bullet : Projectile
         //Straight line position at this step.
         m_directPos = Vector3.Lerp(m_startPos, m_targetPos, t);
 
-        //Rotation
-        Quaternion lookRotation = Quaternion.LookRotation((m_directPos - transform.position).normalized);
-        transform.rotation = lookRotation;
+        //Rotation -- Not needed for a basic bullet? As throwing debug.logs each frame.
+        //Quaternion lookRotation = Quaternion.LookRotation((m_directPos - transform.position).normalized);
+        //transform.rotation = lookRotation;
 
         transform.position = m_directPos;
 
@@ -46,6 +46,12 @@ public class Bullet : Projectile
         if (m_enemy)
         {
             m_enemy.OnTakeDamage(m_projectileDamage);
+            
+            //Apply Status Effect
+            if (m_statusEffect)
+            {
+                m_enemy.ApplyEffect(m_statusEffect);
+            }
         }
 
         //Destroy this missile.
