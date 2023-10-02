@@ -20,7 +20,7 @@ public class UnitEnemy : MonoBehaviour, IEffectable
     private float m_curSpeedModifier;
     private float m_lastSpeedModifierFaster = 1f;
     private float m_lastSpeedModifierSlower = 1f;
-    private float m_curDamageReduction;
+    private float m_curDamageMultiplier;
     private Vector2Int m_curPos;
     private Cell m_curCell;
     private Transform m_goal;
@@ -50,7 +50,7 @@ public class UnitEnemy : MonoBehaviour, IEffectable
         m_navMeshAgent.speed = m_baseMoveSpeed * m_curSpeedModifier;
         m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.15f, GameplayManager.Instance.m_wave));
         m_curHealth = m_curMaxHealth;
-        m_curDamageReduction = m_enemyData.m_damageReduction;
+        m_curDamageMultiplier = m_enemyData.m_damageMultiplier;
         UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
         lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
         CollectMeshRenderers(transform);
@@ -137,7 +137,7 @@ public class UnitEnemy : MonoBehaviour, IEffectable
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
         int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
         m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
-        UpdateHealth?.Invoke(-dmg * m_curDamageReduction);
+        UpdateHealth?.Invoke(-dmg * m_curDamageMultiplier);
     }
 
     void OnUpdateHealth(float i)

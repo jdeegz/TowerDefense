@@ -1,14 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using DG;
 
 public class TowerTrayButton : MonoBehaviour
 {
     [SerializeField] private ScriptableTowerDataObject m_towerData;
     [SerializeField] private TextMeshProUGUI m_towerCost;
+    [SerializeField] private TextMeshProUGUI m_towerName;
     [SerializeField] private Image m_towerImage;
     [SerializeField] private Image m_backgroundImage;
     [SerializeField] private Color m_backgroundBaseColor;
@@ -76,6 +80,9 @@ public class TowerTrayButton : MonoBehaviour
 
         //Tower Image
         m_towerImage.sprite = towerData.m_uiIcon;
+        
+        //Tower Name
+        m_towerName.SetText(towerData.m_name);
     }
 
     void OnMouseDown()

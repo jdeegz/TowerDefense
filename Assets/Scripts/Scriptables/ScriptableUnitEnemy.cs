@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 public class ScriptableUnitEnemy : ScriptableObject
 {
     public float m_moveSpeed = 1f;
-    public float m_damageReduction = 0f;
+    public float m_damageMultiplier = 0f;
     [FormerlySerializedAs("m_maxHealth")] public int m_health = 10;
     
     [Header("Life Meter")]

@@ -45,13 +45,14 @@ public class Bullet : Projectile
         //Deal Damage
         if (m_enemy)
         {
-            m_enemy.OnTakeDamage(m_projectileDamage);
-            
             //Apply Status Effect
             if (m_statusEffect)
             {
                 m_enemy.ApplyEffect(m_statusEffect);
             }
+            
+            m_enemy.OnTakeDamage(m_projectileDamage);
+            
         }
 
         //Destroy this missile.

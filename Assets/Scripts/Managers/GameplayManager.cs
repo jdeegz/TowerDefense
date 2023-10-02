@@ -667,7 +667,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        if (m_enemyList.Count <= 0)
+        if (m_enemyList.Count <= 0 && m_gameplayState != GameplayState.Defeat)
         {
             UpdateGameplayState(GameplayState.Build);
         }
