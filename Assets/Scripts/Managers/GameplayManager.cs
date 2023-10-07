@@ -507,16 +507,21 @@ public class GameplayManager : MonoBehaviour
     bool CheckPathRestriction()
     {
         Cell curCell = Util.GetCellFromPos(m_preconstructedTowerPos);
-        //Debug.Log("Checking path from: " + m_preconstructedTowerPos);
 
         //If the current cell is not apart of the grid, not a valid spot.
         if (curCell == null)
         {
-            //Debug.Log("CheckPathRestriction: No cell here.");
             return false;
         }
 
+        //If we have actors on the cell.
         if (curCell.m_actorCount > 0)
+        {
+            return false;
+        }
+        
+        //If we're hovering on the exit cell
+        if (m_preconstructedTowerPos == Util.GetVector2IntFrom3DPos(m_enemyGoal.position))
         {
             return false;
         }
@@ -524,7 +529,6 @@ public class GameplayManager : MonoBehaviour
         //If the currenct cell is occupied (by a structure), not a valid spot.
         if (curCell.m_isOccupied)
         {
-            //Debug.Log("CheckPathRestriction: Cell is occupied");
             return false;
         }
 
@@ -534,7 +538,6 @@ public class GameplayManager : MonoBehaviour
             var unitPath = GridManager.Instance.m_unitPaths[i];
             if (!unitPath.m_hasPath)
             {
-                Debug.Log($"{unitPath.m_sourceObj.name} has no path.");
                 return false;
             }
         }

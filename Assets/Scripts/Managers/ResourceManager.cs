@@ -27,20 +27,32 @@ public class ResourceManager : MonoBehaviour
 
     public int m_startingStone;
     public int m_startingWood;
-    
 
 
     private void Awake()
     {
+        Debug.Log("RESOURCE MANAGER AWAKE");
         Instance = this;
+        m_stoneBank = 0;
+        m_woodBank = 0;
+        m_stoneGathererCount = 0;
+        m_woodGathererCount = 0;
     }
 
     void Start()
     {
+        Debug.Log("RESOURCE MANAGER START");
         UpdateWoodAmount(m_startingWood);
         UpdateStoneAmount(m_startingStone);
+        
     }
 
+    public void UpdateWoodAmount(int amount)
+    {
+        m_woodBank += amount;
+        UpdateWoodBank?.Invoke(m_woodBank, amount);
+        Debug.Log("BANK UPDATED");
+    }
     public void UpdateStoneAmount(int amount)
     {
         m_stoneBank += amount;
@@ -52,11 +64,6 @@ public class ResourceManager : MonoBehaviour
         return m_stoneBank;
     }
 
-    public void UpdateWoodAmount(int amount)
-    {
-        m_woodBank += amount;
-        UpdateWoodBank?.Invoke(m_woodBank, amount);
-    }
 
     public int GetWoodAmount()
     {

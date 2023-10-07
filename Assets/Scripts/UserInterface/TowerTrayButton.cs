@@ -13,6 +13,7 @@ public class TowerTrayButton : MonoBehaviour
     [SerializeField] private ScriptableTowerDataObject m_towerData;
     [SerializeField] private TextMeshProUGUI m_towerCost;
     [SerializeField] private TextMeshProUGUI m_towerName;
+    [SerializeField] private TextMeshProUGUI m_towerHotkey;
     [SerializeField] private Image m_towerImage;
     [SerializeField] private Image m_backgroundImage;
     [SerializeField] private Color m_backgroundBaseColor;
@@ -83,11 +84,9 @@ public class TowerTrayButton : MonoBehaviour
         
         //Tower Name
         m_towerName.SetText(towerData.m_name);
-    }
-
-    void OnMouseDown()
-    {
         
+        //Tower Hotkey
+        m_towerHotkey.SetText((i + 1).ToString());
     }
     
     public void SelectTowerButton()
@@ -95,9 +94,10 @@ public class TowerTrayButton : MonoBehaviour
         GameplayManager.Instance.PreconstructTower(m_equippedTowerIndex);
     }
 
-    public void DeselectTowerButton()
+    void OnDestroy()
     {
-        
+        ResourceManager.UpdateStoneBank -= CheckStoneCost;
+        ResourceManager.UpdateWoodBank -= CheckWoodCost;
     }
     
 }

@@ -1,12 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
 using TechnoBabelGames;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.Serialization;
 
 public class GridManager : MonoBehaviour
 {
@@ -62,7 +57,6 @@ public class GridManager : MonoBehaviour
                 Cell cell = new Cell();
                 cell.m_cellPos = new Vector2Int(x, z);
                 m_gridCells[index] = cell;
-                //Debug.Log($"New Cell created at: {x},{z} with an index value of: {index}");
             }
         }
 
@@ -139,16 +133,32 @@ public class GridManager : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public class Cell
 {
     public Vector2Int m_cellPos;
     public bool m_isGoal;
     public bool m_isOccupied;
     public int m_actorCount;
+    public List<string> m_actorsList;
 
-    public void UpdateActorCount(int i)
+    public void UpdateActorCount(int i, string name)
     {
+        if (m_actorsList == null)
+        {
+            m_actorsList = new List<string>();
+        }
+
         m_actorCount += i;
+
+        if (i > 0)
+        {
+            m_actorsList.Add(name);
+        }
+        else
+        {
+            m_actorsList.Remove(name);
+        }
     }
 
     public void UpdateOccupancy(bool b)
@@ -403,6 +413,7 @@ public class UnitPath
                 }
             }
         }
+
         m_lineRenderer.SetPoints(m_path);
     }
 }

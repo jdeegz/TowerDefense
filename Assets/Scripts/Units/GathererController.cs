@@ -64,7 +64,7 @@ public class GathererController : MonoBehaviour
         {
             m_curPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
             m_curCell = Util.GetCellFromPos(m_curPos);
-            m_curCell.UpdateActorCount(1);
+            m_curCell.UpdateActorCount(1, gameObject.name);
             m_navMeshAgent.enabled = true;
         }
     }
@@ -115,10 +115,10 @@ public class GathererController : MonoBehaviour
         Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
         
         if(newPos != m_curPos){
-            m_curCell.UpdateActorCount(-1);
+            m_curCell.UpdateActorCount(-1, gameObject.name);
             m_curPos = newPos;
             m_curCell = Util.GetCellFromPos(m_curPos);
-            m_curCell.UpdateActorCount(1);
+            m_curCell.UpdateActorCount(1, gameObject.name);
         }
     }
 
@@ -226,6 +226,11 @@ public class GathererController : MonoBehaviour
                     //Get Neighbor Cells.
                     Debug.Log("Finding new nearby node & point.");
                     ValueTuple<ResourceNode, Vector3, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 1f));
+                    if (vars.Item1 == null)
+                    {
+                        UpdateTask(GathererTask.Idling);
+                        break;
+                    }
                     SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                 }
 

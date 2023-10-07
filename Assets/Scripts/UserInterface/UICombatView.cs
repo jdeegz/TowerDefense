@@ -84,6 +84,7 @@ public class UICombatView : MonoBehaviour
         if (m_woodGathererShake.IsActive())
         {
             m_woodGathererShake.Kill();
+            m_woodGathererDisplay.localScale = Vector3.one;
         }
         m_woodGathererLabel.SetText(i.ToString());
         m_woodGathererShake = m_woodGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
@@ -94,7 +95,8 @@ public class UICombatView : MonoBehaviour
     {
         if (m_stoneGathererShake.IsActive())
         {
-            m_stoneGathererShake.Kill();
+            m_stoneGathererShake.Kill();;
+            m_stoneGathererDisplay.localScale = Vector3.one;
         }
         m_stoneGathererLabel.SetText(i.ToString());
         m_stoneGathererShake = m_stoneGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
@@ -103,9 +105,11 @@ public class UICombatView : MonoBehaviour
 
     private void UpdateWoodDisplay(int total, int delta)
     {
+        Debug.Log("BANK UPDATE RECEIEVED");
         if (m_woodBankShake.IsActive())
         {
             m_woodBankShake.Kill();
+            m_woodBankDisplay.localScale = Vector3.one;
         }
 
         m_woodBankLabel.SetText(total.ToString());
@@ -118,6 +122,7 @@ public class UICombatView : MonoBehaviour
         if (m_stoneBankShake.IsActive())
         {
             m_stoneBankShake.Kill();
+            m_stoneBankDisplay.localScale = Vector3.one;
         }
         m_stoneBankLabel.SetText(total.ToString());
         m_stoneBankShake = m_stoneBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
@@ -328,6 +333,10 @@ public class UICombatView : MonoBehaviour
 
         //Precon Tower Position
         Vector2Int preconTowerPos = GameplayManager.Instance.m_preconstructedTowerPos;
+        Cell cell = Util.GetCellFromPos(preconTowerPos);
+        string actorCountString = cell.m_actorCount.ToString();
+        bool b = !cell.m_isOccupied;
+        string occupancyString = b.ToString();
         string preconTowerPosString = "0,0";
 
 
@@ -359,9 +368,9 @@ public class UICombatView : MonoBehaviour
                                          "Preconstructed Tower Pos: {1}<br>" +
                                          "Can Afford: {2}<br>" +
                                          "Can Place: {3}<br>" +
-                                         "Interaction State: {4}", hoveredObjString, preconTowerPosString,
-            canAffordString,
-            canPlaceString, interactionStateString);
+                                         "Actor Count: {4}<br>" +
+                                         "Occupied: {5}<br>" +
+                                         "Interaction State: {6}", hoveredObjString, preconTowerPosString, canAffordString,  canPlaceString, actorCountString, occupancyString, interactionStateString);
         m_debugInfoLabel.SetText(debugInfo);
     }
 }

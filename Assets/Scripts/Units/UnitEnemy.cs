@@ -103,12 +103,12 @@ public class UnitEnemy : MonoBehaviour, IEffectable
         {
             if (m_curCell != null)
             {
-                m_curCell.UpdateActorCount(-1);
+                m_curCell.UpdateActorCount(-1, gameObject.name);
             }
 
             m_curPos = newPos;
             m_curCell = Util.GetCellFromPos(m_curPos);
-            m_curCell.UpdateActorCount(1);
+            m_curCell.UpdateActorCount(1, gameObject.name);
         }
 
         m_lastSpeedModifierFaster = 1;
@@ -152,6 +152,10 @@ public class UnitEnemy : MonoBehaviour, IEffectable
 
     void OnEnemyDestroyed(Vector3 pos)
     {
+        if (m_curCell != null)
+        {
+            m_curCell.UpdateActorCount(-1, gameObject.name);
+        }
         GameplayManager.Instance.RemoveEnemyFromList(this);
         Destroy(gameObject);
     }

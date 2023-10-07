@@ -48,7 +48,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     public (int, int) RequestResource(int i)
     {
         int resourcesHarvested = 0;
-        if (m_resourcesRemaining > 0)
+        if (m_resourcesRemaining >= 1)
         {
             //Give the gatherer how much they ask for or all that is remaining.
             resourcesHarvested = Math.Min(i, m_resourcesRemaining);
