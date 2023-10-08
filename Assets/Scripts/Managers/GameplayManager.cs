@@ -56,7 +56,7 @@ public class GameplayManager : MonoBehaviour
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public Tower m_preconstructedTower;
     public Vector2Int m_preconstructedTowerPos;
-    [SerializeField] private LayerMask m_buildSurface;
+    public LayerMask m_buildSurface;
     [SerializeField] private LayerMask m_pathObstructableLayer;
     private int m_preconstructedTowerIndex;
 

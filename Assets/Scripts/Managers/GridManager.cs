@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using TechnoBabelGames;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class GridManager : MonoBehaviour
 {
@@ -10,6 +12,7 @@ public class GridManager : MonoBehaviour
     public Cell[] m_gridCells;
     public int m_gridWidth;
     public int m_gridHeight;
+    public GameObject m_testDummy;
 
     public List<UnitPath> m_unitPaths;
     private List<Vector2Int> m_exits;
@@ -57,6 +60,34 @@ public class GridManager : MonoBehaviour
                 Cell cell = new Cell();
                 cell.m_cellPos = new Vector2Int(x, z);
                 m_gridCells[index] = cell;
+                
+                
+                
+                //Get the half neightbors to assure the cell is fully on the nav mesh.
+                List<Vector3> gridCorners = new List<Vector3>();
+                float buffer = 0.4f;
+                gridCorners.Add(new Vector3(x + buffer, 0, z + buffer)); //North East
+                gridCorners.Add(new Vector3(x + buffer, 0, z - buffer)); //South East
+                gridCorners.Add(new Vector3(x - buffer, 0, z - buffer)); //South West
+                gridCorners.Add(new Vector3(x - buffer, 0, z + buffer)); //North West
+                
+                NavMeshHit hit;
+                foreach (Vector3 pos in gridCorners)
+                {
+                    if (NavMesh.SamplePosition(pos, out hit, 0.1f, NavMesh.AllAreas))
+                    {
+                        //Debug.Log($" ++ Ground hit at {hit.position} ++");
+                        
+                    }
+                    else
+                    {
+                        //Debug.Log($" -- No Ground hit at {cell.m_cellPos} --");
+                        //GameObject obj = Instantiate(m_testDummy, new Vector3(x, 0.02f, z), quaternion.identity, transform);
+                        //obj.name = $"Element {index}"; 
+                        cell.m_isOccupied = true;
+                        break;
+                    }
+                }
             }
         }
 
@@ -169,6 +200,14 @@ public class Cell
     public void UpdateGoal(bool b)
     {
         m_isGoal = b;
+    }
+    
+    void OnDrawGizmos()
+    {
+        // Draw a semitransparent red cube at the transforms position
+        Gizmos.color = new Color(1, 0, 0, 0.5f);
+        Vector3 pos = new Vector3(m_cellPos.x, .1f, m_cellPos.y);
+        Gizmos.DrawCube(pos, new Vector3(1, 1, 1));
     }
 }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
@@ -9,8 +10,8 @@ public class CameraController : MonoBehaviour
     public float m_scrollSpeed = 5f;
     public float m_scrollZone = 50f;
 
-    public float m_xBounds;
-    public float m_zBounds;
+    public float m_xPadding;
+    public float m_zPadding;
 
     private Vector3 m_dragStartPosition;
     private Vector3 m_dragCurrentPosition;
@@ -20,22 +21,67 @@ public class CameraController : MonoBehaviour
     private float m_minZBounds;
     private float m_maxZBounds;
 
+    private Vector3 m_cameraNorthEast;
+    private Vector3 m_cameraNorthWest;
+    private Vector3 m_cameraSouthEast;
+    private Vector3 m_cameraSouthWest;
     void Start()
     {
-        float x = transform.position.x;
-        float z = transform.position.z;
+        float x = GridManager.Instance.m_gridWidth / 2;
+        float z = GridManager.Instance.m_gridHeight / 2;
 
-        m_minXBounds = x - m_xBounds;
-        m_maxXBounds = x + m_xBounds;
+        //Center the camera
+        transform.position = new Vector3(x, 0, z);
 
-        m_minZBounds = z - m_zBounds;
-        m_maxZBounds = z + m_zBounds;
+        //Get Screen to Plane corners.
+        //North East
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width, Screen.height, 100));
+        if (ray.direction.y != 0)
+        {
+            float t = -ray.origin.y / ray.direction.y;
+            m_cameraNorthEast = ray.origin + t * ray.direction;
+            //Instantiate(m_testDummy, m_cameraNorthEast, quaternion.identity);
+        }
+        
+        //North West
+        ray = Camera.main.ScreenPointToRay(new Vector3(0, Screen.height, 100));
+        if (ray.direction.y != 0)
+        {
+            float t = -ray.origin.y / ray.direction.y;
+            m_cameraNorthWest = ray.origin + t * ray.direction;
+            //Instantiate(m_testDummy, m_cameraNorthWest, quaternion.identity);
+        }
+        
+        //South East -- Not needed for any calculations.
+        /*ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width, 0, 100));
+        if (ray.direction.y != 0)
+        {
+            float t = -ray.origin.y / ray.direction.y;
+            m_cameraSouthEast = ray.origin + t * ray.direction;
+            //Instantiate(m_testDummy, m_cameraSouthEast, quaternion.identity);
+        }*/
+        
+        //South West
+        ray = Camera.main.ScreenPointToRay(new Vector3(0, 0, 100));
+        if (ray.direction.y != 0)
+        {
+            float t = -ray.origin.y / ray.direction.y;
+            m_cameraSouthWest = ray.origin + t * ray.direction;
+            //Instantiate(m_testDummy, m_cameraSouthWest, quaternion.identity);
+        }
+
+        m_minXBounds = transform.position.x - m_cameraNorthWest.x - m_xPadding;
+        m_maxXBounds = transform.position.x + (GridManager.Instance.m_gridWidth - m_cameraNorthEast.x) + m_xPadding;
+
+        m_minZBounds = transform.position.z - m_cameraSouthWest.z - m_zPadding;
+        m_maxZBounds = transform.position.z + (GridManager.Instance.m_gridHeight - m_cameraNorthEast.z) + m_zPadding;
+        
     }
-    
+
     void Update()
     {
         HandleScreenEdgePan();
-        
+
         if (GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
         {
             HandleMouseInput();
@@ -75,19 +121,22 @@ public class CameraController : MonoBehaviour
                 {
                     delta.x = 0;
                 }
+
                 if (transform.position.x >= m_maxXBounds && delta.x > 0)
                 {
                     delta.x = 0;
                 }
+
                 if (transform.position.z <= m_minZBounds && delta.z < 0)
                 {
                     delta.z = 0;
                 }
+
                 if (transform.position.z >= m_maxZBounds && delta.z > 0)
                 {
                     delta.z = 0;
                 }
-                
+
                 transform.position += delta;
             }
         }
@@ -96,19 +145,17 @@ public class CameraController : MonoBehaviour
         {
             m_isDragging = false;
         }
-        
     }
 
     void HandleScreenEdgePan()
     {
-        
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
             m_isDragging = false;
         }
-        
+
         if (m_isDragging) return;
-        
+
         Vector3 mousePos = Input.mousePosition;
         float screenWidth = Screen.width;
         float screenHeight = Screen.height;
