@@ -70,7 +70,7 @@ public class ArcTowerController : Tower
             if (Vector3.Dot(direction.normalized, m_turretPivot.forward.normalized) > coneAngleCosine && IsTargetInRange(hits[i].transform.position))
             {
                 // Target is within the cone.
-                UnitEnemy enemyHit = hits[i].transform.GetComponent<UnitEnemy>();
+                EnemyController enemyHit = hits[i].transform.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_towerData.m_baseDamage);
             }
         }
@@ -92,7 +92,7 @@ public class ArcTowerController : Tower
                     closestDistance = distance;
                 }
             }
-            m_curTarget = hits[closestIndex].transform.GetComponent<UnitEnemy>();
+            m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
     }
 

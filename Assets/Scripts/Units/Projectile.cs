@@ -14,7 +14,7 @@ public abstract class Projectile : MonoBehaviour
     
     
     protected Vector3 m_targetPos;
-    protected UnitEnemy m_enemy;
+    protected EnemyController m_enemy;
     protected float m_projectileDamage = 1;
     protected float m_elapsedTime;
     protected float m_projectileLifetime;
@@ -22,7 +22,7 @@ public abstract class Projectile : MonoBehaviour
     protected Vector3 m_directPos;
     protected StatusEffectData m_statusEffect;
     
-    public void SetProjectileData(UnitEnemy enemy, Transform target, float dmg, Vector3 pos, StatusEffectData data)
+    public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos, StatusEffectData data)
     {
         m_startPos = pos;
         m_enemy = enemy;

@@ -18,6 +18,7 @@ public class ScriptableUnitEnemy : ScriptableObject
     public GameObject m_spawnVFXPrefab;
     public GameObject m_deathVFXPrefab;
     
+    
     [Header("Audio")]
     public AudioClip m_audioSpawnClip;
     public AudioClip m_audioDeathClip;

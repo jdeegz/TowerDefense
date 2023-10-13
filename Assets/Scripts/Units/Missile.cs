@@ -66,7 +66,7 @@ public class Missile : Projectile
         {
             foreach (Collider col in hits)
             {
-                UnitEnemy enemyHit = col.GetComponent<UnitEnemy>();
+                EnemyController enemyHit = col.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_projectileDamage);
                 
                 //Apply Status Effect

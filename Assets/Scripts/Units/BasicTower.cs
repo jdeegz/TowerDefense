@@ -67,7 +67,7 @@ public class BasicTower : Tower
                     closestDistance = distance;
                 }
             }
-            m_curTarget = hits[closestIndex].transform.GetComponent<UnitEnemy>();
+            m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
     }
 

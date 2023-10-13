@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class VoidRayTowerController : Tower
 {
-    [Header("Edit")]
     public LineRenderer m_projectileLineRenderer;
     public float m_stackDropDelayTime;
     public float m_curStackDropDelay;
@@ -20,11 +19,10 @@ public class VoidRayTowerController : Tower
     public Gradient m_panelGradient;
     public MeshRenderer m_panelMeshRenderer;
 
-    [Header("Dont Edit")]
-    public int m_curStacks;
-    public float m_curDamage;
-    public float m_curFireRate;
 
+    private int m_curStacks;
+    private float m_curDamage;
+    private float m_curFireRate;
     private Vector2 m_scrollOffset;
     private float m_timeUntilFire = 99f;
     private float m_facingThreshold = 10f;
@@ -151,9 +149,6 @@ public class VoidRayTowerController : Tower
 
     private bool IsTargetInRange(Vector3 targetPos)
     {
-        Vector2 target2d = new Vector2(targetPos.x, targetPos.z);
-        Vector2 tower2d = new Vector2(transform.position.x, transform.position.z);
-        //float distance = Vector2.Distance(tower2d, target2d);
         float distance = Vector3.Distance(transform.position, targetPos);
         return distance <= m_towerData.m_fireRange;
     }
@@ -170,8 +165,6 @@ public class VoidRayTowerController : Tower
 
     private void FindTarget()
     {
-        //RaycastHit[] hits = Physics.SphereCastAll(transform.position, m_towerData.m_targetRange, transform.forward, m_layerMask.value);
-
         Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
@@ -188,7 +181,7 @@ public class VoidRayTowerController : Tower
                 }
             }
 
-            m_curTarget = hits[closestIndex].transform.GetComponent<UnitEnemy>();
+            m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
     }
 }

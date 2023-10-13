@@ -132,7 +132,7 @@ public class CreepWave
 [System.Serializable]
 public class Creep
 {
-    public UnitEnemy m_enemy;
+    public EnemyController m_enemy;
     public int m_unitsToSpawn;
     public float m_spawnDelay;
     public float m_spawnInterval;

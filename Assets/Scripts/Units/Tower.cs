@@ -15,7 +15,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected bool m_isBuilt;
     
     protected AudioSource m_audioSource;
-    protected UnitEnemy m_curTarget;
+    protected EnemyController m_curTarget;
     
     void Awake()
     {

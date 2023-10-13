@@ -33,7 +33,7 @@ public class GameplayManager : MonoBehaviour
     [FormerlySerializedAs("m_enemyGoals")] public Transform m_enemyGoal;
     [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
     [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
-    [Header("Active Enemies")] public List<UnitEnemy> m_enemyList;
+    [Header("Active Enemies")] public List<EnemyController> m_enemyList;
     public Transform m_enemiesObjRoot;
 
     private Vector2Int m_curCellPos;
@@ -655,12 +655,12 @@ public class GameplayManager : MonoBehaviour
         OnTowerSell?.Invoke();
     }
 
-    public void AddEnemyToList(UnitEnemy enemy)
+    public void AddEnemyToList(EnemyController enemy)
     {
         m_enemyList.Add(enemy);
     }
 
-    public void RemoveEnemyFromList(UnitEnemy enemy)
+    public void RemoveEnemyFromList(EnemyController enemy)
     {
         for (int i = 0; i < m_enemyList.Count; ++i)
         {

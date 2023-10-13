@@ -15,9 +15,9 @@ public class UIHealthMeter : MonoBehaviour
     private int m_newHealth;
 
     //Health needs to be abstracted out so a Castle and Enemy can use this same script.
-    private UnitEnemy m_enemy;
+    private EnemyController m_enemy;
 
-    public void SetEnemy(UnitEnemy enemy, float health, float yOffset, float xScale)
+    public void SetEnemy(EnemyController enemy, float health, float yOffset, float xScale)
     {
         m_enemy = enemy;
         m_maxHealth = health;
