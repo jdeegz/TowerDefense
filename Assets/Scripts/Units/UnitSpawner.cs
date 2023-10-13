@@ -9,11 +9,11 @@ using Random = UnityEngine.Random;
 public class UnitSpawner : MonoBehaviour
 {
     public Transform m_spawnPoint;
-    public List<CreepWave> m_trainingCreepWaves;
-    public List<CreepWave> m_creepWaves;
+    [SerializeField] private SpawnerWaves m_spawnerWaves;
 
     private bool m_isSpawnerActive = false;
-    private List<Creep> m_activeCreeps;
+    private List<Creep> m_activeWave;
+    private List<CreepSpawner> m_activeCreepSpawners;
 
 
     private void Start()
@@ -27,21 +27,20 @@ public class UnitSpawner : MonoBehaviour
         //is Spawning is determine by the Gameplay State, if we're in GameplayManager.GameplayState.SpawnEnemies, spawn enemies.
         if (m_isSpawnerActive)
         {
-            for (int i = 0; i < m_activeCreeps.Count; ++i)
+            for (int i = 0; i < m_activeCreepSpawners.Count; ++i)
             {
-                Creep creep = m_activeCreeps[i];
-                if (creep.IsCreepSpawning())
+                if (m_activeCreepSpawners[i].IsCreepSpawning())
                 {
-                    creep.UpdateCreep();
+                    m_activeCreepSpawners[i].UpdateCreep();
                 }
                 else
                 {
                     //If the creep is NOT spawning, remove it from the active creep spawner list.
-                    m_activeCreeps.RemoveAt(i);
+                    m_activeCreepSpawners.RemoveAt(i);
                     --i;
 
                     //If we have NO active creep spawners, disable this spawner.
-                    if (m_activeCreeps.Count == 0)
+                    if (m_activeCreepSpawners.Count == 0)
                     {
                         m_isSpawnerActive = false;
                         GameplayManager.Instance.DisableSpawner();
@@ -56,20 +55,35 @@ public class UnitSpawner : MonoBehaviour
         //Creep waves start at wave 0, are shown as wave 1.
         //If we have training waves, use them.
         int gameplayWave = GameplayManager.Instance.m_wave;
-        if (gameplayWave < m_trainingCreepWaves.Count)
+        if (gameplayWave < m_spawnerWaves.m_trainingCreepWaves.Count)
         {
-            m_activeCreeps = new List<Creep>(m_trainingCreepWaves[gameplayWave].m_creeps);
+            m_activeWave = new List<Creep>(m_spawnerWaves.m_trainingCreepWaves[gameplayWave].m_creeps);
         }
+        
+        //Else find out if we spawn normal wave or boss wave.
         else
         {
-            int wave = (gameplayWave - m_trainingCreepWaves.Count) % m_creepWaves.Count;
-            m_activeCreeps = new List<Creep>(m_creepWaves[wave].m_creeps);
+            //Boss waves occur every 5 gameplay Waves.
+            int bossWave = (gameplayWave + 1) % 5;
+            if (bossWave == 0)
+            {
+                int wave = (gameplayWave + 1) / 5 % m_spawnerWaves.m_bossWaves.Count;
+                m_activeWave = new List<Creep>(m_spawnerWaves.m_bossWaves[wave].m_creeps);
+            }
+            else
+            {
+                int wave = (gameplayWave - m_spawnerWaves.m_trainingCreepWaves.Count) % m_spawnerWaves.m_creepWaves.Count;
+                m_activeWave = new List<Creep>(m_spawnerWaves.m_creepWaves[wave].m_creeps);
+            }
         }
 
         //Assure each creep has a point to spawn to.
-        for (int i = 0; i < m_activeCreeps.Count; ++i)
+        m_activeCreepSpawners = new List<CreepSpawner>();
+        for (int i = 0; i < m_activeWave.Count; ++i)
         {
-            m_activeCreeps[i].SetCreepVariables(m_spawnPoint);
+            //Build list of Active Creep Spawners.
+            CreepSpawner creepSpawner = new CreepSpawner(m_activeWave[i], m_spawnPoint);
+            m_activeCreepSpawners.Add(creepSpawner);
         }
 
         m_isSpawnerActive = true;
@@ -123,16 +137,9 @@ public class UnitSpawner : MonoBehaviour
     }
 }
 
-[System.Serializable]
-public class CreepWave
+public class CreepSpawner
 {
-    public List<Creep> m_creeps;
-}
-
-[System.Serializable]
-public class Creep
-{
-    public EnemyController m_enemy;
+    public EnemyData m_enemy;
     public int m_unitsToSpawn;
     public float m_spawnDelay;
     public float m_spawnInterval;
@@ -143,6 +150,16 @@ public class Creep
     private bool m_delayElapsed;
     private Transform m_creepSpawnPoint;
 
+    public CreepSpawner(Creep creep, Transform spawnPoint)
+    {
+        //Set the data from the passed Creep.
+        m_enemy = creep.m_enemy;
+        m_unitsToSpawn = creep.m_unitsToSpawn;
+        m_spawnDelay = creep.m_spawnDelay;
+        m_spawnInterval = creep.m_spawnInterval;
+        m_creepSpawnPoint = spawnPoint;
+    }
+    
     public void UpdateCreep()
     {
         m_elapsedTime += Time.deltaTime;
@@ -164,7 +181,7 @@ public class Creep
             spawnPoint.x += xOffset;
             spawnPoint.z += zOffset;
 
-            Object.Instantiate(m_enemy.gameObject, spawnPoint, Quaternion.identity,
+            Object.Instantiate(m_enemy.m_enemyPrefab, spawnPoint, m_creepSpawnPoint.rotation,
                 GameplayManager.Instance.m_enemiesObjRoot);
             m_unitsSpawned++;
             m_elapsedTime = 0;
@@ -191,3 +208,4 @@ public class Creep
         m_creepSpawnPoint = transform;
     }
 }
+

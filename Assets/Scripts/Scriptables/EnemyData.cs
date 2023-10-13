@@ -6,9 +6,12 @@ using UnityEngine.Serialization;
 [CreateAssetMenu(fileName = "EnemyUnitData", menuName = "ScriptableObjects/EnemyUnitData")]
 public class EnemyData : ScriptableObject
 {
+    public string m_enemyName;
+    public GameObject m_enemyPrefab;
+    
     public float m_moveSpeed = 1f;
     public float m_damageMultiplier = 0f;
-    [FormerlySerializedAs("m_maxHealth")] public int m_health = 10;
+    public int m_health = 10;
     
     [Header("Life Meter")]
     public float m_healthMeterOffset = 35f;
