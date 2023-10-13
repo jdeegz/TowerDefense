@@ -31,7 +31,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Castle")] public CastleController m_castleController;
     [FormerlySerializedAs("m_enemyGoals")] public Transform m_enemyGoal;
-    [Header("Equipped Towers")] public ScriptableTowerDataObject[] m_equippedTowers;
+    [Header("Equipped Towers")] public TowerData[] m_equippedTowers;
     [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
     [Header("Active Enemies")] public List<EnemyController> m_enemyList;
     public Transform m_enemiesObjRoot;
@@ -60,7 +60,7 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private LayerMask m_pathObstructableLayer;
     private int m_preconstructedTowerIndex;
 
-    [SerializeField] private ScriptableUIStrings m_uiStrings;
+    [SerializeField] private UIStringData m_UIStringData;
     
     private Camera m_mainCamera;
     public float m_buildDuration;
@@ -140,14 +140,14 @@ public class GameplayManager : MonoBehaviour
                     if (!m_canAfford)
                     {
                         //Debug.Log("Not Enough Resources.");
-                        OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotAfford);
+                        OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotAfford);
                         return;
                     }
 
                     if (!m_placementOpen || !m_canPlace)
                     {
                         //Debug.Log("Cannot build here.");
-                        OnAlertDisplayed?.Invoke(m_uiStrings.m_cannotPlace);
+                        OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotPlace);
                         return;
                     }
 

@@ -10,7 +10,7 @@ using DG;
 
 public class TowerTrayButton : MonoBehaviour
 {
-    [SerializeField] private ScriptableTowerDataObject m_towerData;
+    [SerializeField] private TowerData m_towerData;
     [SerializeField] private TextMeshProUGUI m_towerCost;
     [SerializeField] private TextMeshProUGUI m_towerName;
     [SerializeField] private TextMeshProUGUI m_towerHotkey;
@@ -70,7 +70,7 @@ public class TowerTrayButton : MonoBehaviour
         
     }
 
-    public void SetupData(ScriptableTowerDataObject towerData, int i)
+    public void SetupData(TowerData towerData, int i)
     {
         m_towerData = towerData;
         m_equippedTowerIndex = i;

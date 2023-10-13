@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "TowerData", menuName = "Tower/TowerData")]
-public class ScriptableTowerDataObject : ScriptableObject
+[CreateAssetMenu(fileName = "TowerData", menuName = "ScriptableObjects/TowerData")]
+public class TowerData : ScriptableObject
 {
     public string m_name;
     public float m_targetRange;

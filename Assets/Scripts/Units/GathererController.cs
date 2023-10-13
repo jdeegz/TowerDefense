@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class GathererController : MonoBehaviour
 {
-    [SerializeField] private ScriptableGatherer m_gatherer;
+    [SerializeField] private GathererData m_GathererData;
     [SerializeField] private ParticleSystem m_idleStateVFX;
     public GathererTask m_gathererTask;
     public Animator m_animator;
@@ -55,7 +56,7 @@ public class GathererController : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
         GameplayManager.OnGameObjectSelected -= GathererSelected;
         GameplayManager.OnCommandRequested -= CommandRequested;
-        GameplayManager.Instance.RemoveGathererFromList(this, m_gatherer.m_type);
+        GameplayManager.Instance.RemoveGathererFromList(this, m_GathererData.m_type);
     }
 
     private void GameplayStateChanged(GameplayManager.GameplayState newState)
@@ -71,13 +72,13 @@ public class GathererController : MonoBehaviour
 
     void Start()
     {
-        switch (m_gatherer.m_type)
+        switch (m_GathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
-                GameplayManager.Instance.AddGathererToList(this, m_gatherer.m_type);
+                GameplayManager.Instance.AddGathererToList(this, m_GathererData.m_type);
                 break;
             case ResourceManager.ResourceType.Stone:
-                GameplayManager.Instance.AddGathererToList(this, m_gatherer.m_type);
+                GameplayManager.Instance.AddGathererToList(this, m_GathererData.m_type);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -143,14 +144,14 @@ public class GathererController : MonoBehaviour
         switch (type)
         {
             case Selectable.SelectedObjectType.ResourceWood:
-                if (m_gatherer.m_type == ResourceManager.ResourceType.Wood)
+                if (m_GathererData.m_type == ResourceManager.ResourceType.Wood)
                 {
                     RequestedHarvest(requestObj);
                 }
 
                 break;
             case Selectable.SelectedObjectType.ResourceStone:
-                if (m_gatherer.m_type == ResourceManager.ResourceType.Stone)
+                if (m_GathererData.m_type == ResourceManager.ResourceType.Stone)
                 {
                     RequestedHarvest(requestObj);
                 }
@@ -344,7 +345,7 @@ public class GathererController : MonoBehaviour
                 ResourceNode newNode = collider.GetComponent<ResourceNode>();
                 if (newNode != null)
                 {
-                    if (newNode.m_type == m_gatherer.m_type && newNode.HasResources())
+                    if (newNode.m_type == m_GathererData.m_type && newNode.HasResources())
                     {
                         nearbyNodes.Add(newNode);
                     }
@@ -443,14 +444,14 @@ public class GathererController : MonoBehaviour
     private IEnumerator Harvesting()
     {
         StartHarvesting();
-        yield return new WaitForSeconds(m_gatherer.m_harvestDuration);
+        yield return new WaitForSeconds(m_GathererData.m_harvestDuration);
         CompletedHarvest();
     }
 
     private IEnumerator Storing()
     {
-        yield return new WaitForSeconds(m_gatherer.m_storingDuration);
-        switch (m_gatherer.m_type)
+        yield return new WaitForSeconds(m_GathererData.m_storingDuration);
+        switch (m_GathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
                 ResourceManager.Instance.UpdateWoodAmount(m_resourceCarried);
@@ -478,7 +479,7 @@ public class GathererController : MonoBehaviour
     private void CompletedHarvest()
     {
         Debug.Log($"{gameObject.name}'s harvesting completed.");
-        ValueTuple<int, int> vars = m_curHarvestNode.RequestResource(m_gatherer.m_carryCapacity);
+        ValueTuple<int, int> vars = m_curHarvestNode.RequestResource(m_GathererData.m_carryCapacity);
         m_resourceCarried = vars.Item1;
         int resourceRemaining = vars.Item2;
 

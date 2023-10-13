@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-[CreateAssetMenu(fileName = "EnemyUnitData", menuName = "Enemy/EnemyUnitData")]
-public class ScriptableUnitEnemy : ScriptableObject
+[CreateAssetMenu(fileName = "EnemyUnitData", menuName = "ScriptableObjects/EnemyUnitData")]
+public class EnemyData : ScriptableObject
 {
     public float m_moveSpeed = 1f;
     public float m_damageMultiplier = 0f;

@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public static event Action<GameState> OnGameStateChanged;
-    public ScriptableMissionContainerObject m_MissionContainer;
+    public MissionContainerData m_MissionContainer;
     private String m_curScene;
     public GameObject m_loadingView;
     public GameState m_gameState;

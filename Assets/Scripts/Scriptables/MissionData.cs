@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "MissionData", menuName = "Mission/MissionData")]
-public class ScriptableMissionDataObject : ScriptableObject
+[CreateAssetMenu(fileName = "MissionData", menuName = "ScriptableObjects/MissionData")]
+public class MissionData : ScriptableObject
 {
-    [SerializeField]private MissionStats m_missionStats;
+    [SerializeField] private MissionStats m_missionStats;
     public MissionStats m_BaseMissionStats => m_missionStats;
     public string m_missionScene;
     public string m_missionName;

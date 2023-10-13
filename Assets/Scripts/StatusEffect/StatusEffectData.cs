@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-[CreateAssetMenu(fileName = "StatusEffectData", menuName = "StatusEffect/StatusEffectData")]
+[CreateAssetMenu(fileName = "StatusEffectData", menuName = "ScriptableObjects/StatusEffectData")]
 public class StatusEffectData : ScriptableObject
 {
     [HideInInspector] public Tower m_sender;

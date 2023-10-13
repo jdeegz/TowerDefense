@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public abstract class EnemyController : MonoBehaviour, IEffectable
 {
     //Enemy Scriptable Data
-    [SerializeField] private ScriptableUnitEnemy m_enemyData;
+    [SerializeField] private EnemyData m_enemyData;
     public Transform m_targetPoint;
     
     //Enemy Objective & Position

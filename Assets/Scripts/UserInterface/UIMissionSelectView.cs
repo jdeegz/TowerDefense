@@ -38,7 +38,7 @@ public class UIMissionSelectView : MonoBehaviour
             //Get the Button script
             Button button = newButton.GetComponent<Button>();
             //Stash the Mission data
-            ScriptableMissionDataObject data = GameManager.Instance.m_MissionContainer.m_MissionList[i];
+            MissionData data = GameManager.Instance.m_MissionContainer.m_MissionList[i];
             
             missionSelectButtonScript.SetData(button, data.m_missionScene, data.m_missionName, data.m_missionDescription, data.m_missionSprite);
         }
