@@ -108,4 +108,14 @@ public abstract class Tower : MonoBehaviour
             m_towerRangeCircle.SetPosition(i, currentPosition);
         }
     }
+
+    public Quaternion GetTurretRotation()
+    {
+        return m_turretPivot.rotation;
+    }
+
+    public void SetTurretRotation(Quaternion rot)
+    {
+        m_turretPivot.rotation = rot;
+    }
 }

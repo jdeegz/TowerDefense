@@ -663,10 +663,12 @@ public class GameplayManager : MonoBehaviour
         ResourceManager.Instance.UpdateStoneAmount(-stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(-woodValue);
         IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, false, oldTower.transform.position);
+        Quaternion curRotation = oldTower.GetTurretRotation();
         Destroy(oldTower.gameObject);
         
         GameObject newTowerObj = Instantiate(newTowerData.m_prefab, pos, Quaternion.identity, m_towerObjRoot.transform);
         Tower newTower = newTowerObj.GetComponent<Tower>();
+        newTower.SetTurretRotation(curRotation);
         newTower.SetupTower();
         
         m_curSelectable = null;

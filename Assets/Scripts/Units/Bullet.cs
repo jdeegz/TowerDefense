@@ -7,8 +7,8 @@ public class Bullet : Projectile
     // Update is called once per frame
     void Update()
     {
-        if (m_enemy) m_targetPos = m_enemy.transform.position;
-        
+        if (m_enemy) m_targetPos = m_enemy.m_targetPoint.position;
+
         if (CheckTargetDistance())
         {
             DestroyProjectile();
@@ -31,10 +31,6 @@ public class Bullet : Projectile
         //Straight line position at this step.
         m_directPos = Vector3.Lerp(m_startPos, m_targetPos, t);
 
-        //Rotation -- Not needed for a basic bullet? As throwing debug.logs each frame.
-        //Quaternion lookRotation = Quaternion.LookRotation((m_directPos - transform.position).normalized);
-        //transform.rotation = lookRotation;
-
         transform.position = m_directPos;
 
         m_elapsedTime += Time.deltaTime * m_projectileSpeed;
@@ -50,9 +46,17 @@ public class Bullet : Projectile
             {
                 m_enemy.ApplyEffect(m_statusEffect);
             }
-            
-            m_enemy.OnTakeDamage(m_projectileDamage);
-            
+
+            //Calculate distance travelled & Damage Falloff.
+            float distanceTravelled = Vector3.Distance(transform.position, m_startPos);
+            float dmg = m_projectileDamage - distanceTravelled * (m_projectileDamage / 10);
+            if (dmg <= 0.0)
+            {
+                dmg = 0.0f;
+            }
+
+            m_enemy.OnTakeDamage(dmg);
+            Debug.Log($"Bullet Travelled: {distanceTravelled} & Dealt Damage: {dmg}");
         }
 
         //Destroy this missile.
