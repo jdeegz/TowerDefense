@@ -181,8 +181,8 @@ public class CreepSpawner
             spawnPoint.x += xOffset;
             spawnPoint.z += zOffset;
 
-            Object.Instantiate(m_enemy.m_enemyPrefab, spawnPoint, m_creepSpawnPoint.rotation,
-                GameplayManager.Instance.m_enemiesObjRoot);
+            GameObject enemyOjb = GameObject.Instantiate(m_enemy.m_enemyPrefab, spawnPoint, m_creepSpawnPoint.rotation, GameplayManager.Instance.m_enemiesObjRoot);
+            enemyOjb.GetComponent<EnemyController>().SetEnemyData(m_enemy);
             m_unitsSpawned++;
             m_elapsedTime = 0;
 

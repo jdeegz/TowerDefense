@@ -10,25 +10,25 @@ using Random = UnityEngine.Random;
 public abstract class EnemyController : MonoBehaviour, IEffectable
 {
     //Enemy Scriptable Data
-    [SerializeField] private EnemyData m_enemyData;
+    private EnemyData m_enemyData;
     public Transform m_targetPoint;
     
     //Enemy Objective & Position
-    private Vector2Int m_curPos;
-    private Cell m_curCell;
-    private Transform m_goal;
+    protected Vector2Int m_curPos;
+    protected Cell m_curCell;
+    protected Transform m_goal;
     
     //Enemy Stats
     private float m_curMaxHealth;
     private float m_curHealth;
-    private float m_baseMoveSpeed;
+    protected float m_baseMoveSpeed;
     private float m_curSpeedModifier;
-    private float m_lastSpeedModifierFaster = 1f;
-    private float m_lastSpeedModifierSlower = 1f;
+    protected float m_lastSpeedModifierFaster = 1f;
+    protected float m_lastSpeedModifierSlower = 1f;
     private float m_curDamageMultiplier;
     
     //Hit Flash Info
-    List<MeshRenderer> m_allMeshRenderers;
+    List<Renderer> m_allRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
     
@@ -38,17 +38,20 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private AudioSource m_audioSource;
     private List<StatusEffect> m_statusEffects;
 
-    private NavMeshAgent m_navMeshAgent;
+    protected NavMeshAgent m_navMeshAgent;
     
     public event Action<float> UpdateHealth;
     public event Action<Vector3> DestroyEnemy;
-    
+
+    public void SetEnemyData(EnemyData data)
+    {
+        m_enemyData = data;
+    }
     
     void Start()
     {
         //Setup with Gameplay Manager
         m_navMeshAgent = GetComponent<NavMeshAgent>();
-        m_navMeshAgent.speed = m_enemyData.m_moveSpeed;
         m_goal = GameplayManager.Instance.m_enemyGoal;
         GameplayManager.Instance.AddEnemyToList(this);
 
@@ -58,7 +61,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Setup Data
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         m_curSpeedModifier = 1;
-        m_navMeshAgent.speed = m_baseMoveSpeed * m_curSpeedModifier;
         m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.15f, GameplayManager.Instance.m_wave));
         m_curHealth = m_curMaxHealth;
         m_curDamageMultiplier = m_enemyData.m_damageMultiplier;
@@ -88,60 +90,26 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     
     void Update()
     {
-        //Update Cell occupancy
-        Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
-        if (newPos != m_curPos)
-        {
-            if (m_curCell != null)
-            {
-                m_curCell.UpdateActorCount(-1, gameObject.name);
-            }
-
-            m_curPos = newPos;
-            m_curCell = Util.GetCellFromPos(m_curPos);
-            m_curCell.UpdateActorCount(1, gameObject.name);
-        }
-
-        //Update Status Effects
-        m_lastSpeedModifierFaster = 1;
-        m_lastSpeedModifierSlower = 1;
-        List<StatusEffect> activeEffects = new List<StatusEffect>(m_statusEffects);
-        foreach (StatusEffect activeEffect in activeEffects)
-        {
-            HandleEffect(activeEffect);
-        }
-
-        m_navMeshAgent.speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-        
-        //Update Speed Trails
-        if (m_navMeshAgent.speed > 1.0 && m_speedTrailObj != null)
-        {
-            m_speedTrailObj.SetActive(true);
-        }
-        else
-        {
-            m_speedTrailObj.SetActive(false);
-        }
+        UpdateStatusEffects();
+        HandleMovement();
     }
     
     //Movement
     //Functions
-    private void StartMoving(Vector3 pos)
-    {
-        m_navMeshAgent.SetDestination(pos);
-    }
+    public abstract void StartMoving(Vector3 pos);
+    public abstract void HandleMovement();
     
     //Taking Damage
     //Functions
     void CollectMeshRenderers(Transform parent)
     {
         //Get Parent Mesh Renderer if there is one.
-        MeshRenderer meshRenderer = parent.GetComponent<MeshRenderer>();
-        if (meshRenderer != null)
+        Renderer Renderer = parent.GetComponent<Renderer>();
+        if (Renderer != null)
         {
-            if (m_allMeshRenderers == null)
+            if (m_allRenderers == null)
             {
-                m_allMeshRenderers = new List<MeshRenderer>();
+                m_allRenderers = new List<Renderer>();
             }
 
             if (m_allOrigColors == null)
@@ -149,8 +117,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 m_allOrigColors = new List<Color>();
             }
 
-            m_allMeshRenderers.Add(meshRenderer);
-            m_allOrigColors.Add(meshRenderer.material.GetColor("_EmissionColor"));
+            m_allRenderers.Add(Renderer);
+            m_allOrigColors.Add(Renderer.material.GetColor("_EmissionColor"));
         }
 
         for (int i = 0; i < parent.childCount; ++i)
@@ -163,15 +131,22 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     
     public void OnTakeDamage(float dmg)
     {
+        //Deal Damage
+        UpdateHealth?.Invoke(-dmg * m_curDamageMultiplier);
+        
+        //Audio
+        int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
+        m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
+        
+        //VFX
+        
+        //Hit Flash
+        if (m_allRenderers == null) return;
         if (m_hitFlashCoroutine != null)
         {
             StopCoroutine(m_hitFlashCoroutine);
         }
-
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
-        int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
-        m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
-        UpdateHealth?.Invoke(-dmg * m_curDamageMultiplier);
     }
 
     void OnUpdateHealth(float i)
@@ -187,17 +162,17 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private IEnumerator HitFlash()
     {
         //Set the color
-        for (int i = 0; i < m_allMeshRenderers.Count; ++i)
+        for (int i = 0; i < m_allRenderers.Count; ++i)
         {
-            m_allMeshRenderers[i].material.SetColor("_EmissionColor", Color.red);
+            m_allRenderers[i].material.SetColor("_EmissionColor", Color.red);
         }
 
         yield return new WaitForSeconds(.15f);
 
         //Return to original colors.
-        for (int i = 0; i < m_allMeshRenderers.Count; ++i)
+        for (int i = 0; i < m_allRenderers.Count; ++i)
         {
-            m_allMeshRenderers[i].material.SetColor("_EmissionColor", m_allOrigColors[i]);
+            m_allRenderers[i].material.SetColor("_EmissionColor", m_allOrigColors[i]);
         }
     }
 
@@ -224,6 +199,18 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     
     //Status Effect
     //Functions
+    public void UpdateStatusEffects()
+    {
+        //Update Status Effects
+        m_lastSpeedModifierFaster = 1;
+        m_lastSpeedModifierSlower = 1;
+        List<StatusEffect> activeEffects = new List<StatusEffect>(m_statusEffects);
+        foreach (StatusEffect activeEffect in activeEffects)
+        {
+            HandleEffect(activeEffect);
+        }
+    }
+    
     public void ApplyEffect(StatusEffectData data)
     {
         StatusEffect newStatusEffect = new StatusEffect();

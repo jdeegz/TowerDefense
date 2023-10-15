@@ -64,12 +64,6 @@ public class TowerTrayButton : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void SetupData(TowerData towerData, int i)
     {
         m_towerData = towerData;

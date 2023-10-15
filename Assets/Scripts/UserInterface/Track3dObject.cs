@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Track3dObject : MonoBehaviour
 {
-
     private GameObject m_targetObj;
     private RectTransform m_rectTransform;
     private Canvas m_canvas;

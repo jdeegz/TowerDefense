@@ -61,7 +61,7 @@ public class GameplayManager : MonoBehaviour
     private int m_preconstructedTowerIndex;
 
     [SerializeField] private UIStringData m_UIStringData;
-    
+
     private Camera m_mainCamera;
     public float m_buildDuration;
     private float m_timeToNextWave;
@@ -160,9 +160,9 @@ public class GameplayManager : MonoBehaviour
                     //Debug.Log(m_hoveredSelectable + " : selected.");
                     OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
                 }
-                else
+                else if (m_curSelectable && m_hoveredSelectable == null)
                 {
-                    //Debug.Log("I clicked on nothing.");
+                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                 }
             }
 
@@ -439,7 +439,7 @@ public class GameplayManager : MonoBehaviour
     public void PreconstructTower(int i)
     {
         if (i >= m_equippedTowers.Length) return;
-        
+
         ClearPreconstructedTower();
 
         //Set up the objects
@@ -519,7 +519,7 @@ public class GameplayManager : MonoBehaviour
         {
             return false;
         }
-        
+
         //If we're hovering on the exit cell
         if (m_preconstructedTowerPos == Util.GetVector2IntFrom3DPos(m_enemyGoal.position))
         {
@@ -653,6 +653,25 @@ public class GameplayManager : MonoBehaviour
         UpdateInteractionState(InteractionState.Idle);
         Debug.Log("Tower sold.");
         OnTowerSell?.Invoke();
+    }
+
+    public void UpgradeTower(Tower oldTower, TowerData newTowerData, int stoneValue, int woodValue)
+    {
+        Vector3 pos = oldTower.gameObject.transform.position;
+        GridCellOccupantUtil.SetOccupant(oldTower.gameObject, false, 1, 1);
+        RemoveTowerFromList(oldTower);
+        ResourceManager.Instance.UpdateStoneAmount(-stoneValue);
+        ResourceManager.Instance.UpdateWoodAmount(-woodValue);
+        IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, false, oldTower.transform.position);
+        Destroy(oldTower.gameObject);
+        
+        GameObject newTowerObj = Instantiate(newTowerData.m_prefab, pos, Quaternion.identity, m_towerObjRoot.transform);
+        Tower newTower = newTowerObj.GetComponent<Tower>();
+        newTower.SetupTower();
+        
+        m_curSelectable = null;
+        UpdateInteractionState(InteractionState.Idle);
+        Debug.Log("Tower upgraded.");
     }
 
     public void AddEnemyToList(EnemyController enemy)

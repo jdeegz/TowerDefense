@@ -55,17 +55,27 @@ public abstract class Tower : MonoBehaviour
     {
         return (m_towerData.m_stoneSellCost, m_towerData.m_woodSellCost);
     }
+
+    public TowerData GetTowerData()
+    {
+        return m_towerData;
+    }
     
     public void SetupTower()
     {
+        //Grid
         GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
         GameplayManager.Instance.AddTowerToList(this);
+        
+        //Operational
         gameObject.GetComponent<Collider>().enabled = true;
         gameObject.GetComponent<NavMeshObstacle>().enabled = true;
         m_isBuilt = true;
         
+        //Audio
         m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
         
+        //VFX
     }
 
     public void OnDestroy()

@@ -23,4 +23,6 @@ public class TowerData : ScriptableObject
     public List<AudioClip> m_audioFireClips;
     public AudioClip m_audioBuildClip;
     public AudioClip m_audioDestroyClip;
+
+    public List<TowerData> m_upgradeOptions;
 }
