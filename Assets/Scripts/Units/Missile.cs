@@ -14,7 +14,7 @@ public class Missile : Projectile
     
     void Update()
     {
-        if (m_enemy) m_targetPos = m_enemy.transform.position;
+        if (m_enemy) m_targetPos = m_enemy.m_targetPoint.position;
         
         if (CheckTargetDistance())
         {
@@ -78,7 +78,7 @@ public class Missile : Projectile
         }
         
         //Spawn VFX
-        Vector3 groundPos = new Vector3(transform.position.x, 0.1f, transform.position.z);
+        Vector3 groundPos = transform.position;
         Instantiate(m_impactEffect, groundPos, Quaternion.identity);
 
         //Destroy this missile.
