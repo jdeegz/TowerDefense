@@ -7,6 +7,7 @@ public class ArcTowerController : Tower
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
     private GameObject m_activeProjectileObj;
+    private float m_rotationModifier = 1;
 
     void Update()
     {
@@ -28,11 +29,11 @@ public class ArcTowerController : Tower
         }
 
         RotateTowardsTarget();
+        m_rotationModifier = IsTargetInSight() ? 0.2f : 1.0f;
 
         if (!IsTargetInRange(m_curTarget.transform.position))
         {
-            
-
+            m_rotationModifier = 1;
             m_curTarget = null;
         }
         else
@@ -40,8 +41,7 @@ public class ArcTowerController : Tower
             m_timeUntilFire += Time.deltaTime;
 
             //If we have elapsed time, and are looking at the target, fire.
-            Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
-            if (m_timeUntilFire >= 1f / m_towerData.m_fireRate && Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold)
+            if (m_timeUntilFire >= 1f / m_towerData.m_fireRate && IsTargetInSight())
             {
                 if (m_activeProjectileObj == null)
                 {
@@ -107,7 +107,13 @@ public class ArcTowerController : Tower
         Quaternion targetRotation = Quaternion.Euler(new Vector3(0f, angle, 0f));
 
         m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
-            m_towerData.m_rotationSpeed * Time.deltaTime);
+            m_towerData.m_rotationSpeed * Time.deltaTime * m_rotationModifier);
+    }
+
+    private bool IsTargetInSight()
+    {
+        Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
+        return Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold;
     }
 
     private bool IsTargetInRange(Vector3 targetPos)
