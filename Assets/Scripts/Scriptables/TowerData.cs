@@ -17,6 +17,13 @@ public class TowerData : ScriptableObject
     
     [Header("Arc Cone")]
     public float m_fireConeAngle;
+
+    [Header("Secondary Data")] 
+    public bool m_hasSecondaryAttack;
+    public float m_secondaryDamage;
+    public float m_secondaryfireRange;
+    public float m_secondaryfireRate;
+    
     
     [Header("Burst Fire")]
     public float m_burstFireRate;
@@ -36,6 +43,7 @@ public class TowerData : ScriptableObject
     [Header("Visual Prefabs")]
     public GameObject m_prefab;
     public GameObject m_projectilePrefab;
+    public GameObject m_secondaryProjectilePrefab;
     
     [Header("sFX")]
     public List<AudioClip> m_audioFireClips;

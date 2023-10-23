@@ -16332,7 +16332,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_startingStone: 0
-  m_startingWood: 99
+  m_startingWood: 999
 --- !u!1001 &625652693
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -25968,7 +25968,6 @@ Transform:
   - {fileID: 1152948052}
   - {fileID: 508828006}
   - {fileID: 833708920}
-  - {fileID: 1239472067}
   - {fileID: 505975768}
   - {fileID: 2054858259}
   - {fileID: 332229774}
@@ -35114,72 +35113,6 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: ea7f00e8117a7a14e9addc7a7f9544f1, type: 3}
   m_PrefabInstance: {fileID: 1239070855}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &1239472066
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 907707394}
-    m_Modifications:
-    - target: {fileID: 5495023557100828210, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_Name
-      value: TreeClump_Var_02 (81)
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_RootOrder
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 38
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 21
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
---- !u!4 &1239472067 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
-  m_PrefabInstance: {fileID: 1239472066}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1242293718
 PrefabInstance:
@@ -59144,6 +59077,10 @@ PrefabInstance:
     - target: {fileID: 5459027436854497611, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
       propertyPath: MinDistance
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5848751999029450505, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
+      propertyPath: m_maxHealth
+      value: 999
       objectReference: {fileID: 0}
     - target: {fileID: 7136376470559165852, guid: 173c07ccb97521142ab6037b4f0cacbb, type: 3}
       propertyPath: m_Name

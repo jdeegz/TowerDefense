@@ -13,22 +13,32 @@ MonoBehaviour:
   m_Name: VoidTowerData
   m_EditorClassIdentifier: 
   m_name: Void Tower
+  m_baseDamage: 0.5
   m_targetRange: 6
   m_fireRange: 5.6
-  m_fireConeAngle: 0
   m_fireRate: 4
-  m_baseDamage: 0.5
   m_rotationSpeed: 300
+  m_fireConeAngle: 0
+  m_hasSecondaryAttack: 0
+  m_secondaryDamage: 0
+  m_secondaryfireRange: 0
+  m_secondaryfireRate: 0
+  m_burstFireRate: 0
+  m_burstSize: 0
   m_woodCost: 5
   m_stoneCost: 0
   m_woodSellCost: 4
   m_stoneSellCost: 0
   m_uiIcon: {fileID: 21300000, guid: 9a4a4fe213efa02419f426afcf198387, type: 3}
   m_prefab: {fileID: 9140437940615734701, guid: 2ceb3b0a4b826ca44b02d8438954d878, type: 3}
-  m_projectilePrefab: {fileID: 8933404775076088512, guid: 8b69a439ae0bdad49aa6d42ea244a14c, type: 3}
+  m_projectilePrefab: {fileID: 0}
+  m_secondaryProjectilePrefab: {fileID: 0}
   m_audioFireClips:
   - {fileID: 8300000, guid: b819b54e7aee68f4ab0985f6ab3f1cb2, type: 3}
   - {fileID: 8300000, guid: 5bf2ccd251a245743987fb6563fa0682, type: 3}
   - {fileID: 8300000, guid: c56e26ab06e861f40a6fdd45798e7a0a, type: 3}
   m_audioBuildClip: {fileID: 8300000, guid: 17c721de332524e4c9cdbac044c0ecfa, type: 3}
   m_audioDestroyClip: {fileID: 8300000, guid: 323c8f92f75b1824597e571250e0dd52, type: 3}
+  m_upgradeOptions:
+  - {fileID: 11400000, guid: fd25c905c9c94d34fb82ab479052653c, type: 2}
+  - {fileID: 11400000, guid: 3d355eb8945484948b94c4dbcb105b77, type: 2}

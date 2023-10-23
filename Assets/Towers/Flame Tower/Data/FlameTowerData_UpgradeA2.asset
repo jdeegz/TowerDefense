@@ -10,24 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f16febbf5d0706f4a8024a371da95dc5, type: 3}
-  m_Name: ArcTowerData
+  m_Name: FlameTowerData_UpgradeA2
   m_EditorClassIdentifier: 
-  m_name: Flame Tower
+  m_name: Fan Level 2
+  m_baseDamage: 1
   m_targetRange: 4
   m_fireRange: 3
-  m_fireConeAngle: 90
   m_fireRate: 4
-  m_baseDamage: 0.5
-  m_rotationSpeed: 600
-  m_woodCost: 4
+  m_rotationSpeed: 250
+  m_fireConeAngle: 45
+  m_hasSecondaryAttack: 0
+  m_secondaryDamage: 0
+  m_secondaryfireRange: 0
+  m_secondaryfireRate: 0
+  m_burstFireRate: 0
+  m_burstSize: 0
+  m_woodCost: 8
   m_stoneCost: 0
-  m_woodSellCost: 3
+  m_woodSellCost: 10
   m_stoneSellCost: 0
   m_uiIcon: {fileID: 21300000, guid: 9184803feb2c26e4ab3fe60d2f9fd7da, type: 3}
-  m_prefab: {fileID: 4938204699957232730, guid: b5d0b57d7b9ea704ebc42bf2866c9afa, type: 3}
-  m_projectilePrefab: {fileID: 3353569534003725408, guid: 6c03b08ff9bb7094aacfc151014ca1f0, type: 3}
+  m_prefab: {fileID: 4938204699957232730, guid: 3a0e53fd931d6d34b9808ddb53e9b298, type: 3}
+  m_projectilePrefab: {fileID: 6289603016349779152, guid: 81f59677503738e4cb9088409d1a189a, type: 3}
+  m_secondaryProjectilePrefab: {fileID: 0}
   m_audioFireClips:
   - {fileID: 8300000, guid: 7daa4f312010baf48bfbb8a592d9e526, type: 3}
   - {fileID: 8300000, guid: 7daa4f312010baf48bfbb8a592d9e526, type: 3}
   m_audioBuildClip: {fileID: 8300000, guid: 17c721de332524e4c9cdbac044c0ecfa, type: 3}
   m_audioDestroyClip: {fileID: 8300000, guid: 323c8f92f75b1824597e571250e0dd52, type: 3}
+  m_upgradeOptions:
+  - {fileID: 11400000, guid: 4cc5897db5bd7e04386bd2effeefba37, type: 2}

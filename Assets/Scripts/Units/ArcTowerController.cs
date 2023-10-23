@@ -17,6 +17,8 @@ public class ArcTowerController : Tower
             return;
         }
 
+        if (m_towerData.m_hasSecondaryAttack) HandleSecondaryAttack();
+        
         if (m_curTarget == null)
         {
             //If target is not in range, destroy the flame cone if there is one.
@@ -24,6 +26,7 @@ public class ArcTowerController : Tower
             {
                 Destroy(m_activeProjectileObj);
             }
+
             FindTarget();
             return;
         }
@@ -54,6 +57,35 @@ public class ArcTowerController : Tower
                 m_timeUntilFire = 0;
             }
         }
+
+        
+    }
+
+    private float m_timeUntilSecondaryFire;
+
+    private void HandleSecondaryAttack()
+    {
+        m_timeUntilSecondaryFire += Time.deltaTime;
+
+        if (m_timeUntilSecondaryFire >= 1f / m_towerData.m_secondaryfireRate)
+        {
+            //Reset Counter
+            m_timeUntilSecondaryFire = 0f;
+            
+            //Spawn VFX
+            Instantiate(m_towerData.m_secondaryProjectilePrefab, transform.position, Quaternion.identity);
+            Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_secondaryfireRange, m_layerMask.value);
+            
+            //Find enemies and deal damage
+            if (hits.Length <= 0) return;
+            for (int i = 0; i < hits.Length; ++i)
+            {
+                // Target is within the cone.
+                EnemyController enemyHit = hits[i].transform.GetComponent<EnemyController>();
+                enemyHit.OnTakeDamage(m_towerData.m_secondaryDamage);
+                
+            }
+        }
     }
 
     private void Fire()
@@ -74,6 +106,7 @@ public class ArcTowerController : Tower
                 enemyHit.OnTakeDamage(m_towerData.m_baseDamage);
                 if (m_statusEffectData)
                 {
+                    m_statusEffectData.m_sender = this;
                     enemyHit.ApplyEffect(m_statusEffectData);
                 }
             }
@@ -96,6 +129,7 @@ public class ArcTowerController : Tower
                     closestDistance = distance;
                 }
             }
+
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
     }

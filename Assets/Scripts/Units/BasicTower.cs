@@ -62,12 +62,10 @@ public class BasicTower : Tower
 
     private void Fire()
     {
-        GameObject projectileObj =
-            Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
+        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-        if (m_statusEffectData) m_statusEffectData.m_sender = this;
-        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage,
-            m_muzzlePoint.position, m_statusEffectData);
+        //This Does not work, fine new method of assigning sender. if (m_statusEffectData) m_statusEffectData.m_sender = this;
+        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position, m_statusEffectData);
 
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);

@@ -118,4 +118,9 @@ public abstract class Tower : MonoBehaviour
     {
         m_turretPivot.rotation = rot;
     }
+
+    public Transform GetTurretTransform()
+    {
+        return m_turretPivot;
+    }
 }

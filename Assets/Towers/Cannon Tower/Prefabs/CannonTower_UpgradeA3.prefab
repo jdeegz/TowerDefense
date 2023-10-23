@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8689415507200180816}
   - component: {fileID: 183494030757227101}
   - component: {fileID: 715254164741678640}
+  - component: {fileID: 1964509585586538291}
   m_Layer: 7
   m_Name: Cylinder
   m_TagString: Untagged
@@ -83,6 +84,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1964509585586538291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698613808835441705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &3299537797262407794
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,6 +144,7 @@ GameObject:
   - component: {fileID: 4350989069786519271}
   - component: {fileID: 9207934146296422974}
   - component: {fileID: 3706205485865181796}
+  - component: {fileID: 4565835616430965617}
   m_Layer: 7
   m_Name: Cylinder (2)
   m_TagString: Untagged
@@ -197,6 +217,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4565835616430965617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4205358180750806296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &5595157845573272378
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,6 +246,7 @@ GameObject:
   - component: {fileID: 5215864871437367805}
   - component: {fileID: 6359793472872539414}
   - component: {fileID: 1195728572198170290}
+  - component: {fileID: 1678388208784517995}
   m_Layer: 7
   m_Name: Cylinder (1)
   m_TagString: Untagged
@@ -280,6 +319,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1678388208784517995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5595157845573272378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &8382936198083684606
 GameObject:
   m_ObjectHideFlags: 0
@@ -440,8 +497,11 @@ MonoBehaviour:
   - {fileID: 6757352412228890600}
   - {fileID: 390426754264210378}
   - {fileID: 3020933816517468935}
+  - {fileID: 1964509585586538291}
   - {fileID: 7432352655883184105}
+  - {fileID: 1678388208784517995}
   - {fileID: 2802323834622427386}
+  - {fileID: 4565835616430965617}
   - {fileID: 9203401059151988340}
   - {fileID: 7631727049290758930}
   - {fileID: 2620506645198343409}
@@ -939,6 +999,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 22a958b36ddcd6345b963c3c887c56e1, type: 3}
       propertyPath: m_Name
       value: towerBase (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 22a958b36ddcd6345b963c3c887c56e1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -27,13 +27,13 @@ public class EnemyRunner :  EnemyController
         m_navMeshAgent.speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
         
         //Update Speed Trails
-        if (m_navMeshAgent.speed > 1.0 && m_speedTrailObj != null)
+        if (m_navMeshAgent.speed > 1.0 && m_speedTrailVFXObj != null)
         {
-            m_speedTrailObj.SetActive(true);
+            m_speedTrailVFXObj.SetActive(true);
         }
         else
         {
-            m_speedTrailObj.SetActive(false);
+            m_speedTrailVFXObj.SetActive(false);
         }
     }
 }

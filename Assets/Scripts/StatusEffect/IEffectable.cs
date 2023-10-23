@@ -4,5 +4,5 @@ public interface IEffectable
     
     void HandleEffect(StatusEffect statusEffect);
 
-    void RemoveEffect(StatusEffect data);
+    void RemoveEffect(StatusEffect statusEffect);
 }

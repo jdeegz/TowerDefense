@@ -44,6 +44,7 @@ public class Bullet : Projectile
             //Apply Status Effect
             if (m_statusEffect)
             {
+                Debug.Log($"Applying {m_statusEffect.m_name} to {m_enemy.gameObject.name}.");
                 m_enemy.ApplyEffect(m_statusEffect);
             }
 
@@ -56,7 +57,7 @@ public class Bullet : Projectile
             }
 
             m_enemy.OnTakeDamage(dmg);
-            Debug.Log($"Bullet Travelled: {distanceTravelled} & Dealt Damage: {dmg}");
+            //Debug.Log($"Bullet Travelled: {distanceTravelled} & Dealt Damage: {dmg}");
         }
 
         //Destroy this missile.

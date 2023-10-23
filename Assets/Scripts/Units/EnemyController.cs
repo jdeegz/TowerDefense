@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
@@ -12,33 +13,41 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     //Enemy Scriptable Data
     private EnemyData m_enemyData;
     public Transform m_targetPoint;
-    
+
     //Enemy Objective & Position
     protected Vector2Int m_curPos;
     protected Cell m_curCell;
     protected Transform m_goal;
-    
+
     //Enemy Stats
     private float m_curMaxHealth;
     private float m_curHealth;
     protected float m_baseMoveSpeed;
     protected float m_lastSpeedModifierFaster = 1f;
     protected float m_lastSpeedModifierSlower = 1f;
-    private float m_curDamageMultiplier;
-    
+    protected float m_lastDamageModifierLower = 1f;
+    protected float m_lastDamageModifierHigher = 1f;
+    private float m_baseDamageMultiplier;
+
     //Hit Flash Info
     List<Renderer> m_allRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
-    
+
     //VFX
-    public GameObject m_speedTrailObj;
-    
+    public GameObject m_speedTrailVFXObj;
+    private GameObject m_decreaseHealthVFXOjb;
+    private GameObject m_increaseHealthVFXOjb;
+    private GameObject m_decreaseMoveSpeedVFXOjb;
+    private GameObject m_increaseMoveSpeedVFXOjb;
+
     private AudioSource m_audioSource;
     private List<StatusEffect> m_statusEffects;
+    private List<StatusEffect> m_newStatusEffects = new List<StatusEffect>();
+    private List<StatusEffect> m_expiredStatusEffects = new List<StatusEffect>();
 
     protected NavMeshAgent m_navMeshAgent;
-    
+
     public event Action<float> UpdateHealth;
     public event Action<Vector3> DestroyEnemy;
 
@@ -46,7 +55,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     {
         m_enemyData = data;
     }
-    
+
     void Start()
     {
         //Setup with Gameplay Manager
@@ -61,12 +70,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.15f, GameplayManager.Instance.m_wave));
         m_curHealth = m_curMaxHealth;
-        m_curDamageMultiplier = m_enemyData.m_damageMultiplier;
-        
+        m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
+
         //Setup Life Meter
         UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
         lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
-        
+
         //Setup Hit Flash
         CollectMeshRenderers(transform);
 
@@ -80,23 +89,23 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Define AudioSource
         m_audioSource = GetComponent<AudioSource>();
         m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
-        
+
         //Create Speed Trail Object
-        m_speedTrailObj.SetActive(false);
-        if(m_goal) StartMoving(m_goal.position);
+        m_speedTrailVFXObj.SetActive(false);
+        if (m_goal) StartMoving(m_goal.position);
     }
-    
+
     void Update()
     {
         UpdateStatusEffects();
         HandleMovement();
     }
-    
+
     //Movement
     //Functions
     public abstract void StartMoving(Vector3 pos);
     public abstract void HandleMovement();
-    
+
     //Taking Damage
     //Functions
     void CollectMeshRenderers(Transform parent)
@@ -126,24 +135,25 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             CollectMeshRenderers(child);
         }
     }
-    
+
     public void OnTakeDamage(float dmg)
     {
         //Deal Damage
-        UpdateHealth?.Invoke(-dmg * m_curDamageMultiplier);
-        
+        UpdateHealth?.Invoke(-dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower);
+
         //Audio
         int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
         m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
-        
+
         //VFX
-        
+
         //Hit Flash
         if (m_allRenderers == null) return;
         if (m_hitFlashCoroutine != null)
         {
             StopCoroutine(m_hitFlashCoroutine);
         }
+
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
     }
 
@@ -156,7 +166,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             DestroyEnemy?.Invoke(transform.position);
         }
     }
-    
+
     private IEnumerator HitFlash()
     {
         //Set the color
@@ -180,10 +190,11 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         {
             m_curCell.UpdateActorCount(-1, gameObject.name);
         }
+
         GameplayManager.Instance.RemoveEnemyFromList(this);
         Destroy(gameObject);
     }
-    
+
     //Enemy Escape
     //Functions
     private void OnTriggerEnter(Collider other)
@@ -194,47 +205,102 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             DestroyEnemy?.Invoke(transform.position);
         }
     }
-    
+
     //Status Effect
     //Functions
     public void UpdateStatusEffects()
     {
-        //Update Status Effects
-        m_lastSpeedModifierFaster = 1;
-        m_lastSpeedModifierSlower = 1;
-        List<StatusEffect> activeEffects = new List<StatusEffect>(m_statusEffects);
-        foreach (StatusEffect activeEffect in activeEffects)
+        //Remove Expired Effects
+        if (m_expiredStatusEffects.Count > 0)
+        {
+            foreach (StatusEffect expiredStatusEffect in m_expiredStatusEffects)
+            {
+                m_statusEffects.Remove(expiredStatusEffect);
+            }
+
+            m_expiredStatusEffects.Clear();
+        }
+
+        //Add New Effects
+        if (m_newStatusEffects.Count > 0)
+        {
+            //Check & Add new Effects to list if there are any.
+            foreach (StatusEffect newStatusEffect in m_newStatusEffects)
+            {
+                bool senderFound = false;
+                for (int i = 0; i < m_statusEffects.Count; i++)
+                {
+                    if (newStatusEffect.m_data.m_sender == m_statusEffects[i].m_data.m_sender)
+                    {
+                        //We found a sender match, update the existing effect.
+                        m_statusEffects[i] = newStatusEffect;
+                        senderFound = true;
+                        break;
+                    }
+                }
+
+                //If we didnt find a matching sender, this is a new effect. Add it to the list.
+                if (!senderFound) m_statusEffects.Add(newStatusEffect);
+            }
+
+            //Reset the new status effects so it is empty.
+            m_newStatusEffects.Clear();
+        }
+
+        //Update each Effect.
+        foreach (StatusEffect activeEffect in m_statusEffects)
         {
             HandleEffect(activeEffect);
         }
     }
-    
-    public void ApplyEffect(StatusEffectData data)
+
+    public void ApplyEffect(StatusEffectData statusEffect)
     {
         StatusEffect newStatusEffect = new StatusEffect();
-        newStatusEffect.m_data = data;
-        if (m_statusEffects.Count >= 1)
-        {
-            for (int i = 0; i < m_statusEffects.Count; i++)
-            {
-                var activeEffect = m_statusEffects[i];
-                if (data.m_sender == activeEffect.m_data.m_sender)
-                {
-                    m_statusEffects[i] = newStatusEffect;
-                    Debug.Log($"Replacing Effect. Remaining time:{m_statusEffects[i].m_elapsedTime}");
-                    return;
-                }
-            }
-        }
+        newStatusEffect.m_data = statusEffect;
 
-        Debug.Log("Adding Effect.");
-        
-        m_statusEffects.Add(newStatusEffect);
-        
+        //Add incoming status effects to a holding list. They will get added to the list then updated in UpdateStatusEffects.
+        m_newStatusEffects.Add(newStatusEffect);
     }
 
     public void HandleEffect(StatusEffect statusEffect)
     {
+        statusEffect.m_elapsedTime += Time.deltaTime;
+        //Debug.Log($"{statusEffect.m_elapsedTime} / {statusEffect.m_data.m_lifeTime}");
+        if (statusEffect.m_elapsedTime > statusEffect.m_data.m_lifeTime)
+        {
+            RemoveEffect(statusEffect);
+            return;
+        }
+
+        //If we need to, spawn a vfx for this effect.
+        switch (statusEffect.m_data.m_effectType)
+        {
+            case StatusEffectData.EffectType.DecreaseMoveSpeed:
+                if (m_decreaseMoveSpeedVFXOjb) return;
+                m_decreaseMoveSpeedVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                break;
+            case StatusEffectData.EffectType.IncreaseMoveSpeed:
+                if (m_increaseMoveSpeedVFXOjb) return;
+                m_increaseMoveSpeedVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                break;
+            case StatusEffectData.EffectType.DecreaseHealth:
+                if (m_decreaseHealthVFXOjb) return;
+                m_decreaseHealthVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                break;
+            case StatusEffectData.EffectType.IncreaseHealth:
+                if (m_increaseHealthVFXOjb) return;
+                m_increaseHealthVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                break;
+            case StatusEffectData.EffectType.DecreaseArmor:
+                break;
+            case StatusEffectData.EffectType.IncreaseArmor:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        //Damage & Healing per tick.
         if (statusEffect.m_elapsedTime > statusEffect.m_nextTickTime)
         {
             if (statusEffect.m_data.m_damage != 0)
@@ -246,37 +312,77 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             statusEffect.m_nextTickTime += statusEffect.m_data.m_tickSpeed;
         }
 
+        //Move Speed multipliers.
         if (statusEffect.m_data.m_speedModifier != 1)
         {
             //Modify speed
             if (statusEffect.m_data.m_speedModifier < 1 && statusEffect.m_data.m_speedModifier < m_lastSpeedModifierSlower)
             {
                 m_lastSpeedModifierSlower = statusEffect.m_data.m_speedModifier;
+                //Debug.Log($"Set slower speed modifier to: {m_lastSpeedModifierSlower}");
             }
 
             if (statusEffect.m_data.m_speedModifier > 1 && statusEffect.m_data.m_speedModifier > m_lastSpeedModifierFaster)
             {
                 m_lastSpeedModifierFaster = statusEffect.m_data.m_speedModifier;
+                //Debug.Log($"Set slower speed modifier to: {m_lastSpeedModifierFaster}");
             }
         }
 
-        statusEffect.m_elapsedTime += Time.deltaTime;
+        if (statusEffect.m_data.m_damageModifier != 1)
+        {
+            //Modify Damage Taken
+            if (statusEffect.m_data.m_damageModifier < 1 && statusEffect.m_data.m_damageModifier < m_lastDamageModifierLower)
+            {
+                m_lastDamageModifierLower = statusEffect.m_data.m_damageModifier;
+                //Debug.Log($"Set modifier to: {m_lastDamageModifierLower}");
+            }
 
-        Debug.Log($"{statusEffect.m_elapsedTime} / {statusEffect.m_data.m_lifeTime}");
-        if (statusEffect.m_elapsedTime > statusEffect.m_data.m_lifeTime) RemoveEffect(statusEffect);
+            if (statusEffect.m_data.m_damageModifier > 1 && statusEffect.m_data.m_damageModifier > m_lastDamageModifierHigher)
+            {
+                m_lastDamageModifierHigher = statusEffect.m_data.m_damageModifier;
+                //Debug.Log($"Set modifier to: {m_lastDamageModifierHigher}");
+            }
+        }
     }
 
-    public void RemoveEffect(StatusEffect data)
+    public void RemoveEffect(StatusEffect statusEffect)
     {
         Debug.Log("Removing Effect");
-        m_statusEffects.Remove(data);
+        switch (statusEffect.m_data.m_effectType)
+        {
+            case StatusEffectData.EffectType.DecreaseMoveSpeed:
+                m_lastSpeedModifierSlower = 1;
+                if (m_decreaseMoveSpeedVFXOjb) Destroy(m_decreaseMoveSpeedVFXOjb);
+                break;
+            case StatusEffectData.EffectType.IncreaseMoveSpeed:
+                m_lastSpeedModifierFaster = 1;
+                if (m_increaseMoveSpeedVFXOjb) Destroy(m_increaseMoveSpeedVFXOjb);
+                break;
+            case StatusEffectData.EffectType.DecreaseHealth:
+                if (m_decreaseHealthVFXOjb) Destroy(m_decreaseHealthVFXOjb);
+                break;
+            case StatusEffectData.EffectType.IncreaseHealth:
+                if (m_increaseHealthVFXOjb) Destroy(m_increaseHealthVFXOjb);
+                break;
+            case StatusEffectData.EffectType.DecreaseArmor:
+                m_lastDamageModifierLower = 1;
+                break;
+            case StatusEffectData.EffectType.IncreaseArmor:
+                m_lastDamageModifierHigher = 1;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        m_expiredStatusEffects.Add(statusEffect);
     }
 }
 
+[Serializable]
 public class StatusEffect
 {
     public StatusEffectData m_data;
     public float m_elapsedTime;
     public float m_nextTickTime;
 }
-

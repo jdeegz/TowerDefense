@@ -5,6 +5,7 @@ using UnityEngine;
 public class VoidRayTowerController : Tower
 {
     public LineRenderer m_projectileLineRenderer;
+    public GameObject m_maxStackVFX;
     public float m_stackDropDelayTime;
     public float m_curStackDropDelay;
     public float m_totalResetTime;
@@ -96,6 +97,19 @@ public class VoidRayTowerController : Tower
         }
 
         HandlePanelColor();
+        if (m_maxStackVFX) HandleMaxStackVisuals();
+    }
+
+    private void HandleMaxStackVisuals()
+    {
+        if (m_curStacks == m_maxStacks)
+        {
+            m_maxStackVFX.SetActive(true);
+        }
+        else
+        {
+            m_maxStackVFX.SetActive(false);
+        }
     }
 
     private void HandlePanelColor()
@@ -121,6 +135,12 @@ public class VoidRayTowerController : Tower
 
         //Deal Damage.
         m_curTarget.OnTakeDamage(m_curDamage);
+
+        //Apply Shred
+        if (m_statusEffectData)
+        {
+            m_curTarget.ApplyEffect(m_statusEffectData);
+        }
 
         //Play Audio.
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
@@ -170,7 +190,7 @@ public class VoidRayTowerController : Tower
         int closestIndex = -1;
         if (hits.Length > 0)
         {
-            Debug.Log($"Hits: {hits.Length} and Layers: {m_layerMask.value}");
+            //Debug.Log($"Hits: {hits.Length} and Layers: {m_layerMask.value}");
             for (int i = 0; i < hits.Length; ++i)
             {
                 float distance = Vector3.Distance(transform.position, hits[i].transform.position);

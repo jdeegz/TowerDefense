@@ -478,6 +478,15 @@ public class GameplayManager : MonoBehaviour
             m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
                 moveToPosition, 20f * Time.deltaTime);
         }
+        
+        //We want to rotate towers to they look away from the Castle.
+        // Calculate the direction vector from the target object to the current object.
+        Vector3 direction = m_enemyGoal.position - m_preconstructedTowerObj.transform.position;
+
+        // Calculate the rotation angle to make the new object face away from the target.
+        float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
+        m_preconstructedTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
+        
 
         //Check Affordability & Pathing every frame. (Because you may be sitting waiting for units to move out of an island)
         bool canAfford = CheckAffordability();
@@ -605,8 +614,17 @@ public class GameplayManager : MonoBehaviour
     public void BuildTower()
     {
         Vector3 gridPos = new Vector3(m_preconstructedTowerPos.x, 0, m_preconstructedTowerPos.y);
+        
+        //We want to place towers to they look away from the Castle.
+        // Calculate the direction vector from the target object to the current object.
+        Vector3 direction = m_enemyGoal.position - m_preconstructedTowerObj.transform.position;
+
+        // Calculate the rotation angle to make the new object face away from the target.
+        float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
+        
         GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
         Tower newTower = newTowerObj.GetComponent<Tower>();
+        newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
 
         //Update banks
