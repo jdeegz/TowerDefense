@@ -63,16 +63,19 @@ public class UnitSpawner : MonoBehaviour
         //Else find out if we spawn normal wave or boss wave.
         else
         {
+            //Subtract the number of training ways so that we start at wave 0 in the new lists.
+            gameplayWave -= m_spawnerWaves.m_trainingCreepWaves.Count;
+            
             //Boss waves occur every 5 gameplay Waves.
             int bossWave = (gameplayWave + 1) % 5;
             if (bossWave == 0)
             {
-                int wave = (gameplayWave + 1) / 5 % m_spawnerWaves.m_bossWaves.Count;
+                int wave = (gameplayWave) % m_spawnerWaves.m_bossWaves.Count;
                 m_activeWave = new List<Creep>(m_spawnerWaves.m_bossWaves[wave].m_creeps);
             }
             else
             {
-                int wave = (gameplayWave - m_spawnerWaves.m_trainingCreepWaves.Count) % m_spawnerWaves.m_creepWaves.Count;
+                int wave = (gameplayWave) % m_spawnerWaves.m_creepWaves.Count;
                 m_activeWave = new List<Creep>(m_spawnerWaves.m_creepWaves[wave].m_creeps);
             }
         }

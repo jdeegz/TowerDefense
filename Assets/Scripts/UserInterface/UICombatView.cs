@@ -297,9 +297,23 @@ public class UICombatView : MonoBehaviour
     {
         m_timeToNextWave -= Time.deltaTime;
         TimeSpan timeSpan = TimeSpan.FromSeconds(m_timeToNextWave);
-        string formattedTime =
-            string.Format("{0:D2}:{1:D2}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
-        m_gameClockLabel.SetText(formattedTime);
+        
+        //String Formatting
+        string formattedTime;
+        if (timeSpan.Hours > 0)
+        {
+            formattedTime = string.Format("{0:D2}:{1:D2}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
+        }
+        else if (timeSpan.Minutes > 0)
+        {
+            formattedTime = string.Format("{0:D2}:{1:D2}", timeSpan.Minutes, timeSpan.Seconds);
+        }
+        else
+        {
+            formattedTime = string.Format("{0:D2}", timeSpan.Seconds);
+        }
+        
+        m_gameClockLabel.SetText($"Next wave : {formattedTime}");
 
         if (m_castleRepairDisplayObj.activeSelf)
         {

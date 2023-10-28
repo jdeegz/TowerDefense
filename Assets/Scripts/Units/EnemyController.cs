@@ -68,7 +68,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         //Setup Data
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
-        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.15f, GameplayManager.Instance.m_wave));
+        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.085f, GameplayManager.Instance.m_wave));
         m_curHealth = m_curMaxHealth;
         m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
 

@@ -37,6 +37,8 @@ public class VoidRayTowerController : Tower
             return;
         }
 
+        if (m_maxStackVFX) HandleMaxStackVisuals();
+
         //RAY STACK MANAGEMENT
         //If we have stacks, increment the time. Time is being set to 0 each fire.
         if (m_curStacks > 0 && m_curStackDropDelay <= m_stackDropDelayTime)
@@ -52,6 +54,7 @@ public class VoidRayTowerController : Tower
             {
                 m_resetTime = 0;
                 if (m_curStacks > 0) m_curStacks--;
+                HandlePanelColor();
             }
         }
 
@@ -91,13 +94,11 @@ public class VoidRayTowerController : Tower
                 m_projectileLineRenderer.enabled = true;
 
                 Fire();
+                HandlePanelColor();
 
                 m_timeUntilFire = 0;
             }
         }
-
-        HandlePanelColor();
-        if (m_maxStackVFX) HandleMaxStackVisuals();
     }
 
     private void HandleMaxStackVisuals()
@@ -114,14 +115,14 @@ public class VoidRayTowerController : Tower
 
     private void HandlePanelColor()
     {
-        if (m_curStacks == m_lastStacks) return;
+        //if (m_curStacks == m_lastStacks) return;
 
         float normalizedTime = (float)m_curStacks / m_maxStacks;
         Color color = m_panelGradient.Evaluate(normalizedTime);
         m_panelMeshRenderer.materials[0].SetColor("_BaseColor", color);
         m_panelMeshRenderer.materials[1].SetColor("_BaseColor", color);
 
-        m_lastStacks = m_curStacks;
+        //m_lastStacks = m_curStacks;
     }
 
     private void Fire()
@@ -171,16 +172,6 @@ public class VoidRayTowerController : Tower
     {
         float distance = Vector3.Distance(transform.position, targetPos);
         return distance <= m_towerData.m_fireRange;
-    }
-
-    private void RotateTowardsTarget()
-    {
-        float angle = Mathf.Atan2(m_curTarget.transform.position.x - transform.position.x, m_curTarget.transform.position.z - transform.position.z) * Mathf.Rad2Deg;
-
-        Quaternion targetRotation = Quaternion.Euler(new Vector3(0f, angle, 0f));
-
-        m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
-            m_towerData.m_rotationSpeed * Time.deltaTime);
     }
 
     private void FindTarget()

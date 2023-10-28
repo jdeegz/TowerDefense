@@ -154,16 +154,6 @@ public class ChargeUpTowerController : Tower
         return distance <= m_towerData.m_fireRange;
     }
 
-    private void RotateTowardsTarget()
-    {
-        float angle = Mathf.Atan2(m_curTarget.transform.position.x - transform.position.x, m_curTarget.transform.position.z - transform.position.z) * Mathf.Rad2Deg;
-
-        Quaternion targetRotation = Quaternion.Euler(new Vector3(0f, angle, 0f));
-
-        m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
-            m_towerData.m_rotationSpeed * Time.deltaTime);
-    }
-
     private void FindTarget()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);

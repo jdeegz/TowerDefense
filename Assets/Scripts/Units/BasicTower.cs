@@ -15,6 +15,7 @@ public class BasicTower : Tower
         m_timeUntilFire = 999f;
         m_timeUntilBurst = 999f;
     }
+
     void Update()
     {
         //Dont do anything until we're built.
@@ -22,6 +23,8 @@ public class BasicTower : Tower
         {
             return;
         }
+
+        RotateTowardsTarget();
 
         if (m_curTarget == null)
         {
@@ -31,7 +34,6 @@ public class BasicTower : Tower
             return;
         }
 
-        RotateTowardsTarget();
 
         m_timeUntilFire += Time.deltaTime;
         m_timeUntilBurst += Time.deltaTime;
@@ -73,6 +75,7 @@ public class BasicTower : Tower
 
     private void FindTarget()
     {
+        m_curTarget = null;
         Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
@@ -91,18 +94,6 @@ public class BasicTower : Tower
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
     }
-
-    private void RotateTowardsTarget()
-    {
-        float angle = Mathf.Atan2(m_curTarget.transform.position.x - transform.position.x,
-            m_curTarget.transform.position.z - transform.position.z) * Mathf.Rad2Deg;
-
-        Quaternion targetRotation = Quaternion.Euler(new Vector3(0f, angle, 0f));
-
-        m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
-            m_towerData.m_rotationSpeed * Time.deltaTime);
-    }
-
 
     private bool IsTargetInSight()
     {

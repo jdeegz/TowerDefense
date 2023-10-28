@@ -19,13 +19,44 @@ public abstract class Tower : MonoBehaviour
     
     void Awake()
     {
+        GameplayManager.OnGameplayStateChanged += GameplayStatChanged;
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
         m_towerRangeCircle.enabled = false;
         SetupRangeCircle(m_towerRangeCircleSegments, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
     }
+
+    private void GameplayStatChanged(GameplayManager.GameplayState newState)
+    {
+        
+    }
     
+    public void RotateTowardsTarget()
+    {
+        Quaternion targetRotation = new Quaternion();
+
+        if (m_curTarget)
+        {
+            float angle = Mathf.Atan2(m_curTarget.transform.position.x - transform.position.x, m_curTarget.transform.position.z - transform.position.z) * Mathf.Rad2Deg;
+            targetRotation = Quaternion.Euler(new Vector3(0f, angle, 0f));
+        }
+
+        //If we have no target, rotate away from the base during the Build phase. The isBuilt flag will stop this from happening when precon.
+        if(GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
+        {
+            //Use enemy Goal as the 'target'.
+            Vector3 direction = GameplayManager.Instance.m_enemyGoal.position - transform.position;
+
+            // Calculate the rotation angle to make the new object face away from the target.
+            float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
+            targetRotation = Quaternion.Euler(0, angle, 0);
+        }
+
+        m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
+            m_towerData.m_rotationSpeed * Time.deltaTime);
+    }
+
     private void GameObjectSelected(GameObject obj)
     {
         if (obj == gameObject)

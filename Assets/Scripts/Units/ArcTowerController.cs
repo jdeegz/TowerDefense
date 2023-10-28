@@ -133,17 +133,7 @@ public class ArcTowerController : Tower
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
     }
-
-    private void RotateTowardsTarget()
-    {
-        float angle = Mathf.Atan2(m_curTarget.transform.position.x - transform.position.x, m_curTarget.transform.position.z - transform.position.z) * Mathf.Rad2Deg;
-
-        Quaternion targetRotation = Quaternion.Euler(new Vector3(0f, angle, 0f));
-
-        m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
-            m_towerData.m_rotationSpeed * Time.deltaTime * m_rotationModifier);
-    }
-
+    
     private bool IsTargetInSight()
     {
         Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
