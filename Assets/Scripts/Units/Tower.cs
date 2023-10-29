@@ -13,7 +13,8 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;
     [SerializeField] protected bool m_isBuilt;
-    
+
+    [SerializeField] protected StatusEffectData m_modifiedStatusEffectData;
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
     
@@ -25,6 +26,13 @@ public abstract class Tower : MonoBehaviour
         m_towerRangeCircle.enabled = false;
         SetupRangeCircle(m_towerRangeCircleSegments, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
+        
+        //If we have a status effect on this tower, create an instance of it to use when applying.
+        if (m_statusEffectData)
+        {
+            m_modifiedStatusEffectData = ScriptableObject.CreateInstance<StatusEffectData>();
+            m_modifiedStatusEffectData.Initialize(m_statusEffectData, this);
+        }
     }
 
     private void GameplayStatChanged(GameplayManager.GameplayState newState)

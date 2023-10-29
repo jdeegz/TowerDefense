@@ -106,8 +106,7 @@ public class ArcTowerController : Tower
                 enemyHit.OnTakeDamage(m_towerData.m_baseDamage);
                 if (m_statusEffectData)
                 {
-                    m_statusEffectData.m_sender = this;
-                    enemyHit.ApplyEffect(m_statusEffectData);
+                    enemyHit.ApplyEffect(m_modifiedStatusEffectData);
                 }
             }
         }

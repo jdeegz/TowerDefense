@@ -71,6 +71,7 @@ public class UICombatView : MonoBehaviour
         if (m_healthShake.IsActive())
         {
             m_healthShake.Kill();
+            m_healthDisplay.localScale = Vector3.one;
         }
 
         m_curCastleHealth += i;
@@ -105,7 +106,7 @@ public class UICombatView : MonoBehaviour
 
     private void UpdateWoodDisplay(int total, int delta)
     {
-        Debug.Log("BANK UPDATE RECEIEVED");
+        //Debug.Log("BANK UPDATE RECEIEVED");
         if (m_woodBankShake.IsActive())
         {
             m_woodBankShake.Kill();
