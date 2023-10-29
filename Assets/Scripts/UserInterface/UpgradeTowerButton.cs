@@ -70,10 +70,11 @@ public class UpgradeTowerButton : MonoBehaviour
         m_upgradeImage.sprite = upgradeData.m_uiIcon;
         
         //Cost Values
-        CheckStoneCost(ResourceManager.Instance.GetStoneAmount(), 0);
-        CheckWoodCost(ResourceManager.Instance.GetWoodAmount(), 0);
         m_upgradeStoneValue = upgradeData.m_stoneCost;
         m_upgradeWoodValue = upgradeData.m_woodCost;
+        CheckStoneCost(ResourceManager.Instance.GetStoneAmount(), 0);
+        CheckWoodCost(ResourceManager.Instance.GetWoodAmount(), 0);
+        CanAffordToBuildTower();
         
         //Cost Label
         string sellText;

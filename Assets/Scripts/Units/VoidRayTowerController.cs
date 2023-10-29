@@ -39,6 +39,8 @@ public class VoidRayTowerController : Tower
 
         if (m_maxStackVFX) HandleMaxStackVisuals();
 
+        RotateTowardsTarget();
+        
         //RAY STACK MANAGEMENT
         //If we have stacks, increment the time. Time is being set to 0 each fire.
         if (m_curStacks > 0 && m_curStackDropDelay <= m_stackDropDelayTime)
@@ -65,8 +67,6 @@ public class VoidRayTowerController : Tower
             FindTarget();
             return;
         }
-
-        RotateTowardsTarget();
 
         if (!IsTargetInRange(m_curTarget.transform.position))
         {

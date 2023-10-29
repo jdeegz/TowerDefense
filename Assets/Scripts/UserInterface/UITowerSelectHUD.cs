@@ -36,8 +36,8 @@ public class UITowerSelectHUD : MonoBehaviour
         m_track3dObject.SetupTracking(obj, GetComponent<RectTransform>(), 0);
         
         //Sell values
-        m_sellStoneValue = m_curTowerData.m_stoneCost;
-        m_sellWoodValue = m_curTowerData.m_woodCost;
+        m_sellStoneValue = m_curTowerData.m_stoneSellCost;
+        m_sellWoodValue = m_curTowerData.m_woodSellCost;
         
         //Sell Button Action
         m_sellButton.onClick.RemoveAllListeners();
@@ -65,6 +65,13 @@ public class UITowerSelectHUD : MonoBehaviour
         //Upgrade Button Setup & Activity
         for (int i = 0; i < m_curTowerData.m_upgradeOptions.Count; ++i)
         {
+            //Allow for empty buttons.
+            if (m_curTowerData.m_upgradeOptions[i] == null)
+            {
+                continue;
+            }
+            
+            //Enable and set data.
             m_upgradeButtons[i].gameObject.SetActive(true);
             m_upgradeButtons[i].SetUpData(m_curTower, m_curTowerData.m_upgradeOptions[i]);
         }

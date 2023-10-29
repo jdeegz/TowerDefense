@@ -18,9 +18,10 @@ public class ChargeUpTowerController : Tower
     private float m_curStacks;
     private Vector2 m_scrollOffset;
     private float m_lastStacks;
-    private float m_beamDuration = .3f;
+    private float m_beamDuration = .25f;
     private float m_timeUntilBeamOff;
     private float m_facingThreshold = 10f;
+    private Vector3 m_lastTargetPos;
 
     void Update()
     {
@@ -30,6 +31,7 @@ public class ChargeUpTowerController : Tower
             return;
         }
 
+        
         //If FIRE turns the renderer on, turn it off.
         if (m_projectileLineRenderer.enabled)
         {
@@ -40,8 +42,13 @@ public class ChargeUpTowerController : Tower
                 m_projectileLineRenderer.enabled = false;
                 m_timeUntilBeamOff = 0f;
             }
+            
+            //Dont let the tower do anything until the beam is off.
+            return;
         }
 
+        RotateTowardsTarget();
+        
         //FINDING TARGET
         if (m_curTarget == null)
         {
@@ -49,8 +56,6 @@ public class ChargeUpTowerController : Tower
             FindTarget();
             return;
         }
-
-        RotateTowardsTarget();
 
         ChargeUp();
 
@@ -120,6 +125,7 @@ public class ChargeUpTowerController : Tower
     private void Fire()
     {
         //Deal Damage.
+        m_lastTargetPos = m_curTarget.transform.position;
         m_curTarget.OnTakeDamage(m_towerData.m_baseDamage);
 
         //Apply Shred
@@ -137,7 +143,7 @@ public class ChargeUpTowerController : Tower
     {
         //Setup LineRenderer Data.
         m_projectileLineRenderer.SetPosition(0, m_muzzlePoint.position);
-        m_projectileLineRenderer.SetPosition(1, m_curTarget.m_targetPoint.position);
+        m_projectileLineRenderer.SetPosition(1, m_lastTargetPos);
 
         //Scroll the texture.
         m_scrollOffset -= new Vector2(10 * Time.deltaTime, 0);
