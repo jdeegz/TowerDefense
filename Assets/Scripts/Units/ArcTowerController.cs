@@ -19,6 +19,8 @@ public class ArcTowerController : Tower
 
         if (m_towerData.m_hasSecondaryAttack) HandleSecondaryAttack();
         
+        RotateTowardsTarget();
+        
         if (m_curTarget == null)
         {
             //If target is not in range, destroy the flame cone if there is one.
@@ -31,8 +33,6 @@ public class ArcTowerController : Tower
             return;
         }
 
-        RotateTowardsTarget();
-        m_rotationModifier = IsTargetInSight() ? 0.2f : 1.0f;
 
         if (!IsTargetInRange(m_curTarget.transform.position))
         {
@@ -106,7 +106,7 @@ public class ArcTowerController : Tower
                 enemyHit.OnTakeDamage(m_towerData.m_baseDamage);
                 if (m_statusEffectData)
                 {
-                    enemyHit.ApplyEffect(m_modifiedStatusEffectData);
+                    enemyHit.ApplyEffect(m_statusEffect);
                 }
             }
         }

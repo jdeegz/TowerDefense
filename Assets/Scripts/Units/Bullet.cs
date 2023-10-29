@@ -42,9 +42,8 @@ public class Bullet : Projectile
         if (m_enemy)
         {
             //Apply Status Effect
-            if (m_statusEffect)
+            if (m_statusEffect != null)
             {
-                Debug.Log($"Applying {m_statusEffect.m_name} to {m_enemy.gameObject.name}.");
                 m_enemy.ApplyEffect(m_statusEffect);
             }
 

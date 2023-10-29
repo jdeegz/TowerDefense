@@ -38,14 +38,15 @@ public class UnitSpawner : MonoBehaviour
                     //If the creep is NOT spawning, remove it from the active creep spawner list.
                     m_activeCreepSpawners.RemoveAt(i);
                     --i;
-
-                    //If we have NO active creep spawners, disable this spawner.
-                    if (m_activeCreepSpawners.Count == 0)
-                    {
-                        m_isSpawnerActive = false;
-                        GameplayManager.Instance.DisableSpawner();
-                    }
                 }
+            }
+
+            //If we have NO active creep spawners, disable this spawner.
+            if (m_activeCreepSpawners.Count == 0)
+            {
+                m_isSpawnerActive = false;
+                GameplayManager.Instance.DisableSpawner();
+                Debug.Log($"{gameObject.name} done spawning.");
             }
         }
     }
@@ -54,18 +55,19 @@ public class UnitSpawner : MonoBehaviour
     {
         //Creep waves start at wave 0, are shown as wave 1.
         //If we have training waves, use them.
+        GameplayManager.Instance.ActivateSpawner();
         int gameplayWave = GameplayManager.Instance.m_wave;
         if (gameplayWave < m_spawnerWaves.m_trainingCreepWaves.Count)
         {
             m_activeWave = new List<Creep>(m_spawnerWaves.m_trainingCreepWaves[gameplayWave].m_creeps);
         }
-        
+
         //Else find out if we spawn normal wave or boss wave.
         else
         {
             //Subtract the number of training ways so that we start at wave 0 in the new lists.
             gameplayWave -= m_spawnerWaves.m_trainingCreepWaves.Count;
-            
+
             //Boss waves occur every 5 gameplay Waves.
             int bossWave = (gameplayWave + 1) % 5;
             if (bossWave == 0)
@@ -162,7 +164,7 @@ public class CreepSpawner
         m_spawnInterval = creep.m_spawnInterval;
         m_creepSpawnPoint = spawnPoint;
     }
-    
+
     public void UpdateCreep()
     {
         m_elapsedTime += Time.deltaTime;
@@ -211,4 +213,3 @@ public class CreepSpawner
         m_creepSpawnPoint = transform;
     }
 }
-

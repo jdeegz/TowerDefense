@@ -20,14 +20,14 @@ public abstract class Projectile : MonoBehaviour
     protected float m_projectileLifetime;
     protected Vector3 m_startPos;
     protected Vector3 m_directPos;
-    protected StatusEffectData m_statusEffect;
+    protected StatusEffect m_statusEffect;
     
-    public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos, StatusEffectData data)
+    public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos, StatusEffect data)
     {
         m_startPos = pos;
         m_enemy = enemy;
         m_projectileDamage = dmg;
-        if(data) m_statusEffect = data;
+        if(data != null) m_statusEffect = data;
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
         
     }

@@ -68,7 +68,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         //Setup Data
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
-        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.085f, GameplayManager.Instance.m_wave));
+        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.05f, GameplayManager.Instance.m_wave));
         m_curHealth = m_curMaxHealth;
         m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
 
@@ -254,13 +254,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
     }
 
-    public void ApplyEffect(StatusEffectData statusEffect)
+    public void ApplyEffect(StatusEffect statusEffect)
     {
-        StatusEffect newStatusEffect = new StatusEffect();
-        newStatusEffect.m_data = statusEffect;
-
         //Add incoming status effects to a holding list. They will get added to the list then updated in UpdateStatusEffects.
-        m_newStatusEffects.Add(newStatusEffect);
+        m_newStatusEffects.Add(statusEffect);
     }
 
     public void HandleEffect(StatusEffect statusEffect)
@@ -385,4 +382,10 @@ public class StatusEffect
     public StatusEffectData m_data;
     public float m_elapsedTime;
     public float m_nextTickTime;
+    public Tower m_towerSender;
+
+    public void SetTowerSender(Tower tower)
+    {
+        m_towerSender = tower;
+    }
 }

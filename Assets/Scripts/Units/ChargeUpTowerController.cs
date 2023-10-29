@@ -131,7 +131,7 @@ public class ChargeUpTowerController : Tower
         //Apply Shred
         if (m_statusEffectData)
         {
-            m_curTarget.ApplyEffect(m_modifiedStatusEffectData);
+            m_curTarget.ApplyEffect(m_statusEffect);
         }
 
         //Play Audio.

@@ -14,6 +14,7 @@ public class GameplayManager : MonoBehaviour
     public static GameplayManager Instance;
     public GameplayState m_gameplayState;
     public GameSpeed m_gameSpeed;
+    public int m_totalWaves = 10;
     public int m_wave;
 
     public static event Action<GameplayState> OnGameplayStateChanged;
@@ -30,9 +31,10 @@ public class GameplayManager : MonoBehaviour
 
 
     [Header("Castle")] public CastleController m_castleController;
-    [FormerlySerializedAs("m_enemyGoals")] public Transform m_enemyGoal;
+    public Transform m_enemyGoal;
     [Header("Equipped Towers")] public TowerData[] m_equippedTowers;
     [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
+    private int m_activeSpawners = 0;
     [Header("Active Enemies")] public List<EnemyController> m_enemyList;
     public Transform m_enemiesObjRoot;
 
@@ -478,7 +480,7 @@ public class GameplayManager : MonoBehaviour
             m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
                 moveToPosition, 20f * Time.deltaTime);
         }
-        
+
         //We want to rotate towers to they look away from the Castle.
         // Calculate the direction vector from the target object to the current object.
         Vector3 direction = m_enemyGoal.position - m_preconstructedTowerObj.transform.position;
@@ -486,7 +488,7 @@ public class GameplayManager : MonoBehaviour
         // Calculate the rotation angle to make the new object face away from the target.
         float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
         m_preconstructedTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
-        
+
 
         //Check Affordability & Pathing every frame. (Because you may be sitting waiting for units to move out of an island)
         bool canAfford = CheckAffordability();
@@ -614,14 +616,14 @@ public class GameplayManager : MonoBehaviour
     public void BuildTower()
     {
         Vector3 gridPos = new Vector3(m_preconstructedTowerPos.x, 0, m_preconstructedTowerPos.y);
-        
+
         //We want to place towers to they look away from the Castle.
         // Calculate the direction vector from the target object to the current object.
         Vector3 direction = m_enemyGoal.position - m_preconstructedTowerObj.transform.position;
 
         // Calculate the rotation angle to make the new object face away from the target.
         float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
-        
+
         GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
@@ -683,12 +685,12 @@ public class GameplayManager : MonoBehaviour
         IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, false, oldTower.transform.position);
         Quaternion curRotation = oldTower.GetTurretRotation();
         Destroy(oldTower.gameObject);
-        
+
         GameObject newTowerObj = Instantiate(newTowerData.m_prefab, pos, Quaternion.identity, m_towerObjRoot.transform);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.SetTurretRotation(curRotation);
         newTower.SetupTower();
-        
+
         m_curSelectable = null;
         UpdateInteractionState(InteractionState.Idle);
         Debug.Log("Tower upgraded.");
@@ -709,8 +711,14 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        if (m_enemyList.Count <= 0 && m_gameplayState != GameplayState.Defeat)
+        if (m_activeSpawners == 0 && m_enemyList.Count == 0 && m_gameplayState != GameplayState.Defeat)
         {
+            if (m_wave >= m_totalWaves - 1)
+            {
+                UpdateGameplayState(GameplayState.Victory);
+                return;
+            }
+
             UpdateGameplayState(GameplayState.Build);
         }
     }
@@ -721,20 +729,17 @@ public class GameplayManager : MonoBehaviour
         Debug.Log($"Added creep spawner: {m_unitSpawners.Count}");
     }
 
+    public void ActivateSpawner()
+    {
+        ++m_activeSpawners;
+    }
+
     public void DisableSpawner()
     {
-        int activeSpawners = m_unitSpawners.Count;
-        foreach (UnitSpawner unitSpawner in m_unitSpawners)
-        {
-            if (!unitSpawner.IsSpawning())
-            {
-                activeSpawners--;
-            }
-        }
+        --m_activeSpawners;
 
-        if (activeSpawners == 0)
+        if (m_activeSpawners == 0)
         {
-            //Debug.Log("Spawning Completed.");
             UpdateGameplayState(GameplayState.Combat);
         }
     }

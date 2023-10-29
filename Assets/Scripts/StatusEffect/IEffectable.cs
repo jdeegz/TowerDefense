@@ -1,6 +1,6 @@
 public interface IEffectable
 {
-    void ApplyEffect(StatusEffectData data);
+    void ApplyEffect(StatusEffect data);
     
     void HandleEffect(StatusEffect statusEffect);
 

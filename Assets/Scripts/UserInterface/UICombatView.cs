@@ -148,17 +148,16 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.Setup:
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                m_waveLabel.SetText("Wave: " + (GameplayManager.Instance.m_wave + 1));
+                m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1} / {GameplayManager.Instance.m_totalWaves}");
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
                 if (!gameObject.activeSelf)
                 {
+                    m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1} / {GameplayManager.Instance.m_totalWaves}");
                     gameObject.SetActive(true);
                 }
-
-                Debug.Log("Combat View Active");
                 m_timeToNextWave = GameplayManager.Instance.m_buildDuration;
                 break;
             case GameplayManager.GameplayState.Paused:

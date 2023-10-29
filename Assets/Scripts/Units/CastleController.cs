@@ -108,8 +108,7 @@ public class CastleController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build &&
-            m_curHealth < m_maxHealth)
+        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build && m_curHealth < m_maxHealth)
         {
             m_repairElapsedTime += Time.deltaTime;
             if (m_repairElapsedTime >= m_repairHealthInterval)

@@ -70,7 +70,7 @@ public class Missile : Projectile
                 enemyHit.OnTakeDamage(m_projectileDamage);
                 
                 //Apply Status Effect
-                if (m_statusEffect)
+                if (m_statusEffect != null)
                 {
                     enemyHit.ApplyEffect(m_statusEffect);
                 }
