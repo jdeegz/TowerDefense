@@ -172,7 +172,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Set the color
         for (int i = 0; i < m_allRenderers.Count; ++i)
         {
-            m_allRenderers[i].material.SetColor("_EmissionColor", Color.red);
+            foreach (Material material in m_allRenderers[i].materials)
+            {
+                material.SetColor("_EmissionColor", Color.red);
+            }
         }
 
         yield return new WaitForSeconds(.15f);
@@ -180,7 +183,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Return to original colors.
         for (int i = 0; i < m_allRenderers.Count; ++i)
         {
-            m_allRenderers[i].material.SetColor("_EmissionColor", m_allOrigColors[i]);
+            foreach (Material material in m_allRenderers[i].materials)
+            {
+                material.SetColor("_EmissionColor", m_allOrigColors[i]);
+            }
         }
     }
 
@@ -230,7 +236,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 bool senderFound = false;
                 for (int i = 0; i < m_statusEffects.Count; i++)
                 {
-                    if (newStatusEffect.m_data.m_sender == m_statusEffects[i].m_data.m_sender)
+                    if (newStatusEffect.m_towerSender == m_statusEffects[i].m_towerSender)
                     {
                         //We found a sender match, update the existing effect.
                         m_statusEffects[i] = newStatusEffect;

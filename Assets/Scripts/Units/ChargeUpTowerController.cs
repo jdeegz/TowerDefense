@@ -33,12 +33,22 @@ public class ChargeUpTowerController : Tower
 
         
         //If FIRE turns the renderer on, turn it off.
-        if (m_projectileLineRenderer.enabled)
+        if (m_projectileLineRenderer.enabled && m_curTarget != null)
         {
             m_timeUntilBeamOff += Time.deltaTime;
+            
             HandleBeamVisual();
+            
             if (m_timeUntilBeamOff >= m_beamDuration)
             {
+                Fire();
+                
+                //Lower total stacks.
+                m_curStacks /= 2;
+                
+                //Reset Stack drop delay.
+                m_curStackDropDelay = 0;
+                
                 m_projectileLineRenderer.enabled = false;
                 m_timeUntilBeamOff = 0f;
             }
@@ -48,6 +58,8 @@ public class ChargeUpTowerController : Tower
         }
 
         RotateTowardsTarget();
+        
+        HandlePanelColor();
         
         //FINDING TARGET
         if (m_curTarget == null)
@@ -65,14 +77,6 @@ public class ChargeUpTowerController : Tower
             Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
             if (m_curStacks >= m_maxStacks && Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold)
             {
-                Fire();
-                
-                //Lower total stacks.
-                m_curStacks /= 2;
-                
-                //Reset Stack drop delay.
-                m_curStackDropDelay = 0;
-
                 //Enable the visual effect.
                 m_projectileLineRenderer.enabled = true;
             }
@@ -81,8 +85,6 @@ public class ChargeUpTowerController : Tower
         {
             m_curTarget = null;
         }
-
-        HandlePanelColor();
     }
 
     private void ChargeDown()
@@ -125,7 +127,6 @@ public class ChargeUpTowerController : Tower
     private void Fire()
     {
         //Deal Damage.
-        m_lastTargetPos = m_curTarget.transform.position;
         m_curTarget.OnTakeDamage(m_towerData.m_baseDamage);
 
         //Apply Shred
@@ -143,7 +144,7 @@ public class ChargeUpTowerController : Tower
     {
         //Setup LineRenderer Data.
         m_projectileLineRenderer.SetPosition(0, m_muzzlePoint.position);
-        m_projectileLineRenderer.SetPosition(1, m_lastTargetPos);
+        m_projectileLineRenderer.SetPosition(1, m_curTarget.transform.position);
 
         //Scroll the texture.
         m_scrollOffset -= new Vector2(10 * Time.deltaTime, 0);

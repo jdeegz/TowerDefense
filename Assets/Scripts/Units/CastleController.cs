@@ -19,7 +19,7 @@ public class CastleController : MonoBehaviour
     [SerializeField] private AudioClip m_audioWaveStart;
     [SerializeField] private AudioClip m_audioWaveEnd;
 
-    private List<MeshRenderer> m_allMeshRenderers;
+    private List<Renderer> m_allRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
     private int m_curHealth;
@@ -81,6 +81,7 @@ public class CastleController : MonoBehaviour
                 {
                     GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
                 }
+
                 break;
             case GameplayManager.GameplayState.CreatePaths:
                 break;
@@ -165,29 +166,36 @@ public class CastleController : MonoBehaviour
     private IEnumerator HitFlash()
     {
         //Set the color
-        for (int i = 0; i < m_allMeshRenderers.Count; ++i)
+        for (int i = 0; i < m_allRenderers.Count; ++i)
         {
-            m_allMeshRenderers[i].material.SetColor("_EmissionColor", Color.red);
+            foreach (Material material in m_allRenderers[i].materials)
+            {
+                material.SetColor("_EmissionColor", Color.red);
+            }
         }
 
         yield return new WaitForSeconds(.15f);
 
         //Return to original colors.
-        for (int i = 0; i < m_allMeshRenderers.Count; ++i)
+        for (int i = 0; i < m_allRenderers.Count; ++i)
         {
-            m_allMeshRenderers[i].material.SetColor("_EmissionColor", m_allOrigColors[i]);
+            foreach (Material material in m_allRenderers[i].materials)
+            {
+                material.SetColor("_EmissionColor", m_allOrigColors[i]);
+            }
         }
     }
 
-    private void CollectMeshRenderers(Transform parent)
+
+    void CollectMeshRenderers(Transform parent)
     {
         //Get Parent Mesh Renderer if there is one.
-        MeshRenderer meshRenderer = parent.GetComponent<MeshRenderer>();
-        if (meshRenderer != null)
+        Renderer Renderer = parent.GetComponent<Renderer>();
+        if (Renderer != null)
         {
-            if (m_allMeshRenderers == null)
+            if (m_allRenderers == null)
             {
-                m_allMeshRenderers = new List<MeshRenderer>();
+                m_allRenderers = new List<Renderer>();
             }
 
             if (m_allOrigColors == null)
@@ -195,8 +203,8 @@ public class CastleController : MonoBehaviour
                 m_allOrigColors = new List<Color>();
             }
 
-            m_allMeshRenderers.Add(meshRenderer);
-            m_allOrigColors.Add(meshRenderer.material.GetColor("_EmissionColor"));
+            m_allRenderers.Add(Renderer);
+            m_allOrigColors.Add(Renderer.material.GetColor("_EmissionColor"));
         }
 
         for (int i = 0; i < parent.childCount; ++i)
