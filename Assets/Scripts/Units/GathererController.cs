@@ -41,6 +41,7 @@ public class GathererController : MonoBehaviour
     private Coroutine m_curCoroutine;
 
     private static int m_isHarvestingHash = Animator.StringToHash("isHarvesting");
+    private Vector3 m_idlePos;
 
     private void Awake()
     {
@@ -49,6 +50,7 @@ public class GathererController : MonoBehaviour
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnCommandRequested += CommandRequested;
         m_audioSource = GetComponent<AudioSource>();
+        m_idlePos = transform.position;
     }
 
     private void OnDestroy()
@@ -210,9 +212,7 @@ public class GathererController : MonoBehaviour
         switch (m_gathererTask)
         {
             case GathererTask.Idling:
-                Vector3 idlePos = GameplayManager.Instance.m_castleController.gameObject.transform.position;
-                idlePos = new Vector3(idlePos.x, 0, idlePos.z-2f);
-                StartMoving(idlePos);
+                StartMoving(m_idlePos);
                 break;
             case GathererTask.FindingHarvestablePoint:
                 if (m_curHarvestNode)

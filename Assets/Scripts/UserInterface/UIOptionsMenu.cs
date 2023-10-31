@@ -80,11 +80,11 @@ public class UIOptionsMenu : MonoBehaviour
         switch (index)
         {
             case 0:
-                Debug.Log($"Option {index} selected.");
+                //Debug.Log($"Option {index} selected.");
                 Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, true);
                 break;
             case 1:
-                Debug.Log($"Option {index} selected.");
+                //Debug.Log($"Option {index} selected.");
                 Screen.SetResolution(m_windowModeWidth, m_windowModeHeight, false);
                 break;
             default:

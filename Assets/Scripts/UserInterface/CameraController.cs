@@ -31,7 +31,7 @@ public class CameraController : MonoBehaviour
         float z = GridManager.Instance.m_gridHeight / 2;
 
         //Center the camera
-        transform.position = new Vector3(x, 0, z);
+        transform.position = GameplayManager.Instance.m_castleController.transform.position;
 
         //Get Screen to Plane corners.
         //North East

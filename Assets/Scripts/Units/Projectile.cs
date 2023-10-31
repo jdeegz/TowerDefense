@@ -47,4 +47,9 @@ public abstract class Projectile : MonoBehaviour
     {
         
     }
+
+    private void OnDestroy()
+    {
+        m_enemy.DestroyEnemy -= OnEnemyDestroyed;
+    }
 }

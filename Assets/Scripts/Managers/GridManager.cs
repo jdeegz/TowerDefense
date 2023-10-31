@@ -12,7 +12,6 @@ public class GridManager : MonoBehaviour
     public Cell[] m_gridCells;
     public int m_gridWidth;
     public int m_gridHeight;
-    public GameObject m_testDummy;
 
     public List<UnitPath> m_unitPaths;
     private List<Vector2Int> m_exits;
@@ -74,7 +73,8 @@ public class GridManager : MonoBehaviour
                 NavMeshHit hit;
                 foreach (Vector3 pos in gridCorners)
                 {
-                    if (NavMesh.SamplePosition(pos, out hit, 0.1f, NavMesh.AllAreas))
+                    //Max Distance needs to match the Nav Mesh Agent radius.
+                    if (NavMesh.SamplePosition(pos, out hit, 0.24f, NavMesh.AllAreas))
                     {
                         //Debug.Log($" ++ Ground hit at {hit.position} ++");
                         
