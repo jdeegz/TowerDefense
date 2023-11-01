@@ -140,7 +140,10 @@ public class VoidRayTowerController : Tower
         //Apply Shred
         if (m_statusEffectData)
         {
-            m_curTarget.ApplyEffect(m_statusEffect);
+            StatusEffect statusEffect = new StatusEffect();
+            statusEffect.SetTowerSender(this);
+            statusEffect.m_data = m_statusEffectData;
+            m_curTarget.ApplyEffect(statusEffect);
         }
 
         //Play Audio.

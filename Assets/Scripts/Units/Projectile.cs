@@ -22,14 +22,17 @@ public abstract class Projectile : MonoBehaviour
     protected Vector3 m_directPos;
     protected StatusEffect m_statusEffect;
     
-    public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos, StatusEffect data)
+    public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos)
     {
         m_startPos = pos;
         m_enemy = enemy;
         m_projectileDamage = dmg;
-        if(data != null) m_statusEffect = data;
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
-        
+    }
+
+    public void SetProjectileStatusEffect(StatusEffect statusEffect)
+    {
+        m_statusEffect = statusEffect;
     }
 
     private void OnEnemyDestroyed(Vector3 pos)
@@ -50,6 +53,6 @@ public abstract class Projectile : MonoBehaviour
 
     private void OnDestroy()
     {
-        m_enemy.DestroyEnemy -= OnEnemyDestroyed;
+        if(m_enemy) m_enemy.DestroyEnemy -= OnEnemyDestroyed;
     }
 }

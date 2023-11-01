@@ -104,9 +104,13 @@ public class ArcTowerController : Tower
                 // Target is within the cone.
                 EnemyController enemyHit = hits[i].transform.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_towerData.m_baseDamage);
+                
                 if (m_statusEffectData)
                 {
-                    enemyHit.ApplyEffect(m_statusEffect);
+                    StatusEffect statusEffect = new StatusEffect();
+                    statusEffect.SetTowerSender(this);
+                    statusEffect.m_data = m_statusEffectData;
+                    enemyHit.ApplyEffect(statusEffect);
                 }
             }
         }

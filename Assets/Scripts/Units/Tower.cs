@@ -13,8 +13,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;
     [SerializeField] protected bool m_isBuilt;
-
-    protected StatusEffect m_statusEffect;
+    
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
     
@@ -28,11 +27,7 @@ public abstract class Tower : MonoBehaviour
         m_audioSource = GetComponent<AudioSource>();
         
         //If we have a status effect on this tower, create an instance of it to use when applying.
-        if (m_statusEffectData)
-        {
-            m_statusEffect = new StatusEffect();
-            m_statusEffect.SetTowerSender(this);
-        }
+        
     }
 
     private void GameplayStatChanged(GameplayManager.GameplayState newState)
