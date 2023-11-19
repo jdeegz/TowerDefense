@@ -10,7 +10,117 @@ public static class Util
     {
         return new Vector3(Mathf.FloorToInt(vector.x + 0.5f), Mathf.FloorToInt(vector.y), Mathf.FloorToInt(vector.z + 0.5f));
     }
+
+    /*
+    public static List<Cell> GetCellsInRadius(int centerX, int centerY, int radius)
+    {
+        List<Cell> cellsWithinRadius = new List<Cell>();
+
+        /#1#/ Convert the 1D center index to 2D coordinates
+        int centerX = centerIndex / gridWidth;
+        int centerY = centerIndex % gridWidth;#1#
+
+        int x = centerX;
+        int y = centerY;
+        int dx = 0;
+        int dy = -1;
+
+        for (int i = 0; i < (2 * radius + 1) * (2 * radius + 1); i++)
+        {
+            if (Math.Abs(x - centerX) <= radius && Math.Abs(y - centerY) <= radius)
+            {
+                // Convert the 2D coordinates back to a 1D index
+                int index = y * GridManager.Instance.m_gridWidth + x;
+
+                // Check if the current cell is within the specified radius
+                cellsWithinRadius.Add(GridManager.Instance.m_gridCells[index]);
+            }
+
+            if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1 - y))
+            {
+                // Change direction in the spiral
+                if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1 - y))
+                {
+                    int temp = dx;
+                    dx = -dy;
+                    dy = temp;
+                }
+            }
+
+            x += dx;
+            y += dy;
+        }
+
+        return cellsWithinRadius;
+    }*/
     
+    public static List<Cell> GetCellsInRadius(Cell startCell, int maxDistance)
+    {
+        List<Cell> cellsWithinRadius = new List<Cell>();
+        
+        int gridWidth = GridManager.Instance.m_gridWidth;
+        
+        int startX = startCell.m_cellPos.x;
+        int startY = startCell.m_cellPos.y;
+        
+        // List to keep track of visited nodes
+        HashSet<Cell> visited = new HashSet<Cell>();
+        
+        Queue<(int, int, int)> queue = new Queue<(int, int, int)>();
+
+        // Check if the starting point is within the grid and has the original value
+        Debug.Log($"Starting Flood Fill");
+        
+        if (IsValidPoint(startX, startY))
+        {
+            // Enqueue the starting point with distance 0
+            queue.Enqueue((startX, startY, 0));
+
+            while (queue.Count > 0)
+            {
+                var (x, y, distance) = queue.Dequeue();
+                Cell curCell = GridManager.Instance.m_gridCells[x * gridWidth + y];
+                
+
+                // Check if the distance exceeds the maximum distance
+                if (distance > maxDistance)
+                {
+                    Debug.Log($"Stopping Flood Fill, max distance of {distance} reached.");
+                    break;  // Stop filling if the distance exceeds the limit
+                }
+
+                // Check if the current point is within the grid and has the original value
+                if (IsValidPoint(x, y) && !visited.Contains(curCell))
+                {
+                    Debug.Log($"Added a cell to list.");
+                    cellsWithinRadius.Add(curCell);
+                    
+                    // Mark the current node as visited
+                    if (!visited.Add(curCell)) {continue;}
+
+                    // Enqueue neighboring points with increased distance
+                    queue.Enqueue((x + 1, y, distance + 1));
+                    queue.Enqueue((x - 1, y, distance + 1));
+                    queue.Enqueue((x, y + 1, distance + 1));
+                    queue.Enqueue((x, y - 1, distance + 1));
+                }
+            }
+            Debug.Log($"Flood fill Queue complete.");
+        }
+
+        Debug.Log($"Returning flood fill list.");
+        return cellsWithinRadius;
+    }
+
+    static bool IsValidPoint(int x, int y)
+    {
+        bool valid = x >= 0 && x < GridManager.Instance.m_gridWidth && y >= 0 && y < GridManager.Instance.m_gridHeight;
+        //Debug.Log($"Cell valid: {valid}");
+        return valid;
+    }
+
+    
+
     public static bool CellIsBlocked(int start_x, int start_y, int end_x, int end_y)
     {
         /*var deltaCol = System.Math.Abs(end_x - start_x);
@@ -151,7 +261,7 @@ public static class Util
 
         return onCell;
     }*/
-    
+
     /*public static List<GameObject> GetClosestCells(GameObject obj, int cellsNeeded)
     {
         List<GameObject> cellList = new List<GameObject>(0);
@@ -225,7 +335,7 @@ public static class Util
     {
         int x = pos.x;
         int z = pos.y;
-        
+
         //Check we're within the grid width
         if (x < 0 || x >= GridManager.Instance.m_gridWidth)
         {
@@ -239,19 +349,19 @@ public static class Util
             //Debug.Log("Z not within grid bounds.");
             return null;
         }
-        
+
         int index = z * GridManager.Instance.m_gridWidth + x;
         //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
         return GridManager.Instance.m_gridCells[index];
     }
-    
+
     public static Cell GetCellFrom3DPos(Vector3 pos)
     {
-        Debug.Log($"Getting cell from {pos}");
+        //Debug.Log($"Getting cell from {pos}");
         int x = Mathf.FloorToInt(pos.x + 0.5f);
         int z = Mathf.FloorToInt(pos.z + 0.5f);
-        
+
         //Check we're within the grid width
         if (x < 0 || x >= GridManager.Instance.m_gridWidth)
         {
@@ -265,8 +375,8 @@ public static class Util
             //Debug.Log("Z not within grid bounds.");
             return null;
         }
-        
-        Debug.Log($"Returning cell from {x},{z}");
+
+        //Debug.Log($"Returning cell from {x},{z}");
         int index = x * GridManager.Instance.m_gridWidth + z;
         //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
@@ -276,18 +386,18 @@ public static class Util
     public static (List<Cell>, List<Vector3>) GetNeighborCells(Vector2Int pos)
     {
         List<Vector2Int> neighborPos = new List<Vector2Int>();
-        neighborPos.Add(new Vector2Int(pos.x, pos.y+1)); //N
-        neighborPos.Add(new Vector2Int(pos.x+1, pos.y+1)); //NE
-        neighborPos.Add(new Vector2Int(pos.x+1, pos.y)); //E
-        neighborPos.Add(new Vector2Int(pos.x+1, pos.y-1)); //SE
-        neighborPos.Add(new Vector2Int(pos.x, pos.y-1)); //S
-        neighborPos.Add(new Vector2Int(pos.x-1, pos.y-1)); //SW
-        neighborPos.Add(new Vector2Int(pos.x-1, pos.y)); //W
-        neighborPos.Add(new Vector2Int(pos.x-1, pos.y+1)); //NW
-        
+        neighborPos.Add(new Vector2Int(pos.x, pos.y + 1)); //N
+        neighborPos.Add(new Vector2Int(pos.x + 1, pos.y + 1)); //NE
+        neighborPos.Add(new Vector2Int(pos.x + 1, pos.y)); //E
+        neighborPos.Add(new Vector2Int(pos.x + 1, pos.y - 1)); //SE
+        neighborPos.Add(new Vector2Int(pos.x, pos.y - 1)); //S
+        neighborPos.Add(new Vector2Int(pos.x - 1, pos.y - 1)); //SW
+        neighborPos.Add(new Vector2Int(pos.x - 1, pos.y)); //W
+        neighborPos.Add(new Vector2Int(pos.x - 1, pos.y + 1)); //NW
+
         List<Cell> neighborCells = new List<Cell>();
         List<Vector3> harvestPos = new List<Vector3>();
-        
+
         foreach (Vector2Int neighborCellPos in neighborPos)
         {
             Cell cell = GetCellFromPos(neighborCellPos);
@@ -300,49 +410,50 @@ public static class Util
                 harvestPos.Add(harvestPointPos);
             }
         }
+
         return (neighborCells, harvestPos);
     }
-    
+
     public static Vector2Int GetVector2IntFrom3DPos(Vector3 pos)
     {
         int x = Mathf.FloorToInt(pos.x + 0.5f);
         int z = Mathf.FloorToInt(pos.z + 0.5f);
-        return  new Vector2Int(x, z);
-    } 
-    
-   /*public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)
-    {
-        int row = (int) obj.transform.position.x;
-        int col = (int) obj.transform.position.y;
+        return new Vector2Int(x, z);
+    }
 
-        List<GameObject> neighbors = new List<GameObject>();
-        for (int x = row - range; x <= row + range; x++)
-        {
-            if (x < 0 || x > grid.GetLength(0) - 1)
-            {
-                continue;
-            }
+    /*public static List<GameObject> GetCellsInRange(GameObject obj, GameObject[,] grid, int range)
+     {
+         int row = (int) obj.transform.position.x;
+         int col = (int) obj.transform.position.y;
 
-            for (int y = col - range; y <= col + range; y++)
-            {
-                if (y < 0 || y > grid.GetLength(1) - 1)
-                {
-                    continue;
-                }
+         List<GameObject> neighbors = new List<GameObject>();
+         for (int x = row - range; x <= row + range; x++)
+         {
+             if (x < 0 || x > grid.GetLength(0) - 1)
+             {
+                 continue;
+             }
 
-                //Manhattan distance to check range from obj
-                if (Mathf.Abs(row - x) + Mathf.Abs(col - y) <= range)
-                {
-                    if (grid[x, y] != null)
-                    {
-                        neighbors.Add(grid[x, y]);
-                    }
-                }
-            }
-        }
+             for (int y = col - range; y <= col + range; y++)
+             {
+                 if (y < 0 || y > grid.GetLength(1) - 1)
+                 {
+                     continue;
+                 }
 
-        return neighbors;
-    }*/
+                 //Manhattan distance to check range from obj
+                 if (Mathf.Abs(row - x) + Mathf.Abs(col - y) <= range)
+                 {
+                     if (grid[x, y] != null)
+                     {
+                         neighbors.Add(grid[x, y]);
+                     }
+                 }
+             }
+         }
+
+         return neighbors;
+     }*/
 
     /*public static List<GameObject> GetCellsInView(GameObject obj, GameObject[,] grid, int range)
     {
@@ -538,5 +649,4 @@ public static class Util
         int distance = Mathf.Abs(objAX - objBX) + Mathf.Abs(objAY - objBY);
         return distance;
     }*/
-    
- }
+}

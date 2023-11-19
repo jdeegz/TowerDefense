@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 public abstract class EnemyController : MonoBehaviour, IEffectable
 {
     //Enemy Scriptable Data
-    private EnemyData m_enemyData;
+    [Header("Enemy Data")] private EnemyData m_enemyData;
     public Transform m_targetPoint;
 
     //Enemy Objective & Position
@@ -45,6 +45,11 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private List<StatusEffect> m_statusEffects;
     private List<StatusEffect> m_newStatusEffects = new List<StatusEffect>();
     private List<StatusEffect> m_expiredStatusEffects = new List<StatusEffect>();
+
+    //Obelisk
+    [Header("Obelisk Data")] public LayerMask m_layerMask;
+    public GameObject m_obeliskSoulObj;
+    public float m_obeliskRange;
 
     protected NavMeshAgent m_navMeshAgent;
 
@@ -138,9 +143,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     public void OnTakeDamage(float dmg)
     {
-        //Deal Damage
-        UpdateHealth?.Invoke(-dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower);
-
         //Audio
         int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
         m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
@@ -155,6 +157,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
+
+        //Deal Damage -- Moved to the end so that if the unit dies from the damage we still get hit flashes and sounds.
+        UpdateHealth?.Invoke(-dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower);
     }
 
     void OnUpdateHealth(float i)
@@ -197,8 +202,49 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             m_curCell.UpdateActorCount(-1, gameObject.name);
         }
 
+        //If dead, look for obelisks nearby. If there is one, spawn a soul and have it move to the obelisk.
+        if (m_curHealth <= 0)
+        {
+            Obelisk m_closestObelisk = FindObelisk();
+            if (m_closestObelisk != null)
+            {
+                //Instantiate a soul, and set its properties.
+                GameObject obeliskSoulObject = Instantiate(m_obeliskSoulObj, m_targetPoint.position, quaternion.identity);
+                ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
+                obeliskSoul.SetupSoul(m_closestObelisk.transform.position, m_closestObelisk);
+            }
+        }
+
         GameplayManager.Instance.RemoveEnemyFromList(this);
         Destroy(gameObject);
+    }
+
+    private Obelisk FindObelisk()
+    {
+        Obelisk m_closestObelisk = null;
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_obeliskRange, m_layerMask.value);
+        float closestDistance = 999;
+        int closestIndex = -1;
+        if (hits.Length > 0)
+        {
+            for (int i = 0; i < hits.Length; ++i)
+            {
+                //If the hit does not have the tag Obelisk, go next.
+                if (!hits[i].CompareTag("Obelisk")) continue;
+
+                //Check position and distance to Obelisk, store the smallest distances.
+                float distance = Vector3.Distance(transform.position, hits[i].transform.position);
+                if (distance <= closestDistance)
+                {
+                    closestIndex = i;
+                    closestDistance = distance;
+                }
+            }
+
+            m_closestObelisk = hits[closestIndex].transform.GetComponent<Obelisk>();
+        }
+
+        return m_closestObelisk;
     }
 
     //Enemy Escape

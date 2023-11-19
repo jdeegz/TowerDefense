@@ -47,7 +47,6 @@ public class GameplayManager : MonoBehaviour
     public Transform m_towerObjRoot;
     public List<Tower> m_towerList;
 
-
     [Header("Selected Object Info")] private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
     private bool m_placementOpen;
@@ -65,11 +64,14 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] private UIStringData m_UIStringData;
 
     private Camera m_mainCamera;
-    public float m_buildDuration;
-    private float m_timeToNextWave;
+    public float m_buildDuration = 6;
+    public float m_firstBuildDuraction = 15;
+    [HideInInspector] public float m_timeToNextWave;
+
+    public List<Obelisk> m_activeObelisks;
 
 
-    public enum GameplayState
+public enum GameplayState
     {
         BuildGrid,
         PlaceObstacles,
@@ -84,6 +86,7 @@ public class GameplayManager : MonoBehaviour
     }
 
     public InteractionState m_interactionState;
+    
 
 
     public enum InteractionState
@@ -305,7 +308,15 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
-                m_timeToNextWave = m_buildDuration;
+                if (m_wave < 0)
+                {
+                    m_timeToNextWave = m_firstBuildDuraction;
+                }
+                else
+                {
+                    m_timeToNextWave = m_buildDuration;
+                }
+
                 break;
             case GameplayState.Paused:
                 break;
@@ -752,6 +763,32 @@ public class GameplayManager : MonoBehaviour
             {
                 m_unitSpawners.RemoveAt(i);
             }
+        }
+    }
+
+    public void AddObeliskToList(Obelisk obelisk)
+    {
+        if (m_activeObelisks == null) m_activeObelisks = new List<Obelisk>();
+        m_activeObelisks.Add(obelisk);
+    }
+
+    public void CheckObeliskStatus()
+    {
+        bool charging = false;
+        
+        //Identify if there are any obelisks still charging.
+        foreach (Obelisk obelisk in m_activeObelisks)
+        {
+            if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charging)
+            {
+                charging = true;
+            }
+        }
+        
+        //If there are no obelisks still charging, victory!
+        if(charging == false)
+        {
+            UpdateGameplayState(GameplayState.Victory);
         }
     }
 }

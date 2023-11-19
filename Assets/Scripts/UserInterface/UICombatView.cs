@@ -158,7 +158,7 @@ public class UICombatView : MonoBehaviour
                     m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1} / {GameplayManager.Instance.m_totalWaves}");
                     gameObject.SetActive(true);
                 }
-                m_timeToNextWave = GameplayManager.Instance.m_buildDuration;
+                m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
                 break;
             case GameplayManager.GameplayState.Paused:
                 break;

@@ -29,7 +29,7 @@ namespace TechnoBabelGames
             switch (lineRendererProperties.textureMode)
             {
                 case TBLineRenderer.TextureMode.None:
-                    lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+                    lineRenderer.material = lineRendererProperties.texture;
                     break;
                 case TBLineRenderer.TextureMode.Stretch:
                     lineRenderer.textureMode = LineTextureMode.Stretch;

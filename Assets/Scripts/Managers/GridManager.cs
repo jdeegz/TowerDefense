@@ -58,18 +58,18 @@ public class GridManager : MonoBehaviour
                 int index = z * m_gridWidth + x;
                 Cell cell = new Cell();
                 cell.m_cellPos = new Vector2Int(x, z);
+                cell.m_value = index;
                 m_gridCells[index] = cell;
-                
-                
-                
+
+
                 //Get the half neightbors to assure the cell is fully on the nav mesh.
                 List<Vector3> gridCorners = new List<Vector3>();
-                float buffer = 0.4f;
+                float buffer = 0.2f;
                 gridCorners.Add(new Vector3(x + buffer, 0, z + buffer)); //North East
                 gridCorners.Add(new Vector3(x + buffer, 0, z - buffer)); //South East
                 gridCorners.Add(new Vector3(x - buffer, 0, z - buffer)); //South West
                 gridCorners.Add(new Vector3(x - buffer, 0, z + buffer)); //North West
-                
+
                 NavMeshHit hit;
                 foreach (Vector3 pos in gridCorners)
                 {
@@ -77,7 +77,6 @@ public class GridManager : MonoBehaviour
                     if (NavMesh.SamplePosition(pos, out hit, 0.24f, NavMesh.AllAreas))
                     {
                         //Debug.Log($" ++ Ground hit at {hit.position} ++");
-                        
                     }
                     else
                     {
@@ -172,6 +171,7 @@ public class Cell
     public bool m_isOccupied;
     public int m_actorCount;
     public List<string> m_actorsList;
+    public int m_value;
 
     public void UpdateActorCount(int i, string name)
     {
@@ -201,7 +201,7 @@ public class Cell
     {
         m_isGoal = b;
     }
-    
+
     void OnDrawGizmos()
     {
         // Draw a semitransparent red cube at the transforms position
