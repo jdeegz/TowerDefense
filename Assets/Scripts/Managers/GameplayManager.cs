@@ -28,6 +28,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action OnPreconstructedTowerClear;
     public static event Action OnTowerBuild;
     public static event Action OnTowerSell;
+    public static event Action<int, int>  OnObelisksCharged;
 
 
     [Header("Castle")] public CastleController m_castleController;
@@ -308,6 +309,13 @@ public enum GameplayState
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
+                //If there are no obelisks still charging, victory!
+                if(m_obelisksChargedCount == m_obeliskCount)
+                {
+                    UpdateGameplayState(GameplayState.Victory);
+                    break;
+                }
+                //If this is the first wave, give a bit longer to build.
                 if (m_wave < 0)
                 {
                     m_timeToNextWave = m_firstBuildDuraction;
@@ -316,7 +324,6 @@ public enum GameplayState
                 {
                     m_timeToNextWave = m_buildDuration;
                 }
-
                 break;
             case GameplayState.Paused:
                 break;
@@ -766,29 +773,31 @@ public enum GameplayState
         }
     }
 
+    private int m_obeliskCount;
+    private int m_obelisksChargedCount;
+    
     public void AddObeliskToList(Obelisk obelisk)
     {
         if (m_activeObelisks == null) m_activeObelisks = new List<Obelisk>();
         m_activeObelisks.Add(obelisk);
+        ++m_obeliskCount;
+        OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
     }
-
+    
     public void CheckObeliskStatus()
     {
+        m_obelisksChargedCount = 0;
         bool charging = false;
         
         //Identify if there are any obelisks still charging.
         foreach (Obelisk obelisk in m_activeObelisks)
         {
-            if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charging)
+            if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charged)
             {
-                charging = true;
+                ++m_obelisksChargedCount;
             }
         }
         
-        //If there are no obelisks still charging, victory!
-        if(charging == false)
-        {
-            UpdateGameplayState(GameplayState.Victory);
-        }
+        OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
     }
 }

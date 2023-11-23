@@ -22,6 +22,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
     [SerializeField] private TextMeshProUGUI m_gameClockLabel;
     [SerializeField] private TextMeshProUGUI m_waveLabel;
+    [SerializeField] private TextMeshProUGUI m_obelisksChargedLabel;
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
 
@@ -59,6 +60,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed += Alert;
+        GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
@@ -75,6 +77,7 @@ public class UICombatView : MonoBehaviour
         }
 
         m_curCastleHealth += i;
+        m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_maxHealth;
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
         m_healthShake = m_healthDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_healthShake.Play();
@@ -135,10 +138,16 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         GameplayManager.OnGameSpeedChanged -= GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed -= Alert;
+        GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount -= UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount -= UpdateWoodGathererDisplay;
+    }
+
+    private void UpdateObeliskDisplay(int x, int y)
+    {
+        m_obelisksChargedLabel.SetText($"Obelisks Charged: {x}/{y}");
     }
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)

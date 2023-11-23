@@ -67,7 +67,7 @@ public class Obelisk : MonoBehaviour
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
             //Set occupancy
-            GridCellOccupantUtil.SetOccupant(gameObject, true, 3, 3);
+            GridCellOccupantUtil.SetActor(gameObject, 1, 3, 3);
             
             m_meter = Instantiate(IngameUIController.Instance.m_ingameMeter, IngameUIController.Instance.transform);
             m_meter.SetupMeter(this.gameObject, m_meterOffset);

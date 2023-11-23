@@ -238,10 +238,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 {
                     closestIndex = i;
                     closestDistance = distance;
+                    m_closestObelisk = hits[closestIndex].transform.GetComponent<Obelisk>();
                 }
             }
-
-            m_closestObelisk = hits[closestIndex].transform.GetComponent<Obelisk>();
         }
 
         return m_closestObelisk;

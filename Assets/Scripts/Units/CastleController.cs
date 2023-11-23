@@ -121,6 +121,13 @@ public class CastleController : MonoBehaviour
         }
     }
 
+    public void CheatCastleHealth()
+    {
+        m_maxHealth = 999;
+        UpdateHealth?.Invoke(m_maxHealth - m_curHealth);
+        m_repairElapsedTime = 0;
+    }
+    
     public float RepairProgress()
     {
         return m_repairElapsedTime / m_repairHealthInterval;
