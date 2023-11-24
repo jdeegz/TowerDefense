@@ -15,11 +15,10 @@ public class GathererController : MonoBehaviour
     public Animator m_animator;
     [SerializeField] private Vector2Int m_curPos;
     [SerializeField] private Cell m_curCell;
-    
-    [Header("Audio")]
-    [SerializeField] private List<AudioClip> m_woodChopClips;
+
+    [Header("Audio")] [SerializeField] private List<AudioClip> m_woodChopClips;
     private AudioSource m_audioSource;
-    
+
     public enum GathererTask
     {
         Idling,
@@ -89,6 +88,14 @@ public class GathererController : MonoBehaviour
 
     void Update()
     {
+        //If the gatherer is/was moving, and it's at its destination, change tasks. (We reached castle or harvest node)
+        //Path Pending returns true while the game is computing a path. Dont switch until that's done!
+        //The remaining distance is inaccurate, and doesn't factor in the position of the node. If the player plays a tower on the node position, the destination
+        //does not update, resulting in the gatherer harvesting where ever it is on the map.
+        //Lets compare physical distance with the stopping distance instead.
+        //Lets check the cell the node is on to see if it's occupied or not. If it is we need to pick a new node.
+        CheckHarvestPointAccessible();
+
         if (m_isMoving && m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance && !m_navMeshAgent.pathPending)
         {
             m_isMoving = false;
@@ -114,14 +121,27 @@ public class GathererController : MonoBehaviour
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
-        
-        if(newPos != m_curPos){
+
+        if (newPos != m_curPos)
+        {
             m_curCell.UpdateActorCount(-1, gameObject.name);
             m_curPos = newPos;
             m_curCell = Util.GetCellFromPos(m_curPos);
             m_curCell.UpdateActorCount(1, gameObject.name);
+        }
+    }
+
+    private void CheckHarvestPointAccessible()
+    {
+        if (m_gathererTask != GathererTask.TravelingToHarvest) return;
+        
+        Cell m_harvestPointCell = m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_harvestPointCell;
+        if (m_harvestPointCell.m_isOccupied)
+        {
+            m_isMoving = false;
+            UpdateTask(GathererTask.FindingHarvestablePoint);
         }
     }
 
@@ -135,7 +155,7 @@ public class GathererController : MonoBehaviour
         int i = Random.Range(0, m_woodChopClips.Count);
         m_audioSource.PlayOneShot(m_woodChopClips[i]);
     }
-    
+
     private void CommandRequested(GameObject requestObj, Selectable.SelectedObjectType type)
     {
         if (!m_isSelected)
@@ -207,7 +227,7 @@ public class GathererController : MonoBehaviour
     private void UpdateTask(GathererTask newTask)
     {
         m_gathererTask = newTask;
-        
+
         Debug.Log($"{gameObject.name}'s task updated to: {m_gathererTask}");
         switch (m_gathererTask)
         {
@@ -219,7 +239,15 @@ public class GathererController : MonoBehaviour
                 {
                     Debug.Log("Finding point to harvest from.");
                     ValueTuple<ResourceNode, Vector3, int> vars = GetHarvestPointFromObj(m_curHarvestNode.gameObject);
-                    SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                    
+                    //If we're given an index greater equal to or greater than 0, we can harvest this node.
+                    if(vars.Item3 >= 0) SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                    //Else we cannot harvest this node because no points are pathable, so we go to idle.
+                    else
+                    {
+                        UpdateTask(GathererTask.Idling);
+                        break;
+                    }
                 }
                 else
                 {
@@ -232,6 +260,7 @@ public class GathererController : MonoBehaviour
                         UpdateTask(GathererTask.Idling);
                         break;
                     }
+
                     SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                 }
 
@@ -253,7 +282,6 @@ public class GathererController : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
     }
 
     private void ToggleDisplayIdleVFX()
@@ -314,13 +342,14 @@ public class GathererController : MonoBehaviour
         Debug.Log($"{gameObject.name}'s resource node depleted.");
 
         //If harvesting, stop cur coroutine.
-        if (m_resourceCarried == 0 && m_curCoroutine != null)
+        //Previous Condition: m_resourceCarried == 0 && m_curCoroutine != null
+        if (m_gathererTask == GathererTask.Harvesting)
         {
             StopCoroutine(m_curCoroutine);
-            Debug.Log($"{gameObject.name}'s Harvesting coroutine stopped.");
             m_curCoroutine = null;
+            Debug.Log($"{gameObject.name}'s Harvesting coroutine stopped.");
         }
-        
+
         ClearHarvestVars();
 
         //Interrupt flow if we're not currently carrying or storing resources.
@@ -483,7 +512,8 @@ public class GathererController : MonoBehaviour
         m_resourceCarried = vars.Item1;
         int resourceRemaining = vars.Item2;
 
-        if (resourceRemaining > 0 && m_resourceCarried > 0)
+        //If there are resources remaining in the node, unset some of the variables on the node.
+        if (resourceRemaining > 0)
         {
             m_curHarvestNode.SetIsHarvesting(-1);
             m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_isOccupied = false;

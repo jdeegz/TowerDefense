@@ -10,6 +10,7 @@ public class EnemyData : ScriptableObject
     public GameObject m_enemyPrefab;
     
     public float m_moveSpeed = 1f;
+    public float m_lookSpeed = 180f;
     public float m_damageMultiplier = 0f;
     public int m_health = 10;
     

@@ -53,24 +53,24 @@ public static class Util
 
         return cellsWithinRadius;
     }*/
-    
+
     public static List<Cell> GetCellsInRadius(Cell startCell, int maxDistance)
     {
         List<Cell> cellsWithinRadius = new List<Cell>();
-        
+
         int gridWidth = GridManager.Instance.m_gridWidth;
-        
+
         int startX = startCell.m_cellPos.x;
         int startY = startCell.m_cellPos.y;
-        
+
         // List to keep track of visited nodes
         HashSet<Cell> visited = new HashSet<Cell>();
-        
+
         Queue<(int, int, int)> queue = new Queue<(int, int, int)>();
 
         // Check if the starting point is within the grid and has the original value
         Debug.Log($"Starting Flood Fill");
-        
+
         if (IsValidPoint(startX, startY))
         {
             // Enqueue the starting point with distance 0
@@ -80,13 +80,13 @@ public static class Util
             {
                 var (x, y, distance) = queue.Dequeue();
                 Cell curCell = GridManager.Instance.m_gridCells[x * gridWidth + y];
-                
+
 
                 // Check if the distance exceeds the maximum distance
                 if (distance > maxDistance)
                 {
                     Debug.Log($"Stopping Flood Fill, max distance of {distance} reached.");
-                    break;  // Stop filling if the distance exceeds the limit
+                    break; // Stop filling if the distance exceeds the limit
                 }
 
                 // Check if the current point is within the grid and has the original value
@@ -94,9 +94,12 @@ public static class Util
                 {
                     Debug.Log($"Added a cell to list.");
                     cellsWithinRadius.Add(curCell);
-                    
+
                     // Mark the current node as visited
-                    if (!visited.Add(curCell)) {continue;}
+                    if (!visited.Add(curCell))
+                    {
+                        continue;
+                    }
 
                     // Enqueue neighboring points with increased distance
                     queue.Enqueue((x + 1, y, distance + 1));
@@ -105,6 +108,7 @@ public static class Util
                     queue.Enqueue((x, y - 1, distance + 1));
                 }
             }
+
             Debug.Log($"Flood fill Queue complete.");
         }
 
@@ -119,7 +123,6 @@ public static class Util
         return valid;
     }
 
-    
 
     public static bool CellIsBlocked(int start_x, int start_y, int end_x, int end_y)
     {
@@ -377,13 +380,13 @@ public static class Util
         }
 
         //Debug.Log($"Returning cell from {x},{z}");
-        int index = x * GridManager.Instance.m_gridWidth + z;
+        int index = z * GridManager.Instance.m_gridWidth + x;
         //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
         return GridManager.Instance.m_gridCells[index];
     }
 
-    public static (List<Cell>, List<Vector3>) GetNeighborCells(Vector2Int pos)
+    public static (List<Cell>, List<Vector3>) GetNeighborHarvestPointCells(Vector2Int pos)
     {
         List<Vector2Int> neighborPos = new List<Vector2Int>();
         neighborPos.Add(new Vector2Int(pos.x, pos.y + 1)); //N
@@ -412,6 +415,25 @@ public static class Util
         }
 
         return (neighborCells, harvestPos);
+    }
+
+    public static Cell[] GetNeighborCells(Cell startCell)
+    {
+        List<Vector2Int> neighborPos = new List<Vector2Int>();
+        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1)); //N
+        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y)); //E
+        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1)); //S
+        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y)); //W
+
+        Cell[] neighborCells = new Cell[4];
+
+        for (int i = 0; i < neighborCells.Length; i++)
+        {
+            Vector2Int neighborCellPos = neighborPos[i];
+            neighborCells[i] = GetCellFromPos(neighborCellPos);
+        }
+
+        return neighborCells;
     }
 
     public static Vector2Int GetVector2IntFrom3DPos(Vector3 pos)

@@ -82,6 +82,8 @@ public class CastleController : MonoBehaviour
                     GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
                 }
 
+                Cell cell = Util.GetCellFrom3DPos(transform.position);
+                cell.UpdateGoal(true);
                 break;
             case GameplayManager.GameplayState.CreatePaths:
                 break;

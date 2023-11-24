@@ -12,6 +12,9 @@ public class GridManager : MonoBehaviour
     public Cell[] m_gridCells;
     public int m_gridWidth;
     public int m_gridHeight;
+    public GameObject m_gridVisualizerObj;
+    public GameObject m_gridCellObj;
+    public GameObject[] m_gridcellObjects;
 
     public List<UnitPath> m_unitPaths;
     private List<Vector2Int> m_exits;
@@ -43,23 +46,73 @@ public class GridManager : MonoBehaviour
         if (newState == GameplayManager.GameplayState.CreatePaths)
         {
             BuildPathList();
+            FloodFillGrid(Util.GetCellFrom3DPos(GameplayManager.Instance.m_enemyGoal.position));
         }
     }
 
+    void FloodFillGrid(Cell goalCell)
+    {
+        //For flood fill start and goal are flipped. Start is castle. Goal is a spawner.
+        Dictionary<Cell, Cell> nextTileToGoal = new Dictionary<Cell, Cell>();
+        Queue<Cell> frontier = new Queue<Cell>();
+        List<Cell> visited = new List<Cell>();
+
+        frontier.Enqueue(goalCell);
+
+        while (frontier.Count > 0)
+        {
+            Cell curCell = frontier.Dequeue();
+
+            Cell[] cells = Util.GetNeighborCells(curCell);
+            for (var i = 0; i < cells.Length; i++)
+            {
+                var neighbor = cells[i];
+                if (visited.Contains(neighbor) == false && frontier.Contains(neighbor) == false)
+                {
+                    if (!neighbor.m_isOccupied)
+                    {
+                        //Get the direction of the neighbor to the curCell.
+                        neighbor.UpdateDirection(i);
+                        neighbor.UpdateOccupancy(false);
+                        frontier.Enqueue(neighbor);
+                        nextTileToGoal[neighbor] = curCell;
+                    }
+                }
+            }
+
+            visited.Add(curCell);
+        }
+    }
+
+    //If we never reach the start cell we return a null path.
+    /*if (visited.Contains(start) == false)
+        return null;*/
+
+    //Walk from the goal cell to the start cell and build the path list of cells.
+    /*Queue<Cell> path = new Queue<Cell>();
+    Cell curPathTile = start;
+    while(curPathTile != goal)
+    {
+        curPathTile = nextTileToGoal[curPathTile];
+        path.Enqueue(curPathTile);
+    }*/
     void BuildGrid()
     {
         m_gridCells = new Cell[m_gridWidth * m_gridHeight];
-
+        m_gridcellObjects = new GameObject[m_gridWidth * m_gridHeight];
 
         for (int x = 0; x < m_gridWidth; ++x)
         {
             for (int z = 0; z < m_gridHeight; ++z)
             {
                 int index = z * m_gridWidth + x;
+                m_gridcellObjects[index] = Instantiate(m_gridCellObj, new Vector3(x, 0.1f, z), Quaternion.Euler(90, 0, 0), m_gridVisualizerObj.transform);
+                m_gridcellObjects[index].name = $"GridCellObject ({x},{z})";
                 Cell cell = new Cell();
                 cell.m_cellPos = new Vector2Int(x, z);
                 cell.m_value = index;
                 m_gridCells[index] = cell;
+                cell.m_gridCellObj = m_gridcellObjects[index];
 
 
                 //Get the half neightbors to assure the cell is fully on the nav mesh.
@@ -83,7 +136,7 @@ public class GridManager : MonoBehaviour
                         //Debug.Log($" -- No Ground hit at {cell.m_cellPos} --");
                         //GameObject obj = Instantiate(m_testDummy, new Vector3(x, 0.02f, z), quaternion.identity, transform);
                         //obj.name = $"Element {index}"; 
-                        cell.m_isOccupied = true;
+                        cell.UpdateOccupancy(true);
                         break;
                     }
                 }
@@ -172,6 +225,13 @@ public class Cell
     public int m_actorCount;
     public List<string> m_actorsList;
     public int m_value;
+    public GameObject m_gridCellObj;
+    private Material m_gridCellObjMaterial;
+    private Color m_pathableColor = Color.cyan;
+    private Color m_occupiedColor = Color.yellow;
+    private Color m_goalColor = Color.green;
+    public Vector3 m_directionToNextCell;
+
 
     public void UpdateActorCount(int i, string name)
     {
@@ -195,19 +255,63 @@ public class Cell
     public void UpdateOccupancy(bool b)
     {
         m_isOccupied = b;
+        if (m_isOccupied)
+        {
+            UpdateGridCellColor(m_occupiedColor);
+        }
+        else
+        {
+            UpdateGridCellColor(m_pathableColor);
+        }
     }
 
     public void UpdateGoal(bool b)
     {
         m_isGoal = b;
+        if (m_isGoal) UpdateGridCellColor(m_goalColor);
     }
 
-    void OnDrawGizmos()
+    private void UpdateGridCellColor(Color color)
     {
-        // Draw a semitransparent red cube at the transforms position
-        Gizmos.color = new Color(1, 0, 0, 0.5f);
-        Vector3 pos = new Vector3(m_cellPos.x, .1f, m_cellPos.y);
-        Gizmos.DrawCube(pos, new Vector3(1, 1, 1));
+        if (!m_gridCellObjMaterial)
+        {
+            m_gridCellObjMaterial = m_gridCellObj.GetComponent<Renderer>().material;
+        }
+
+        m_gridCellObjMaterial.color = color;
+    }
+
+    public void UpdateDirection(int i)
+    {
+        switch (i)
+        {
+            case 0:
+                //Tile is north, face south.
+                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 180);
+                //Run south
+                m_directionToNextCell = new Vector3(0, 0, -1);
+                break;
+            case 1:
+                //Tile is east, face west.
+                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 90);
+                //Run west
+                m_directionToNextCell = new Vector3(-1, 0, 0);
+                break;
+            case 2:
+                //Tile is south, face north.
+                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 0);
+                //Run north
+                m_directionToNextCell = new Vector3(0, 0, 1);
+                break;
+            case 3:
+                //Tile is west, face east.
+                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 270);
+                //Run east
+                m_directionToNextCell = new Vector3(1, 0, 0);
+                break;
+            default:
+                break;
+        }
     }
 }
 

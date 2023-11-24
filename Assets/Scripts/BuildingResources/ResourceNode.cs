@@ -33,7 +33,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
             
             //Make list of neighbor positions
-            ValueTuple<List<Cell>, List<Vector3>> vars = Util.GetNeighborCells(Util.GetVector2IntFrom3DPos(transform.position));
+            ValueTuple<List<Cell>, List<Vector3>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
             for (var i = 0; i < vars.Item1.Count; ++i)
             {
                 var cell = vars.Item1[i];
