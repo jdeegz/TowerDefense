@@ -72,7 +72,7 @@ public class Obelisk : MonoBehaviour
             m_meter = Instantiate(IngameUIController.Instance.m_ingameMeter, IngameUIController.Instance.transform);
             m_meter.SetupMeter(this.gameObject, m_meterOffset);
             
-            SetupRangeCircle(30, m_obeliskRadius);
+            SetupRangeCircle(48, m_obeliskRadius);
 
             GameplayManager.Instance.AddObeliskToList(this);
         }

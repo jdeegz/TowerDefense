@@ -46,13 +46,14 @@ public class GridManager : MonoBehaviour
         if (newState == GameplayManager.GameplayState.CreatePaths)
         {
             BuildPathList();
-            FloodFillGrid(Util.GetCellFrom3DPos(GameplayManager.Instance.m_enemyGoal.position));
+            FloodFillGrid();
         }
     }
 
-    void FloodFillGrid(Cell goalCell)
+    public void FloodFillGrid()
     {
         //For flood fill start and goal are flipped. Start is castle. Goal is a spawner.
+        Cell goalCell = Util.GetCellFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
         Dictionary<Cell, Cell> nextTileToGoal = new Dictionary<Cell, Cell>();
         Queue<Cell> frontier = new Queue<Cell>();
         List<Cell> visited = new List<Cell>();

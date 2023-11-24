@@ -100,6 +100,7 @@ public abstract class Tower : MonoBehaviour
         //Grid
         GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
         GameplayManager.Instance.AddTowerToList(this);
+        GridManager.Instance.FloodFillGrid();
         
         //Operational
         gameObject.GetComponent<Collider>().enabled = true;
@@ -114,10 +115,14 @@ public abstract class Tower : MonoBehaviour
 
     public void OnDestroy()
     {
+        //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
+        if (!Application.isPlaying) return;
+        
         if (m_audioSource.enabled)
         {
             m_audioSource.PlayOneShot(m_towerData.m_audioDestroyClip);
         }
+        GridManager.Instance.FloodFillGrid();
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }

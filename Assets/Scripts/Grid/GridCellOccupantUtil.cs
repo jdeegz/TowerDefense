@@ -19,7 +19,7 @@ public class GridCellOccupantUtil
             {
                 Vector2Int pos = new Vector2Int((int)m_bottomLeftCell.x + x, (int)m_bottomLeftCell.z + z);
                 Cell cell = Util.GetCellFromPos(pos);
-                cell.m_isOccupied = isOccupied;
+                cell.UpdateOccupancy(isOccupied);
                 if(!isOccupied){Debug.Log($"Grid Cell unoccupied: {pos} by: {obj.name}");}
             }
         }

@@ -48,9 +48,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private List<StatusEffect> m_expiredStatusEffects = new List<StatusEffect>();
 
     //Obelisk
-    [Header("Obelisk Data")] public LayerMask m_layerMask;
-    public GameObject m_obeliskSoulObj;
-    public float m_obeliskRange;
+    public ObeliskData m_obeliskData;
 
     protected NavMeshAgent m_navMeshAgent;
 
@@ -211,9 +209,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             if (m_closestObelisk != null)
             {
                 //Instantiate a soul, and set its properties.
-                GameObject obeliskSoulObject = Instantiate(m_obeliskSoulObj, m_targetPoint.position, quaternion.identity);
+                GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity);
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
-                obeliskSoul.SetupSoul(m_closestObelisk.transform.position, m_closestObelisk);
+                obeliskSoul.SetupSoul(m_closestObelisk.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
             }
         }
 
@@ -224,7 +222,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private Obelisk FindObelisk()
     {
         Obelisk m_closestObelisk = null;
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_obeliskRange, m_layerMask.value);
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_obeliskData.m_obeliskRange, m_obeliskData.m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
         if (hits.Length > 0)

@@ -9,12 +9,14 @@ public class ObeliskSoul : MonoBehaviour
     private Vector3 m_endPos;
     private Obelisk m_obelisk;
     private Tween m_tweenToObelisk;
+    private int m_soulValue;
 
 
-    public void SetupSoul(Vector3 endPos, Obelisk obelisk)
+    public void SetupSoul(Vector3 endPos, Obelisk obelisk, int soulValue)
     {
         m_endPos = endPos;
         m_obelisk = obelisk;
+        m_soulValue = soulValue;
         HandleMovement();
     }
 
@@ -26,7 +28,7 @@ public class ObeliskSoul : MonoBehaviour
 
     void RequestObeliskCharge()
     {
-        m_obelisk.IncreaseObeliskCharge(1);
+        m_obelisk.IncreaseObeliskCharge(m_soulValue);
         Destroy(gameObject, 2);
     }
 }
