@@ -14,7 +14,10 @@ public class Bullet : Projectile
             DestroyProjectile();
             return;
         }
+    }
 
+    void FixedUpdate()
+    {
         TravelToTarget();
     }
 

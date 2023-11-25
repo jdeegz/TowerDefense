@@ -11,17 +11,20 @@ public class Missile : Projectile
     public AnimationCurve m_curveLateral;
     public AnimationCurve m_curveHeight;
     public AnimationCurve m_curveDistance;
-    
+
     void Update()
     {
         if (m_enemy) m_targetPos = m_enemy.m_targetPoint.position;
-        
+
         if (CheckTargetDistance())
         {
             DestroyProjectile();
             return;
         }
+    }
 
+    void FixedUpdate()
+    {
         TravelToTarget();
     }
 
@@ -68,7 +71,7 @@ public class Missile : Projectile
             {
                 EnemyController enemyHit = col.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_projectileDamage);
-                
+
                 //Apply Status Effect
                 if (m_statusEffect != null)
                 {
@@ -76,7 +79,7 @@ public class Missile : Projectile
                 }
             }
         }
-        
+
         //Spawn VFX
         Vector3 groundPos = transform.position;
         Instantiate(m_impactEffect, groundPos, Quaternion.identity);

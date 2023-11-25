@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -36,15 +37,17 @@ public class GathererController : MonoBehaviour
     private Vector3 m_curHarvestNodePos;
     private ResourceNode m_curHarvestNode;
     private Vector3 m_curHarvestPointPos;
-    private NavMeshAgent m_navMeshAgent;
     private Coroutine m_curCoroutine;
 
     private static int m_isHarvestingHash = Animator.StringToHash("isHarvesting");
     private Vector3 m_idlePos;
+    private List<Vector2Int> m_gathererPath;
+    private int m_gathererPathProgress;
+    private Vector3 m_moveDirection;
+    private Quaternion m_previousRotation;
 
     private void Awake()
     {
-        m_navMeshAgent = GetComponent<NavMeshAgent>();
         GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnCommandRequested += CommandRequested;
@@ -67,7 +70,6 @@ public class GathererController : MonoBehaviour
             m_curPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
             m_curCell = Util.GetCellFromPos(m_curPos);
             m_curCell.UpdateActorCount(1, gameObject.name);
-            m_navMeshAgent.enabled = true;
         }
     }
 
@@ -88,55 +90,109 @@ public class GathererController : MonoBehaviour
 
     void Update()
     {
-        //If the gatherer is/was moving, and it's at its destination, change tasks. (We reached castle or harvest node)
-        //Path Pending returns true while the game is computing a path. Dont switch until that's done!
-        //The remaining distance is inaccurate, and doesn't factor in the position of the node. If the player plays a tower on the node position, the destination
-        //does not update, resulting in the gatherer harvesting where ever it is on the map.
-        //Lets compare physical distance with the stopping distance instead.
-        //Lets check the cell the node is on to see if it's occupied or not. If it is we need to pick a new node.
         CheckHarvestPointAccessible();
+    }
 
-        if (m_isMoving && m_navMeshAgent.remainingDistance <= m_navMeshAgent.stoppingDistance && !m_navMeshAgent.pathPending)
+    void FixedUpdate()
+    {
+        HandleMovement();
+    }
+
+    private void HandleMovement()
+    {
+        //If we have no path, no need to move.
+        if (m_gathererPath == null) return;
+
+        float remainingDistance = Vector3.Distance(transform.position, new Vector3(m_gathererPath.Last().x, 0, m_gathererPath.Last().y));
+        float stoppingDistance = .1f;
+
+        if (remainingDistance <= stoppingDistance)
         {
-            m_isMoving = false;
+            Debug.Log($"Destination Reached.");
+            m_gathererPath = null;
+            m_gathererPathProgress = 0;
 
-            switch (m_gathererTask)
+            //If we are/were traveling to a harvest point, transition to harvesting.
+            if (m_gathererTask == GathererTask.TravelingToHarvest)
             {
-                case GathererTask.Idling:
-                    ToggleDisplayIdleVFX();
-                    break;
-                case GathererTask.FindingHarvestablePoint:
-                    break;
-                case GathererTask.TravelingToHarvest:
-                    UpdateTask(GathererTask.Harvesting);
-                    break;
-                case GathererTask.Harvesting:
-                    break;
-                case GathererTask.TravelingToCastle:
-                    UpdateTask(GathererTask.Storing);
-                    break;
-                case GathererTask.Storing:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                UpdateTask(GathererTask.Harvesting);
+            }
+
+            //If we are/were travelling to storage, transition to storing.
+            if (m_gathererTask == GathererTask.TravelingToCastle)
+            {
+                UpdateTask(GathererTask.Storing);
+            }
+
+            //If we are/were travelling to storage, transition to storing.
+            if (m_gathererTask == GathererTask.Idling)
+            {
+                ToggleDisplayIdleVFX();
+            }
+
+            return;
+        }
+
+        if (m_curCell.m_cellPos == m_gathererPath[0])
+        {
+            m_gathererPathProgress = 1;
+        }
+
+        //Check to see if we're in a new cell.
+        //Update Cell occupancy
+        Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
+        if (newPos != m_curPos)
+        {
+            //Remove self from current cell.
+            if (m_curCell != null)
+            {
+                m_curCell.UpdateActorCount(-1, gameObject.name);
+            }
+
+            //Assign new position
+            m_curPos = newPos;
+
+            //Get new cell from new position.
+            m_curCell = Util.GetCellFromPos(m_curPos);
+
+            //Assign self to cell.
+            m_curCell.UpdateActorCount(1, gameObject.name);
+
+            //Increment the path index to know which cell we want to move towards.
+            if (m_gathererPathProgress < m_gathererPath.Count - 1)
+            {
+                ++m_gathererPathProgress;
             }
         }
 
-        Vector2Int newPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
+        //Get the position of the next cell.
+        Vector3 m_nextCellPosition = new Vector3(m_gathererPath[m_gathererPathProgress].x, 0, m_gathererPath[m_gathererPathProgress].y);
 
-        if (newPos != m_curPos)
-        {
-            m_curCell.UpdateActorCount(-1, gameObject.name);
-            m_curPos = newPos;
-            m_curCell = Util.GetCellFromPos(m_curPos);
-            m_curCell.UpdateActorCount(1, gameObject.name);
-        }
+        m_moveDirection = (m_nextCellPosition - transform.position).normalized;
+
+        //Look towards the move direction.
+        float cumulativeLookSpeed = 5f * Time.deltaTime;
+        Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
+
+        //Get the remaining angle from current rotation to destination.
+        Vector2 moveDir2d = new Vector2(m_moveDirection.x, m_moveDirection.z);
+        Vector2 unitForward2d = new Vector2(transform.forward.x, transform.forward.z);
+        float rotationAmount = (float)Math.Pow(1 - Vector2.Angle(moveDir2d, unitForward2d)/180, 3);
+        
+
+        //Move forward.
+        float cumulativeMoveSpeed = 1f * Time.deltaTime;
+
+        // Calculate the decelerated move speed based on the rotation
+        float deceleratedMoveSpeed = Mathf.Lerp(cumulativeMoveSpeed * .2f, cumulativeMoveSpeed, rotationAmount);
+        transform.position += transform.forward * deceleratedMoveSpeed;
     }
 
     private void CheckHarvestPointAccessible()
     {
         if (m_gathererTask != GathererTask.TravelingToHarvest) return;
-        
+
         Cell m_harvestPointCell = m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_harvestPointCell;
         if (m_harvestPointCell.m_isOccupied)
         {
@@ -228,20 +284,29 @@ public class GathererController : MonoBehaviour
     {
         m_gathererTask = newTask;
 
+        ToggleDisplayIdleVFX();
+
         Debug.Log($"{gameObject.name}'s task updated to: {m_gathererTask}");
+        Vector2Int startPos;
+        Vector2Int endPos;
         switch (m_gathererTask)
         {
             case GathererTask.Idling:
-                StartMoving(m_idlePos);
+                startPos = Util.GetVector2IntFrom3DPos(transform.position);
+                endPos = Util.GetVector2IntFrom3DPos(m_idlePos);
+                m_gathererPath = AStar.FindPath(startPos, endPos);
                 break;
             case GathererTask.FindingHarvestablePoint:
                 if (m_curHarvestNode)
                 {
                     Debug.Log("Finding point to harvest from.");
                     ValueTuple<ResourceNode, Vector3, int> vars = GetHarvestPointFromObj(m_curHarvestNode.gameObject);
-                    
+
                     //If we're given an index greater equal to or greater than 0, we can harvest this node.
-                    if(vars.Item3 >= 0) SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                    if (vars.Item3 >= 0)
+                    {
+                        SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                    }
                     //Else we cannot harvest this node because no points are pathable, so we go to idle.
                     else
                     {
@@ -268,13 +333,14 @@ public class GathererController : MonoBehaviour
                 UpdateTask(GathererTask.TravelingToHarvest);
                 break;
             case GathererTask.TravelingToHarvest:
-                StartMoving(m_curHarvestPointPos);
                 break;
             case GathererTask.Harvesting:
                 m_curCoroutine = StartCoroutine(Harvesting());
                 break;
             case GathererTask.TravelingToCastle:
-                StartMoving(GameplayManager.Instance.m_enemyGoal.position);
+                startPos = Util.GetVector2IntFrom3DPos(transform.position);
+                endPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
+                m_gathererPath = AStar.FindPath(startPos, endPos);
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());
@@ -287,13 +353,6 @@ public class GathererController : MonoBehaviour
     private void ToggleDisplayIdleVFX()
     {
         m_idleStateVFX.gameObject.SetActive(m_gathererTask == GathererTask.Idling);
-    }
-
-    private void StartMoving(Vector3 pos)
-    {
-        m_isMoving = true;
-        ToggleDisplayIdleVFX();
-        m_navMeshAgent.SetDestination(pos);
     }
 
     private void SetHarvestVars(ResourceNode harvestNode, Vector3 harvestPointPos, int harvestPointIndex)
@@ -411,7 +470,7 @@ public class GathererController : MonoBehaviour
                     continue;
                 }
 
-                //Check path to the cell, not the Harvest Point Position.
+                //Check path to the harvest point cell, not the Harvest Point Position.
                 List<Vector2Int> path = AStar.FindPath(curPos, node.m_harvestPoints[x].m_harvestPointCell.m_cellPos);
 
                 if (path == null)
@@ -425,6 +484,7 @@ public class GathererController : MonoBehaviour
                     shortestDistance = path.Count;
                     closestNodePointPos = node.m_harvestPoints[x].m_harvestPointPos;
                     harvestPointIndex = x;
+                    m_gathererPath = path;
                 }
             }
         }
@@ -464,6 +524,7 @@ public class GathererController : MonoBehaviour
                 shortestDistance = path.Count;
                 closestNodePointPos = node.m_harvestPoints[i].m_harvestPointPos;
                 harvestPointIndex = i;
+                m_gathererPath = path;
             }
         }
 
@@ -548,25 +609,5 @@ public class GathererController : MonoBehaviour
         }
 
         return closestGameObject;
-    }
-
-    private float CalculatePathLength(Vector3 targetPosition)
-    {
-        // Calculate the length of the path to the specified target position.
-        NavMeshPath path = new NavMeshPath();
-        if (m_navMeshAgent.CalculatePath(targetPosition, path))
-        {
-            float pathLength = 0f;
-            for (int i = 1; i < path.corners.Length; i++)
-            {
-                pathLength += Vector3.Distance(path.corners[i - 1], path.corners[i]);
-            }
-
-            return pathLength;
-        }
-        else
-        {
-            return Mathf.Infinity; // Return a large value if path calculation fails.
-        }
     }
 }

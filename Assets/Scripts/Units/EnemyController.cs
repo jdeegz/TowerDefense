@@ -103,6 +103,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void Update()
     {
         UpdateStatusEffects();
+    }
+
+    void FixedUpdate()
+    {
         HandleMovement();
     }
 
