@@ -42,7 +42,7 @@ public class GridProp : MonoBehaviour
                 {
                     m_cell = Util.GetCellFromPos(new Vector2Int(x, z));
                     m_cell.UpdateActorCount(1, gameObject.name);
-                    m_cell.m_isOccupied = false;
+                    m_cell.UpdateOccupancy(false);
                 }
             }
         }

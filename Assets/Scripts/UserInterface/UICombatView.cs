@@ -32,6 +32,8 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_alertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
     [SerializeField] private GameObject m_castleRepairDisplayObj;
+    [SerializeField] private GameObject m_waveDisplayObj;
+    [SerializeField] private GameObject m_obeliskDisplayObj;
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
@@ -155,6 +157,17 @@ public class UICombatView : MonoBehaviour
         switch (state)
         {
             case GameplayManager.GameplayState.Setup:
+                //If there obelisks in the mission we care about those instead of wave counts.
+                if (GameplayManager.Instance.m_obeliskCount > 0)
+                {
+                    m_obeliskDisplayObj.SetActive(true);
+                    m_waveDisplayObj.SetActive(false);
+                }
+                else
+                {
+                    m_obeliskDisplayObj.SetActive(false);
+                    m_waveDisplayObj.SetActive(true);
+                }
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
                 m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1} / {GameplayManager.Instance.m_totalWaves}");

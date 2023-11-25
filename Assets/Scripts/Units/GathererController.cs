@@ -341,6 +341,7 @@ public class GathererController : MonoBehaviour
                 startPos = Util.GetVector2IntFrom3DPos(transform.position);
                 endPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
                 m_gathererPath = AStar.FindPath(startPos, endPos);
+                if(m_gathererPath == null){Debug.Log("No path back to castle found");}
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());

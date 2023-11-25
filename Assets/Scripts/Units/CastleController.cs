@@ -9,7 +9,6 @@ public class CastleController : MonoBehaviour
 
     [SerializeField] private int m_repairHealthAmount;
     [SerializeField] private float m_repairHealthInterval;
-    [SerializeField] private List<GameObject> m_castleCorners;
     [SerializeField] public List<GameObject> m_castleEntrancePoints;
     [SerializeField] private AudioSource m_audioSource;
     [SerializeField] private AudioClip m_audioHealthGained;
@@ -77,11 +76,18 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.BuildGrid:
                 break;
             case GameplayManager.GameplayState.PlaceObstacles:
-                foreach (GameObject obj in m_castleCorners)
+                //Set whole block to occupied.
+                GridCellOccupantUtil.SetOccupant(gameObject, true, 3, 3);
+                
+                //Carve out exits.
+                foreach (GameObject obj in m_castleEntrancePoints)
                 {
-                    GridCellOccupantUtil.SetOccupant(obj, true, 1, 1);
+                    GridCellOccupantUtil.SetOccupant(obj, false, 1, 1);
                 }
-
+                
+                //Carve out goal
+                GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
+                
                 Cell cell = Util.GetCellFrom3DPos(transform.position);
                 cell.UpdateGoal(true);
                 break;
@@ -129,7 +135,7 @@ public class CastleController : MonoBehaviour
         UpdateHealth?.Invoke(m_maxHealth - m_curHealth);
         m_repairElapsedTime = 0;
     }
-    
+
     public float RepairProgress()
     {
         return m_repairElapsedTime / m_repairHealthInterval;

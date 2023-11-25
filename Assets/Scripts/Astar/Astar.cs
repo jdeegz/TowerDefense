@@ -110,21 +110,22 @@ public class AStar
         }
     }
 
-    public static List<Vector2Int> FindIsland(Vector2Int startCell)
+    public static List<Vector2Int> FindIsland(Vector2Int startCell, Vector2Int preconTowerCell)
     {
         List<Vector2Int> islandCells = new List<Vector2Int>();
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-        PerformDFS(startCell, islandCells, visited);
+        PerformDFS(startCell, islandCells, visited, preconTowerCell);
         return islandCells;
     }
 
-    private static void PerformDFS(Vector2Int currentCell, List<Vector2Int> islandCells, HashSet<Vector2Int> visited)
+    private static void PerformDFS(Vector2Int currentCell, List<Vector2Int> islandCells, HashSet<Vector2Int> visited, Vector2Int preconTowerCell)
     {
         // Check if the current cell is valid and not already visited
         if (currentCell.x >= 0 && currentCell.x < GridManager.Instance.m_gridWidth &&
             currentCell.y >= 0 && currentCell.y < GridManager.Instance.m_gridHeight &&
             !visited.Contains(currentCell) &&
-            !Util.GetCellFromPos(currentCell).m_isOccupied)
+            !Util.GetCellFromPos(currentCell).m_isOccupied &&
+            currentCell != preconTowerCell)
         {
             // Mark the current cell as visited
             visited.Add(currentCell);
@@ -133,10 +134,10 @@ public class AStar
             islandCells.Add(currentCell);
 
             // Recursively explore the neighbors of the current cell
-            PerformDFS(new Vector2Int(currentCell.x + 1, currentCell.y), islandCells, visited); // Right neighbor
-            PerformDFS(new Vector2Int(currentCell.x - 1, currentCell.y), islandCells, visited); // Left neighbor
-            PerformDFS(new Vector2Int(currentCell.x, currentCell.y + 1), islandCells, visited); // Up neighbor
-            PerformDFS(new Vector2Int(currentCell.x, currentCell.y - 1), islandCells, visited); // Down neighbor
+            PerformDFS(new Vector2Int(currentCell.x + 1, currentCell.y), islandCells, visited, preconTowerCell); // Right neighbor
+            PerformDFS(new Vector2Int(currentCell.x - 1, currentCell.y), islandCells, visited, preconTowerCell); // Left neighbor
+            PerformDFS(new Vector2Int(currentCell.x, currentCell.y + 1), islandCells, visited, preconTowerCell); // Up neighbor
+            PerformDFS(new Vector2Int(currentCell.x, currentCell.y - 1), islandCells, visited, preconTowerCell); // Down neighbor
         }
     }
 

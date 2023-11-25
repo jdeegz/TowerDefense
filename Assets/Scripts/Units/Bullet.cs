@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,16 +9,16 @@ public class Bullet : Projectile
     void Update()
     {
         if (m_enemy) m_targetPos = m_enemy.m_targetPoint.position;
+    }
 
+    void FixedUpdate()
+    {
         if (CheckTargetDistance())
         {
             DestroyProjectile();
             return;
         }
-    }
-
-    void FixedUpdate()
-    {
+        
         TravelToTarget();
     }
 
@@ -64,5 +65,13 @@ public class Bullet : Projectile
 
         //Destroy this missile.
         Destroy(gameObject);
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.collider == m_enemyCollider)
+        {
+            DestroyProjectile();
+        }
     }
 }

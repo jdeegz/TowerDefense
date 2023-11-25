@@ -21,12 +21,14 @@ public abstract class Projectile : MonoBehaviour
     protected Vector3 m_startPos;
     protected Vector3 m_directPos;
     protected StatusEffect m_statusEffect;
+    protected Collider m_enemyCollider;
     
     public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos)
     {
         m_startPos = pos;
         m_enemy = enemy;
         m_projectileDamage = dmg;
+        m_enemyCollider = enemy.GetComponent<Collider>();
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
     }
 

@@ -28,21 +28,21 @@ public class GameplayManager : MonoBehaviour
     public static event Action OnPreconstructedTowerClear;
     public static event Action OnTowerBuild;
     public static event Action OnTowerSell;
-    public static event Action<int, int>  OnObelisksCharged;
+    public static event Action<int, int> OnObelisksCharged;
 
 
     [Header("Castle")] public CastleController m_castleController;
     public Transform m_enemyGoal;
     [Header("Equipped Towers")] public TowerData[] m_equippedTowers;
     [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
-    private int m_activeSpawners = 0;
+    private int m_activeSpawners;
     [Header("Active Enemies")] public List<EnemyController> m_enemyList;
     public Transform m_enemiesObjRoot;
 
     private Vector2Int m_curCellPos;
     private Vector2Int m_goalPointPos;
 
-    [Header("Player Constructed")] public Transform m_gathererObjRoot;
+    [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
     public Transform m_towerObjRoot;
@@ -50,16 +50,14 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Selected Object Info")] private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
-    private bool m_placementOpen;
     public bool m_canAfford;
     public bool m_canPlace;
-    public bool m_canBuild = true;
+    public bool m_canBuild;
 
     [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
     public Tower m_preconstructedTower;
     public Vector2Int m_preconstructedTowerPos;
     public LayerMask m_buildSurface;
-    [SerializeField] private LayerMask m_pathObstructableLayer;
     private int m_preconstructedTowerIndex;
 
     [SerializeField] private UIStringData m_UIStringData;
@@ -71,8 +69,7 @@ public class GameplayManager : MonoBehaviour
 
     public List<Obelisk> m_activeObelisks;
 
-
-public enum GameplayState
+    public enum GameplayState
     {
         BuildGrid,
         PlaceObstacles,
@@ -87,8 +84,6 @@ public enum GameplayState
     }
 
     public InteractionState m_interactionState;
-    
-
 
     public enum InteractionState
     {
@@ -150,7 +145,7 @@ public enum GameplayState
                         return;
                     }
 
-                    if (!m_placementOpen || !m_canPlace)
+                    if (!m_canPlace)
                     {
                         //Debug.Log("Cannot build here.");
                         OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotPlace);
@@ -310,11 +305,12 @@ public enum GameplayState
                 break;
             case GameplayState.Build:
                 //If there are no obelisks still charging, victory!
-                if(m_obelisksChargedCount == m_obeliskCount)
+                if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
                 {
                     UpdateGameplayState(GameplayState.Victory);
                     break;
                 }
+
                 //If this is the first wave, give a bit longer to build.
                 if (m_wave < 0)
                 {
@@ -324,6 +320,7 @@ public enum GameplayState
                 {
                     m_timeToNextWave = m_buildDuration;
                 }
+
                 break;
             case GameplayState.Paused:
                 break;
@@ -467,8 +464,12 @@ public enum GameplayState
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
         m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
-        m_canAfford = true;
-        m_placementOpen = true;
+        
+        //Set the bools to negative and let DrawPreconstructedTower flip them.
+        m_canAfford = false;
+        m_canBuild = false;
+        m_canPlace = false;
+        OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
     }
 
     private void DrawPreconstructedTower()
@@ -596,19 +597,20 @@ public enum GameplayState
             //Assure the neighbor cell is not occupied.
             if (!cell.m_isOccupied)
             {
-                List<Vector2Int> testPath = AStar.FindPath(neighbors[i], m_goalPointPos);
+                List<Vector2Int> testPath = AStar.FindExitPath(neighbors[i], m_goalPointPos, m_preconstructedTowerPos, new Vector2Int(-1, -1));
 
                 //If we found a path, this neighbor is OK. If not, we need to check if it creates an island.
                 if (testPath == null)
                 {
+                    Debug.Log($"No path found from neighbor {i}");
                     //If we did not find a path, check islands for actors. If there are, we cannot build here.
-                    List<Vector2Int> islandCells = new List<Vector2Int>(AStar.FindIsland(neighbors[i]));
+                    List<Vector2Int> islandCells = new List<Vector2Int>(AStar.FindIsland(neighbors[i], m_preconstructedTowerPos));
                     foreach (Vector2Int cellPos in islandCells)
                     {
                         Cell islandCell = Util.GetCellFromPos(cellPos);
                         if (islandCell.m_actorCount > 0)
                         {
-                            Debug.Log("Island created, and contains actors");
+                            Debug.Log($"{islandCells.Count} Island created, and Cell:{islandCell.m_value} contains actors");
                             return false;
                         }
                     }
@@ -625,7 +627,7 @@ public enum GameplayState
         {
             Destroy(m_preconstructedTowerObj);
         }
-
+        
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
         OnPreconstructedTowerClear?.Invoke();
@@ -773,9 +775,9 @@ public enum GameplayState
         }
     }
 
-    private int m_obeliskCount;
+    [HideInInspector] public int m_obeliskCount;
     private int m_obelisksChargedCount;
-    
+
     public void AddObeliskToList(Obelisk obelisk)
     {
         if (m_activeObelisks == null) m_activeObelisks = new List<Obelisk>();
@@ -783,12 +785,12 @@ public enum GameplayState
         ++m_obeliskCount;
         OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
     }
-    
+
     public void CheckObeliskStatus()
     {
         m_obelisksChargedCount = 0;
         bool charging = false;
-        
+
         //Identify if there are any obelisks still charging.
         foreach (Obelisk obelisk in m_activeObelisks)
         {
@@ -797,7 +799,7 @@ public enum GameplayState
                 ++m_obelisksChargedCount;
             }
         }
-        
+
         OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
     }
 }

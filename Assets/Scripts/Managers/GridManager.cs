@@ -1,9 +1,11 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using TechnoBabelGames;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 public class GridManager : MonoBehaviour
 {
@@ -15,6 +17,9 @@ public class GridManager : MonoBehaviour
     public GameObject m_gridVisualizerObj;
     public GameObject m_gridCellObj;
     public GameObject[] m_gridcellObjects;
+
+    [FormerlySerializedAs("m_groundLayer")]
+    public LayerMask m_waterLayer;
 
     public List<UnitPath> m_unitPaths;
     private List<Vector2Int> m_exits;
@@ -115,32 +120,7 @@ public class GridManager : MonoBehaviour
                 m_gridCells[index] = cell;
                 cell.m_gridCellObj = m_gridcellObjects[index];
 
-
-                //Get the half neightbors to assure the cell is fully on the nav mesh.
-                List<Vector3> gridCorners = new List<Vector3>();
-                float buffer = 0.2f;
-                gridCorners.Add(new Vector3(x + buffer, 0, z + buffer)); //North East
-                gridCorners.Add(new Vector3(x + buffer, 0, z - buffer)); //South East
-                gridCorners.Add(new Vector3(x - buffer, 0, z - buffer)); //South West
-                gridCorners.Add(new Vector3(x - buffer, 0, z + buffer)); //North West
-
-                NavMeshHit hit;
-                foreach (Vector3 pos in gridCorners)
-                {
-                    //Max Distance needs to match the Nav Mesh Agent radius.
-                    if (NavMesh.SamplePosition(pos, out hit, 0.24f, NavMesh.AllAreas))
-                    {
-                        //Debug.Log($" ++ Ground hit at {hit.position} ++");
-                    }
-                    else
-                    {
-                        //Debug.Log($" -- No Ground hit at {cell.m_cellPos} --");
-                        //GameObject obj = Instantiate(m_testDummy, new Vector3(x, 0.02f, z), quaternion.identity, transform);
-                        //obj.name = $"Element {index}"; 
-                        cell.UpdateOccupancy(true);
-                        break;
-                    }
-                }
+                HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
             }
         }
 
@@ -149,6 +129,62 @@ public class GridManager : MonoBehaviour
 
         Debug.Log("Obstacles Placed.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
+    }
+
+
+    private void HitTestCellForGround(Vector3 pos, Cell cell)
+    {
+        //Shoot a ray from the cell. Adding a yBuffer to each position above, so we want to shoot the rays down.
+        Ray ray = new Ray(pos, Vector3.down);
+
+        //Shoot the ray and collect all the hits.
+        RaycastHit[] hits = Physics.RaycastAll(ray, 0.22f);
+
+        //If we recieved no hits from our cast, exit.
+        if (hits.Length == 0) return;
+
+        //If we received hits, check to see if water was the last one hit.
+        if (IsLayerInMask(hits[hits.Length - 1].transform.gameObject.layer, m_waterLayer))
+        {
+            cell.UpdateOccupancy(true);
+        }
+    }
+
+    bool IsLayerInMask(int layer, LayerMask layerMask)
+    {
+        // Use the LayerMask method to check if the layer is in the layer mask
+        return layerMask == (layerMask | (1 << layer));
+    }
+
+    private void OldHitTestForGround(Vector3 pos, Cell cell)
+    {
+        float x = pos.x;
+        float z = pos.z;
+        //Get the half neightbors to assure the cell is fully on the nav mesh.
+        List<Vector3> gridCorners = new List<Vector3>();
+        float buffer = 0f;
+        float ybuffer = .1f;
+        gridCorners.Add(new Vector3(x + buffer, ybuffer, z + buffer)); //North East
+        gridCorners.Add(new Vector3(x + buffer, ybuffer, z - buffer)); //South East
+        gridCorners.Add(new Vector3(x - buffer, ybuffer, z - buffer)); //South West
+        gridCorners.Add(new Vector3(x - buffer, ybuffer, z + buffer)); //North West
+
+        foreach (Vector3 cornerPos in gridCorners)
+        {
+            //Shoot a ray from each corner. Adding a yBuffer to each position above, so we want to shoot the rays down.
+            Ray ray = new Ray(cornerPos, Vector3.down);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, 0.2f, m_waterLayer))
+            {
+                //Do nothing, we hit ground.
+            }
+            else
+            {
+                //We did not hit ground, this cell is likely water and should be set to occupied.
+                cell.UpdateOccupancy(true);
+                break;
+            }
+        }
     }
 
     public void ResourceNodeRemoved()
