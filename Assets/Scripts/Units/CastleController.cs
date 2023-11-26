@@ -91,6 +91,8 @@ public class CastleController : MonoBehaviour
                 Cell cell = Util.GetCellFrom3DPos(transform.position);
                 cell.UpdateGoal(true);
                 break;
+            case GameplayManager.GameplayState.FloodFillGrid:
+                break;
             case GameplayManager.GameplayState.CreatePaths:
                 break;
             case GameplayManager.GameplayState.Setup:

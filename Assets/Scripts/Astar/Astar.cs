@@ -225,4 +225,41 @@ public class AStar
         Debug.Log($"No Path Found. {start} - {end}");
         return null;
     }
+    
+    public static List<Vector2Int> GetExitPath(Vector2Int startPos, Vector2Int endPos)
+    {
+        List<Vector2Int> path = new List<Vector2Int>();
+        Vector2Int current = startPos;
+
+        while (current != endPos)
+        {
+            
+            Cell curCell = Util.GetCellFromPos(current);
+            
+            //If the current cell is occupied, we cannot find the exit, this is not a valid path.
+            if (curCell.m_isOccupied)
+            {
+                Debug.Log("GetExitPath did not find a path.");
+                return null;
+            }
+
+            path.Add(current);
+            Vector2Int direction = Util.GetVector2IntFrom3DPos(curCell.m_directionToNextCell);
+            Debug.Log($"Cell {path.Count} is : {curCell.m_cellPos} and the direction to the next cell is {curCell.m_directionToNextCell}");
+            current += direction;
+            
+            // Path goes out of bounds, return null
+            if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth - 1 || current.y < 0 || current.y == GridManager.Instance.m_gridHeight - 1)
+            {
+                Debug.LogError("Path goes out of bounds.");
+                return null;
+            }
+            
+        }
+        path.Add(endPos);
+
+        return path;
+    }
+    
+    
 }

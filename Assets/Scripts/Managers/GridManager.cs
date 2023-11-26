@@ -43,15 +43,35 @@ public class GridManager : MonoBehaviour
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        if (newState == GameplayManager.GameplayState.BuildGrid)
+        switch (newState)
         {
-            BuildGrid();
-        }
-
-        if (newState == GameplayManager.GameplayState.CreatePaths)
-        {
-            BuildPathList();
-            FloodFillGrid();
+            case GameplayManager.GameplayState.BuildGrid:
+                BuildGrid();
+                break;
+            case GameplayManager.GameplayState.PlaceObstacles:
+                break;
+            case GameplayManager.GameplayState.FloodFillGrid:
+                FloodFillGrid();
+                break;
+            case GameplayManager.GameplayState.CreatePaths:
+                BuildPathList();
+                break;
+            case GameplayManager.GameplayState.Setup:
+                break;
+            case GameplayManager.GameplayState.SpawnEnemies:
+                break;
+            case GameplayManager.GameplayState.Combat:
+                break;
+            case GameplayManager.GameplayState.Build:
+                break;
+            case GameplayManager.GameplayState.Paused:
+                break;
+            case GameplayManager.GameplayState.Victory:
+                break;
+            case GameplayManager.GameplayState.Defeat:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
     }
 
@@ -88,20 +108,11 @@ public class GridManager : MonoBehaviour
 
             visited.Add(curCell);
         }
+        
+        Debug.Log("Grid has been Flood Filled.");
+        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
     }
 
-    //If we never reach the start cell we return a null path.
-    /*if (visited.Contains(start) == false)
-        return null;*/
-
-    //Walk from the goal cell to the start cell and build the path list of cells.
-    /*Queue<Cell> path = new Queue<Cell>();
-    Cell curPathTile = start;
-    while(curPathTile != goal)
-    {
-        curPathTile = nextTileToGoal[curPathTile];
-        path.Enqueue(curPathTile);
-    }*/
     void BuildGrid()
     {
         m_gridCells = new Cell[m_gridWidth * m_gridHeight];
@@ -120,7 +131,15 @@ public class GridManager : MonoBehaviour
                 m_gridCells[index] = cell;
                 cell.m_gridCellObj = m_gridcellObjects[index];
 
-                HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
+                //If we're a cell on the perimeter, mark it as occupied, else we hit test it.
+                if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
+                {
+                    cell.UpdateOccupancy(true);
+                }
+                else
+                {
+                    HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
+                }
             }
         }
 
@@ -128,7 +147,7 @@ public class GridManager : MonoBehaviour
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);
 
         Debug.Log("Obstacles Placed.");
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
+        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.FloodFillGrid);
     }
 
 
@@ -557,7 +576,6 @@ public class UnitPath
         }
     }
 
-
     private void UpdateSpawnerPaths()
     {
         if (m_isExit)
@@ -593,7 +611,7 @@ public class UnitPath
                 }
             }
         }
-
+        
         m_lineRenderer.SetPoints(m_path);
     }
 }

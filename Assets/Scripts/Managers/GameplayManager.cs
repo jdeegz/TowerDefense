@@ -73,6 +73,7 @@ public class GameplayManager : MonoBehaviour
     {
         BuildGrid,
         PlaceObstacles,
+        FloodFillGrid,
         CreatePaths,
         Setup,
         SpawnEnemies,
@@ -292,6 +293,8 @@ public class GameplayManager : MonoBehaviour
                 m_interactionState = InteractionState.Disabled;
                 break;
             case GameplayState.PlaceObstacles:
+                break;
+            case GameplayState.FloodFillGrid:
                 break;
             case GameplayState.CreatePaths:
                 break;
