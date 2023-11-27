@@ -12,6 +12,7 @@ public class GridManager : MonoBehaviour
     public static GridManager Instance;
     public Material m_lineRendererMaterial;
     public Cell[] m_gridCells;
+    public Cell[] m_temporaryGridCells;
     public int m_gridWidth;
     public int m_gridHeight;
     public GameObject m_gridVisualizerObj;
@@ -26,6 +27,8 @@ public class GridManager : MonoBehaviour
     private List<Vector2Int> m_spawners;
     private Vector2Int m_enemyGoalPos;
     private Vector2Int m_preconstructedTowerPos;
+    private int m_previousPreconIndex;
+    private bool m_previousPreconOccupancy;
 
     public static event Action OnResourceNodeRemoved;
 
@@ -34,11 +37,17 @@ public class GridManager : MonoBehaviour
     {
         Instance = this;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
+        GameplayManager.OnTowerBuild += TowerBuilt;
+        GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
     }
 
     void OnDestroy()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+        GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
+        GameplayManager.OnTowerBuild -= TowerBuilt;
+        GameplayManager.OnPreconstructedTowerClear -= PreconstructedTowerClear;
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
@@ -51,7 +60,7 @@ public class GridManager : MonoBehaviour
             case GameplayManager.GameplayState.PlaceObstacles:
                 break;
             case GameplayManager.GameplayState.FloodFillGrid:
-                FloodFillGrid();
+                FloodFillGrid(m_gridCells);
                 break;
             case GameplayManager.GameplayState.CreatePaths:
                 BuildPathList();
@@ -75,13 +84,22 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    public void FloodFillGrid()
+    public void FloodFillGrid(Cell[] gridCells)
     {
-        //For flood fill start and goal are flipped. Start is castle. Goal is a spawner.
-        Cell goalCell = Util.GetCellFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
+        int goalCellIndex = Util.GetCellIndex(GameplayManager.Instance.m_enemyGoal.position);
+        Cell goalCell = gridCells[goalCellIndex];
         Dictionary<Cell, Cell> nextTileToGoal = new Dictionary<Cell, Cell>();
         Queue<Cell> frontier = new Queue<Cell>();
         List<Cell> visited = new List<Cell>();
+
+        //How many spawners are in the game? What are their spawnPoint cells?
+        List<Cell> spawnPointCells = new List<Cell>();
+        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        {
+            spawnPointCells.Add(Util.GetCellFrom3DPos(spawner.m_spawnPoint.position));
+        }
+
+        int spawnPointCellsFound = 0;
 
         frontier.Enqueue(goalCell);
 
@@ -89,28 +107,70 @@ public class GridManager : MonoBehaviour
         {
             Cell curCell = frontier.Dequeue();
 
-            Cell[] cells = Util.GetNeighborCells(curCell);
+            Cell[] cells = Util.GetNeighborCells(curCell, gridCells);
             for (var i = 0; i < cells.Length; i++)
             {
                 var neighbor = cells[i];
                 if (visited.Contains(neighbor) == false && frontier.Contains(neighbor) == false)
                 {
-                    if (!neighbor.m_isOccupied)
+                    if (!neighbor.m_isOccupied && !neighbor.m_isTempOccupied)
                     {
                         //Get the direction of the neighbor to the curCell.
-                        neighbor.UpdateDirection(i);
                         neighbor.UpdateOccupancy(false);
+                        neighbor.UpdateTempDirection(i);
                         frontier.Enqueue(neighbor);
                         nextTileToGoal[neighbor] = curCell;
+
+                        //Is this cell a spawnPoint? If so, holler.
+                        foreach (Cell spawnPointCell in spawnPointCells)
+                        {
+                            if (neighbor == spawnPointCell)
+                            {
+                                ++spawnPointCellsFound;
+                            }
+                        }
                     }
                 }
             }
 
             visited.Add(curCell);
         }
+
+        Debug.Log($"{spawnPointCellsFound} of {spawnPointCells.Count} spawners found during FloodFill.");
         
-        Debug.Log("Grid has been Flood Filled.");
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
+        //If we've found all the spawn points, this is good, we can update each path.
+        if (spawnPointCellsFound == spawnPointCells.Count)
+        {
+            //If we're setting up the game, continue doing so.
+            if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.FloodFillGrid)
+            {
+                SetCellDirections();
+                Debug.Log("Grid has been Flood Filled.");
+                GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
+            }
+            
+            
+            foreach (UnitPath unitPath in m_unitPaths)
+            {
+                //Break this into its own function outside of flood fill.
+                unitPath.DrawExitPathLine();
+            }
+        }
+        else
+        {
+            Debug.Log($"We did not find all exit paths.");
+        }
+
+        
+    }
+
+    private void SetCellDirections()
+    {
+        //Lock in the direction of all the cells.
+        foreach (Cell cell in m_gridCells)
+        {
+            cell.SetDirection();
+        }
     }
 
     void BuildGrid()
@@ -127,7 +187,7 @@ public class GridManager : MonoBehaviour
                 m_gridcellObjects[index].name = $"GridCellObject ({x},{z})";
                 Cell cell = new Cell();
                 cell.m_cellPos = new Vector2Int(x, z);
-                cell.m_value = index;
+                cell.m_cellIndex = index;
                 m_gridCells[index] = cell;
                 cell.m_gridCellObj = m_gridcellObjects[index];
 
@@ -150,6 +210,49 @@ public class GridManager : MonoBehaviour
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.FloodFillGrid);
     }
 
+    //Get the index of the precon Tower cell position. We will flip this cell to Occupied in our temp grid.
+    //This function is invoked by the event 'PreconTowerMoved' in the GameplayManager.
+    void PreconTowerMoved(Vector2Int preconTowerPos)
+    {
+        int preconTowerCellIndex = preconTowerPos.y * m_gridWidth + preconTowerPos.x;
+        Debug.Log($"Precon Index: {preconTowerCellIndex}");
+
+        Debug.Log($"Updating temporary Grid Cell occupancy.");
+        m_gridCells[preconTowerCellIndex].UpdateTempOccupancy(true);
+
+        //Set the values back to their original state if this is not our first iteration.
+        if (m_previousPreconIndex > 0)
+        {
+            Debug.Log($"Setting previous Grid Cell occupancy.");
+            m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+        }
+
+        m_previousPreconIndex = preconTowerCellIndex;
+
+        FloodFillGrid(m_gridCells);
+    }
+
+    void TowerBuilt()
+    {
+        SetCellDirections();
+        
+        //Set the values back to their original state if this is not our first iteration.
+        if (m_previousPreconIndex > 0)
+        {
+            Debug.Log($"Setting previous Grid Cell occupancy.");
+            m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+        }
+    }
+
+    void PreconstructedTowerClear()
+    {
+        //Set the values back to their original state if this is not our first iteration.
+        if (m_previousPreconIndex > 0)
+        {
+            Debug.Log($"Setting previous Grid Cell occupancy.");
+            m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+        }
+    }
 
     private void HitTestCellForGround(Vector3 pos, Cell cell)
     {
@@ -173,37 +276,6 @@ public class GridManager : MonoBehaviour
     {
         // Use the LayerMask method to check if the layer is in the layer mask
         return layerMask == (layerMask | (1 << layer));
-    }
-
-    private void OldHitTestForGround(Vector3 pos, Cell cell)
-    {
-        float x = pos.x;
-        float z = pos.z;
-        //Get the half neightbors to assure the cell is fully on the nav mesh.
-        List<Vector3> gridCorners = new List<Vector3>();
-        float buffer = 0f;
-        float ybuffer = .1f;
-        gridCorners.Add(new Vector3(x + buffer, ybuffer, z + buffer)); //North East
-        gridCorners.Add(new Vector3(x + buffer, ybuffer, z - buffer)); //South East
-        gridCorners.Add(new Vector3(x - buffer, ybuffer, z - buffer)); //South West
-        gridCorners.Add(new Vector3(x - buffer, ybuffer, z + buffer)); //North West
-
-        foreach (Vector3 cornerPos in gridCorners)
-        {
-            //Shoot a ray from each corner. Adding a yBuffer to each position above, so we want to shoot the rays down.
-            Ray ray = new Ray(cornerPos, Vector3.down);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, 0.2f, m_waterLayer))
-            {
-                //Do nothing, we hit ground.
-            }
-            else
-            {
-                //We did not hit ground, this cell is likely water and should be set to occupied.
-                cell.UpdateOccupancy(true);
-                break;
-            }
-        }
     }
 
     public void ResourceNodeRemoved()
@@ -275,18 +347,24 @@ public class GridManager : MonoBehaviour
 [System.Serializable]
 public class Cell
 {
-    public Vector2Int m_cellPos;
+    //Cell Data
     public bool m_isGoal;
     public bool m_isOccupied;
+    public bool m_isTempOccupied;
     public int m_actorCount;
     public List<string> m_actorsList;
-    public int m_value;
+    public int m_cellIndex;
+    public Vector2Int m_cellPos;
+    public Vector3 m_directionToNextCell;
+    public Vector3 m_tempDirectionToNextCell;
+
+    //Visualizer
     public GameObject m_gridCellObj;
     private Material m_gridCellObjMaterial;
     private Color m_pathableColor = Color.cyan;
     private Color m_occupiedColor = Color.yellow;
+    private Color m_tempOccupiedColor = Color.magenta;
     private Color m_goalColor = Color.green;
-    public Vector3 m_directionToNextCell;
 
 
     public void UpdateActorCount(int i, string name)
@@ -321,6 +399,20 @@ public class Cell
         }
     }
 
+    public void UpdateTempOccupancy(bool b)
+    {
+        m_isTempOccupied = b;
+        if (m_isTempOccupied)
+        {
+            UpdateGridCellColor(m_tempOccupiedColor);
+        }
+        else
+        {
+            //To easily get the last known color.
+            UpdateOccupancy(m_isOccupied);
+        }
+    }
+
     public void UpdateGoal(bool b)
     {
         m_isGoal = b;
@@ -337,37 +429,45 @@ public class Cell
         m_gridCellObjMaterial.color = color;
     }
 
-    public void UpdateDirection(int i)
+    public void UpdateTempDirection(int i)
     {
+        Vector3 direction = new Vector3();
+
         switch (i)
         {
             case 0:
                 //Tile is north, face south.
                 m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 180);
                 //Run south
-                m_directionToNextCell = new Vector3(0, 0, -1);
+                direction = new Vector3(0, 0, -1);
                 break;
             case 1:
                 //Tile is east, face west.
                 m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 90);
                 //Run west
-                m_directionToNextCell = new Vector3(-1, 0, 0);
+                direction = new Vector3(-1, 0, 0);
                 break;
             case 2:
                 //Tile is south, face north.
                 m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 0);
                 //Run north
-                m_directionToNextCell = new Vector3(0, 0, 1);
+                direction = new Vector3(0, 0, 1);
                 break;
             case 3:
                 //Tile is west, face east.
                 m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 270);
                 //Run east
-                m_directionToNextCell = new Vector3(1, 0, 0);
+                direction = new Vector3(1, 0, 0);
                 break;
             default:
                 break;
         }
+        m_tempDirectionToNextCell = direction;
+    }
+
+    public void SetDirection()
+    {
+        m_directionToNextCell = m_tempDirectionToNextCell;
     }
 }
 
@@ -392,12 +492,9 @@ public class UnitPath
 
     public void Setup()
     {
-        GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
-        GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
-        GameplayManager.OnTowerBuild += SetLastGoodPath;
-        GameplayManager.OnTowerSell += UpdateSpawnerPaths;
-
         GridManager.OnResourceNodeRemoved += ResourceNodeRemoved;
+
+        m_path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
 
         //Define desired properties of the line.
         if (m_lineRenderer != null)
@@ -413,19 +510,21 @@ public class UnitPath
 
             //Assign the properties.
             m_lineRenderer.SetLineRendererProperties();
-        }
 
-        UpdateExitPath();
+            //UpdateExitPath();
+            if (m_path == null)
+            {
+                Debug.Log("Unit Path could not path to exit.");
+                return;
+            }
+
+            m_lineRenderer.SetPoints(m_path);
+        }
     }
 
 
     void OnDestroy()
     {
-        GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
-        GameplayManager.OnPreconstructedTowerClear -= PreconstructedTowerClear;
-        GameplayManager.OnTowerBuild -= PreconstructedTowerClear;
-        GameplayManager.OnTowerSell -= UpdateSpawnerPaths;
-
         GridManager.OnResourceNodeRemoved -= ResourceNodeRemoved;
     }
 
@@ -437,11 +536,13 @@ public class UnitPath
     {
         //If a resource node is removed, update the paths.
         UpdateExitPath();
+        //Assign LastGoodPath so we have a fallback path.
         SetLastGoodPath();
     }
 
     void PreconstructedTowerClear()
     {
+        //Clear the precon state for this Unit Path then set the path back to our saved LastGoodPath.
         if (m_preconState)
         {
             m_preconState = false;
@@ -497,10 +598,10 @@ public class UnitPath
                 m_hasPath = true;
                 m_path = new List<Vector2Int>(m_lastGoodPath);
 
-                if (m_lineRenderer != null)
+                /*if (m_lineRenderer != null)
                 {
                     m_lineRenderer.SetPoints(m_path);
-                }
+                }*/
 
                 m_pathDirty = false;
             }
@@ -559,59 +660,17 @@ public class UnitPath
             }
         }
 
-        if (m_hasPath)
+        if (!m_hasPath)
         {
-            //DrawPathLineRenderer(unitPath.m_path);
-            if (m_lineRenderer != null)
-            {
-                //Debug.Log("Drawing Line Renderer.");
-                m_lineRenderer.SetPoints(m_path);
-            }
-        }
-        else
-        {
-            //We dont have a path.
-            //m_path.Clear();
             Debug.Log("CANNOT BUILD.");
         }
     }
 
-    private void UpdateSpawnerPaths()
+    public void DrawExitPathLine()
     {
-        if (m_isExit)
-        {
-            return;
-        }
-
-        Debug.Log("Updating Path.");
-        int shortestPathCount = Int32.MaxValue;
-        m_hasPath = false;
-        m_lineRenderer.SetPoints(new List<Vector2Int>());
-
-        //Path from each spawner to each exit, and find the shortest path.
-        for (int i = 0; i < m_exits.Count; ++i)
-        {
-            if (m_startPos == m_exits[i])
-            {
-                continue;
-            }
-
-            List<Vector2Int> testPath = AStar.FindPath(m_startPos, m_exits[i]);
-
-            if (testPath != null)
-            {
-                m_hasPath = true;
-
-                //Compare to current shortest path found.
-                if (testPath.Count <= shortestPathCount)
-                {
-                    shortestPathCount = testPath.Count;
-                    m_path = testPath;
-                    m_endPos = m_exits[i];
-                }
-            }
-        }
-        
-        m_lineRenderer.SetPoints(m_path);
+        if (m_lineRenderer == null) return;
+        List<Vector2Int> path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
+        m_path = path;
+        m_lineRenderer.SetPoints(path);
     }
 }

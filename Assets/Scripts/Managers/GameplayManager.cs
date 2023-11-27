@@ -613,7 +613,7 @@ public class GameplayManager : MonoBehaviour
                         Cell islandCell = Util.GetCellFromPos(cellPos);
                         if (islandCell.m_actorCount > 0)
                         {
-                            Debug.Log($"{islandCells.Count} Island created, and Cell:{islandCell.m_value} contains actors");
+                            Debug.Log($"{islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
                             return false;
                         }
                     }

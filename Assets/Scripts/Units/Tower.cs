@@ -100,7 +100,6 @@ public abstract class Tower : MonoBehaviour
         //Grid
         GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
         GameplayManager.Instance.AddTowerToList(this);
-        GridManager.Instance.FloodFillGrid();
         
         //Operational
         gameObject.GetComponent<Collider>().enabled = true;
@@ -122,7 +121,6 @@ public abstract class Tower : MonoBehaviour
         {
             m_audioSource.PlayOneShot(m_towerData.m_audioDestroyClip);
         }
-        GridManager.Instance.FloodFillGrid();
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }

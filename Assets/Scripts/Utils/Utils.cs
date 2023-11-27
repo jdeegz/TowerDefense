@@ -334,6 +334,17 @@ public static class Util
         return interactablesInRange;
     }*/
 
+    public static int GetCellIndex(Vector3 pos)
+    {
+        Vector2Int vector2pos = GetVector2IntFrom3DPos(pos);
+        return vector2pos.y * GridManager.Instance.m_gridWidth + vector2pos.x;
+    }
+
+    public static int GetCellIndex(Vector2Int pos)
+    {
+        return pos.y * GridManager.Instance.m_gridWidth + pos.x;
+    }
+    
     public static Cell GetCellFromPos(Vector2Int pos)
     {
         int x = pos.x;
@@ -417,7 +428,7 @@ public static class Util
         return (neighborCells, harvestPos);
     }
 
-    public static Cell[] GetNeighborCells(Cell startCell)
+    public static Cell[] GetNeighborCells(Cell startCell, Cell[] gridCells)
     {
         List<Vector2Int> neighborPos = new List<Vector2Int>();
         neighborPos.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1)); //N
@@ -429,8 +440,7 @@ public static class Util
 
         for (int i = 0; i < neighborCells.Length; i++)
         {
-            Vector2Int neighborCellPos = neighborPos[i];
-            neighborCells[i] = GetCellFromPos(neighborCellPos);
+            neighborCells[i] = gridCells[GetCellIndex(neighborPos[i])];
         }
 
         return neighborCells;

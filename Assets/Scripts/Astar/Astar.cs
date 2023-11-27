@@ -237,15 +237,21 @@ public class AStar
             Cell curCell = Util.GetCellFromPos(current);
             
             //If the current cell is occupied, we cannot find the exit, this is not a valid path.
-            if (curCell.m_isOccupied)
+            if (curCell.m_isOccupied && curCell.m_isTempOccupied)
             {
                 Debug.Log("GetExitPath did not find a path.");
                 return null;
             }
 
             path.Add(current);
-            Vector2Int direction = Util.GetVector2IntFrom3DPos(curCell.m_directionToNextCell);
-            Debug.Log($"Cell {path.Count} is : {curCell.m_cellPos} and the direction to the next cell is {curCell.m_directionToNextCell}");
+            Vector2Int direction = Util.GetVector2IntFrom3DPos(curCell.m_tempDirectionToNextCell);
+
+            if (direction == Vector2Int.zero)
+            {
+                Debug.Log("Cell has no direction value.");
+                return null;
+            }
+            
             current += direction;
             
             // Path goes out of bounds, return null

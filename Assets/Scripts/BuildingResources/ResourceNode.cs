@@ -85,7 +85,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
         GridManager.Instance.ResourceNodeRemoved();
         OnResourceNodeDepletion?.Invoke(this);
-        GridManager.Instance.FloodFillGrid();
+        GridManager.Instance.FloodFillGrid(GridManager.Instance.m_gridCells);
         Destroy(gameObject);
     }
 }

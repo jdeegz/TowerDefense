@@ -11,9 +11,6 @@ public class UnitSpawner : MonoBehaviour
 {
     public Transform m_spawnPoint;
     [SerializeField] private SpawnerWaves m_spawnerWaves;
-
-    public GameObject m_testCube;
-    public List<GameObject> m_testCubeList;
     
     private bool m_isSpawnerActive = false;
     private List<Creep> m_activeWave;
@@ -127,17 +124,6 @@ public class UnitSpawner : MonoBehaviour
             case GameplayManager.GameplayState.FloodFillGrid:
                 break;
             case GameplayManager.GameplayState.CreatePaths:
-                List<Vector2Int> cubePositions = new List<Vector2Int>();
-                Vector2Int endPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
-                Vector2Int startPos = Util.GetVector2IntFrom3DPos(m_spawnPoint.position);
-                cubePositions = AStar.GetExitPath(startPos, endPos);
-
-                for (int i = 0; i < cubePositions.Count; i++)
-                {
-                    Vector3 pos = new Vector3(cubePositions[i].x, 0, cubePositions[i].y);
-                    GameObject obj = Instantiate(m_testCube, pos, quaternion.identity);
-                    obj.name = i.ToString();
-                }
                 break;
             case GameplayManager.GameplayState.Setup:
                 
