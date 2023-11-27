@@ -42,8 +42,7 @@ public class GameplayManager : MonoBehaviour
     private Vector2Int m_curCellPos;
     private Vector2Int m_goalPointPos;
 
-    [Header("Player Constructed")]
-    public List<GathererController> m_woodGathererList;
+    [Header("Player Constructed")] public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
     public Transform m_towerObjRoot;
     public List<Tower> m_towerList;
@@ -467,7 +466,19 @@ public class GameplayManager : MonoBehaviour
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
         m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
-        
+
+        Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
+        {
+            //Raycast has hit the ground, round that point to the nearest int.
+            Vector3 gridPos = raycastHit.point;
+
+            //Convert hit point to 2d grid position
+            m_preconstructedTowerPos = Util.GetVector2IntFrom3DPos(gridPos);
+
+            OnPreconTowerMoved?.Invoke(m_preconstructedTowerPos);
+        }
+
         //Set the bools to negative and let DrawPreconstructedTower flip them.
         m_canAfford = false;
         m_canBuild = false;
@@ -485,8 +496,7 @@ public class GameplayManager : MonoBehaviour
             Vector3 gridPos = raycastHit.point;
 
             //Convert hit point to 2d grid position
-            Vector2Int newPos =
-                new Vector2Int(Mathf.FloorToInt(gridPos.x + 0.5f), Mathf.FloorToInt(gridPos.z + 0.5f));
+            Vector2Int newPos = Util.GetVector2IntFrom3DPos(gridPos);
 
             if (newPos != m_preconstructedTowerPos)
             {
@@ -544,35 +554,36 @@ public class GameplayManager : MonoBehaviour
         //If the current cell is not apart of the grid, not a valid spot.
         if (curCell == null)
         {
+            Debug.Log($"CannotPlace: Current Cell is Null");
             return false;
         }
 
         //If we have actors on the cell.
         if (curCell.m_actorCount > 0)
         {
+            Debug.Log($"Cannot Place: There are actors on this cell.");
             return false;
         }
 
         //If we're hovering on the exit cell
         if (m_preconstructedTowerPos == Util.GetVector2IntFrom3DPos(m_enemyGoal.position))
         {
+            Debug.Log($"Cannot Place: This is the exit cell.");
             return false;
         }
 
         //If the currenct cell is occupied (by a structure), not a valid spot.
         if (curCell.m_isOccupied)
         {
+            Debug.Log($"Cannot Place: This cell is already occupied.");
             return false;
         }
 
         //Check to see if any of our UnitPaths have no path.
-        for (var i = 0; i < GridManager.Instance.m_unitPaths.Count; i++)
+        if (!GridManager.Instance.m_spawnPointsAccessible)
         {
-            var unitPath = GridManager.Instance.m_unitPaths[i];
-            if (!unitPath.m_hasPath)
-            {
-                return false;
-            }
+            Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
+            return false;
         }
 
         //Get neighbor cells.
@@ -605,7 +616,7 @@ public class GameplayManager : MonoBehaviour
                 //If we found a path, this neighbor is OK. If not, we need to check if it creates an island.
                 if (testPath == null)
                 {
-                    Debug.Log($"No path found from neighbor {i}");
+                    Debug.Log($"No path found from neighbor {i}, checking for inhabited islands.");
                     //If we did not find a path, check islands for actors. If there are, we cannot build here.
                     List<Vector2Int> islandCells = new List<Vector2Int>(AStar.FindIsland(neighbors[i], m_preconstructedTowerPos));
                     foreach (Vector2Int cellPos in islandCells)
@@ -613,7 +624,7 @@ public class GameplayManager : MonoBehaviour
                         Cell islandCell = Util.GetCellFromPos(cellPos);
                         if (islandCell.m_actorCount > 0)
                         {
-                            Debug.Log($"{islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
+                            Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
                             return false;
                         }
                     }
@@ -630,7 +641,7 @@ public class GameplayManager : MonoBehaviour
         {
             Destroy(m_preconstructedTowerObj);
         }
-        
+
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
         OnPreconstructedTowerClear?.Invoke();

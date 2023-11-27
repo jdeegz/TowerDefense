@@ -29,6 +29,7 @@ public class GridManager : MonoBehaviour
     private Vector2Int m_preconstructedTowerPos;
     private int m_previousPreconIndex;
     private bool m_previousPreconOccupancy;
+    public bool m_spawnPointsAccessible;
 
     public static event Action OnResourceNodeRemoved;
 
@@ -40,6 +41,7 @@ public class GridManager : MonoBehaviour
         GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
         GameplayManager.OnTowerBuild += TowerBuilt;
         GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
+        GameplayManager.OnTowerSell += RefreshGrid;
     }
 
     void OnDestroy()
@@ -48,6 +50,7 @@ public class GridManager : MonoBehaviour
         GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
         GameplayManager.OnTowerBuild -= TowerBuilt;
         GameplayManager.OnPreconstructedTowerClear -= PreconstructedTowerClear;
+        GameplayManager.OnTowerSell -= RefreshGrid;
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
@@ -139,7 +142,7 @@ public class GridManager : MonoBehaviour
         Debug.Log($"{spawnPointCellsFound} of {spawnPointCells.Count} spawners found during FloodFill.");
         
         //If we've found all the spawn points, this is good, we can update each path.
-        if (spawnPointCellsFound == spawnPointCells.Count)
+        if (m_spawnPointsAccessible = spawnPointCellsFound == spawnPointCells.Count)
         {
             //If we're setting up the game, continue doing so.
             if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.FloodFillGrid)
@@ -160,8 +163,6 @@ public class GridManager : MonoBehaviour
         {
             Debug.Log($"We did not find all exit paths.");
         }
-
-        
     }
 
     private void SetCellDirections()
@@ -241,6 +242,7 @@ public class GridManager : MonoBehaviour
         {
             Debug.Log($"Setting previous Grid Cell occupancy.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+            m_previousPreconIndex = -1;
         }
     }
 
@@ -251,7 +253,17 @@ public class GridManager : MonoBehaviour
         {
             Debug.Log($"Setting previous Grid Cell occupancy.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+            m_previousPreconIndex = -1;
         }
+        
+        FloodFillGrid(m_gridCells);
+    }
+    
+    public void RefreshGrid()
+    {
+        FloodFillGrid(m_gridCells);
+        
+        SetCellDirections();
     }
 
     private void HitTestCellForGround(Vector3 pos, Cell cell)
@@ -276,11 +288,6 @@ public class GridManager : MonoBehaviour
     {
         // Use the LayerMask method to check if the layer is in the layer mask
         return layerMask == (layerMask | (1 << layer));
-    }
-
-    public void ResourceNodeRemoved()
-    {
-        OnResourceNodeRemoved?.Invoke();
     }
 
     public void BuildPathList()
@@ -492,8 +499,6 @@ public class UnitPath
 
     public void Setup()
     {
-        GridManager.OnResourceNodeRemoved += ResourceNodeRemoved;
-
         m_path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
 
         //Define desired properties of the line.
@@ -522,22 +527,8 @@ public class UnitPath
         }
     }
 
-
-    void OnDestroy()
-    {
-        GridManager.OnResourceNodeRemoved -= ResourceNodeRemoved;
-    }
-
     void Start()
     {
-    }
-
-    void ResourceNodeRemoved()
-    {
-        //If a resource node is removed, update the paths.
-        UpdateExitPath();
-        //Assign LastGoodPath so we have a fallback path.
-        SetLastGoodPath();
     }
 
     void PreconstructedTowerClear()
