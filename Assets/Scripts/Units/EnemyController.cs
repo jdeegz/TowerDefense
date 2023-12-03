@@ -50,8 +50,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     //Obelisk
     public ObeliskData m_obeliskData;
 
-    protected NavMeshAgent m_navMeshAgent;
-
     public event Action<float> UpdateHealth;
     public event Action<Vector3> DestroyEnemy;
 
@@ -63,7 +61,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void Start()
     {
         //Setup with Gameplay Manager
-        m_navMeshAgent = GetComponent<NavMeshAgent>();
         m_goal = GameplayManager.Instance.m_enemyGoal;
         GameplayManager.Instance.AddEnemyToList(this);
 
@@ -97,22 +94,29 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         //Create Speed Trail Object
         m_speedTrailVFXObj.SetActive(false);
-        if (m_goal) StartMoving(m_goal.position);
     }
 
     void Update()
     {
         UpdateStatusEffects();
+        
+        //If this is the exit cell, we've made it! Deal some damage to the player.
+        if (Vector3.Distance(transform.position, m_goal.position) <= 1.5f)
+        {
+            Debug.Log("Dealing Castle damage and destroying enemy.");
+            GameplayManager.Instance.m_castleController.TakeDamage(1);
+            DestroyEnemy?.Invoke(transform.position);
+        }
     }
 
     void FixedUpdate()
     {
         HandleMovement();
+        
     }
 
     //Movement
     //Functions
-    public abstract void StartMoving(Vector3 pos);
     public abstract void HandleMovement();
 
     //Taking Damage
@@ -198,7 +202,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             }
         }
     }
-
+    
     void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_curCell != null)
@@ -248,17 +252,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         return m_closestObelisk;
-    }
-
-    //Enemy Escape
-    //Functions
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Exit"))
-        {
-            GameplayManager.Instance.m_castleController.TakeDamage(1);
-            DestroyEnemy?.Invoke(transform.position);
-        }
     }
 
     //Status Effect

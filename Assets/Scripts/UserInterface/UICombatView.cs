@@ -79,7 +79,7 @@ public class UICombatView : MonoBehaviour
         }
 
         m_curCastleHealth += i;
-        m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_maxHealth;
+        m_maxCastleHealth = GameplayManager.Instance.m_castleController.GetCastleMaxHealth();
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
         m_healthShake = m_healthDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_healthShake.Play();
@@ -239,7 +239,7 @@ public class UICombatView : MonoBehaviour
     {
         m_castleController = GameplayManager.Instance.m_castleController;
         m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
-        m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_maxHealth;
+        m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_castleData.m_maxHealth;
         m_curCastleHealth = m_maxCastleHealth;
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);

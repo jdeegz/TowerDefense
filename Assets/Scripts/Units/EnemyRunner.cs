@@ -5,10 +5,6 @@ public class EnemyRunner : EnemyController
 {
     private Vector3 m_moveDirection;
 
-    public override void StartMoving(Vector3 pos)
-    {
-    }
-
     public override void HandleMovement()
     {
         //Update Cell occupancy
@@ -26,7 +22,7 @@ public class EnemyRunner : EnemyController
 
             //Get new cell from new position.
             m_curCell = Util.GetCellFromPos(m_curPos);
-
+            
             //Assign self to cell.
             m_curCell.UpdateActorCount(1, gameObject.name);
         }

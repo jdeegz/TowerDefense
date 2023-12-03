@@ -107,6 +107,9 @@ public class GameplayManager : MonoBehaviour
             if (m_hoveredSelectable == null || m_hoveredSelectable != hitSelectable)
             {
                 m_hoveredSelectable = hitSelectable;
+                
+                //Tell UITooltipController we're hovering over an object that could display a tooltip.
+                
             }
 
             //Hovering
@@ -306,13 +309,6 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
-                //If there are no obelisks still charging, victory!
-                if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
-                {
-                    UpdateGameplayState(GameplayState.Victory);
-                    break;
-                }
-
                 //If this is the first wave, give a bit longer to build.
                 if (m_wave < 0)
                 {
@@ -322,7 +318,6 @@ public class GameplayManager : MonoBehaviour
                 {
                     m_timeToNextWave = m_buildDuration;
                 }
-
                 break;
             case GameplayState.Paused:
                 break;
@@ -747,13 +742,7 @@ public class GameplayManager : MonoBehaviour
 
         if (m_activeSpawners == 0 && m_enemyList.Count == 0 && m_gameplayState != GameplayState.Defeat)
         {
-            if (m_wave >= m_totalWaves - 1)
-            {
-                UpdateGameplayState(GameplayState.Victory);
-                return;
-            }
-
-            UpdateGameplayState(GameplayState.Build);
+            CheckForWin();
         }
     }
 
@@ -815,5 +804,24 @@ public class GameplayManager : MonoBehaviour
         }
 
         OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
+    }
+
+    public void CheckForWin()
+    {
+        //Obelisk Win Condition.
+        if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
+        {
+            UpdateGameplayState(GameplayState.Victory);
+            return;
+        }
+        
+        //Total Waves Win Condition.
+        if (m_wave >= m_totalWaves - 1)
+        {
+            UpdateGameplayState(GameplayState.Victory);
+            return;
+        }
+
+        UpdateGameplayState(GameplayState.Build);
     }
 }

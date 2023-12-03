@@ -5,10 +5,6 @@ using UnityEngine;
 
 public class EnemyFlier : EnemyController
 {
-    public override void StartMoving(Vector3 pos)
-    {
-        //m_navMeshAgent.SetDestination(pos);
-    }
 
     public override void HandleMovement()
     {

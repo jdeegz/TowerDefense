@@ -38,6 +38,9 @@ public class GathererController : MonoBehaviour
     private ResourceNode m_curHarvestNode;
     private Vector3 m_curHarvestPointPos;
     private Coroutine m_curCoroutine;
+    private float m_harvestDuration;
+    private int m_carryCapacity;
+    private float m_storingDuration;
 
     private static int m_isHarvestingHash = Animator.StringToHash("isHarvesting");
     private Vector3 m_idlePos;
@@ -53,6 +56,9 @@ public class GathererController : MonoBehaviour
         GameplayManager.OnCommandRequested += CommandRequested;
         m_audioSource = GetComponent<AudioSource>();
         m_idlePos = transform.position;
+        m_harvestDuration = m_GathererData.m_harvestDuration;
+        m_carryCapacity = m_GathererData.m_carryCapacity;
+        m_storingDuration = m_GathererData.m_storingDuration;
     }
 
     private void OnDestroy()
@@ -178,8 +184,8 @@ public class GathererController : MonoBehaviour
         //Get the remaining angle from current rotation to destination.
         Vector2 moveDir2d = new Vector2(m_moveDirection.x, m_moveDirection.z);
         Vector2 unitForward2d = new Vector2(transform.forward.x, transform.forward.z);
-        float rotationAmount = (float)Math.Pow(1 - Vector2.Angle(moveDir2d, unitForward2d)/180, 3);
-        
+        float rotationAmount = (float)Math.Pow(1 - Vector2.Angle(moveDir2d, unitForward2d) / 180, 3);
+
 
         //Move forward.
         float cumulativeMoveSpeed = 1f * Time.deltaTime;
@@ -341,7 +347,11 @@ public class GathererController : MonoBehaviour
                 startPos = Util.GetVector2IntFrom3DPos(transform.position);
                 endPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
                 m_gathererPath = AStar.FindPath(startPos, endPos);
-                if(m_gathererPath == null){Debug.Log("No path back to castle found");}
+                if (m_gathererPath == null)
+                {
+                    Debug.Log("No path back to castle found");
+                }
+
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());
@@ -535,13 +545,13 @@ public class GathererController : MonoBehaviour
     private IEnumerator Harvesting()
     {
         StartHarvesting();
-        yield return new WaitForSeconds(m_GathererData.m_harvestDuration);
+        yield return new WaitForSeconds(m_harvestDuration);
         CompletedHarvest();
     }
 
     private IEnumerator Storing()
     {
-        yield return new WaitForSeconds(m_GathererData.m_storingDuration);
+        yield return new WaitForSeconds(m_storingDuration);
         switch (m_GathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
@@ -570,7 +580,7 @@ public class GathererController : MonoBehaviour
     private void CompletedHarvest()
     {
         Debug.Log($"{gameObject.name}'s harvesting completed.");
-        ValueTuple<int, int> vars = m_curHarvestNode.RequestResource(m_GathererData.m_carryCapacity);
+        ValueTuple<int, int> vars = m_curHarvestNode.RequestResource(m_carryCapacity);
         m_resourceCarried = vars.Item1;
         int resourceRemaining = vars.Item2;
 
@@ -611,4 +621,26 @@ public class GathererController : MonoBehaviour
 
         return closestGameObject;
     }
+
+    public GathererTooltipData GetTooltipData()
+    {
+        GathererTooltipData data = new GathererTooltipData();
+        data.m_gathererType = m_GathererData.m_type;
+        data.m_gathererName = m_GathererData.m_gathererName;
+        data.m_gathererDescription = m_GathererData.m_gathererDescription;
+        data.m_harvestDuration = m_harvestDuration;
+        data.m_storingDuration = m_storingDuration;
+        data.m_carryCapacity = m_carryCapacity;
+        return data;
+    }
+}
+
+public class GathererTooltipData
+{
+    public ResourceManager.ResourceType m_gathererType;
+    public string m_gathererName;
+    public string m_gathererDescription;
+    public float m_harvestDuration;
+    public float m_storingDuration;
+    public int m_carryCapacity;
 }

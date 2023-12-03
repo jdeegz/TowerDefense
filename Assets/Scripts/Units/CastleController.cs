@@ -5,23 +5,18 @@ using UnityEngine;
 
 public class CastleController : MonoBehaviour
 {
-    public int m_maxHealth = 20;
+    public CastleData m_castleData;
 
-    [SerializeField] private int m_repairHealthAmount;
-    [SerializeField] private float m_repairHealthInterval;
     [SerializeField] public List<GameObject> m_castleEntrancePoints;
-    [SerializeField] private AudioSource m_audioSource;
-    [SerializeField] private AudioClip m_audioHealthGained;
-    [SerializeField] private AudioClip m_audioHealthLost;
-    [SerializeField] private AudioClip m_audioResourceGained;
-    [SerializeField] private AudioClip m_audioResourceLost;
-    [SerializeField] private AudioClip m_audioWaveStart;
-    [SerializeField] private AudioClip m_audioWaveEnd;
-
     private List<Renderer> m_allRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
+    private AudioSource m_audioSource;
+
+    private int m_maxHealth;
     private int m_curHealth;
+    private int m_repairHealthAmount;
+    private float m_repairHealthInterval;
     private float m_repairElapsedTime;
 
     public event Action<int> UpdateHealth;
@@ -32,7 +27,11 @@ public class CastleController : MonoBehaviour
     {
         CollectMeshRenderers(transform);
 
-        m_curHealth = m_maxHealth;
+        m_maxHealth = m_castleData.m_maxHealth;
+        m_curHealth = m_castleData.m_maxHealth;
+        m_repairHealthAmount = m_castleData.m_repairHealthAmount;
+        m_repairHealthInterval = m_castleData.m_repairHealthInterval;
+
         UpdateHealth += OnUpdateHealth;
         DestroyCastle += OnCastleDestroyed;
 
@@ -46,11 +45,11 @@ public class CastleController : MonoBehaviour
     {
         if (amount > 0)
         {
-            PlayAudio(m_audioResourceGained);
+            PlayAudio(m_castleData.m_audioResourceGained);
         }
         else
         {
-            PlayAudio(m_audioResourceLost);
+            PlayAudio(m_castleData.m_audioResourceLost);
         }
     }
 
@@ -78,16 +77,16 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.PlaceObstacles:
                 //Set whole block to occupied.
                 GridCellOccupantUtil.SetOccupant(gameObject, true, 3, 3);
-                
+
                 //Carve out exits.
                 foreach (GameObject obj in m_castleEntrancePoints)
                 {
                     GridCellOccupantUtil.SetOccupant(obj, false, 1, 1);
                 }
-                
+
                 //Carve out goal
                 GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
-                
+
                 Cell cell = Util.GetCellFrom3DPos(transform.position);
                 cell.UpdateGoal(true);
                 break;
@@ -98,12 +97,12 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.Setup:
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                PlayAudio(m_audioWaveStart);
+                PlayAudio(m_castleData.m_audioWaveStart);
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
-                PlayAudio(m_audioWaveEnd);
+                PlayAudio(m_castleData.m_audioWaveEnd);
                 break;
             case GameplayManager.GameplayState.Paused:
                 break;
@@ -129,6 +128,11 @@ public class CastleController : MonoBehaviour
                 //Debug.Log("Castle Repaired.");
             }
         }
+    }
+
+    public int GetCastleMaxHealth()
+    {
+        return m_maxHealth;
     }
 
     public void CheatCastleHealth()
@@ -161,11 +165,11 @@ public class CastleController : MonoBehaviour
 
         if (i > 0)
         {
-            PlayAudio(m_audioHealthGained);
+            PlayAudio(m_castleData.m_audioHealthGained);
         }
         else
         {
-            PlayAudio(m_audioHealthLost);
+            PlayAudio(m_castleData.m_audioHealthLost);
         }
 
         if (m_curHealth <= 0)
@@ -231,4 +235,26 @@ public class CastleController : MonoBehaviour
             CollectMeshRenderers(child);
         }
     }
+
+    public CastleTooltipData GetTooltipData()
+    {
+        CastleTooltipData data = new CastleTooltipData();
+        data.m_castleName = m_castleData.m_castleName;
+        data.m_castleDescription = m_castleData.m_castleDescription;
+        data.m_maxHealth = m_maxHealth;
+        data.m_curHealth = m_curHealth;
+        data.m_repairHealthAmount = m_repairHealthAmount;
+        data.m_repairHealthInterval = m_repairHealthInterval;
+        return data;
+    }
+}
+
+public class CastleTooltipData
+{
+    public string m_castleName;
+    public string m_castleDescription;
+    public int m_maxHealth;
+    public int m_curHealth;
+    public int m_repairHealthAmount;
+    public float m_repairHealthInterval;
 }

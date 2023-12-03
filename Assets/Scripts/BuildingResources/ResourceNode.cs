@@ -2,15 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
 public class ResourceNode : MonoBehaviour, IResourceNode
 {
-    [SerializeField] private int m_resourcesRemaining;
+    public ResourceNodeData m_nodeData;
     [SerializeField] private Animator m_animator;
 
-    public ResourceManager.ResourceType m_type;
-    public List<HarvestPoint> m_harvestPoints;
+    private int m_resourcesRemaining;
+    [HideInInspector] public ResourceManager.ResourceType m_type;
+    [HideInInspector] public List<HarvestPoint> m_harvestPoints;
     public event Action<ResourceNode> OnResourceNodeDepletion;
 
     private int m_harvesters;
@@ -18,6 +20,8 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     void Awake()
     {
+        m_resourcesRemaining = m_nodeData.m_maxResources;
+        m_type = m_nodeData.m_resourceType;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
@@ -87,6 +91,17 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         OnResourceNodeDepletion?.Invoke(this);
         Destroy(gameObject);
     }
+
+    public ResourceNodeTooltipData GetTooltipData()
+    {
+        ResourceNodeTooltipData data = new ResourceNodeTooltipData();
+        data.m_resourceType = m_nodeData.m_resourceType;
+        data.m_resourceNodeName = m_nodeData.m_resourceNodeName;
+        data.m_resourceNodeDescription = m_nodeData.m_resourceNodeDescription;
+        data.m_maxResources = m_nodeData.m_maxResources;
+        data.m_curResources = m_resourcesRemaining;
+        return data;
+    }
 }
 
 [Serializable]
@@ -96,4 +111,13 @@ public class HarvestPoint
     public Cell m_harvestPointCell;
     public bool m_isOccupied;
     public GathererController m_gatherer;
+}
+
+public class ResourceNodeTooltipData
+{
+    public ResourceManager.ResourceType m_resourceType;
+    public string m_resourceNodeName;
+    public string m_resourceNodeDescription;
+    public int m_maxResources;
+    public int m_curResources;
 }

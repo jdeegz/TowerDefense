@@ -7,17 +7,19 @@ using UnityEngine.Diagnostics;
 
 public class Obelisk : MonoBehaviour
 {
-    public int m_obeliskRadius = 1;
-    public int m_startingChargeCount = 0;
-    public int m_maxChargeCount = 10;
-    public float m_meterOffset = 100f;
-    private List<Cell> m_cellsInRange;
-    private Cell m_cell;
-    private int m_curChargeCount;
-    public UIIngameMeter m_meter;
+    public ObeliskData m_obeliskData;
     public GameObject m_chargedVFXGroup;
     public LineRenderer m_obeliskRangeCircle;
 
+    private float m_obeliskRadius;
+    private int m_curChargeCount;
+    private int m_maxChargeCount;
+    private float m_meterOffset;
+    private List<Cell> m_cellsInRange;
+    private Cell m_cell;
+    private UIIngameMeter m_meter;
+    private AudioSource m_audioSource;
+    
     public enum ObeliskState
     {
         Charging,
@@ -25,7 +27,7 @@ public class Obelisk : MonoBehaviour
     }
 
     public ObeliskState m_obeliskState;
-    
+
     public static event Action<ObeliskState> OnObeliskStateChanged;
     public static event Action<int> OnObeliskChargeChanged;
 
@@ -40,6 +42,7 @@ public class Obelisk : MonoBehaviour
                 break;
             case ObeliskState.Charged:
                 m_chargedVFXGroup.SetActive(true);
+                PlayAudio(m_obeliskData.m_obeliskCharged);
                 GameplayManager.Instance.CheckObeliskStatus();
                 break;
             default:
@@ -53,6 +56,14 @@ public class Obelisk : MonoBehaviour
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         OnObeliskChargeChanged += ObeliskChargeChanged;
+        
+        //Setup data
+        m_maxChargeCount = m_obeliskData.m_maxChargeCount;
+        m_curChargeCount = 0;
+        m_obeliskRadius = m_obeliskData.m_obeliskRange;
+        m_meterOffset = m_obeliskData.m_meterOffset;
+        
+        m_audioSource = GetComponent<AudioSource>();
     }
 
     
@@ -78,9 +89,9 @@ public class Obelisk : MonoBehaviour
         }
     }
     
-    void Start()
+    public void PlayAudio(AudioClip audioClip)
     {
-        m_curChargeCount = m_startingChargeCount;
+        m_audioSource.PlayOneShot(audioClip);
     }
     
     public void IncreaseObeliskCharge(int i)
@@ -90,7 +101,8 @@ public class Obelisk : MonoBehaviour
             case ObeliskState.Charging:
                 m_curChargeCount += i;
                 m_meter.SetProgress((float)m_curChargeCount / m_maxChargeCount);
-
+                
+                PlayAudio(m_obeliskData.m_soulCollected);
                 if (m_curChargeCount >= m_maxChargeCount)
                 {
                     UpdateObeliskState(ObeliskState.Charged);
@@ -130,4 +142,22 @@ public class Obelisk : MonoBehaviour
             m_obeliskRangeCircle.SetPosition(i, currentPosition);
         }
     }
+
+    public ObeliskTooltipData GetTooltipData()
+    {
+        ObeliskTooltipData data = new ObeliskTooltipData();
+        data.m_obeliskName = m_obeliskData.m_obeliskName;
+        data.m_obeliskDescription = m_obeliskData.m_obeliskDescription;
+        data.m_obeliskCurCharge = m_curChargeCount;
+        data.m_obeliskMaxCharge = m_maxChargeCount;
+        return data;
+    }
+}
+
+public class ObeliskTooltipData
+{
+    public string m_obeliskName;
+    public string m_obeliskDescription;
+    public int m_obeliskCurCharge;
+    public int m_obeliskMaxCharge;
 }
