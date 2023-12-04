@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class ChargeUpTowerController : Tower
@@ -184,5 +185,34 @@ public class ChargeUpTowerController : Tower
 
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
+    }
+    
+    public override TowerTooltipData GetTooltipData()
+    {
+        TowerTooltipData data = new TowerTooltipData();
+        data.m_towerName = m_towerData.m_towerName;
+        data.m_towerDescription = m_towerData.m_towerDescription;
+        
+        //Details string creation.
+        string baseDamage;
+        baseDamage = $"Damage: {m_towerData.m_baseDamage}{data.m_damageIconString}<br>" +
+                     $"Full Charge: {m_towerData.m_fireRate}{data.m_timeIconString}";
+        
+        string statusEffect = null;
+        if (m_statusEffectData)
+        {
+            statusEffect = data.BuildStatusEffectString(m_statusEffectData);
+        }
+        
+        StringBuilder descriptionBuilder = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(baseDamage))
+            descriptionBuilder.Append(baseDamage);
+
+        if (!string.IsNullOrEmpty(statusEffect))
+            descriptionBuilder.Append(statusEffect);
+
+        data.m_towerDetails = descriptionBuilder.ToString();
+        return data;
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -109,5 +110,46 @@ public class BasicTower : Tower
     private bool IsTargetInRange(Vector3 targetPos)
     {
         return Vector3.Distance(transform.position, targetPos) < m_towerData.m_fireRange;
+    }
+    
+    public override TowerTooltipData GetTooltipData()
+    {
+        TowerTooltipData data = new TowerTooltipData();
+        data.m_towerName = m_towerData.m_towerName;
+        data.m_towerDescription = m_towerData.m_towerDescription;
+        
+        //Details string creation.
+        //If consistent fire rate:
+        string baseDamage;
+        baseDamage = $"Damage: {m_towerData.m_baseDamage}{data.m_damageIconString}<br>" +
+                     $"Fire Rate: {m_towerData.m_fireRate}{data.m_timeIconString}";
+        
+        //If burst fire:
+        if (m_towerData.m_burstFireRate > 0)
+        {
+            float burstRate = 1f / m_towerData.m_burstFireRate;
+            string burstRateString = burstRate.ToString("F1");
+            
+            baseDamage = $"Damage: {m_towerData.m_baseDamage}{data.m_damageIconString}<br>" +
+                         $"Burst Fire Rate: {burstRateString}{data.m_timeIconString}<br>" +
+                         $"Burst Size: {m_towerData.m_burstSize}";
+        }
+        
+        string statusEffect = null;
+        if (m_statusEffectData)
+        {
+            statusEffect = data.BuildStatusEffectString(m_statusEffectData);
+        }
+        
+        StringBuilder descriptionBuilder = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(baseDamage))
+            descriptionBuilder.Append(baseDamage);
+
+        if (!string.IsNullOrEmpty(statusEffect))
+            descriptionBuilder.Append(statusEffect);
+
+        data.m_towerDetails = descriptionBuilder.ToString();
+        return data;
     }
 }

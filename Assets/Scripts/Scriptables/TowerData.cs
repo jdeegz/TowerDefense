@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "TowerData", menuName = "ScriptableObjects/TowerData")]
 public class TowerData : ScriptableObject
 {
     [Header("Strings")]
-    public string m_name;
+    public string m_towerName;
+    [TextArea(5, 5)]
+    public string m_towerDescription;
     
     [Header("Basic Data")]
     public float m_baseDamage;

@@ -8,11 +8,10 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG;
 
-public class TowerTrayButton : MonoBehaviour
+public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler 
 {
     [SerializeField] private TowerData m_towerData;
     [SerializeField] private TextMeshProUGUI m_towerCost;
-    [SerializeField] private TextMeshProUGUI m_towerName;
     [SerializeField] private TextMeshProUGUI m_towerHotkey;
     [SerializeField] private Image m_towerImage;
     [SerializeField] private Image m_backgroundImage;
@@ -76,9 +75,6 @@ public class TowerTrayButton : MonoBehaviour
         //Tower Image
         m_towerImage.sprite = towerData.m_uiIcon;
         
-        //Tower Name
-        m_towerName.SetText(towerData.m_name);
-        
         //Tower Hotkey
         m_towerHotkey.SetText((i + 1).ToString());
     }
@@ -93,5 +89,16 @@ public class TowerTrayButton : MonoBehaviour
         ResourceManager.UpdateStoneBank -= CheckStoneCost;
         ResourceManager.UpdateWoodBank -= CheckWoodCost;
     }
-    
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        //Get the selectable component related to this button.
+        Selectable selectable = m_towerData.m_prefab.GetComponent<Selectable>();
+        UITooltipController.Instance.SetUISelectable(selectable);
+    }
+
+    public void OnPointerExit(PointerEventData evenData)
+    {
+        UITooltipController.Instance.SetUISelectable(null);
+    }
 }

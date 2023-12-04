@@ -428,6 +428,12 @@ public static class Util
         return (neighborCells, harvestPos);
     }
 
+    public static string FormatAsPercentageString(float i)
+    {
+        float percentageValue = i * 100;
+        string formattedPercentage = percentageValue.ToString("0") + "%";
+        return formattedPercentage;
+    }
     public static Cell[] GetNeighborCells(Cell startCell, Cell[] gridCells)
     {
         List<Vector2Int> neighborPos = new List<Vector2Int>();

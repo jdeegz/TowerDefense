@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,10 +14,10 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;
     [SerializeField] protected bool m_isBuilt;
-    
+
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
-    
+
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayStatChanged;
@@ -25,16 +26,16 @@ public abstract class Tower : MonoBehaviour
         m_towerRangeCircle.enabled = false;
         SetupRangeCircle(m_towerRangeCircleSegments, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
-        
+
         //If we have a status effect on this tower, create an instance of it to use when applying.
-        
     }
 
     private void GameplayStatChanged(GameplayManager.GameplayState newState)
     {
-        
     }
-    
+
+    public abstract TowerTooltipData GetTooltipData();
+
     public void RotateTowardsTarget()
     {
         Quaternion targetRotation = new Quaternion();
@@ -46,7 +47,7 @@ public abstract class Tower : MonoBehaviour
         }
 
         //If we have no target, rotate away from the base during the Build phase. The isBuilt flag will stop this from happening when precon.
-        if(GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
+        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
         {
             //Use enemy Goal as the 'target'.
             Vector3 direction = GameplayManager.Instance.m_enemyGoal.position - transform.position;
@@ -79,12 +80,12 @@ public abstract class Tower : MonoBehaviour
             m_towerRangeCircle.enabled = false;
         }
     }
-    
+
     public (int, int) GetTowercost()
     {
         return (m_towerData.m_stoneCost, m_towerData.m_woodCost);
     }
-    
+
     public (int, int) GetTowerSellCost()
     {
         return (m_towerData.m_stoneSellCost, m_towerData.m_woodSellCost);
@@ -94,21 +95,21 @@ public abstract class Tower : MonoBehaviour
     {
         return m_towerData;
     }
-    
+
     public void SetupTower()
     {
         //Grid
         GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
         GameplayManager.Instance.AddTowerToList(this);
-        
+
         //Operational
         gameObject.GetComponent<Collider>().enabled = true;
         gameObject.GetComponent<NavMeshObstacle>().enabled = true;
         m_isBuilt = true;
-        
+
         //Audio
         m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
-        
+
         //VFX
     }
 
@@ -116,23 +117,24 @@ public abstract class Tower : MonoBehaviour
     {
         //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
         if (!Application.isPlaying) return;
-        
+
         if (m_audioSource.enabled)
         {
             m_audioSource.PlayOneShot(m_towerData.m_audioDestroyClip);
         }
+
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }
-    
+
     void SetupRangeCircle(int segments, float radius)
     {
         m_towerRangeCircle.positionCount = segments;
         m_towerRangeCircle.startWidth = 0.15f;
         m_towerRangeCircle.endWidth = 0.15f;
-        for(int i = 0; i < segments; ++i)
+        for (int i = 0; i < segments; ++i)
         {
-            float circumferenceProgress = (float) i / segments;
+            float circumferenceProgress = (float)i / segments;
             float currentRadian = circumferenceProgress * 2 * Mathf.PI;
             float xScaled = Mathf.Cos(currentRadian);
             float yScaled = Mathf.Sin(currentRadian);
@@ -159,5 +161,51 @@ public abstract class Tower : MonoBehaviour
     public Transform GetTurretTransform()
     {
         return m_turretPivot;
+    }
+
+    
+}
+
+public class TowerTooltipData
+{
+    public string m_towerName;
+    public string m_towerDescription;
+    public string m_towerDetails;
+
+    public string m_timeIconString = "<sprite name=\"Time\">";
+    public string m_damageIconString = "<sprite name=\"Damage\">";
+    
+    public string BuildStatusEffectString(StatusEffectData m_statusEffectData)
+    {
+        string statusEffect = null;
+        float statusEffectDamageRate = (m_statusEffectData.m_damage / m_statusEffectData.m_tickSpeed) * m_statusEffectData.m_lifeTime;
+        string statusEffectDamageString = statusEffectDamageRate.ToString("F1");
+        string moveModifierPercentage = Util.FormatAsPercentageString(1 - m_statusEffectData.m_speedModifier);
+        string armorModifierPercentage = Util.FormatAsPercentageString(1 - m_statusEffectData.m_damageModifier);
+        switch (m_statusEffectData.m_effectType)
+        {
+            case StatusEffectData.EffectType.DecreaseMoveSpeed:
+                statusEffect = $"<br>Slows by: {moveModifierPercentage} for {m_statusEffectData.m_lifeTime}{m_timeIconString}";
+                break;
+            case StatusEffectData.EffectType.IncreaseMoveSpeed:
+                statusEffect = $"<br>Faster by: {moveModifierPercentage} for {m_statusEffectData.m_lifeTime}{m_timeIconString}";
+                break;
+            case StatusEffectData.EffectType.DecreaseHealth:
+                statusEffect = $"<br>Burns for: {statusEffectDamageString}{m_damageIconString} over {m_statusEffectData.m_lifeTime}{m_timeIconString}";
+                break;
+            case StatusEffectData.EffectType.IncreaseHealth:
+                statusEffect = $"<br>Heals for: {statusEffectDamageString}{m_damageIconString} over {m_statusEffectData.m_lifeTime}{m_timeIconString}";
+                break;
+            case StatusEffectData.EffectType.DecreaseArmor:
+                statusEffect = $"<br>Lowers Armor by: {armorModifierPercentage} for {m_statusEffectData.m_lifeTime}{m_timeIconString}";
+                break;
+            case StatusEffectData.EffectType.IncreaseArmor:
+                statusEffect = $"<br>Boosts Armor by: {armorModifierPercentage} for {m_statusEffectData.m_lifeTime}{m_timeIconString}";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        return statusEffect;
     }
 }

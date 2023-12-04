@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class VoidRayTowerController : Tower
@@ -197,5 +198,34 @@ public class VoidRayTowerController : Tower
 
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
         }
+    }
+    
+    public override TowerTooltipData GetTooltipData()
+    {
+        TowerTooltipData data = new TowerTooltipData();
+        data.m_towerName = m_towerData.m_towerName;
+        data.m_towerDescription = m_towerData.m_towerDescription;
+        
+        //Details string creation.
+        string baseDamage;
+        baseDamage = $"Base Damage: {m_towerData.m_baseDamage}{data.m_damageIconString} | Damage Cap: {m_damageCap}{data.m_damageIconString}<br>" +
+                     $"Base Fire Rate: {m_towerData.m_fireRate}{data.m_timeIconString} | Fire Rate Cap: {m_speedCap}{data.m_timeIconString}";
+        
+        string statusEffect = null;
+        if (m_statusEffectData)
+        {
+            statusEffect = data.BuildStatusEffectString(m_statusEffectData);
+        }
+        
+        StringBuilder descriptionBuilder = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(baseDamage))
+            descriptionBuilder.Append(baseDamage);
+
+        if (!string.IsNullOrEmpty(statusEffect))
+            descriptionBuilder.Append(statusEffect);
+
+        data.m_towerDetails = descriptionBuilder.ToString();
+        return data;
     }
 }

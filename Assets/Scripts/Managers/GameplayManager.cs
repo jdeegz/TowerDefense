@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering.VirtualTexturing;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
@@ -93,117 +94,25 @@ public class GameplayManager : MonoBehaviour
         SelectedTower,
         PreconstructionTower,
         SelectedCastle,
+        SelecteObelisk,
     }
 
     void Update()
     {
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit) && !EventSystem.current.IsPointerOverGameObject())
+        if (Physics.Raycast(ray, out hit))
         {
-            //Is the object selectable?
-            Selectable hitSelectable = hit.collider.gameObject.GetComponent<Selectable>();
-            if (m_hoveredSelectable == null || m_hoveredSelectable != hitSelectable)
+            GameObject hitObj = hit.collider.gameObject;
+
+            //If we hit a UI Game Object.
+            if (EventSystem.current.IsPointerOverGameObject())
             {
-                m_hoveredSelectable = hitSelectable;
-                
-                //Tell UITooltipController we're hovering over an object that could display a tooltip.
-                
+                HandleUIInteraction(hitObj);
             }
-
-            //Hovering
-            if (m_hoveredSelectable)
+            else //We hit a World Space Object.
             {
-                switch (m_interactionState)
-                {
-                    case InteractionState.Disabled:
-                        break;
-                    case InteractionState.Idle:
-                        break;
-                    case InteractionState.SelectedGatherer:
-                        break;
-                    case InteractionState.SelectedTower:
-                        break;
-                    case InteractionState.PreconstructionTower:
-                        break;
-                    case InteractionState.SelectedCastle:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            //Mouse 1 Clicking
-            if (Input.GetMouseButtonUp(0) && m_interactionState != InteractionState.Disabled)
-            {
-                //Based on the interaction state we're in, when mouse 1 is pressed, do X.
-                //If the object we're hovering is not currently the selected object.
-                if (m_interactionState == InteractionState.PreconstructionTower)
-                {
-                    if (!m_canAfford)
-                    {
-                        //Debug.Log("Not Enough Resources.");
-                        OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotAfford);
-                        return;
-                    }
-
-                    if (!m_canPlace)
-                    {
-                        //Debug.Log("Cannot build here.");
-                        OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotPlace);
-                        return;
-                    }
-
-                    BuildTower();
-                    return;
-                }
-
-                if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
-                {
-                    //Debug.Log(m_hoveredSelectable + " : selected.");
-                    OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
-                }
-                else if (m_curSelectable && m_hoveredSelectable == null)
-                {
-                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                }
-            }
-
-            //Mouse 2 Clicking
-            if (Input.GetMouseButtonDown(1) && m_interactionState != InteractionState.Disabled)
-            {
-                //If something is selected.
-                if (m_hoveredSelectable != null || m_preconstructedTowerObj != null)
-                {
-                    switch (m_interactionState)
-                    {
-                        case InteractionState.Idle:
-                            break;
-                        case InteractionState.SelectedGatherer:
-                            Debug.Log("Command Requested on Gatherer.");
-                            OnCommandRequested?.Invoke(m_hoveredSelectable.gameObject, m_hoveredSelectable.m_selectedObjectType);
-                            break;
-                        case InteractionState.SelectedTower:
-                            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                            break;
-                        case InteractionState.PreconstructionTower:
-                            //Cancel tower preconstruction
-                            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                            ClearPreconstructedTower();
-                            m_interactionState = InteractionState.Idle;
-                            break;
-                        case InteractionState.SelectedCastle:
-                            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                else if (m_curSelectable)
-                {
-                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                }
+                HandleWorldSpaceInteraction(hitObj);
             }
         }
 
@@ -216,6 +125,127 @@ public class GameplayManager : MonoBehaviour
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             UpdateGameplayState(GameplayState.SpawnEnemies);
+        }
+    }
+
+    void HandleUIInteraction(GameObject obj)
+    {
+        m_hoveredSelectable = null;
+    }
+
+    void HandleWorldSpaceInteraction(GameObject obj)
+    {
+        //Is the object selectable?
+        Selectable hitSelectable = obj.GetComponent<Selectable>();
+        if (m_hoveredSelectable == null || m_hoveredSelectable != hitSelectable)
+        {
+            m_hoveredSelectable = hitSelectable;
+        }
+
+        //
+        //Hovering
+        if (m_hoveredSelectable)
+        {
+            switch (m_interactionState)
+            {
+                case InteractionState.Disabled:
+                    break;
+                case InteractionState.Idle:
+                    break;
+                case InteractionState.SelectedGatherer:
+                    break;
+                case InteractionState.SelectedTower:
+                    break;
+                case InteractionState.PreconstructionTower:
+                    break;
+                case InteractionState.SelectedCastle:
+                    break;
+                case InteractionState.SelecteObelisk:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        //
+        //Mouse 1 Clicking
+        if (Input.GetMouseButtonUp(0) && m_interactionState != InteractionState.Disabled)
+        {
+            //Based on the interaction state we're in, when mouse 1 is pressed, do X.
+            //If the object we're hovering is not currently the selected object.
+            if (m_interactionState == InteractionState.PreconstructionTower)
+            {
+                if (!m_canAfford)
+                {
+                    //Debug.Log("Not Enough Resources.");
+                    OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotAfford);
+                    return;
+                }
+
+                if (!m_canPlace)
+                {
+                    //Debug.Log("Cannot build here.");
+                    OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotPlace);
+                    return;
+                }
+
+                BuildTower();
+                return;
+            }
+
+            if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
+            {
+                //Debug.Log(m_hoveredSelectable + " : selected.");
+                OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
+                //Clear Hoverable because we've selected.
+                m_hoveredSelectable = null;
+            }
+            else if (m_curSelectable && m_hoveredSelectable == null)
+            {
+                OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+            }
+        }
+
+        //
+        //Mouse 2 Clicking
+        if (Input.GetMouseButtonDown(1) && m_interactionState != InteractionState.Disabled)
+        {
+            //If something is selected.
+            if (m_hoveredSelectable != null || m_preconstructedTowerObj != null)
+            {
+                switch (m_interactionState)
+                {
+                    case InteractionState.Disabled:
+                        break;
+                    case InteractionState.Idle:
+                        break;
+                    case InteractionState.SelectedGatherer:
+                        Debug.Log("Command Requested on Gatherer.");
+                        OnCommandRequested?.Invoke(m_hoveredSelectable.gameObject, m_hoveredSelectable.m_selectedObjectType);
+                        break;
+                    case InteractionState.SelectedTower:
+                        OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                        break;
+                    case InteractionState.PreconstructionTower:
+                        //Cancel tower preconstruction
+                        OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                        ClearPreconstructedTower();
+                        m_interactionState = InteractionState.Idle;
+                        break;
+                    case InteractionState.SelectedCastle:
+                        OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                        break;
+                    case InteractionState.SelecteObelisk:
+                        OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            else if (m_curSelectable)
+            {
+                OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+            }
         }
     }
 
@@ -318,6 +348,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     m_timeToNextWave = m_buildDuration;
                 }
+
                 break;
             case GameplayState.Paused:
                 break;
@@ -352,6 +383,8 @@ public class GameplayManager : MonoBehaviour
             case InteractionState.PreconstructionTower:
                 break;
             case InteractionState.SelectedCastle:
+                break;
+            case InteractionState.SelecteObelisk:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -392,7 +425,11 @@ public class GameplayManager : MonoBehaviour
             case Selectable.SelectedObjectType.Castle:
                 UpdateInteractionState(InteractionState.SelectedCastle);
                 break;
+            case Selectable.SelectedObjectType.Obelisk:
+                UpdateInteractionState(InteractionState.SelecteObelisk);
+                break;
             default:
+                
                 throw new ArgumentOutOfRangeException();
         }
     }
@@ -814,7 +851,7 @@ public class GameplayManager : MonoBehaviour
             UpdateGameplayState(GameplayState.Victory);
             return;
         }
-        
+
         //Total Waves Win Condition.
         if (m_wave >= m_totalWaves - 1)
         {

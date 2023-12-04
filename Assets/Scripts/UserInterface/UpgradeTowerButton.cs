@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [Serializable]
-public class UpgradeTowerButton : MonoBehaviour
+public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Button m_upgradeButton;
     [SerializeField] private TextMeshProUGUI m_upgradeNameLabel;
@@ -64,7 +65,7 @@ public class UpgradeTowerButton : MonoBehaviour
         m_towerData = upgradeData;
         
         //Name
-        m_upgradeNameLabel.SetText($"{upgradeData.m_name}");
+        m_upgradeNameLabel.SetText($"{upgradeData.m_towerName}");
         
         //Icon
         m_upgradeImage.sprite = upgradeData.m_uiIcon;
@@ -98,6 +99,7 @@ public class UpgradeTowerButton : MonoBehaviour
         if (m_canAffordWood && m_canAffordStone)
         {
             GameplayManager.Instance.UpgradeTower(m_tower, m_towerData, m_upgradeStoneValue, m_upgradeWoodValue);
+            UITooltipController.Instance.SetUISelectable(null);
             m_parentHUD.DeselectTower();
         }
     }
@@ -106,5 +108,17 @@ public class UpgradeTowerButton : MonoBehaviour
     {
         ResourceManager.UpdateStoneBank -= CheckStoneCost;
         ResourceManager.UpdateWoodBank -= CheckWoodCost;
+    }
+    
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        //Get the selectable component related to this button.
+        Selectable selectable = m_towerData.m_prefab.GetComponent<Selectable>();
+        UITooltipController.Instance.SetUISelectable(selectable);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        UITooltipController.Instance.SetUISelectable(null);
     }
 }
