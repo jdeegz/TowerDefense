@@ -12,4 +12,6 @@ public class GathererData : ScriptableObject
     public float m_harvestDuration;
     public float m_storingDuration;
     public int m_carryCapacity;
+    public Sprite m_gathererIconSprite;
+    public Sprite m_gathererTypeSprite;
 }

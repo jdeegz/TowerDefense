@@ -19,7 +19,7 @@ public class UITooltipController : MonoBehaviour
     public float m_offsetYPositive;
     public float m_offsetXNegative;
     public float m_offsetYNegative;
-    
+
     private float m_rectWidth;
     private float m_rectHeight;
     private RectTransform m_tooltipRect;
@@ -38,14 +38,16 @@ public class UITooltipController : MonoBehaviour
     private CanvasGroup m_canvasGroup;
     private VerticalLayoutGroup m_layoutGroup;
     private Tween m_curTween;
-    
+    private Vector2 m_lastScreenSize;
+    private CanvasScaler m_canvasScaler;
+
     private string m_timeIconString = "<sprite name=\"Time\">";
     private string m_healthIconString = "<sprite name=\"ResourceHealth\">";
     private string m_resourceWoodIconString = "<sprite name=\"ResourceWood\">";
     private string m_gathererWoodIconString = "<sprite name=\"GathererWood\">";
     private string m_resourceStoneIconString = "<sprite name=\"ResourceStone\">";
     private string m_gathererStoneIconString = "<sprite name=\"GathererStone\">";
-    
+
     void Awake()
     {
         Instance = this;
@@ -54,7 +56,9 @@ public class UITooltipController : MonoBehaviour
         m_canvasGroup.alpha = 0;
         m_tooltipRect = m_tooltipDisplayGroup.GetComponent<RectTransform>();
         m_canvas = GetComponentInParent<Canvas>();
+        m_canvasScaler = m_canvas.GetComponent<CanvasScaler>();
         m_defaultPivot = m_tooltipRect.pivot;
+        m_lastScreenSize = new Vector2(Screen.width, Screen.height);
 
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
@@ -66,7 +70,7 @@ public class UITooltipController : MonoBehaviour
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }
-    
+
     private void GameObjectDeselected(GameObject obj)
     {
         Selectable deselected = obj.GetComponent<Selectable>();
@@ -84,37 +88,43 @@ public class UITooltipController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Screen.width != m_lastScreenSize.x || Screen.height != m_lastScreenSize.y)
+        {
+            // Update the last known screen size
+            m_lastScreenSize = new Vector2(Screen.width, Screen.height);
+        }
+
         HandleTooltipPlacement();
-        
+
         //Dont do any Tooltip display while in preconstruction.
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
-            if(m_canvasGroup.alpha > 0) RequestShowTooltip(false);
+            if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
             return;
         }
-        
+
         //Copy the selectable from gameplay manager.
         SetWorldSelectable(GameplayManager.Instance.m_hoveredSelectable);
-        
+
         //Dont show a tooltip for a currently selected tower that is being hovered.
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.SelectedTower && m_curSelected == m_curWorldSelectable)
         {
-            if(m_canvasGroup.alpha > 0) RequestShowTooltip(false);
+            if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
             return;
         }
-        
+
         //I want to show a tooltip if I am hovering over an object, and it's not the same object as last frame.
         if (m_curUISelectable != m_lastUISelectable)
         {
             //Show a tooltip
-            if(m_curUISelectable) SetTooltipData(m_curUISelectable.m_selectedObjectType, m_curUISelectable.gameObject);
+            if (m_curUISelectable) SetTooltipData(m_curUISelectable.m_selectedObjectType, m_curUISelectable.gameObject);
             m_lastUISelectable = m_curUISelectable;
         }
 
         if (m_curWorldSelectable != m_lastWorldSelectable)
         {
             //Show a tooltip
-            if(m_curWorldSelectable) SetTooltipData(m_curWorldSelectable.m_selectedObjectType, m_curWorldSelectable.gameObject);
+            if (m_curWorldSelectable) SetTooltipData(m_curWorldSelectable.m_selectedObjectType, m_curWorldSelectable.gameObject);
             m_lastWorldSelectable = m_curWorldSelectable;
         }
 
@@ -218,18 +228,22 @@ public class UITooltipController : MonoBehaviour
         m_objectDetailsLabel.gameObject.SetActive(m_objectDetailsString != null);
         m_objectDetailsLabel.SetText(m_objectDetailsString);
 
-        LayoutRebuilder.ForceRebuildLayoutImmediate(m_layoutGroup.GetComponent<RectTransform>());
+        LayoutRebuilder.ForceRebuildLayoutImmediate(m_tooltipRect);
 
         RequestShowTooltip(true);
     }
 
     void RequestShowTooltip(bool show)
     {
-        if(m_curTween != null) m_curTween.Kill();
+        if (m_curTween != null) m_curTween.Kill();
         m_canvasGroup.alpha = 0;
         if (show)
         {
-            m_curTween = m_canvasGroup.DOFade(1, 0.1f);
+            m_curTween = m_canvasGroup.DOFade(1, 0.1f).SetDelay(0.25f).OnComplete(() =>
+            {
+                // After the first fade completes, add a 3-second delay
+                m_curTween = m_canvasGroup.DOFade(0f, 0.1f).SetDelay(3f);
+            });
             m_curTween.Play();
         }
     }
@@ -238,20 +252,19 @@ public class UITooltipController : MonoBehaviour
     {
         //Get the mouse position and convert it to screen coordinates.
         m_mousePos = Input.mousePosition;
-        m_rectWidth = m_tooltipRect.rect.width;
-        m_rectHeight = m_tooltipRect.rect.height;
+        Vector2 rectSize = m_tooltipRect.rect.size;
+        Vector2 canvasSize = m_canvasScaler.referenceResolution;
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(m_canvas.transform as RectTransform, m_mousePos, m_canvas.worldCamera, out Vector2 localPoint);
-
         Vector2 newTooltipPivot = m_defaultPivot;
         Vector2 newOffset = new Vector2(m_offsetXPositive, m_offsetYPositive);
-        if (localPoint.x < 0 - Screen.width / 2 + m_rectWidth + m_offsetXPositive)
+        if (localPoint.x < 0 - canvasSize.x / 2 + rectSize.x + m_offsetXPositive)
         {
             newOffset.x = -m_offsetXNegative;
             newTooltipPivot.x = 0;
         }
 
-        if (localPoint.y > Screen.height / 2 - m_rectHeight - m_offsetYPositive)
+        if (localPoint.y > canvasSize.y / 2 - rectSize.y - m_offsetYPositive)
         {
             newOffset.y = -m_offsetYNegative;
             newTooltipPivot.y = 1;

@@ -28,6 +28,7 @@ public class UICombatView : MonoBehaviour
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
+    [SerializeField] private GameObject m_gathererTrayButtonPrefab;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
@@ -37,6 +38,7 @@ public class UICombatView : MonoBehaviour
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
+    [SerializeField] private RectTransform m_gathererTrayLayoutObj;
     [SerializeField] private RectTransform m_healthDisplay;
     [SerializeField] private RectTransform m_woodBankDisplay;
     [SerializeField] private RectTransform m_stoneBankDisplay;
@@ -56,6 +58,8 @@ public class UICombatView : MonoBehaviour
     private Tween m_woodGathererShake;
     private Tween m_stoneGathererShake;
     private CastleController m_castleController;
+    private Dictionary<KeyCode, int> m_gathererKeyMap;
+    private Dictionary<KeyCode, int> m_towerKeyMap;
 
     void Awake()
     {
@@ -63,11 +67,21 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed += Alert;
         GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
+        GameplayManager.OnGathererAdded += BuildGathererTrayButton;
+        GameplayManager.OnGathererRemoved += RemoveGathererTrayButton;
+        
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
+        if (m_buttons == null)
+        {
+            Debug.Log($"initializing m_buttons in combat view");
+            m_buttons = new List<Button>();
+        }
+        
         gameObject.SetActive(false);
+        
     }
 
     private void UpdateCastleHealthDisplay(int i)
@@ -141,6 +155,9 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGameSpeedChanged -= GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed -= Alert;
         GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
+        GameplayManager.OnGathererAdded += BuildGathererTrayButton;
+        GameplayManager.OnGathererRemoved += RemoveGathererTrayButton;
+        
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount -= UpdateStoneGathererDisplay;
@@ -149,7 +166,7 @@ public class UICombatView : MonoBehaviour
 
     private void UpdateObeliskDisplay(int x, int y)
     {
-        m_obelisksChargedLabel.SetText($"Obelisks Charged: {x}/{y}");
+        m_obelisksChargedLabel.SetText($"Obelisk Power: {x} / {y}");
     }
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
@@ -158,7 +175,7 @@ public class UICombatView : MonoBehaviour
         {
             case GameplayManager.GameplayState.Setup:
                 //If there obelisks in the mission we care about those instead of wave counts.
-                if (GameplayManager.Instance.m_obeliskCount > 0)
+                /*if (GameplayManager.Instance.m_obeliskCount > 0)
                 {
                     m_obeliskDisplayObj.SetActive(true);
                     m_waveDisplayObj.SetActive(false);
@@ -167,17 +184,17 @@ public class UICombatView : MonoBehaviour
                 {
                     m_obeliskDisplayObj.SetActive(false);
                     m_waveDisplayObj.SetActive(true);
-                }
+                }*/
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1} / {GameplayManager.Instance.m_totalWaves}");
+                m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1}");
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
                 if (!gameObject.activeSelf)
                 {
-                    m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1} / {GameplayManager.Instance.m_totalWaves}");
+                    m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1}");
                     gameObject.SetActive(true);
                 }
                 m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
@@ -246,20 +263,10 @@ public class UICombatView : MonoBehaviour
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
 
-        if (m_buttons == null)
-        {
-            m_buttons = new List<Button>();
-        }
-
         m_buttons.Add(m_nextWaveButton);
 
         BuildTowerTrayDisplay();
-    }
-
-    private Dictionary<KeyCode, int> m_towerKeyMap;
-    
-    private void BuildTowerTrayDisplay()
-    {
+        
         m_towerKeyMap = new Dictionary<KeyCode, int>
         {
             { KeyCode.Alpha1, 0 },
@@ -274,6 +281,42 @@ public class UICombatView : MonoBehaviour
             { KeyCode.Alpha0, 9 },
         };
         
+        m_gathererKeyMap = new Dictionary<KeyCode, int>
+        {
+            { KeyCode.Q, 0 },
+            { KeyCode.W, 1 },
+            { KeyCode.E, 2 },
+            { KeyCode.R, 3 },
+            { KeyCode.T, 4 },
+            { KeyCode.Y, 5 },
+        };
+    }
+
+    
+    
+    public void BuildGathererTrayButton(GathererController gathererController)
+    {
+        GameObject buttonPrefab = Instantiate(m_gathererTrayButtonPrefab, m_gathererTrayLayoutObj);
+        GathererTrayButton gathererTrayButtonScript = buttonPrefab.GetComponent<GathererTrayButton>();
+        gathererTrayButtonScript.SetupGathererTrayButton(gathererController, 1);
+        
+        
+        Button buttonScript = buttonPrefab.GetComponent<Button>();
+        
+        if (buttonScript)
+        {
+            Debug.Log($"adding gatherer tray button to m_buttons");
+            m_buttons.Add(buttonScript);
+        }
+    }
+
+    private void RemoveGathererTrayButton(GathererController gathererController)
+    {
+        //To Do if i ever need to remove gatherers.
+    }
+    
+    private void BuildTowerTrayDisplay()
+    {
         for (int i = 0; i < GameplayManager.Instance.m_equippedTowers.Length; ++i)
         {
             GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_towerTrayLayoutObj);

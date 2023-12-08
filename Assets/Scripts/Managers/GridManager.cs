@@ -42,6 +42,7 @@ public class GridManager : MonoBehaviour
         GameplayManager.OnTowerBuild += TowerBuilt;
         GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
         GameplayManager.OnTowerSell += RefreshGrid;
+        m_gridVisualizerObj.SetActive(false);
     }
 
     void OnDestroy()

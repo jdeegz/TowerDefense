@@ -30,6 +30,8 @@ public class GameplayManager : MonoBehaviour
     public static event Action OnTowerBuild;
     public static event Action OnTowerSell;
     public static event Action<int, int> OnObelisksCharged;
+    public static event Action<GathererController> OnGathererAdded;
+    public static event Action<GathererController> OnGathererRemoved;
 
 
     [Header("Castle")] public CastleController m_castleController;
@@ -455,6 +457,8 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        OnGathererAdded?.Invoke(gatherer);
     }
 
     public void RemoveGathererFromList(GathererController gatherer, ResourceManager.ResourceType type)
@@ -485,6 +489,8 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+        
+        OnGathererRemoved?.Invoke(gatherer);
     }
 
     public void PreconstructTower(int i)
@@ -860,5 +866,15 @@ public class GameplayManager : MonoBehaviour
         }
 
         UpdateGameplayState(GameplayState.Build);
+    }
+
+    public void RequestSelectGatherer(GameObject obj)
+    {
+        if (m_interactionState == InteractionState.PreconstructionTower)
+        {
+            ClearPreconstructedTower();
+        }
+        
+        OnGameObjectSelected?.Invoke(obj);
     }
 }

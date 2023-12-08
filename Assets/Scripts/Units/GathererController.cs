@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 public class GathererController : MonoBehaviour
 {
-    [SerializeField] private GathererData m_GathererData;
+    public GathererData m_gathererData;
     [SerializeField] private ParticleSystem m_idleStateVFX;
     public GathererTask m_gathererTask;
     public Animator m_animator;
@@ -56,9 +56,9 @@ public class GathererController : MonoBehaviour
         GameplayManager.OnCommandRequested += CommandRequested;
         m_audioSource = GetComponent<AudioSource>();
         m_idlePos = transform.position;
-        m_harvestDuration = m_GathererData.m_harvestDuration;
-        m_carryCapacity = m_GathererData.m_carryCapacity;
-        m_storingDuration = m_GathererData.m_storingDuration;
+        m_harvestDuration = m_gathererData.m_harvestDuration;
+        m_carryCapacity = m_gathererData.m_carryCapacity;
+        m_storingDuration = m_gathererData.m_storingDuration;
     }
 
     private void OnDestroy()
@@ -66,7 +66,7 @@ public class GathererController : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
         GameplayManager.OnGameObjectSelected -= GathererSelected;
         GameplayManager.OnCommandRequested -= CommandRequested;
-        GameplayManager.Instance.RemoveGathererFromList(this, m_GathererData.m_type);
+        GameplayManager.Instance.RemoveGathererFromList(this, m_gathererData.m_type);
     }
 
     private void GameplayStateChanged(GameplayManager.GameplayState newState)
@@ -81,13 +81,13 @@ public class GathererController : MonoBehaviour
 
     void Start()
     {
-        switch (m_GathererData.m_type)
+        switch (m_gathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
-                GameplayManager.Instance.AddGathererToList(this, m_GathererData.m_type);
+                GameplayManager.Instance.AddGathererToList(this, m_gathererData.m_type);
                 break;
             case ResourceManager.ResourceType.Stone:
-                GameplayManager.Instance.AddGathererToList(this, m_GathererData.m_type);
+                GameplayManager.Instance.AddGathererToList(this, m_gathererData.m_type);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -228,14 +228,14 @@ public class GathererController : MonoBehaviour
         switch (type)
         {
             case Selectable.SelectedObjectType.ResourceWood:
-                if (m_GathererData.m_type == ResourceManager.ResourceType.Wood)
+                if (m_gathererData.m_type == ResourceManager.ResourceType.Wood)
                 {
                     RequestedHarvest(requestObj);
                 }
 
                 break;
             case Selectable.SelectedObjectType.ResourceStone:
-                if (m_GathererData.m_type == ResourceManager.ResourceType.Stone)
+                if (m_gathererData.m_type == ResourceManager.ResourceType.Stone)
                 {
                     RequestedHarvest(requestObj);
                 }
@@ -444,7 +444,7 @@ public class GathererController : MonoBehaviour
                 ResourceNode newNode = collider.GetComponent<ResourceNode>();
                 if (newNode != null)
                 {
-                    if (newNode.m_type == m_GathererData.m_type && newNode.HasResources())
+                    if (newNode.m_type == m_gathererData.m_type && newNode.HasResources())
                     {
                         nearbyNodes.Add(newNode);
                     }
@@ -552,7 +552,7 @@ public class GathererController : MonoBehaviour
     private IEnumerator Storing()
     {
         yield return new WaitForSeconds(m_storingDuration);
-        switch (m_GathererData.m_type)
+        switch (m_gathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
                 ResourceManager.Instance.UpdateWoodAmount(m_resourceCarried);
@@ -625,9 +625,9 @@ public class GathererController : MonoBehaviour
     public GathererTooltipData GetTooltipData()
     {
         GathererTooltipData data = new GathererTooltipData();
-        data.m_gathererType = m_GathererData.m_type;
-        data.m_gathererName = m_GathererData.m_gathererName;
-        data.m_gathererDescription = m_GathererData.m_gathererDescription;
+        data.m_gathererType = m_gathererData.m_type;
+        data.m_gathererName = m_gathererData.m_gathererName;
+        data.m_gathererDescription = m_gathererData.m_gathererDescription;
         data.m_harvestDuration = m_harvestDuration;
         data.m_storingDuration = m_storingDuration;
         data.m_carryCapacity = m_carryCapacity;
