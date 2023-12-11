@@ -7,6 +7,7 @@ using UnityEngine.Serialization;
 
 public class CameraController : MonoBehaviour
 {
+    public static CameraController Instance;
     public float m_scrollSpeed = 5f;
     public float m_scrollZone = 50f;
 
@@ -25,6 +26,12 @@ public class CameraController : MonoBehaviour
     private Vector3 m_cameraNorthWest;
     private Vector3 m_cameraSouthEast;
     private Vector3 m_cameraSouthWest;
+
+    void Awake()
+    {
+        Instance = this;
+    }
+    
     void Start()
     {
         float x = GridManager.Instance.m_gridWidth / 2;

@@ -13,6 +13,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     //Enemy Scriptable Data
     [Header("Enemy Data")] private EnemyData m_enemyData;
     public Transform m_targetPoint;
+    public GameObject m_enemyModelRoot;
 
     //Enemy Objective & Position
     protected Vector2Int m_curPos;
@@ -48,7 +49,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private List<StatusEffect> m_expiredStatusEffects = new List<StatusEffect>();
 
     //Obelisk
-    public ObeliskData m_obeliskData;
+    private ObeliskData m_obeliskData;
 
     public event Action<float> UpdateHealth;
     public event Action<Vector3> DestroyEnemy;
@@ -79,7 +80,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
 
         //Setup Hit Flash
-        CollectMeshRenderers(transform);
+        CollectMeshRenderers(m_enemyModelRoot.transform);
 
         //Setup Status Effects
         m_statusEffects = new List<StatusEffect>();
@@ -112,7 +113,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void FixedUpdate()
     {
         HandleMovement();
-        
     }
 
     //Movement
@@ -229,7 +229,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     private Obelisk FindObelisk()
     {
-        Obelisk m_closestObelisk = null;
+        Obelisk closestObelisk = null;
         Collider[] hits = Physics.OverlapSphere(transform.position, m_obeliskData.m_obeliskRange, m_obeliskData.m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
@@ -246,12 +246,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 {
                     closestIndex = i;
                     closestDistance = distance;
-                    m_closestObelisk = hits[closestIndex].transform.GetComponent<Obelisk>();
+                    closestObelisk = hits[closestIndex].transform.GetComponent<Obelisk>();
                 }
             }
         }
 
-        return m_closestObelisk;
+        return closestObelisk;
     }
 
     //Status Effect

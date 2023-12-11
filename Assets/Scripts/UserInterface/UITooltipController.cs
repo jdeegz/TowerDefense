@@ -149,7 +149,6 @@ public class UITooltipController : MonoBehaviour
 
     public void SetTooltipData(Selectable.SelectedObjectType type, GameObject hoveredObj)
     {
-        Debug.Log($"Showing Tooltip.");
         switch (type)
         {
             case Selectable.SelectedObjectType.ResourceWood:

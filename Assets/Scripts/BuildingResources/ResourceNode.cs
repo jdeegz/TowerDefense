@@ -35,7 +35,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-            
+
             //Make list of neighbor positions
             ValueTuple<List<Cell>, List<Vector3>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
             for (var i = 0; i < vars.Item1.Count; ++i)
@@ -101,6 +101,14 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         data.m_maxResources = m_nodeData.m_maxResources;
         data.m_curResources = m_resourcesRemaining;
         return data;
+    }
+
+    void OnTriggerEnter(Collider col)
+    {
+        if (col.gameObject.CompareTag("ForestRemover"))
+        {
+            OnDepletion();
+        }
     }
 }
 
