@@ -73,6 +73,8 @@ public class GridManager : MonoBehaviour
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
                 break;
+            case GameplayManager.GameplayState.SpawnBoss:
+                break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:

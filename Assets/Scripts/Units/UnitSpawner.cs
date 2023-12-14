@@ -11,17 +11,23 @@ public class UnitSpawner : MonoBehaviour
 {
     public Transform m_spawnPoint;
     [SerializeField] private SpawnerWaves m_spawnerWaves;
-    
+
     private bool m_isSpawnerActive = false;
     private List<Creep> m_activeWave;
     private List<CreepSpawner> m_activeCreepSpawners;
-
+    private StatusEffect m_spawnStatusEffect;
+    private int m_spawnStatusEffectWaveDuration;
 
     private void Start()
     {
         m_isSpawnerActive = false;
     }
 
+    public void SetSpawnerStatusEffect(StatusEffect statusEffect, int duration)
+    {
+        m_spawnStatusEffect = statusEffect;
+        m_spawnStatusEffectWaveDuration = duration;
+    }
 
     private void Update()
     {
@@ -54,7 +60,6 @@ public class UnitSpawner : MonoBehaviour
 
     private void StartSpawning()
     {
-       
         //Creep waves start at wave 0, are shown as wave 1.
         //If we have training waves, use them.
         GameplayManager.Instance.ActivateSpawner();
@@ -90,7 +95,17 @@ public class UnitSpawner : MonoBehaviour
         {
             //Build list of Active Creep Spawners.
             CreepSpawner creepSpawner = new CreepSpawner(m_activeWave[i], m_spawnPoint);
+            creepSpawner.m_spawnStatusEffect = m_spawnStatusEffect;
             m_activeCreepSpawners.Add(creepSpawner);
+        }
+        
+        //Decrement Spawn Status Effect Duration.
+        --m_spawnStatusEffectWaveDuration;
+
+        //Remove the Spawn Status Effect if we've reached 0 rounds left.
+        if (m_spawnStatusEffectWaveDuration == 0)
+        {
+            m_spawnStatusEffect = null;
         }
 
         m_isSpawnerActive = true;
@@ -126,15 +141,13 @@ public class UnitSpawner : MonoBehaviour
             case GameplayManager.GameplayState.CreatePaths:
                 break;
             case GameplayManager.GameplayState.Setup:
-                
-
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                
                 StartSpawning();
                 break;
+            case GameplayManager.GameplayState.SpawnBoss:
+                break;
             case GameplayManager.GameplayState.Combat:
-                
                 break;
             case GameplayManager.GameplayState.Build:
                 break;
@@ -145,7 +158,8 @@ public class UnitSpawner : MonoBehaviour
             case GameplayManager.GameplayState.Defeat:
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
+                Debug.Log($"{this} has no {newState} case.");
+                break;
         }
     }
 }
@@ -156,12 +170,14 @@ public class CreepSpawner
     public int m_unitsToSpawn;
     public float m_spawnDelay;
     public float m_spawnInterval;
+    public StatusEffect m_spawnStatusEffect;
 
     private bool m_isCreepSpawning = true;
     private int m_unitsSpawned;
     private float m_elapsedTime;
     private bool m_delayElapsed;
     private Transform m_creepSpawnPoint;
+
 
     public CreepSpawner(Creep creep, Transform spawnPoint)
     {
@@ -195,7 +211,9 @@ public class CreepSpawner
             spawnPoint.z += zOffset;
 
             GameObject enemyOjb = GameObject.Instantiate(m_enemy.m_enemyPrefab, spawnPoint, m_creepSpawnPoint.rotation, GameplayManager.Instance.m_enemiesObjRoot);
-            enemyOjb.GetComponent<EnemyController>().SetEnemyData(m_enemy);
+            EnemyController enemyController = enemyOjb.GetComponent<EnemyController>();
+            enemyController.SetEnemyData(m_enemy);
+            if(m_spawnStatusEffect != null) enemyController.ApplyEffect(m_spawnStatusEffect);
             m_unitsSpawned++;
             m_elapsedTime = 0;
 

@@ -99,6 +99,9 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.SpawnEnemies:
                 PlayAudio(m_castleData.m_audioWaveStart);
                 break;
+            case GameplayManager.GameplayState.SpawnBoss:
+                PlayAudio(m_castleData.m_audioWaveStart);
+                break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:

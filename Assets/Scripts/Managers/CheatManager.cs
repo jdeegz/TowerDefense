@@ -24,6 +24,18 @@ public class CheatManager : MonoBehaviour
         {
             GiveMaxHealth();
         }
+        
+        //Decrement Wave
+        if (Input.GetKeyDown(KeyCode.LeftBracket))
+        {
+            ModifyWave(-1);
+        }
+        
+        //Increment Wave
+        if (Input.GetKeyDown(KeyCode.RightBracket))
+        {
+            ModifyWave(1);
+        }
     }
 
     void GiveWood()
@@ -34,6 +46,12 @@ public class CheatManager : MonoBehaviour
     void GiveMaxHealth()
     {
         GameplayManager.Instance.m_castleController.CheatCastleHealth();
+    }
+
+    void ModifyWave(int i)
+    {
+        GameplayManager.Instance.m_wave += i;
+        Debug.Log($"Wave adjusted to: {GameplayManager.Instance.m_wave}");
     }
 }
 #endif

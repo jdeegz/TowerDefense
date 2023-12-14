@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -9,147 +10,211 @@ using Sequence = DG.Tweening.Sequence;
 
 public class EnemyFlierBoss : EnemyController
 {
-    [HideInInspector]public BossSequenceController m_bossSequenceController;
-    public AnimationCurve m_moveCurve;
-    public AnimationCurve m_attackRotationCurve;
-    public float m_maxRotationRotation = 2.5f; //Degrees per second
-    public GameObject m_coneObj;
-    public GameObject m_dragonObj;
-    public Vector3 m_dragonAttackRotation;
+    [HideInInspector] public BossSequenceController m_bossSequenceController;
+    public GameObject m_muzzleObj;
 
-    private Vector3 m_introductionPosition = Vector3.zero;
-    private int m_lastGoal;
     private int m_curGoal;
-    private int m_nextGoal;
-    private Vector3 m_nextGoalPos;
-    private float m_coneTimer = 99f;
-    private float m_stoppingDistance;
+    private Vector3 m_curGoalPos;
+    private Vector3 m_castlePos;
+    
+    private bool m_isStrafing = false;
     private float m_coneStartDelay;
     private float m_coneEndBuffer;
-    private bool m_isStrafing = false;
+    private float m_moveDistance;
+    private float m_distanceTravelled;
+    private int m_moveCounter;
+    private float m_rotationThreadhold = 0.999f;
+    private Coroutine m_curCoroutine;
     
-    public override void HandleMovement()
+    private BossState m_bossState;
+    private enum BossState
+    {
+        Idle,
+        RotateToDestination,
+        MoveToDestination,
+        RotateToTarget,
+        AttackTarget,
+        Death,
+    }
+
+    void Start()
     {
         //If we just spawned, travel to N units away from the castle.
-        if (!m_isStrafing)
-        {
-            if (m_introductionPosition == Vector3.zero)
-            {
-                m_introductionPosition = GameplayManager.Instance.m_castleController.transform.position;
-                m_introductionPosition.z += 4.5f;
-            }
-            
-            //Movement
-            float speed = m_baseMoveSpeed;
-            Vector3 direction = (m_introductionPosition - transform.position).normalized;
-            transform.Translate(speed * Time.deltaTime * direction, Space.World);
+        m_curGoal = 0;
+        m_curGoalPos = m_bossSequenceController.GetNextGoalPosition(m_curGoal);
+        m_castlePos = GameplayManager.Instance.m_castleController.transform.position;
+        transform.rotation = Quaternion.LookRotation(m_curGoalPos - transform.position);
+        UpdateBossState(BossState.MoveToDestination);
+    }
+
+    public override void HandleMovement()
+    {
         
-            //Rotation
-            Quaternion lookRotation = Quaternion.LookRotation((m_introductionPosition - transform.position).normalized);
-            transform.rotation = lookRotation;
-            
-            //Check to see if we should stop this movement.
-            if (Vector3.Distance(transform.position, m_introductionPosition) <= 0.1f)
-            {
-                BeginStrafe();
-            }
+    }
+
+    void UpdateBossState(BossState newState)
+    {
+        m_bossState = newState;
+        switch (m_bossState)
+        {
+            case BossState.Idle:
+                break;
+            case BossState.RotateToDestination:
+                break;
+            case BossState.MoveToDestination:
+                break;
+            case BossState.RotateToTarget:
+                break;
+            case BossState.AttackTarget:
+                m_curCoroutine = StartCoroutine(Attack());
+                break;
+            case BossState.Death:
+                if(m_curCoroutine != null) StopCoroutine(m_curCoroutine);
+                //Do boss death stuff.
+                //Spawn 4 seekers.
+                //Have to keep gameplay state from switching due to not having alive enemies.
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
+    private IEnumerator Attack()
+    {
+        yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackDelay);
+        HandleAttack();
+        yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackCooldown);
+        UpdateBossState(BossState.RotateToDestination);
+    }
+    
+    private IEnumerator UpdateStateAfterDelay(float i, BossState newState)
+    {
+        yield return new WaitForSeconds(i);
+        UpdateBossState(newState);
+    }
+    
+    private void HandleAttack()
+    {
+        GameObject projectileObj = Instantiate(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation);
+    }
+    
     public void Update()
     {
-        m_coneTimer += Time.deltaTime;
-        HandleCone();
+        switch (m_bossState)
+        {
+            case BossState.Idle:
+                break;
+            case BossState.RotateToDestination:
+                // Calculate the rotation to face the target
+                Quaternion rotationToDestination = Quaternion.LookRotation(m_curGoalPos - transform.position);
+                float rotationToDestinationDotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToDestination));
+                
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotationToDestination, m_baseLookSpeed * Time.deltaTime);
+                
+                if (rotationToDestinationDotProduct >= m_rotationThreadhold)
+                {
+                    m_curCoroutine = StartCoroutine(UpdateStateAfterDelay(1, BossState.MoveToDestination));   
+                }
+                break;
+            case BossState.MoveToDestination:
+                if (m_moveCounter % ((BossEnemyData)m_enemyData).m_strafeAttackRate != 0) HandleCone();
+                
+                //Movement
+                float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+                Vector3 direction = (m_curGoalPos - transform.position).normalized;
+                transform.Translate(speed * Time.deltaTime * direction, Space.World);
+
+                //Set the distance travelled
+                m_distanceTravelled = m_moveDistance - Vector3.Distance(transform.position, m_curGoalPos);
+
+                //Check if we're at our destination.
+                if (Vector3.Distance(transform.position, m_curGoalPos) <= 0.05f)
+                {
+                    //Get the next destination, even if we're attacking right now.
+                    UpdateMoveDestination();
+                    SetConeDistances();
+                    
+                    
+                    //Do we need to Rotate to a new Destination, or Rotate to attack the castle?
+                    if (m_moveCounter % ((BossEnemyData)m_enemyData).m_castleAttackRate == 0)
+                    {
+                        UpdateBossState(BossState.RotateToTarget);
+                    }
+                    else
+                    {
+                        UpdateBossState(BossState.RotateToDestination);
+                    }
+                }
+                break;
+            case BossState.RotateToTarget:
+                // Calculate the rotation to face the target
+                Quaternion rotationToCastle = Quaternion.LookRotation(m_castlePos - transform.position);
+                float rotationToCastledotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToCastle));
+                
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotationToCastle, m_baseLookSpeed * Time.deltaTime);
+                
+                if (rotationToCastledotProduct >= m_rotationThreadhold)
+                {
+                    UpdateBossState(BossState.AttackTarget);    
+                }
+                break;
+            case BossState.AttackTarget:
+                break;
+            case BossState.Death:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
-    void BeginStrafe()
+    void UpdateMoveDestination()
     {
         m_isStrafing = true;
-        //Get the closest cell and set it as last and current goals. Then find a new goal.
-        int pos = m_bossSequenceController.GetCellIndexFromVector3(m_introductionPosition);
-        m_lastGoal = pos;
-        m_curGoal = pos;
-        m_nextGoal = m_bossSequenceController.GetNextGridCell(m_lastGoal, m_curGoal);
-        m_nextGoalPos = m_bossSequenceController.GetNextGoalPosition(m_nextGoal);
-
-        Vector3 targetDirection = m_nextGoalPos - transform.position;
-        float degreesToRotate = Vector3.Angle(transform.forward, targetDirection);
-        float rotationDuration = degreesToRotate / m_baseLookSpeed;
-        rotationDuration = Math.Min(rotationDuration, m_maxRotationRotation);
-        transform.DOLookAt(m_nextGoalPos, rotationDuration, AxisConstraint.Y).SetEase(Ease.InOutQuad).OnComplete(HandleStrafe);
-        
-        HandleStrafe();
+        ++m_curGoal;
+        if (m_curGoal == m_bossSequenceController.m_bossGridCellPositions.Count)
+        {
+            m_curGoal = 0;
+        }
+        ++m_moveCounter;
+        m_curGoalPos = m_bossSequenceController.GetNextGoalPosition(m_curGoal);
+        m_moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
     }
-    
-    void UpdateStrafeDestination()
+
+
+    void SetConeDistances()
     {
-        Debug.Log($"Updating Strafe Destination");
-        m_lastGoal = m_curGoal;
-        m_curGoal = m_nextGoal;
-        m_nextGoal = m_bossSequenceController.GetNextGridCell(m_lastGoal, m_curGoal);
-        m_nextGoalPos = m_bossSequenceController.GetNextGoalPosition(m_nextGoal);
-        HandleStrafe();
+        //Starting distance
+        m_coneStartDelay = m_moveDistance * .2f; // Distance we need to travel before turning on cone.
+        
+        //Ending distance
+        m_coneEndBuffer = m_moveDistance * .8f; //Distance we need to travel to turn the cone off.
+
+        m_distanceTravelled = 0f;
     }
 
-    void HandleStrafe()
-    {
-        Debug.Log($"Handling Strafe to {m_nextGoalPos}");
-        //Define the duration of the DOMove to create a consistent movespeed per path point.
-        Vector3 m_curGoalPos = new Vector3(m_bossSequenceController.m_bossGridCellPositions[m_curGoal].x, 0, m_bossSequenceController.m_bossGridCellPositions[m_curGoal].y);
-        float moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
-        float moveDuration = moveDistance / m_baseMoveSpeed;
-        
-        //Define the rotation speed. Goal is to rotate the dragon a consistent amount of degrees/second rather than faster rotations for larger degree deltas.
-        Vector3 targetDirection = m_nextGoalPos - transform.position;
-        float degreesToRotate = Vector3.Angle(transform.forward, targetDirection);
-        float rotationDuration = degreesToRotate / m_baseLookSpeed;
-        rotationDuration = Math.Min(rotationDuration, m_maxRotationRotation);
-        float rotationDelay = moveDuration * 0.7f;
-        
-        SetConeTimes(moveDuration);
-        
-        //Build the Dotween sequence. We want Move to start and for rotate to play with a delay relative to the duration of the move.
-        Sequence curSequence = DOTween.Sequence();
-    
-        //Move to our next goal.
-        curSequence.Append(transform.DOMove(m_curGoalPos, moveDuration).SetEase(m_moveCurve));
-        
-        //Rotate the dragon object down during the move.
-        curSequence.Join(m_dragonObj.transform.DOLocalRotate(m_dragonAttackRotation, moveDuration).SetEase(m_attackRotationCurve));
-
-        //Look towards the next goal as we come to the end of our movement.
-        curSequence.Join(transform.DOLookAt(m_nextGoalPos, rotationDuration, AxisConstraint.Y).SetEase(Ease.InOutQuad).SetDelay(rotationDelay));
-
-        
-        //Find the next destination when we're done.
-        curSequence.OnComplete(() => UpdateStrafeDestination());
-        
-        curSequence.Play();
-    }
-
-    void SetConeTimes(float moveDuration)
-    {
-        //Define the start delay. We want the smallest between our defined delay or a % of the move duration.
-        float startDelay = moveDuration * 0.20f;
-        m_coneStartDelay = startDelay;
-
-        //We definitely want the cone to be disabled as we start to rotate.
-        m_coneEndBuffer = moveDuration * 0.65f;
-        
-        //Reset the cone timer.
-        m_coneTimer = 0;
-    }
-    
     void HandleCone()
     {
         //If the cone is disabled, and we're after start, before end, turn on cone.
-        if (!m_coneObj.activeSelf && m_coneTimer > m_coneStartDelay && m_coneTimer < m_coneEndBuffer)
+        if (!m_muzzleObj.activeSelf && m_distanceTravelled > m_coneStartDelay && m_distanceTravelled < m_coneEndBuffer)
         {
-            m_coneObj.SetActive(true);
+            m_muzzleObj.SetActive(true);
         }
-        else if(m_coneObj.activeSelf && (m_coneTimer < m_coneStartDelay || m_coneTimer > m_coneEndBuffer))
+        else if (m_muzzleObj.activeSelf && (m_distanceTravelled < m_coneStartDelay || m_distanceTravelled > m_coneEndBuffer))
         {
-            m_coneObj.SetActive(false);
+            m_muzzleObj.SetActive(false);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (m_curHealth >= 0) return;
+
+        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        {
+            GameObject bossShardObj = Instantiate(((BossEnemyData)m_enemyData).m_bossShard, transform.position, quaternion.identity);
+            
+            bossShardObj.GetComponent<BossShard>().SetupBossShard(spawner.transform.position);
+            spawner.SetSpawnerStatusEffect(((BossEnemyData)m_enemyData).m_spawnStatusEffect, ((BossEnemyData)m_enemyData).m_spawnStatusEffectWaveDuration);
         }
     }
 }

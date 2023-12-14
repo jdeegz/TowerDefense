@@ -17,6 +17,7 @@ public class GameplayManager : MonoBehaviour
     public GameSpeed m_gameSpeed;
     public int m_totalWaves = 10;
     public int m_wave;
+    public int m_bossWaveFactor = 20; //Spawn a boss every N waves.
 
     public static event Action<GameplayState> OnGameplayStateChanged;
     public static event Action<GameSpeed> OnGameSpeedChanged;
@@ -79,6 +80,7 @@ public class GameplayManager : MonoBehaviour
         CreatePaths,
         Setup,
         SpawnEnemies,
+        SpawnBoss,
         Combat,
         Build,
         Paused,
@@ -126,7 +128,14 @@ public class GameplayManager : MonoBehaviour
         m_timeToNextWave -= Time.deltaTime;
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
-            UpdateGameplayState(GameplayState.SpawnEnemies);
+            if (m_wave % m_bossWaveFactor == 0)
+            {
+                UpdateGameplayState(GameplayState.SpawnBoss);
+            }
+            else
+            {
+                UpdateGameplayState(GameplayState.SpawnEnemies);
+            }
         }
     }
 
@@ -338,6 +347,9 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.SpawnEnemies:
                 m_wave++;
                 break;
+            case GameplayState.SpawnBoss:
+                m_wave++;
+                break;
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
@@ -350,7 +362,6 @@ public class GameplayManager : MonoBehaviour
                 {
                     m_timeToNextWave = m_buildDuration;
                 }
-
                 break;
             case GameplayState.Paused:
                 break;
@@ -419,7 +430,6 @@ public class GameplayManager : MonoBehaviour
                 {
                     UpdateInteractionState(InteractionState.SelectedTower);
                 }
-
                 break;
             case Selectable.SelectedObjectType.Gatherer:
                 UpdateInteractionState(InteractionState.SelectedGatherer);
@@ -431,7 +441,6 @@ public class GameplayManager : MonoBehaviour
                 UpdateInteractionState(InteractionState.SelecteObelisk);
                 break;
             default:
-                
                 throw new ArgumentOutOfRangeException();
         }
     }
@@ -489,7 +498,7 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+
         OnGathererRemoved?.Invoke(gatherer);
     }
 
@@ -874,7 +883,7 @@ public class GameplayManager : MonoBehaviour
         {
             ClearPreconstructedTower();
         }
-        
+
         OnGameObjectSelected?.Invoke(obj);
     }
 }

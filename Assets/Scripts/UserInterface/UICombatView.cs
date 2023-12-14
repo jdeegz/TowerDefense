@@ -60,6 +60,7 @@ public class UICombatView : MonoBehaviour
     private CastleController m_castleController;
     private Dictionary<KeyCode, int> m_gathererKeyMap;
     private Dictionary<KeyCode, int> m_towerKeyMap;
+    private int m_wave;
 
     void Awake()
     {
@@ -187,14 +188,12 @@ public class UICombatView : MonoBehaviour
                 }*/
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1}");
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
                 if (!gameObject.activeSelf)
                 {
-                    m_waveLabel.SetText($"Wave: {GameplayManager.Instance.m_wave + 1}");
                     gameObject.SetActive(true);
                 }
                 m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
@@ -398,6 +397,12 @@ public class UICombatView : MonoBehaviour
             {
                 GameplayManager.Instance.PreconstructTower(kvp.Value);
             }
+        }
+
+        if (m_wave != GameplayManager.Instance.m_wave)
+        {
+            m_wave = GameplayManager.Instance.m_wave;
+            m_waveLabel.SetText($"Wave: {m_wave + 1}");
         }
     }
 

@@ -11,7 +11,8 @@ using Random = UnityEngine.Random;
 public abstract class EnemyController : MonoBehaviour, IEffectable
 {
     //Enemy Scriptable Data
-    [Header("Enemy Data")] private EnemyData m_enemyData;
+    [Header("Enemy Data")] 
+    public EnemyData m_enemyData;
     public Transform m_targetPoint;
     public GameObject m_enemyModelRoot;
 
@@ -22,7 +23,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     //Enemy Stats
     private float m_curMaxHealth;
-    private float m_curHealth;
+    protected float m_curHealth;
     protected float m_baseMoveSpeed;
     protected float m_baseLookSpeed;
     protected float m_lastSpeedModifierFaster = 1f;
@@ -57,9 +58,15 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public void SetEnemyData(EnemyData data)
     {
         m_enemyData = data;
+        SetupEnemy();
     }
 
-    void Start()
+    void Awake()
+    {
+        
+    }
+
+    void SetupEnemy()
     {
         //Setup with Gameplay Manager
         m_goal = GameplayManager.Instance.m_enemyGoal;
@@ -95,6 +102,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         //Create Speed Trail Object
         m_speedTrailVFXObj.SetActive(false);
+        
+        //Setup ObeliskData if the mission has obelisks
+        if (GameplayManager.Instance.m_activeObelisks.Count > 0)
+        {
+            m_obeliskData = GameplayManager.Instance.m_activeObelisks[0].m_obeliskData;
+        }
     }
 
     void Update()
@@ -211,9 +224,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         //If dead, look for obelisks nearby. If there is one, spawn a soul and have it move to the obelisk.
-        if (m_curHealth <= 0)
+        if (m_curHealth <= 0 && m_obeliskData != null)
         {
             Obelisk m_closestObelisk = FindObelisk();
+            m_obeliskData = m_closestObelisk.m_obeliskData;
             if (m_closestObelisk != null)
             {
                 //Instantiate a soul, and set its properties.
