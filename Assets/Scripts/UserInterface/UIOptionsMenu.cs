@@ -57,16 +57,19 @@ public class UIOptionsMenu : MonoBehaviour
     private void OnSurrenderButtonClicked()
     {
         Debug.Log("Surrendering Mission.");
+        PlayerDataManager.Instance.UpdateMissionSaveData(1);
         GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
     }
     private void OnRestartButtonClicked()
     {
         Debug.Log("Restarting Mission.");
+        PlayerDataManager.Instance.UpdateMissionSaveData(1);
         GameManager.Instance.RequestSceneRestart();
     }
     private void OnExitApplicationButtonClicked()
     {
         Debug.Log("Quitting Application.");
+        PlayerDataManager.Instance.UpdateMissionSaveData(1);
         Application.Quit();
     }
     private void OnCloseMenuButtonClicked()

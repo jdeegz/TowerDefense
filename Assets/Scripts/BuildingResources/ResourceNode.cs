@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
@@ -62,7 +63,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (m_resourcesRemaining <= 0)
         {
             //If we hit 0 resources after giving some up, send the gatherer nearby nodes and start the destroy process.
-            OnDepletion();
+            OnDepletion(true);
         }
 
         return (resourcesHarvested, m_resourcesRemaining);
@@ -84,8 +85,15 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         m_animator.SetInteger(m_gatherersHarvestingHash, m_harvesters);
     }
 
-    private void OnDepletion()
+    private void OnDepletion(bool harvested)
     {
+        //If we were harvested, check for Ruins.
+        if (ResourceManager.Instance.RequestRuin())
+        {
+            //We found a ruin!
+            Instantiate(ResourceManager.Instance.m_resourceManagerData.m_ruinObj, transform.position, quaternion.identity, transform.parent);
+        }
+        
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
         GridManager.Instance.RefreshGrid();
         OnResourceNodeDepletion?.Invoke(this);
@@ -107,7 +115,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     {
         if (col.gameObject.CompareTag("ForestRemover"))
         {
-            OnDepletion();
+            OnDepletion(false);
         }
     }
 }

@@ -17,7 +17,8 @@ public class Selectable : MonoBehaviour
         Tower,
         Gatherer,
         Castle,
-        Obelisk
+        Obelisk,
+        Ruin
     }
 
     void Awake()

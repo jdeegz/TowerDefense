@@ -11496,6 +11496,7 @@ MonoBehaviour:
   m_gameSpeed: 1
   m_totalWaves: 999
   m_wave: -1
+  m_bossWaveFactor: 20
   m_castleController: {fileID: 1429581217}
   m_enemyGoal: {fileID: 110411549}
   m_equippedTowers:
@@ -16868,8 +16869,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 604af02cc88423640bdeb4d731ac6c1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_startingStone: 0
-  m_startingWood: 3
+  m_resourceManagerData: {fileID: 11400000, guid: d746554499e3a874aa960f86ad141857, type: 2}
 --- !u!1001 &625652693
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36721,6 +36721,7 @@ MonoBehaviour:
   m_bossIntroductionObj: {fileID: 2191650627973114466, guid: 62e5036aaa6b22144be9da9844e178a3, type: 3}
   m_bossEnemyData: {fileID: 11400000, guid: 0e49ce4ecb93400429162d9532868675, type: 2}
   m_bossGridCellPositions: []
+  m_positionRadius: 8
 --- !u!1001 &1290016473
 PrefabInstance:
   m_ObjectHideFlags: 0

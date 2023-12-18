@@ -28,6 +28,7 @@ public class GathererController : MonoBehaviour
         Harvesting,
         TravelingToCastle,
         Storing,
+        TravelingToRuin,
     }
 
     private bool m_isSelected;
@@ -36,18 +37,19 @@ public class GathererController : MonoBehaviour
     private int m_curHarvestPointIndex;
     private Vector3 m_curHarvestNodePos;
     private ResourceNode m_curHarvestNode;
+    private RuinController m_curRuin;
     private Vector3 m_curHarvestPointPos;
     private Coroutine m_curCoroutine;
     private float m_harvestDuration;
     private int m_carryCapacity;
     private float m_storingDuration;
-
     private static int m_isHarvestingHash = Animator.StringToHash("isHarvesting");
     private Vector3 m_idlePos;
     private List<Vector2Int> m_gathererPath;
     private int m_gathererPathProgress;
     private Vector3 m_moveDirection;
     private Quaternion m_previousRotation;
+    private int m_gathererLevel = 1;
 
     private void Awake()
     {
@@ -77,6 +79,12 @@ public class GathererController : MonoBehaviour
             m_curCell = Util.GetCellFromPos(m_curPos);
             m_curCell.UpdateActorCount(1, gameObject.name);
         }
+    }
+
+    public void IncrementGathererLevel(int i)
+    {
+        m_gathererLevel += i;
+        RequestPlayAudio(m_gathererData.m_levelUpClip, m_audioSource);
     }
 
     void Start()
@@ -134,6 +142,18 @@ public class GathererController : MonoBehaviour
             if (m_gathererTask == GathererTask.Idling)
             {
                 ToggleDisplayIdleVFX();
+            }
+
+            if (m_gathererTask == GathererTask.TravelingToRuin)
+            {
+                UpdateTask(GathererTask.Idling);
+                //Request the level up.
+
+                //Level Up.
+                if (m_curRuin.RequestPowerUp())
+                {
+                    IncrementGathererLevel(1);
+                }
             }
 
             return;
@@ -210,12 +230,24 @@ public class GathererController : MonoBehaviour
     private void GathererSelected(GameObject selectedObj)
     {
         m_isSelected = selectedObj == gameObject;
+        if (m_isSelected) RequestPlayAudio(m_gathererData.m_selectedGathererClips, m_audioSource);
     }
 
     public void AudioPlayWoodChop()
     {
-        int i = Random.Range(0, m_woodChopClips.Count);
-        m_audioSource.PlayOneShot(m_woodChopClips[i]);
+        int i = Random.Range(0, m_gathererData.m_harvestingClips.Count);
+        m_audioSource.PlayOneShot(m_gathererData.m_harvestingClips[i]);
+    }
+
+    public void RequestPlayAudio(AudioClip clip, AudioSource source)
+    {
+        source.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips, AudioSource source)
+    {
+        int i = Random.Range(0, clips.Count);
+        source.PlayOneShot(clips[i]);
     }
 
     private void CommandRequested(GameObject requestObj, Selectable.SelectedObjectType type)
@@ -249,9 +281,15 @@ public class GathererController : MonoBehaviour
                 Debug.Log("Gatherer going to castle.");
                 RequestedIdle();
                 break;
+            case Selectable.SelectedObjectType.Ruin:
+                Debug.Log("Gatherer going to castle.");
+                RequestTravelToRuin(requestObj);
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
+
+        RequestPlayAudio(m_gathererData.m_commandRequestClips, m_audioSource);
     }
 
     private void RequestedIdle()
@@ -263,7 +301,27 @@ public class GathererController : MonoBehaviour
             m_curCoroutine = null;
         }
 
+        Vector2Int startPos = Util.GetVector2IntFrom3DPos(transform.position);
+        Vector2Int endPos = Util.GetVector2IntFrom3DPos(m_idlePos);
+        m_gathererPath = AStar.FindPath(startPos, endPos);
+
         UpdateTask(GathererTask.Idling);
+    }
+
+    private void RequestTravelToRuin(GameObject requestObj)
+    {
+        ClearHarvestVars();
+
+        m_curRuin = requestObj.GetComponent<RuinController>();
+        if (m_curCoroutine != null)
+        {
+            StopCoroutine(m_curCoroutine);
+            m_curCoroutine = null;
+        }
+
+        m_gathererPath = GetShortestPathToObj(requestObj);
+
+        UpdateTask(GathererTask.TravelingToRuin);
     }
 
     private void RequestedHarvest(GameObject requestObj)
@@ -298,9 +356,7 @@ public class GathererController : MonoBehaviour
         switch (m_gathererTask)
         {
             case GathererTask.Idling:
-                startPos = Util.GetVector2IntFrom3DPos(transform.position);
-                endPos = Util.GetVector2IntFrom3DPos(m_idlePos);
-                m_gathererPath = AStar.FindPath(startPos, endPos);
+
                 break;
             case GathererTask.FindingHarvestablePoint:
                 if (m_curHarvestNode)
@@ -356,6 +412,8 @@ public class GathererController : MonoBehaviour
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());
                 break;
+            case GathererTask.TravelingToRuin:
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -398,6 +456,7 @@ public class GathererController : MonoBehaviour
         //Unset this script
         m_animator.SetBool(m_isHarvestingHash, false);
         m_curHarvestNode = null;
+        m_curRuin = null;
         m_curHarvestPointPos = new Vector3();
         m_curHarvestPointIndex = -1;
     }
@@ -542,6 +601,41 @@ public class GathererController : MonoBehaviour
         return (node, closestNodePointPos, harvestPointIndex);
     }
 
+    private List<Vector2Int> GetShortestPathToObj(GameObject obj)
+    {
+        List<Vector2Int> shortestPath = new List<Vector2Int>();
+
+        Vector2Int curPos = Util.GetVector2IntFrom3DPos(transform.position);
+        Vector2Int endPos = Util.GetVector2IntFrom3DPos(obj.transform.position);
+
+        //Get the neighbor positions to check for distance.
+        ValueTuple<List<Cell>, List<Vector3>> vars = Util.GetNeighborHarvestPointCells(endPos);
+
+        for (var i = 0; i < vars.Item2.Count; ++i)
+        {
+            bool cellOccupied = vars.Item1[i].m_isOccupied;
+            if (cellOccupied)
+            {
+                continue;
+            }
+
+            //Check path to the cell
+            List<Vector2Int> path = AStar.FindPath(curPos, vars.Item1[i].m_cellPos);
+
+            if (path == null)
+            {
+                continue;
+            }
+
+            if (shortestPath.Count == 0 || path.Count <= shortestPath.Count)
+            {
+                shortestPath = path;
+            }
+        }
+
+        return shortestPath;
+    }
+
     private IEnumerator Harvesting()
     {
         StartHarvesting();
@@ -552,19 +646,26 @@ public class GathererController : MonoBehaviour
     private IEnumerator Storing()
     {
         yield return new WaitForSeconds(m_storingDuration);
+        //Calculate storage based on level. Lvl 1 = 1, Lvl 2 = 1 + 50% * 2
+        int storageAmount;
+        int random = Random.Range(0, 2);
         switch (m_gathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
-                ResourceManager.Instance.UpdateWoodAmount(m_resourceCarried);
-                IngameUIController.Instance.SpawnCurrencyAlert(m_resourceCarried, 0, true, transform.position);
+                storageAmount = m_carryCapacity + ((m_gathererLevel - 1) * random);
+                ResourceManager.Instance.UpdateWoodAmount(storageAmount);
+                IngameUIController.Instance.SpawnCurrencyAlert(storageAmount, 0, true, transform.position);
                 break;
             case ResourceManager.ResourceType.Stone:
-                ResourceManager.Instance.UpdateStoneAmount(m_resourceCarried);
-                IngameUIController.Instance.SpawnCurrencyAlert(0, m_resourceCarried, true, transform.position);
+                storageAmount = m_carryCapacity; //To add stone levelng later!
+                ResourceManager.Instance.UpdateStoneAmount(storageAmount);
+                IngameUIController.Instance.SpawnCurrencyAlert(0, storageAmount, true, transform.position);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        Debug.Log($"Stored: {m_carryCapacity} + {m_gathererLevel - 1} * {random}.");
 
         m_resourceCarried = 0;
 
@@ -631,6 +732,7 @@ public class GathererController : MonoBehaviour
         data.m_harvestDuration = m_harvestDuration;
         data.m_storingDuration = m_storingDuration;
         data.m_carryCapacity = m_carryCapacity;
+        data.m_gathererLevel = m_gathererLevel;
         return data;
     }
 }
@@ -643,4 +745,5 @@ public class GathererTooltipData
     public float m_harvestDuration;
     public float m_storingDuration;
     public int m_carryCapacity;
+    public int m_gathererLevel;
 }

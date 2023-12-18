@@ -414,14 +414,17 @@ public static class Util
 
         foreach (Vector2Int neighborCellPos in neighborPos)
         {
-            Cell cell = GetCellFromPos(neighborCellPos);
-            if (cell != null)
+            if (IsValidPoint(neighborCellPos.x, neighborCellPos.y))
             {
-                neighborCells.Add(cell);
-                //Get the mid point between the neighbor and source.
-                Vector2 midPoint = ((Vector2)pos + neighborCellPos) / 2;
-                Vector3 harvestPointPos = new Vector3(midPoint.x, 0, midPoint.y);
-                harvestPos.Add(harvestPointPos);
+                Cell cell = GetCellFromPos(neighborCellPos);
+                if (cell != null)
+                {
+                    neighborCells.Add(cell);
+                    //Get the mid point between the neighbor and source.
+                    Vector2 midPoint = ((Vector2)pos + neighborCellPos) / 2;
+                    Vector3 harvestPointPos = new Vector3(midPoint.x, 0, midPoint.y);
+                    harvestPos.Add(harvestPointPos);
+                }
             }
         }
 
@@ -446,7 +449,10 @@ public static class Util
 
         for (int i = 0; i < neighborCells.Length; i++)
         {
-            neighborCells[i] = gridCells[GetCellIndex(neighborPos[i])];
+            if (IsValidPoint(neighborPos[i].x, neighborPos[i].y))
+            {
+                neighborCells[i] = gridCells[GetCellIndex(neighborPos[i])];
+            }
         }
 
         return neighborCells;

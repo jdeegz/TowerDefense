@@ -39,7 +39,7 @@ public class MenuManager : MonoBehaviour
         }
         
         OnMenuStateChanged?.Invoke(newState);
-        Debug.Log("Menu State:" + newState);
+        //Debug.Log("Menu State:" + newState);
     }
     
     

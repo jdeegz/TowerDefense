@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
         }
 
         OnGameStateChanged?.Invoke(newState);
-        Debug.Log("Game State:" + newState);
+        //Debug.Log("Game State:" + newState);
     }
 
     void Start()
@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviour
             m_loadingView.SetActive(true);
             StartCoroutine(ChangeSceneAsync(sceneName));
             UpdateGameState(newState);
-            Debug.Log("Scene Loading: " + sceneName);
+            //Debug.Log("Scene Loading: " + sceneName);
         }
     }
 
@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour
         String sceneName = SceneManager.GetActiveScene().name;
         m_loadingView.SetActive(true);
         StartCoroutine(ChangeSceneAsync(sceneName));
-        Debug.Log("Scene Loading: " + sceneName);
+        //Debug.Log("Scene Loading: " + sceneName);
     }
 
     private IEnumerator ChangeSceneAsync(String newScene)
@@ -103,7 +103,7 @@ public class GameManager : MonoBehaviour
 
         m_loadingView.SetActive(false);
         
-        Debug.Log("Scene Loaded: " + m_curScene);
+        //Debug.Log("Scene Loaded: " + m_curScene);
     }
 
     private void HandleInitialize()

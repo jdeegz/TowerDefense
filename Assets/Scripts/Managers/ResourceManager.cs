@@ -25,9 +25,13 @@ public class ResourceManager : MonoBehaviour
     public static event Action<int, int> UpdateWoodBank;
     public static event Action<int, int> UpdateStoneBank;
 
-    public int m_startingStone;
-    public int m_startingWood;
+    [Header("Ruins Data")]
+    public ResourceManagerData m_resourceManagerData;
 
+    private int m_badLuckChargeCounter;
+    private int m_foundRuinCounter;
+    private int m_depletionCounter;
+    
 
     private void Awake()
     {
@@ -42,9 +46,8 @@ public class ResourceManager : MonoBehaviour
     void Start()
     {
         //Debug.Log("RESOURCE MANAGER START");
-        UpdateWoodAmount(m_startingWood);
-        UpdateStoneAmount(m_startingStone);
-        
+        UpdateWoodAmount(m_resourceManagerData.m_startingWood);
+        UpdateStoneAmount(m_resourceManagerData.m_startingStone);
     }
 
     public void UpdateWoodAmount(int amount)
@@ -90,5 +93,31 @@ public class ResourceManager : MonoBehaviour
     public int GetWoodGathererAmount()
     {
         return m_woodGathererCount;
+    }
+
+    public bool RequestRuin()
+    {
+        bool canSpawnRuin = false;
+
+        ++m_depletionCounter;
+
+        int randomNumber = Random.Range(0, m_resourceManagerData.m_ruinsChance + 1);
+
+        if (m_depletionCounter >= m_resourceManagerData.m_minDepletions && m_foundRuinCounter < m_resourceManagerData.m_totalRuinsPossible)
+        {
+            ++m_badLuckChargeCounter;
+
+            if (randomNumber == m_resourceManagerData.m_ruinsChance || m_badLuckChargeCounter == m_resourceManagerData.m_ruinsChance)
+            {
+                //We found a ruin!
+                Debug.Log($"We Found a ruin!");
+                m_badLuckChargeCounter = 0;
+                ++m_foundRuinCounter;
+
+                canSpawnRuin = true;
+            }
+        }
+        
+        return canSpawnRuin;
     }
 }

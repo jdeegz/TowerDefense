@@ -189,9 +189,12 @@ public class UITooltipController : MonoBehaviour
                         throw new ArgumentOutOfRangeException();
                 }
 
-                m_objectNameString = $"{gathererIconString} {gathererData.m_gathererName}";
+                m_objectNameString = $"{gathererIconString} {gathererData.m_gathererName} LeveL: {gathererData.m_gathererLevel}";
                 m_objectDescriptionString = gathererData.m_gathererDescription;
-                m_objectDetailsString = $"Carry Capacity: {gathererData.m_carryCapacity}{resourceIconString}<br>" +
+                string efficiency = gathererData.m_gathererLevel == 1
+                    ? $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString}<br>"
+                    : $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString} +{gathererData.m_gathererLevel - 1}{resourceIconString} (50% Chance)<br>";
+                m_objectDetailsString = efficiency +
                                         $"Harvest Speed: {gathererData.m_harvestDuration}{m_timeIconString}<br>" +
                                         $"Storage Speed: {gathererData.m_storingDuration}{m_timeIconString}";
                 break;
@@ -213,6 +216,12 @@ public class UITooltipController : MonoBehaviour
                     m_objectDetailsString = "Progress: Complete";
                 }
 
+                break;
+            case Selectable.SelectedObjectType.Ruin:
+                RuinTooltipData ruinData = hoveredObj.GetComponent<RuinController>().GetTooltipData();
+                m_objectNameString = ruinData.m_ruinName;
+                m_objectDescriptionString = ruinData.m_ruinDescription;
+                m_objectDetailsString = ruinData.m_ruinDetails;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -241,7 +250,7 @@ public class UITooltipController : MonoBehaviour
             m_curTween = m_canvasGroup.DOFade(1, 0.1f).SetDelay(0.25f).OnComplete(() =>
             {
                 // After the first fade completes, add a 3-second delay
-                m_curTween = m_canvasGroup.DOFade(0f, 0.1f).SetDelay(3f);
+                m_curTween = m_canvasGroup.DOFade(0f, 0.1f).SetDelay(4f);
             });
             m_curTween.Play();
         }

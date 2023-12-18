@@ -99,6 +99,7 @@ public class GameplayManager : MonoBehaviour
         PreconstructionTower,
         SelectedCastle,
         SelecteObelisk,
+        SelectRuin
     }
 
     void Update()
@@ -128,8 +129,9 @@ public class GameplayManager : MonoBehaviour
         m_timeToNextWave -= Time.deltaTime;
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
-            if (m_wave % m_bossWaveFactor == 0)
+            if (m_wave != 0 && m_wave % m_bossWaveFactor == 0)
             {
+                Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.SpawnBoss);
             }
             else
@@ -172,6 +174,8 @@ public class GameplayManager : MonoBehaviour
                 case InteractionState.SelectedCastle:
                     break;
                 case InteractionState.SelecteObelisk:
+                    break;
+                case InteractionState.SelectRuin:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -247,6 +251,9 @@ public class GameplayManager : MonoBehaviour
                         OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                         break;
                     case InteractionState.SelecteObelisk:
+                        OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                        break;
+                    case InteractionState.SelectRuin:
                         OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                         break;
                     default:
@@ -366,9 +373,11 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Paused:
                 break;
             case GameplayState.Victory:
+                PlayerDataManager.Instance.UpdateMissionSaveData(2);
                 m_interactionState = InteractionState.Disabled;
                 break;
             case GameplayState.Defeat:
+                PlayerDataManager.Instance.UpdateMissionSaveData(1);
                 m_interactionState = InteractionState.Disabled;
                 break;
             default:
@@ -439,6 +448,8 @@ public class GameplayManager : MonoBehaviour
                 break;
             case Selectable.SelectedObjectType.Obelisk:
                 UpdateInteractionState(InteractionState.SelecteObelisk);
+                break;
+            case Selectable.SelectedObjectType.Ruin:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

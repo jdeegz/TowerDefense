@@ -227,10 +227,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         if (m_curHealth <= 0 && m_obeliskData != null)
         {
             Obelisk m_closestObelisk = FindObelisk();
-            m_obeliskData = m_closestObelisk.m_obeliskData;
             if (m_closestObelisk != null)
             {
                 //Instantiate a soul, and set its properties.
+                m_obeliskData = m_closestObelisk.m_obeliskData;
                 GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity);
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
                 obeliskSoul.SetupSoul(m_closestObelisk.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
