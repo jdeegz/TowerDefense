@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
     public void UpdateGameState(GameState newState)
     {
         //if (newState == m_gameState){ return;}
-
+        Time.timeScale = 1;
         m_gameState = newState;
 
         switch (m_gameState)

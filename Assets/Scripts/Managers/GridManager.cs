@@ -5,6 +5,7 @@ using TechnoBabelGames;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Analytics;
 using UnityEngine.Serialization;
 
 public class GridManager : MonoBehaviour
@@ -12,7 +13,6 @@ public class GridManager : MonoBehaviour
     public static GridManager Instance;
     public Material m_lineRendererMaterial;
     public Cell[] m_gridCells;
-    public Cell[] m_temporaryGridCells;
     public int m_gridWidth;
     public int m_gridHeight;
     public GameObject m_gridVisualizerObj;
@@ -113,16 +113,19 @@ public class GridManager : MonoBehaviour
         {
             Cell curCell = frontier.Dequeue();
 
-            Cell[] cells = Util.GetNeighborCells(curCell, gridCells);
-            for (var i = 0; i < cells.Length; i++)
+            Cell[] neighborCells = Util.GetNeighborCells(curCell, gridCells);
+            for (var i = 0; i < neighborCells.Length; i++)
             {
-                var neighbor = cells[i];
+                //Break out if the array entry for this neighbor is null
+                if (neighborCells[i] == null) continue;
+                
+                var neighbor = neighborCells[i];
                 if (visited.Contains(neighbor) == false && frontier.Contains(neighbor) == false)
                 {
                     if (!neighbor.m_isOccupied && !neighbor.m_isTempOccupied)
                     {
                         //Get the direction of the neighbor to the curCell.
-                        neighbor.UpdateOccupancy(false);
+                        neighbor.UpdateOccupancyDisplay(false);
                         neighbor.UpdateTempDirection(i);
                         frontier.Enqueue(neighbor);
                         nextTileToGoal[neighbor] = curCell;
@@ -198,7 +201,7 @@ public class GridManager : MonoBehaviour
                 //If we're a cell on the perimeter, mark it as occupied, else we hit test it.
                 if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
                 {
-                    cell.UpdateOccupancy(true);
+                    cell.UpdateOccupancyDisplay(true);
                 }
                 else
                 {
@@ -222,13 +225,13 @@ public class GridManager : MonoBehaviour
         Debug.Log($"Precon Index: {preconTowerCellIndex}");
 
         Debug.Log($"Updating temporary Grid Cell occupancy.");
-        m_gridCells[preconTowerCellIndex].UpdateTempOccupancy(true);
+        m_gridCells[preconTowerCellIndex].UpdateTempOccupancyDisplay(true);
 
         //Set the values back to their original state if this is not our first iteration.
         if (m_previousPreconIndex > 0)
         {
             Debug.Log($"Setting previous Grid Cell occupancy.");
-            m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+            m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
         }
 
         m_previousPreconIndex = preconTowerCellIndex;
@@ -244,7 +247,7 @@ public class GridManager : MonoBehaviour
         if (m_previousPreconIndex > 0)
         {
             Debug.Log($"Setting previous Grid Cell occupancy.");
-            m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+            m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
             m_previousPreconIndex = -1;
         }
     }
@@ -255,7 +258,7 @@ public class GridManager : MonoBehaviour
         if (m_previousPreconIndex > 0)
         {
             Debug.Log($"Setting previous Grid Cell occupancy.");
-            m_gridCells[m_previousPreconIndex].UpdateTempOccupancy(false);
+            m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
             m_previousPreconIndex = -1;
         }
         
@@ -283,7 +286,7 @@ public class GridManager : MonoBehaviour
         //If we received hits, check to see if water was the last one hit.
         if (IsLayerInMask(hits[hits.Length - 1].transform.gameObject.layer, m_waterLayer))
         {
-            cell.UpdateOccupancy(true);
+            cell.UpdateOccupancyDisplay(true);
         }
     }
 
@@ -365,11 +368,15 @@ public class Cell
     public List<string> m_actorsList;
     public int m_cellIndex;
     public Vector2Int m_cellPos;
-    public Vector3 m_directionToNextCell;
-    public Vector3 m_tempDirectionToNextCell;
+    public bool m_canPathNorth = true;
+    public bool m_canPathEast = true;
+    public bool m_canPathSouth = true;
+    public bool m_canPathWest = true;
 
     //Visualizer
     public GameObject m_gridCellObj;
+    public Vector3 m_directionToNextCell;
+    public Vector3 m_tempDirectionToNextCell;
     private Material m_gridCellObjMaterial;
     private Color m_pathableColor = Color.cyan;
     private Color m_occupiedColor = Color.yellow;
@@ -396,7 +403,7 @@ public class Cell
         }
     }
 
-    public void UpdateOccupancy(bool b)
+    public void UpdateOccupancyDisplay(bool b)
     {
         m_isOccupied = b;
         if (m_isOccupied)
@@ -409,7 +416,7 @@ public class Cell
         }
     }
 
-    public void UpdateTempOccupancy(bool b)
+    public void UpdateTempOccupancyDisplay(bool b)
     {
         m_isTempOccupied = b;
         if (m_isTempOccupied)
@@ -419,11 +426,11 @@ public class Cell
         else
         {
             //To easily get the last known color.
-            UpdateOccupancy(m_isOccupied);
+            UpdateOccupancyDisplay(m_isOccupied);
         }
     }
 
-    public void UpdateGoal(bool b)
+    public void UpdateGoalDisplay(bool b)
     {
         m_isGoal = b;
         if (m_isGoal) UpdateGridCellColor(m_goalColor);

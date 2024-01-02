@@ -21,6 +21,7 @@ public class MenuManager : MonoBehaviour
     void Start()
     {
         UpdateMenuState(MenuState.StartMenu);
+        
     }
 
     public void UpdateMenuState(MenuState newState)

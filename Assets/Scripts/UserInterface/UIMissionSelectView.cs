@@ -9,6 +9,7 @@ public class UIMissionSelectView : MonoBehaviour
     [SerializeField] private Button m_resetSaveDataButton;
     [SerializeField] private GameObject m_missionButtonRoot;
     [SerializeField] private GameObject m_missionButtonObj;
+    [SerializeField] private List<UIMissionSelectButton> m_missionButtons;
     // Start is called before the first frame update
 
     void Awake()
@@ -44,20 +45,22 @@ public class UIMissionSelectView : MonoBehaviour
 
     private void BuildMissionList()
     {
-        for (int i = 0; i < GameManager.Instance.m_MissionContainer.m_MissionList.Length; i++)
+        int numberOfMissions = 6;
+        for (int i = 0; i < numberOfMissions; i++)
         {
             //Make the button
-            GameObject newButton = Instantiate(m_missionButtonObj, m_missionButtonRoot.transform);
+            //GameObject newButton = Instantiate(m_missionButtonObj, m_missionButtonRoot.transform);
             //Access the button's script
-            UIMissionSelectButton missionSelectButtonScript = newButton.GetComponent<UIMissionSelectButton>();
+            UIMissionSelectButton missionSelectButtonScript = m_missionButtons[i];
             //Get the Button script
-            Button button = newButton.GetComponent<Button>();
+            //Button button = newButton.GetComponent<Button>();
             //Stash the Mission data
             MissionData data = GameManager.Instance.m_MissionContainer.m_MissionList[i];
             
             //Read from player data for this mission.
             MissionSaveData missionSaveData = PlayerDataManager.Instance.m_playerData.m_missions[i];
-            missionSelectButtonScript.SetData(button, data.m_missionScene, data.m_missionName, data.m_missionDescription, data.m_missionSprite, missionSaveData.m_missionCompletionRank, missionSaveData.m_missionAttempts);
+            missionSelectButtonScript.SetData(data.m_missionScene, data.m_missionName, data.m_missionDescription, data.m_missionSprite, missionSaveData.m_missionCompletionRank, missionSaveData.m_missionAttempts);
+            
         }
     }
     

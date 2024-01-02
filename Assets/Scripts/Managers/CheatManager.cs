@@ -36,6 +36,18 @@ public class CheatManager : MonoBehaviour
         {
             ModifyWave(1);
         }
+        
+        //Trigger Victory
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            TriggerGameStateChange(GameplayManager.GameplayState.Victory);
+        }
+        
+        //Trigger Defeat
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            TriggerGameStateChange(GameplayManager.GameplayState.Defeat);
+        }
     }
 
     void GiveWood()
@@ -52,6 +64,11 @@ public class CheatManager : MonoBehaviour
     {
         GameplayManager.Instance.m_wave += i;
         Debug.Log($"Wave adjusted to: {GameplayManager.Instance.m_wave}");
+    }
+    
+    void TriggerGameStateChange(GameplayManager.GameplayState newState)
+    {
+        GameplayManager.Instance.UpdateGameplayState(newState);
     }
 }
 #endif

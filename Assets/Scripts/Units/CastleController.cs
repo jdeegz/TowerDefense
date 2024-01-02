@@ -88,7 +88,7 @@ public class CastleController : MonoBehaviour
                 GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
 
                 Cell cell = Util.GetCellFrom3DPos(transform.position);
-                cell.UpdateGoal(true);
+                cell.UpdateGoalDisplay(true);
                 break;
             case GameplayManager.GameplayState.FloodFillGrid:
                 break;

@@ -439,19 +439,22 @@ public static class Util
     }
     public static Cell[] GetNeighborCells(Cell startCell, Cell[] gridCells)
     {
-        List<Vector2Int> neighborPos = new List<Vector2Int>();
-        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1)); //N
-        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y)); //E
-        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1)); //S
-        neighborPos.Add(new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y)); //W
+        // Get the neighboring cells (North, East, South, and West)
+        Vector2Int[] neighbors = new Vector2Int[4];
+
+        Cell curCell = GetCellFromPos(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y));
+        if (curCell.m_canPathNorth) neighbors[0] = new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1);
+        if (curCell.m_canPathEast) neighbors[1] = new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y);
+        if (curCell.m_canPathSouth) neighbors[2] =  new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1);
+        if (curCell.m_canPathWest) neighbors[3] = new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y);
 
         Cell[] neighborCells = new Cell[4];
 
-        for (int i = 0; i < neighborCells.Length; i++)
+        for (int i = 0; i < neighbors.Length; i++)
         {
-            if (IsValidPoint(neighborPos[i].x, neighborPos[i].y))
+            if (IsValidPoint(neighbors[i].x, neighbors[i].y))
             {
-                neighborCells[i] = gridCells[GetCellIndex(neighborPos[i])];
+                neighborCells[i] = (gridCells[GetCellIndex(neighbors[i])]);
             }
         }
 
