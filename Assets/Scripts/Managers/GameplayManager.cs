@@ -44,7 +44,7 @@ public class GameplayManager : MonoBehaviour
     public Transform m_enemiesObjRoot;
 
     private Vector2Int m_curCellPos;
-    private Vector2Int m_goalPointPos;
+    [HideInInspector] public Vector2Int m_goalPointPos;
 
     [Header("Player Constructed")] public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
@@ -309,9 +309,18 @@ public class GameplayManager : MonoBehaviour
     {
         Paused,
         Normal,
-        Fast,
     }
 
+    public float m_playbackSpeed = 1f;
+
+    public void TogglePlaybackSpeed()
+    {
+        float minSpeed = 1f;
+        float maxSpeed = 2f;
+        m_playbackSpeed = m_playbackSpeed == minSpeed ? maxSpeed : minSpeed;
+        Time.timeScale = m_playbackSpeed;
+    }
+    
     public void UpdateGameSpeed(GameSpeed newSpeed)
     {
         switch (newSpeed)
@@ -320,10 +329,7 @@ public class GameplayManager : MonoBehaviour
                 Time.timeScale = 0;
                 break;
             case GameSpeed.Normal:
-                Time.timeScale = 1;
-                break;
-            case GameSpeed.Fast:
-                Time.timeScale = 1.5f;
+                Time.timeScale = m_playbackSpeed;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
@@ -644,6 +650,7 @@ public class GameplayManager : MonoBehaviour
             return false;
         }
 
+        //TO DO : Optimization : Only check paths if the precon tower has moved.
         //Get neighbor cells.
         Vector2Int[] neighbors =
         {
@@ -687,6 +694,63 @@ public class GameplayManager : MonoBehaviour
                         }
                     }
                 }
+            }
+            
+            //Check that the exits can path to one another.
+            int exitsPathable = 0;
+            //Define the start
+            for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
+            {
+                bool startObjPathable = false;
+                GameObject startObj = m_castleController.m_castleEntrancePoints[x];
+                Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
+                
+                //Define the end
+                for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
+                {
+                    GameObject endObj = m_castleController.m_castleEntrancePoints[z];
+                    Vector2Int endPos = Util.GetVector2IntFrom3DPos(endObj.transform.position);
+
+                    //Go next if they're the same.
+                    if (startObj == endObj)
+                    {
+                        continue;
+                    }
+                    
+                    //Path from Start to End and exclude the Game's Goal cell.
+                    List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
+                    if (testPath != null)
+                    {
+                        //If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
+                        ++exitsPathable;
+                        startObjPathable = true;
+                        break;
+                    }
+                }
+                
+                //We could not path to any other exit. So check to see if we can path to atleast one spawner.
+                if (!startObjPathable)
+                {
+                    for (int y = 0; y < m_unitSpawners.Count; ++y)
+                    {
+                        Vector2Int endPos = Util.GetVector2IntFrom3DPos(m_unitSpawners[y].m_spawnPoint.position);
+                        List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
+                        if (testPath != null)
+                        {
+                            //If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
+                            ++exitsPathable;
+                            startObjPathable = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            //If the number of pathable exits is less than the number of exits, return false. One cannot path to another exit.
+            if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
+            {
+                Debug.Log($"An exit cannot path to another exit or spawner.");
+                return false;
             }
         }
 

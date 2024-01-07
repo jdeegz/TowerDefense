@@ -71,7 +71,7 @@ public class UIMissionSelectView : MonoBehaviour
 
     private void OnResetButtonClick()
     {
-        ClearMissionList();
+        //ClearMissionList();
         PlayerDataManager.Instance.ResetPlayerData();
         BuildMissionList();
     }

@@ -397,7 +397,7 @@ public static class Util
         return GridManager.Instance.m_gridCells[index];
     }
 
-    public static (List<Cell>, List<Vector3>) GetNeighborHarvestPointCells(Vector2Int pos)
+    public static (List<Cell>, List<Vector2Int>) GetNeighborHarvestPointCells(Vector2Int pos)
     {
         List<Vector2Int> neighborPos = new List<Vector2Int>();
         neighborPos.Add(new Vector2Int(pos.x, pos.y + 1)); //N
@@ -410,7 +410,7 @@ public static class Util
         neighborPos.Add(new Vector2Int(pos.x - 1, pos.y + 1)); //NW
 
         List<Cell> neighborCells = new List<Cell>();
-        List<Vector3> harvestPos = new List<Vector3>();
+        List<Vector2Int> harvestPos = new List<Vector2Int>();
 
         foreach (Vector2Int neighborCellPos in neighborPos)
         {
@@ -420,10 +420,7 @@ public static class Util
                 if (cell != null)
                 {
                     neighborCells.Add(cell);
-                    //Get the mid point between the neighbor and source.
-                    Vector2 midPoint = ((Vector2)pos + neighborCellPos) / 2;
-                    Vector3 harvestPointPos = new Vector3(midPoint.x, 0, midPoint.y);
-                    harvestPos.Add(harvestPointPos);
+                    harvestPos.Add(neighborCellPos);
                 }
             }
         }

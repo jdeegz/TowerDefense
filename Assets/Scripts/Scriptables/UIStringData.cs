@@ -8,4 +8,5 @@ public class UIStringData : ScriptableObject
     [Header("Alert Strings")]
     public string m_cannotAfford;
     public string m_cannotPlace;
+    public string m_gathererLevelUp;
 }

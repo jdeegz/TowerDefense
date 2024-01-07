@@ -9,12 +9,15 @@ public class IngameUIController : MonoBehaviour
 
     public static IngameUIController Instance;
 
+    public UIStringData m_uiStringData;
     public UITowerSelectHUD m_towerSelectHUD;
     public UIHealthMeter m_healthMeter;
     public UIIngameMeter m_ingameMeter;
     public UIAlert m_currencyAlert;
+    public UIAlert m_levelUpAlert;
     [SerializeField] private Color m_currencyGoodcolor;
     [SerializeField] private Color m_currencyBadcolor;
+    [SerializeField] private Color m_levelUpColor;
     private String m_stoneIcon = "<sprite name=\"ResourceStone\">";
     private String m_woodIcon = "<sprite name=\"ResourceWood\">";
     private String m_positiveValue = "+";
@@ -75,6 +78,17 @@ public class IngameUIController : MonoBehaviour
         }
         
         uiAlert.SetLabelText($"{alertString}", textColor);
+    }
+
+    public void SpawnLevelUpAlert(GameObject obj, Vector3 worldPos)
+    {
+        UIAlert uiAlert = Instantiate(m_levelUpAlert, transform);
+        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
+        
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
+        string alertString = string.Format(m_uiStringData.m_gathererLevelUp, obj.name);
+        uiAlert.SetLabelText($"{alertString}", m_levelUpColor);
     }
 
     public void SpawnHealthAlert(int healthValue, Vector3 worldPos)

@@ -10,9 +10,9 @@ public class PlayerDataManager : MonoBehaviour
     public static PlayerDataManager Instance;
     public PlayerData m_playerData;
 
-    private string m_path;
+    //private string m_path;
     private string m_persistantPath;
-    private int m_buildNumber = 33; //Increment this to invalidate old save files.
+    private int m_buildNumber = 0; //Increment this to invalidate old save files.
 
     //Constructor
     void Awake()
@@ -24,13 +24,13 @@ public class PlayerDataManager : MonoBehaviour
 
     void SetPaths()
     {
-        m_path = Application.dataPath + Path.AltDirectorySeparatorChar + "PlayerSave.json";
+        //m_path = Application.dataPath + Path.AltDirectorySeparatorChar + "PlayerSave.json";
         m_persistantPath = Application.persistentDataPath + Path.AltDirectorySeparatorChar + "PlayerSave.json";
     }
 
     public void HandleWrite()
     {
-        string savePath = m_path;
+        string savePath = m_persistantPath;
 
         string json = JsonUtility.ToJson(m_playerData);
 
@@ -40,9 +40,9 @@ public class PlayerDataManager : MonoBehaviour
 
     public void HandleRead()
     {
-        if (File.Exists(m_path))
+        if (File.Exists(m_persistantPath))
         {
-            using StreamReader reader = new StreamReader(m_path);
+            using StreamReader reader = new StreamReader(m_persistantPath);
             string json = reader.ReadToEnd();
 
             m_playerData = JsonUtility.FromJson<PlayerData>(json);
@@ -57,7 +57,7 @@ public class PlayerDataManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"No Save found. Building Save File.");
+            Debug.Log($"No Save found. Building Save File at {m_persistantPath}.");
             //No file found, let's build one.
             ResetPlayerData();
         }

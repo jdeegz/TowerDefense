@@ -13,6 +13,7 @@ public class UICombatView : MonoBehaviour
     [Header("Buttons")]
     [SerializeField] private Button m_pauseButton;
     [SerializeField] private Button m_playButton;
+    [SerializeField] private Button m_ffwButton;
     [SerializeField] private Button m_nextWaveButton;
 
     [Header("Labels")]
@@ -25,6 +26,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_obelisksChargedLabel;
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
+    [SerializeField] private TextMeshProUGUI m_ffwLabel;
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
@@ -35,6 +37,8 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_castleRepairDisplayObj;
     [SerializeField] private GameObject m_waveDisplayObj;
     [SerializeField] private GameObject m_obeliskDisplayObj;
+    [SerializeField] private GameObject m_ffwActiveDisplayObj;
+    
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
@@ -225,11 +229,8 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameSpeed.Normal:
                 ToggleButtonInteractivity(true);
                 break;
-            case GameplayManager.GameSpeed.Fast:
-                ToggleButtonInteractivity(true);
-                break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
+                break;
         }
 
 
@@ -260,6 +261,7 @@ public class UICombatView : MonoBehaviour
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
+        m_ffwButton.onClick.AddListener(OnFFWButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
 
         m_buttons.Add(m_nextWaveButton);
@@ -349,6 +351,13 @@ public class UICombatView : MonoBehaviour
     private void OnPauseButtonClicked()
     {
         GameplayManager.Instance.UpdateGameSpeed(GameplayManager.GameSpeed.Paused);
+    }
+    
+    private void OnFFWButtonClicked()
+    {
+        GameplayManager.Instance.TogglePlaybackSpeed();
+        m_ffwLabel.SetText($"{(int)GameplayManager.Instance.m_playbackSpeed}x");
+        m_ffwActiveDisplayObj.SetActive(!m_ffwActiveDisplayObj.activeSelf);
     }
 
     private void OnNextWaveButtonClicked()

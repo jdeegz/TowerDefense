@@ -13,7 +13,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     private int m_resourcesRemaining;
     [HideInInspector] public ResourceManager.ResourceType m_type;
-    [HideInInspector] public List<HarvestPoint> m_harvestPoints;
+    public List<HarvestPoint> m_harvestPoints;
     public event Action<ResourceNode> OnResourceNodeDepletion;
 
     private int m_harvesters;
@@ -38,7 +38,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
 
             //Make list of neighbor positions
-            ValueTuple<List<Cell>, List<Vector3>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
+            ValueTuple<List<Cell>, List<Vector2Int>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
             for (var i = 0; i < vars.Item1.Count; ++i)
             {
                 var cell = vars.Item1[i];
@@ -123,9 +123,9 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 [Serializable]
 public class HarvestPoint
 {
-    public Vector3 m_harvestPointPos;
+    public Vector2Int m_harvestPointPos;
     public Cell m_harvestPointCell;
-    public bool m_isOccupied;
+    //public bool m_isOccupied;
     public GathererController m_gatherer;
 }
 

@@ -14,6 +14,11 @@ public class CameraController : MonoBehaviour
     public float m_xPadding;
     public float m_zPadding;
 
+    public float m_zoomSpeed = 2f;
+    public float m_maxZoomIn = 5f;
+    public float m_startZoom = 0f;
+    public float m_maxZoomOut = -10f;
+
     private Vector3 m_dragStartPosition;
     private Vector3 m_dragCurrentPosition;
     private bool m_isDragging;
@@ -26,6 +31,7 @@ public class CameraController : MonoBehaviour
     private Vector3 m_cameraNorthWest;
     private Vector3 m_cameraSouthEast;
     private Vector3 m_cameraSouthWest;
+    private Camera m_camera;
 
     void Awake()
     {
@@ -82,7 +88,9 @@ public class CameraController : MonoBehaviour
 
         m_minZBounds = transform.position.z - m_cameraSouthWest.z - m_zPadding;
         m_maxZBounds = transform.position.z + (GridManager.Instance.m_gridHeight - m_cameraNorthEast.z) + m_zPadding;
-        
+
+        m_camera = Camera.main;
+        m_startZoom = m_camera.gameObject.transform.localPosition.z;
     }
 
     void Update()
@@ -93,6 +101,25 @@ public class CameraController : MonoBehaviour
         {
             HandleMouseInput();
         }
+        
+        // Detect mouse wheel scrolling
+        float scrollDelta = Input.mouseScrollDelta.y;
+
+        // Adjust camera position based on scrolling direction
+        if (scrollDelta != 0f)
+        {
+            // Calculate the new zoom level
+            float newZoom = Mathf.Clamp(m_camera.gameObject.transform.localPosition.z + scrollDelta * m_zoomSpeed, m_startZoom + m_maxZoomOut, m_startZoom + m_maxZoomIn);
+
+            // Set the new camera position
+            SetCameraPosition(newZoom);
+        }
+    }
+    
+    void SetCameraPosition(float zoomLevel)
+    {
+        // Set the camera position along the z-axis
+        m_camera.gameObject.transform.localPosition = new Vector3(m_camera.gameObject.transform.localPosition.x, m_camera.gameObject.transform.localPosition.y, zoomLevel);
     }
 
     void HandleMouseInput()

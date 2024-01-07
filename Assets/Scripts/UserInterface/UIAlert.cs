@@ -4,6 +4,7 @@ using DG.Tweening;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using Sequence = DG.Tweening.Sequence;
 
 public class UIAlert : MonoBehaviour
 {
@@ -12,13 +13,19 @@ public class UIAlert : MonoBehaviour
     [SerializeField] private float m_lifeTime;
 
     private RectTransform m_objRectTransform;
-    
+
     void Start()
     {
+        Sequence sequence = DOTween.Sequence();
         m_objRectTransform = gameObject.GetComponent<RectTransform>();
         Vector2 endPos = new Vector2(m_objRectTransform.anchoredPosition.x, m_objRectTransform.anchoredPosition.y + 100f);
-        m_objRectTransform.DOAnchorPos(endPos, m_lifeTime).OnComplete(OnDestroy);
+        sequence.Append(m_objRectTransform.DOAnchorPos(endPos, m_lifeTime));
+
+        sequence.AppendInterval(.5f);
+
+        sequence.OnComplete(OnDestroy);
     }
+
     void OnDestroy()
     {
         Destroy(gameObject);
