@@ -4230,6 +4230,7 @@ MonoBehaviour:
   m_unitSpawners: []
   m_enemyList: []
   m_enemiesObjRoot: {fileID: 1226510788}
+  m_goalPointPos: {x: 0, y: 0}
   m_woodGathererList: []
   m_stoneGathererList: []
   m_towerObjRoot: {fileID: 770534015}
@@ -4250,6 +4251,7 @@ MonoBehaviour:
   m_timeToNextWave: 0
   m_activeObelisks: []
   m_interactionState: 0
+  m_playbackSpeed: 1
   m_obeliskCount: 0
 --- !u!4 &195301400 stripped
 Transform:
@@ -8419,6 +8421,7 @@ MonoBehaviour:
   m_unitSpawners: []
   m_enemyList: []
   m_enemiesObjRoot: {fileID: 1226510788}
+  m_goalPointPos: {x: 0, y: 0}
   m_woodGathererList: []
   m_stoneGathererList: []
   m_towerObjRoot: {fileID: 770534015}
@@ -8439,6 +8442,7 @@ MonoBehaviour:
   m_timeToNextWave: 0
   m_activeObelisks: []
   m_interactionState: 0
+  m_playbackSpeed: 1
   m_obeliskCount: 0
 --- !u!1001 &404773705
 PrefabInstance:
@@ -19435,7 +19439,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4368503686482431999, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 360
       objectReference: {fileID: 0}
     - target: {fileID: 4368503686482431999, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_SizeDelta.y
@@ -19443,7 +19447,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4368503686482431999, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 4368503686482431999, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -19475,7 +19479,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4685823500974346756, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 360
       objectReference: {fileID: 0}
     - target: {fileID: 4685823500974346756, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_SizeDelta.y
@@ -19483,7 +19487,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4685823500974346756, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 4685823500974346756, guid: a11c9db4d7ade8046b5c67ee4d0e97a9, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -59467,7 +59471,9 @@ MonoBehaviour:
   m_bossIntroductionObj: {fileID: 2191650627973114466, guid: 62e5036aaa6b22144be9da9844e178a3, type: 3}
   m_bossEnemyData: {fileID: 11400000, guid: 0e49ce4ecb93400429162d9532868675, type: 2}
   m_bossGridCellPositions: []
-  m_positionRadius: 8
+  m_towerGridCellPositions: []
+  m_positionRadius: 6
+  m_spawnDirection: 1
 --- !u!4 &1288453393 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: 7fd92bb02afe15f4db7a925440dd0a9d, type: 3}
@@ -60281,6 +60287,10 @@ MonoBehaviour:
   m_scrollZone: 20
   m_xPadding: 0
   m_zPadding: 0
+  m_zoomSpeed: 2
+  m_maxZoomIn: 5
+  m_startZoom: 0
+  m_maxZoomOut: -10
 --- !u!114 &1350161379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69010,7 +69020,9 @@ MonoBehaviour:
   m_bossIntroductionObj: {fileID: 2191650627973114466, guid: 62e5036aaa6b22144be9da9844e178a3, type: 3}
   m_bossEnemyData: {fileID: 11400000, guid: 0e49ce4ecb93400429162d9532868675, type: 2}
   m_bossGridCellPositions: []
+  m_towerGridCellPositions: []
   m_positionRadius: 8
+  m_spawnDirection: 0
 --- !u!4 &1774394753 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: 3a06b7905abf58a4db0a55bf099d2823, type: 3}

@@ -104,9 +104,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_speedTrailVFXObj.SetActive(false);
         
         //Setup ObeliskData if the mission has obelisks
-        if (GameplayManager.Instance.m_activeObelisks.Count > 0)
+        if (GameplayManager.Instance.m_obelisksInMission.Count > 0)
         {
-            m_obeliskData = GameplayManager.Instance.m_activeObelisks[0].m_obeliskData;
+            m_obeliskData = GameplayManager.Instance.m_obelisksInMission[0].m_obeliskData;
         }
     }
 

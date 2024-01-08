@@ -453,72 +453,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
   m_PrefabInstance: {fileID: 21671980}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &40834814
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 907707394}
-    m_Modifications:
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_RootOrder
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 16
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 561923429154555275, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-      propertyPath: m_Name
-      value: StoneClump_Var_01 (2)
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
---- !u!4 &40834815 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 561923429154555274, guid: 40e5dfe2c5892704d9683ae80d384552, type: 3}
-  m_PrefabInstance: {fileID: 40834814}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &48380630
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6814,6 +6748,7 @@ MonoBehaviour:
   m_unitSpawners: []
   m_enemyList: []
   m_enemiesObjRoot: {fileID: 1226510788}
+  m_goalPointPos: {x: 0, y: 0}
   m_woodGathererList: []
   m_stoneGathererList: []
   m_towerObjRoot: {fileID: 770534015}
@@ -6832,8 +6767,9 @@ MonoBehaviour:
   m_buildDuration: 6
   m_firstBuildDuraction: 15
   m_timeToNextWave: 0
-  m_activeObelisks: []
+  m_obelisksInMission: []
   m_interactionState: 0
+  m_playbackSpeed: 1
   m_obeliskCount: 0
 --- !u!1001 &410799661
 PrefabInstance:
@@ -13996,7 +13932,6 @@ Transform:
   - {fileID: 1045266027}
   - {fileID: 1338901113}
   - {fileID: 1186111588}
-  - {fileID: 40834815}
   - {fileID: 993036891}
   - {fileID: 434552432}
   - {fileID: 2031205397}
@@ -20541,6 +20476,10 @@ MonoBehaviour:
   m_scrollZone: 20
   m_xPadding: 3
   m_zPadding: 1
+  m_zoomSpeed: 2
+  m_maxZoomIn: 5
+  m_startZoom: 0
+  m_maxZoomOut: -10
 --- !u!114 &1350161379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25982,7 +25921,8 @@ MonoBehaviour:
   m_bossIntroductionObj: {fileID: 2191650627973114466, guid: 62e5036aaa6b22144be9da9844e178a3, type: 3}
   m_bossEnemyData: {fileID: 11400000, guid: 0e49ce4ecb93400429162d9532868675, type: 2}
   m_bossGridCellPositions: []
-  m_positionRadius: 8
+  m_castlePathingRadius: 6
+  m_spawnDirection: 0
 --- !u!1001 &1744592532
 PrefabInstance:
   m_ObjectHideFlags: 0

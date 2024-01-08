@@ -88,7 +88,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     private void OnDepletion(bool harvested)
     {
         //If we were harvested, check for Ruins.
-        if (ResourceManager.Instance.RequestRuin())
+        if (m_resourcesRemaining == 0 && ResourceManager.Instance.RequestRuin())
         {
             //We found a ruin!
             Instantiate(ResourceManager.Instance.m_resourceManagerData.m_ruinObj, transform.position, quaternion.identity, transform.parent);

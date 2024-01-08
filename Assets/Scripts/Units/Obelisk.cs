@@ -101,6 +101,9 @@ public class Obelisk : MonoBehaviour
         {
             case ObeliskState.Charging:
                 m_curChargeCount += i;
+
+                if (m_curChargeCount > m_maxChargeCount) m_curChargeCount = m_maxChargeCount;
+                
                 m_meter.SetProgress((float)m_curChargeCount / m_maxChargeCount);
                 
                 PlayAudio(m_obeliskData.m_soulCollected);
@@ -115,6 +118,11 @@ public class Obelisk : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    public float GetObeliskProgress()
+    {
+        return (float)m_curChargeCount / m_maxChargeCount;
     }
     
     private void ObeliskChargeChanged(int i)
@@ -142,6 +150,11 @@ public class Obelisk : MonoBehaviour
 
             m_obeliskRangeCircle.SetPosition(i, currentPosition);
         }
+    }
+
+    public void SetCharge(int i)
+    {
+        m_curChargeCount = i;
     }
 
     public ObeliskTooltipData GetTooltipData()

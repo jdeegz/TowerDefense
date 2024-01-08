@@ -70,7 +70,7 @@ public class GameplayManager : MonoBehaviour
     public float m_firstBuildDuraction = 15;
     [HideInInspector] public float m_timeToNextWave;
 
-    public List<Obelisk> m_activeObelisks;
+    [FormerlySerializedAs("m_activeObelisks")] public List<Obelisk> m_obelisksInMission;
 
     public enum GameplayState
     {
@@ -379,11 +379,11 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Paused:
                 break;
             case GameplayState.Victory:
-                PlayerDataManager.Instance.UpdateMissionSaveData(2);
+                if(PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
                 m_interactionState = InteractionState.Disabled;
                 break;
             case GameplayState.Defeat:
-                PlayerDataManager.Instance.UpdateMissionSaveData(1);
+                if(PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
                 m_interactionState = InteractionState.Disabled;
                 break;
             default:
@@ -910,8 +910,8 @@ public class GameplayManager : MonoBehaviour
 
     public void AddObeliskToList(Obelisk obelisk)
     {
-        if (m_activeObelisks == null) m_activeObelisks = new List<Obelisk>();
-        m_activeObelisks.Add(obelisk);
+        if (m_obelisksInMission == null) m_obelisksInMission = new List<Obelisk>();
+        m_obelisksInMission.Add(obelisk);
         ++m_obeliskCount;
         OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
     }
@@ -922,7 +922,7 @@ public class GameplayManager : MonoBehaviour
         bool charging = false;
 
         //Identify if there are any obelisks still charging.
-        foreach (Obelisk obelisk in m_activeObelisks)
+        foreach (Obelisk obelisk in m_obelisksInMission)
         {
             if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charged)
             {

@@ -13,10 +13,12 @@ public class EnemyFlierBoss : EnemyController
     [HideInInspector] public BossSequenceController m_bossSequenceController;
     public GameObject m_muzzleObj;
 
+    private int m_startGoalIndex;
     private int m_curGoal;
+    private List<Vector2Int> m_curPositionList;
     private Vector3 m_curGoalPos;
     private Vector3 m_castlePos;
-    
+
     private bool m_isStrafing = false;
     private float m_coneStartDelay;
     private float m_coneEndBuffer;
@@ -25,8 +27,9 @@ public class EnemyFlierBoss : EnemyController
     private int m_moveCounter;
     private float m_rotationThreadhold = 0.999f;
     private Coroutine m_curCoroutine;
-    
+
     private BossState m_bossState;
+
     private enum BossState
     {
         Idle,
@@ -40,8 +43,9 @@ public class EnemyFlierBoss : EnemyController
     void Start()
     {
         //If we just spawned, travel to N units away from the castle.
-        m_curGoal = 0;
-        m_curGoalPos = m_bossSequenceController.GetNextGoalPosition(m_curGoal);
+        (m_curGoal, m_curGoalPos) = m_bossSequenceController.GetStartingGoalPosition();
+        m_curPositionList = m_bossSequenceController.m_bossGridCellPositions;
+        m_startGoalIndex = m_curGoal;
         m_castlePos = GameplayManager.Instance.m_castleController.transform.position;
         transform.rotation = Quaternion.LookRotation(m_curGoalPos - transform.position);
         UpdateBossState(BossState.MoveToDestination);
@@ -49,7 +53,6 @@ public class EnemyFlierBoss : EnemyController
 
     public override void HandleMovement()
     {
-        
     }
 
     void UpdateBossState(BossState newState)
@@ -69,7 +72,7 @@ public class EnemyFlierBoss : EnemyController
                 m_curCoroutine = StartCoroutine(Attack());
                 break;
             case BossState.Death:
-                if(m_curCoroutine != null) StopCoroutine(m_curCoroutine);
+                if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
                 //Do boss death stuff.
                 //Spawn 4 seekers.
                 //Have to keep gameplay state from switching due to not having alive enemies.
@@ -86,18 +89,18 @@ public class EnemyFlierBoss : EnemyController
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackCooldown);
         UpdateBossState(BossState.RotateToDestination);
     }
-    
+
     private IEnumerator UpdateStateAfterDelay(float i, BossState newState)
     {
         yield return new WaitForSeconds(i);
         UpdateBossState(newState);
     }
-    
+
     private void HandleAttack()
     {
         GameObject projectileObj = Instantiate(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation);
     }
-    
+
     public void Update()
     {
         switch (m_bossState)
@@ -108,17 +111,18 @@ public class EnemyFlierBoss : EnemyController
                 // Calculate the rotation to face the target
                 Quaternion rotationToDestination = Quaternion.LookRotation(m_curGoalPos - transform.position);
                 float rotationToDestinationDotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToDestination));
-                
+
                 transform.rotation = Quaternion.Slerp(transform.rotation, rotationToDestination, m_baseLookSpeed * Time.deltaTime);
-                
+
                 if (rotationToDestinationDotProduct >= m_rotationThreadhold)
                 {
-                    m_curCoroutine = StartCoroutine(UpdateStateAfterDelay(1, BossState.MoveToDestination));   
+                    m_curCoroutine = StartCoroutine(UpdateStateAfterDelay(1, BossState.MoveToDestination));
                 }
+
                 break;
             case BossState.MoveToDestination:
                 if (m_moveCounter % ((BossEnemyData)m_enemyData).m_strafeAttackRate != 0) HandleCone();
-                
+
                 //Movement
                 float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
                 Vector3 direction = (m_curGoalPos - transform.position).normalized;
@@ -133,8 +137,8 @@ public class EnemyFlierBoss : EnemyController
                     //Get the next destination, even if we're attacking right now.
                     UpdateMoveDestination();
                     SetConeDistances();
-                    
-                    
+
+
                     //Do we need to Rotate to a new Destination, or Rotate to attack the castle?
                     if (m_moveCounter % ((BossEnemyData)m_enemyData).m_castleAttackRate == 0)
                     {
@@ -145,18 +149,20 @@ public class EnemyFlierBoss : EnemyController
                         UpdateBossState(BossState.RotateToDestination);
                     }
                 }
+
                 break;
             case BossState.RotateToTarget:
                 // Calculate the rotation to face the target
                 Quaternion rotationToCastle = Quaternion.LookRotation(m_castlePos - transform.position);
                 float rotationToCastledotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToCastle));
-                
+
                 transform.rotation = Quaternion.Slerp(transform.rotation, rotationToCastle, m_baseLookSpeed * Time.deltaTime);
-                
+
                 if (rotationToCastledotProduct >= m_rotationThreadhold)
                 {
-                    UpdateBossState(BossState.AttackTarget);    
+                    UpdateBossState(BossState.AttackTarget);
                 }
+
                 break;
             case BossState.AttackTarget:
                 break;
@@ -171,12 +177,24 @@ public class EnemyFlierBoss : EnemyController
     {
         m_isStrafing = true;
         ++m_curGoal;
-        if (m_curGoal == m_bossSequenceController.m_bossGridCellPositions.Count)
+        if (m_curGoal == m_curPositionList.Count)
         {
             m_curGoal = 0;
         }
+
         ++m_moveCounter;
-        m_curGoalPos = m_bossSequenceController.GetNextGoalPosition(m_curGoal);
+
+        //Check to see if we've completed a cycle around the current list.
+        if (m_curGoal == m_startGoalIndex)
+        {
+            //If we have, we need to pick a new list to operate on.
+            (m_curPositionList, m_curGoalPos, m_startGoalIndex) = m_bossSequenceController.GetNextGoalList(transform.position);
+        }
+        else
+        {
+            m_curGoalPos = m_bossSequenceController.GetNextGoalPosition(m_curPositionList, m_curGoal);
+        }
+
         m_moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
     }
 
@@ -185,7 +203,7 @@ public class EnemyFlierBoss : EnemyController
     {
         //Starting distance
         m_coneStartDelay = m_moveDistance * .2f; // Distance we need to travel before turning on cone.
-        
+
         //Ending distance
         m_coneEndBuffer = m_moveDistance * .8f; //Distance we need to travel to turn the cone off.
 
@@ -212,7 +230,7 @@ public class EnemyFlierBoss : EnemyController
         foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
         {
             GameObject bossShardObj = Instantiate(((BossEnemyData)m_enemyData).m_bossShard, transform.position, quaternion.identity);
-            
+
             bossShardObj.GetComponent<BossShard>().SetupBossShard(spawner.transform.position);
             spawner.SetSpawnerStatusEffect(((BossEnemyData)m_enemyData).m_spawnStatusEffect, ((BossEnemyData)m_enemyData).m_spawnStatusEffectWaveDuration);
         }

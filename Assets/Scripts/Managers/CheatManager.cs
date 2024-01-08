@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 #if CHEATS_ENABLED
 public class CheatManager : MonoBehaviour
@@ -23,6 +24,12 @@ public class CheatManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P))
         {
             GiveMaxHealth();
+        }
+        
+        //Give Obelisk progress
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            GiveObeliskProgress();
         }
         
         //Decrement Wave
@@ -69,6 +76,15 @@ public class CheatManager : MonoBehaviour
     void TriggerGameStateChange(GameplayManager.GameplayState newState)
     {
         GameplayManager.Instance.UpdateGameplayState(newState);
+    }
+
+    void GiveObeliskProgress()
+    {
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
+        {
+            if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charged) continue;
+            obelisk.IncreaseObeliskCharge(Random.Range(0, 30));
+        }
     }
 }
 #endif
