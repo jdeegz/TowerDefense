@@ -129,7 +129,8 @@ public class GameplayManager : MonoBehaviour
         m_timeToNextWave -= Time.deltaTime;
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
-            if (m_wave != 0 && m_wave % m_bossWaveFactor == 0)
+            ++m_wave;
+            if (m_wave != 0 && m_wave+1 % m_bossWaveFactor == 0)
             {
                 Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.SpawnBoss);
@@ -358,10 +359,10 @@ public class GameplayManager : MonoBehaviour
                 UpdateGameSpeed(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
-                m_wave++;
+                //m_wave++;
                 break;
             case GameplayState.SpawnBoss:
-                m_wave++;
+                //m_wave++;
                 break;
             case GameplayState.Combat:
                 break;

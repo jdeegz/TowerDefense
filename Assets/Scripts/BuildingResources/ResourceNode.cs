@@ -87,6 +87,9 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     private void OnDepletion(bool harvested)
     {
+        GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
+        OnResourceNodeDepletion?.Invoke(this);
+        
         //If we were harvested, check for Ruins.
         if (m_resourcesRemaining == 0 && ResourceManager.Instance.RequestRuin())
         {
@@ -94,9 +97,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             Instantiate(ResourceManager.Instance.m_resourceManagerData.m_ruinObj, transform.position, quaternion.identity, transform.parent);
         }
         
-        GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
         GridManager.Instance.RefreshGrid();
-        OnResourceNodeDepletion?.Invoke(this);
         Destroy(gameObject);
     }
 

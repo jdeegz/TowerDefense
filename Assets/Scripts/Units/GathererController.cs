@@ -311,7 +311,14 @@ public class GathererController : MonoBehaviour
                 break;
             case Selectable.SelectedObjectType.Castle:
                 Debug.Log("Gatherer going to castle.");
-                RequestedIdle();
+                if (m_resourceCarried == 0)
+                {
+                    RequestedIdle();
+                }
+                else
+                {
+                    UpdateTask(GathererTask.TravelingToHarvest);
+                }
                 break;
             case Selectable.SelectedObjectType.Ruin:
                 Debug.Log("Gatherer going to castle.");
@@ -496,7 +503,6 @@ public class GathererController : MonoBehaviour
                 {
                     Debug.Log("No path back to castle found");
                 }
-
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());
@@ -555,6 +561,7 @@ public class GathererController : MonoBehaviour
         }
 
         Debug.Log($"{gameObject.name}'s resource node depleted.");
+        ClearHarvestVars();
 
         //If harvesting, stop cur coroutine.
         //Previous Condition: m_resourceCarried == 0 && m_curCoroutine != null
@@ -564,8 +571,6 @@ public class GathererController : MonoBehaviour
             m_curCoroutine = null;
             Debug.Log($"{gameObject.name}'s Harvesting coroutine stopped.");
         }
-
-        ClearHarvestVars();
 
         //Interrupt flow if we're not currently carrying or storing resources.
         if (m_resourceCarried == 0)
