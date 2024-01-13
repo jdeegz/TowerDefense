@@ -130,7 +130,8 @@ public class GameplayManager : MonoBehaviour
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             ++m_wave;
-            if (m_wave != 0 && m_wave+1 % m_bossWaveFactor == 0)
+            Debug.Log($"wave: {m_wave} -- wave factor: {(m_wave+1) % m_bossWaveFactor}");
+            if (m_wave != 0 && (m_wave+1) % m_bossWaveFactor == 0)
             {
                 Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.SpawnBoss);
@@ -382,6 +383,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Victory:
                 if(PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
                 m_interactionState = InteractionState.Disabled;
+                PlayFabManager.Instance.SendLeaderboard(GameManager.Instance.m_curMission.m_playFableaderboardId, m_wave);
                 break;
             case GameplayState.Defeat:
                 if(PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);

@@ -449,6 +449,7 @@ GameObject:
   - component: {fileID: 2110111411}
   - component: {fileID: 2110111410}
   - component: {fileID: 2110111412}
+  - component: {fileID: 2110111413}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -469,6 +470,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MissionContainer: {fileID: 11400000, guid: 135e0acf13b4c1c4fb0a1e9b94d58101, type: 2}
+  m_curMission: {fileID: 0}
   m_loadingView: {fileID: 1119634995}
   m_gameState: 0
 --- !u!4 &2110111411
@@ -501,3 +503,15 @@ MonoBehaviour:
   m_playerData:
     m_buildNumber: 0
     m_missions: []
+--- !u!114 &2110111413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2110111409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12f972b3b59a2114aafdd51f5e9a0054, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

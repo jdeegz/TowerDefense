@@ -59,7 +59,7 @@ public class UIMissionSelectView : MonoBehaviour
             
             //Read from player data for this mission.
             MissionSaveData missionSaveData = PlayerDataManager.Instance.m_playerData.m_missions[i];
-            missionSelectButtonScript.SetData(data.m_missionScene, data.m_missionName, data.m_missionDescription, data.m_missionSprite, missionSaveData.m_missionCompletionRank, missionSaveData.m_missionAttempts);
+            missionSelectButtonScript.SetData(data, missionSaveData.m_missionCompletionRank, missionSaveData.m_missionAttempts);
             
         }
     }

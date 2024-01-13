@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
 
     public static event Action<GameState> OnGameStateChanged;
     public MissionContainerData m_MissionContainer;
+    public MissionData m_curMission;
     private String m_curScene;
     public GameObject m_loadingView;
     public GameState m_gameState;

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class UIMissionSelectButton : MonoBehaviour
 {
     public Button m_buttonScript;
+    public MissionData m_missionData;
     public string m_missionScene;
     public TextMeshProUGUI m_titleLabel;
     public TextMeshProUGUI m_descriptionLabel;
@@ -21,11 +22,12 @@ public class UIMissionSelectButton : MonoBehaviour
     private int m_completetionRank;
     private int m_attempts;
 
-    public void SetData(String missionScene, String title, String description, Sprite icon, int completionRank, int attempts)
+    public void SetData(MissionData data, int completionRank, int attempts)
     {
-        m_missionScene = missionScene;
-        m_titleLabel.SetText(title);
-        m_descriptionLabel.SetText(description);
+        m_missionData = data;
+        m_missionScene = data.m_missionScene;
+        m_titleLabel.SetText(data.m_missionName);
+        m_descriptionLabel.SetText(data.m_missionDescription);
         //m_icon.sprite = icon;
         m_attempts = attempts;
         m_attemptsLabel.SetText($"Tries: {m_attempts}");
@@ -71,5 +73,6 @@ public class UIMissionSelectButton : MonoBehaviour
     private void OnButtonClick()
     {
         GameManager.Instance.RequestChangeScene(m_missionScene, GameManager.GameState.Gameplay);
+        GameManager.Instance.m_curMission = m_missionData;
     }
 }

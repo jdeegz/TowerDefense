@@ -10,6 +10,7 @@ public class MissionData : ScriptableObject
     public MissionStats m_BaseMissionStats => m_missionStats;
     public string m_missionScene;
     public string m_missionName;
+    public string m_playFableaderboardId;
     
     //Used in Mission
     
