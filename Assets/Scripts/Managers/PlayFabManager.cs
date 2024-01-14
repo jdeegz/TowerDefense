@@ -12,17 +12,36 @@ using Random = UnityEngine.Random;
 public class PlayFabManager : MonoBehaviour
 {
     public static PlayFabManager Instance;
-    public string m_displayName;
-    private List<string> m_leaderboardNames;
     public Action<bool, Dictionary<string, GetLeaderboardResult>> OnLeaderboardReceived;
+    public PlayerProfileModel m_playerProfile;
+    public event Action OnLoginComplete;
+    public event Action OnLoginRequired;
+    public bool m_clearPlayerPrefs;
+    
+    private List<string> m_leaderboardNames;
     private Dictionary<string, GetLeaderboardResult> m_results = new Dictionary<string, GetLeaderboardResult>();
     private bool m_inProgress;
     private bool m_failed;
+    private string m_titleId = "B1C48";
+    private const string _PlayFabRememberMeIdKey = "PlayFabIDPassGuid";
 
-    /// <summary>
-    /// move to another script later.
-    /// </summary>
-    
+    private string m_rememberMeId
+    {
+        get { return PlayerPrefs.GetString(_PlayFabRememberMeIdKey, ""); }
+        set
+        {
+            var guid = string.IsNullOrEmpty(value) ? Guid.NewGuid().ToString() : value;
+            PlayerPrefs.SetString(_PlayFabRememberMeIdKey, guid);
+        }
+    }
+
+    private const string _LogInRememberKey = "PlayFabLoginRemember";
+
+    public bool m_rememberMe
+    {
+        get { return PlayerPrefs.GetInt(_LogInRememberKey, 0) == 0 ? false : true; }
+        set { PlayerPrefs.SetInt(_LogInRememberKey, value ? 1 : 0); }
+    }
     
     private void Awake()
     {
@@ -36,31 +55,45 @@ public class PlayFabManager : MonoBehaviour
         }
     }
 
+    // Update is called once per frame
     void Start()
     {
-        Login();
-    }
+        if (m_clearPlayerPrefs) ClearRememberMe();
 
-    // Update is called once per frame
-    void Update()
-    {
-    }
-
-    void Login()
-    {
-        var request = new LoginWithCustomIDRequest
-        {
-            CustomId = SystemInfo.deviceUniqueIdentifier,
-            CreateAccount = true
-        };
-        PlayFabClientAPI.LoginWithCustomID(request, OnSuccess, OnError);
-    }
-
-    void OnSuccess(LoginResult result)
-    {
-        Debug.Log($"Login Successful.");
+        //Debug.Log($"{PlayerPrefs.GetString(_LogInRememberKey)}, {m_rememberMe}");
+        //Debug.Log($"{PlayerPrefs.GetString(_PlayFabRememberMeIdKey)}, {m_rememberMeId}");
         
-        //CheatFillLeaderboards();
+        //Try to log in.
+        if (m_rememberMe && !string.IsNullOrEmpty(m_rememberMeId))
+        {
+            Debug.Log($"Attempting to Auto-log in.");
+            PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest()
+            {
+                TitleId = m_titleId,
+                CustomId = m_rememberMeId,
+                CreateAccount = true,
+                InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+                {
+                    GetPlayerProfile = true
+                }
+            }, RememberMeLoginSuccess, OnError);
+        }
+        else
+        {
+            OnLoginRequired?.Invoke();
+        }
+    }
+
+    private void ClearRememberMe()
+    {
+        PlayerPrefs.DeleteKey(_LogInRememberKey);
+        PlayerPrefs.DeleteKey(_PlayFabRememberMeIdKey);
+    }
+
+    private void RememberMeLoginSuccess(LoginResult result)
+    {
+        Debug.Log($"Logged in as {result.InfoResultPayload.PlayerProfile.DisplayName}");
+        CompleteLogin(result.InfoResultPayload.PlayerProfile);
     }
 
     void OnError(PlayFabError error)
@@ -118,7 +151,7 @@ public class PlayFabManager : MonoBehaviour
 
         m_inProgress = true;
         m_failed = false;
-        if(m_results != null) m_results.Clear();
+        if (m_results != null) m_results.Clear();
 
         foreach (String leaderboardName in m_leaderboardNames)
         {
@@ -147,7 +180,7 @@ public class PlayFabManager : MonoBehaviour
     {
         m_failed = true;
         m_results[leaderboardName] = null;
-        
+
         Debug.Log($"Error getting leaderboard {leaderboardName}.");
         Debug.Log($"{error.GenerateErrorReport()}");
         CheckFinished();
@@ -166,11 +199,133 @@ public class PlayFabManager : MonoBehaviour
     {
         foreach (String leaderboardName in m_leaderboardNames)
         {
-            for(int i = 0; i < 10; ++i)
+            for (int i = 0; i < 10; ++i)
             {
                 int score = Random.Range(1, 99);
                 SendLeaderboard(leaderboardName, score);
             }
         }
+    }
+
+    public void CompleteLogin(PlayerProfileModel profile)
+    {
+        m_playerProfile = profile;
+        OnLoginComplete?.Invoke();
+    }
+    
+    public void RequestRegistration(string email, string password, bool rememberMe, Action<RegisterPlayFabUserResult> onRegistrationSuccess, Action<PlayFabError> onRegistrationError)
+    {
+        var request = new RegisterPlayFabUserRequest()
+        {
+            Email = email,
+            Password = password,
+            RequireBothUsernameAndEmail = false,
+        };
+        PlayFabClientAPI.RegisterPlayFabUser(request,
+
+            //On Success
+            (result) =>
+            {
+                m_rememberMe = rememberMe;
+                if (rememberMe)
+                {
+                    m_rememberMeId = Guid.NewGuid().ToString();
+
+                    PlayFabClientAPI.LinkCustomID(new LinkCustomIDRequest()
+                    {
+                        CustomId = m_rememberMeId,
+                        ForceLink = false //Unsure what this should actually be. In the demo i think it was false.
+                    }, null, null);
+                }
+
+                onRegistrationSuccess.Invoke(result);
+            },
+
+            //On Error
+            onRegistrationError);
+    }
+
+    public void RequestLogin(string email, string password, bool rememberMe, Action<LoginResult> onLoginSuccess, Action<PlayFabError> onError)
+    {
+        var request = new LoginWithEmailAddressRequest
+        {
+            Email = email,
+            Password = password,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
+        };
+
+        PlayFabClientAPI.LoginWithEmailAddress(request,
+            //On Success
+            (result) =>
+            {
+                if (rememberMe)
+                {
+                    m_rememberMeId = Guid.NewGuid().ToString();
+
+                    PlayFabClientAPI.LinkCustomID(new LinkCustomIDRequest()
+                    {
+                        CustomId = m_rememberMeId,
+                        ForceLink = false //Unsure what this should actually be. In the demo i think it was false.
+                    }, null, null);
+                }
+
+                onLoginSuccess.Invoke(result);
+            },
+
+            //On Error
+            onError);
+    }
+
+    public void RequestResetPassword(string email, Action<SendAccountRecoveryEmailResult> onPasswordReset, Action<PlayFabError> onError)
+    {
+        var request = new SendAccountRecoveryEmailRequest
+        {
+            Email = email,
+            TitleId = m_titleId
+        };
+        PlayFabClientAPI.SendAccountRecoveryEmail(request, onPasswordReset, onError);
+    }
+
+    public void GetPlayerProfile(string playFabId)
+    {
+        // Specify the request to get player profile
+        GetPlayerProfileRequest request = new GetPlayerProfileRequest
+        {
+            PlayFabId = playFabId,
+            ProfileConstraints = new PlayerProfileViewConstraints()
+        };
+
+        // Call the PlayFab API to get player profile
+        PlayFabClientAPI.GetPlayerProfile(request, OnGetProfileSuccess, OnError);
+    }
+
+    public void GetPlayerProfile(string playFabId, Action<GetPlayerProfileResult> onGetPlayerProfile)
+    {
+        // Specify the request to get player profile
+        GetPlayerProfileRequest request = new GetPlayerProfileRequest
+        {
+            PlayFabId = playFabId,
+            ProfileConstraints = new PlayerProfileViewConstraints()
+        };
+
+        // Call the PlayFab API to get player profile
+        PlayFabClientAPI.GetPlayerProfile(request, onGetPlayerProfile, OnError);
+    }
+
+    private void OnGetProfileSuccess(GetPlayerProfileResult result)
+    {
+        Debug.Log($"Player Profile received.");
+    }
+
+    public void RequestDisplayNameUpdate(string name, Action<UpdateUserTitleDisplayNameResult> onDisplayNameUpdate, Action<PlayFabError> onDisplayNameError)
+    {
+        var request = new UpdateUserTitleDisplayNameRequest
+        {
+            DisplayName = name
+        };
+        PlayFabClientAPI.UpdateUserTitleDisplayName(request, onDisplayNameUpdate, onDisplayNameError);
     }
 }

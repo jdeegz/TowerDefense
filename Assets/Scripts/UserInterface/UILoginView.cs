@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 using PlayFab;
 using PlayFab.ClientModels;
 using TMPro;
-using Unity.VisualScripting.Dependencies.Sqlite;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -22,52 +20,89 @@ public class UILoginView : MonoBehaviour
     }
 
     public LoginState m_loginState = LoginState.Incomplete;
+    
+    public GameObject m_loginViewBackground;
 
-    [Header("Registration Objects")]
-    public GameObject m_registrationDialog;
+    [Header("Registration Objects")] public GameObject m_registrationDialog;
     public TextMeshProUGUI m_registrationMessageText;
     public TMP_InputField m_registrationEmailInput;
     public TMP_InputField m_registrationPasswordInput;
+    public TMP_InputField m_registrationConfirmationPasswordInput;
+    public Toggle m_registrationRememberMeToggle;
     public Button m_registrationSubmitButton;
     public Button m_showLoginButton;
-    
-    [Header("Login Objects")]
-    public GameObject m_loginDialog;
+
+    [Header("Login Objects")] public GameObject m_loginDialog;
     public TextMeshProUGUI m_loginMessageText;
     public TMP_InputField m_loginEmailInput;
     public TMP_InputField m_loginPasswordInput;
+    public Toggle m_loginRememberMeToggle;
     public Button m_loginSubmitButton;
     public Button m_loginResetPasswordButton;
     public Button m_showRegistrationButton;
 
-    [Header("Naming Objects")]
-    public GameObject m_nameDialog;
+    [Header("Naming Objects")] public GameObject m_nameDialog;
     public TextMeshProUGUI m_namingMessageLabel;
     public TMP_InputField m_displayNameInput;
     public Button m_namingSubmitButton;
-    
-    //Show Registration view on start.
+
+    void Awake()
+    {
+        
+        //Check to see if we have a playfab manager, and if it's logged in.
+        if (PlayFabManager.Instance)
+        {
+            PlayFabManager.Instance.OnLoginComplete += LoginComplete;
+            PlayFabManager.Instance.OnLoginRequired += LoginRequired;
+            
+            //Is this super jank? Probably.
+            if (PlayFabManager.Instance.m_playerProfile != null)
+            {
+                LoginComplete();    
+            }
+            else
+            {
+                LoginRequired();
+            }
+        }
+        else
+        {
+            UpdateLoginState(LoginState.Complete);
+        }
+    }
     void Start()
     {
         m_registrationSubmitButton.onClick.AddListener(RegisterButton);
         m_showLoginButton.onClick.AddListener(ShowLoginDialog);
-        
+
         m_loginSubmitButton.onClick.AddListener(LoginButton);
         m_loginResetPasswordButton.onClick.AddListener(ResetPasswordButton);
         m_showRegistrationButton.onClick.AddListener(ShowRegistrationDialog);
-        
+
         m_namingSubmitButton.onClick.AddListener(SubmitNameButton);
+        
+    }
+    
+    private void LoginRequired()
+    {
         UpdateLoginState(LoginState.Registration);
+    }
+
+    private void LoginComplete()
+    {
+        UpdateLoginState(LoginState.Complete);
     }
 
     void UpdateLoginState(LoginState newState)
     {
         m_loginState = newState;
-        
+
         m_registrationDialog.SetActive(m_loginState == LoginState.Registration);
         m_loginDialog.SetActive(m_loginState == LoginState.Login);
         m_nameDialog.SetActive(m_loginState == LoginState.Naming);
-        gameObject.SetActive(m_loginState != LoginState.Complete);
+        m_loginViewBackground.SetActive(m_loginState != LoginState.Complete);
+
+        Debug.Log($"Login State: {m_loginState}");
     }
 
     //Functions for Buttons to swap to different views.
@@ -80,7 +115,7 @@ public class UILoginView : MonoBehaviour
     {
         UpdateLoginState(LoginState.Login);
     }
-    
+
     public void RegisterButton()
     {
         if (m_registrationPasswordInput.text.Length < 6)
@@ -95,20 +130,29 @@ public class UILoginView : MonoBehaviour
             return;
         }
 
-        var request = new RegisterPlayFabUserRequest()
+        if (m_registrationPasswordInput.text != m_registrationConfirmationPasswordInput.text)
         {
-            Email = m_registrationEmailInput.text,
-            Password = m_registrationPasswordInput.text,
-            RequireBothUsernameAndEmail = false,
-        };
-        PlayFabClientAPI.RegisterPlayFabUser(request, OnRegisterSuccess, OnRegisterError);
+            m_registrationMessageText.SetText("Your passwords do not match.");
+            return;
+        }
+
+        PlayFabManager.Instance.RequestRegistration(m_registrationEmailInput.text, m_registrationPasswordInput.text, m_registrationRememberMeToggle.isOn, OnRegisterSuccess, OnRegisterError);
     }
 
     private void OnRegisterSuccess(RegisterPlayFabUserResult result)
     {
         //If we've successfully registered a new account, we now want to name it.
         Debug.Log($"Registration Success.");
+
+        //Store the account
+        PlayFabManager.Instance.GetPlayerProfile(result.PlayFabId, OnGetPlayerProfile);
+
         UpdateLoginState(LoginState.Naming);
+    }
+
+    private void OnGetPlayerProfile(GetPlayerProfileResult result)
+    {
+        PlayFabManager.Instance.CompleteLogin(result.PlayerProfile);
     }
 
     private void OnRegisterError(PlayFabError error)
@@ -119,16 +163,7 @@ public class UILoginView : MonoBehaviour
 
     public void LoginButton()
     {
-        var request = new LoginWithEmailAddressRequest
-        {
-            Email = m_loginEmailInput.text,
-            Password = m_loginPasswordInput.text,
-            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
-            {
-                GetPlayerProfile = true
-            }
-        };
-        PlayFabClientAPI.LoginWithEmailAddress(request, OnLoginSuccess, OnError);
+        PlayFabManager.Instance.RequestLogin(m_loginEmailInput.text, m_loginPasswordInput.text, m_loginRememberMeToggle.isOn, OnLoginSuccess, OnError);
     }
 
     private void OnLoginSuccess(LoginResult result)
@@ -138,6 +173,7 @@ public class UILoginView : MonoBehaviour
         if (result.InfoResultPayload.PlayerProfile != null)
         {
             name = result.InfoResultPayload.PlayerProfile.DisplayName;
+            PlayFabManager.Instance.CompleteLogin(result.InfoResultPayload.PlayerProfile);
             Debug.Log($"Logged in as {name}.");
         }
 
@@ -153,12 +189,7 @@ public class UILoginView : MonoBehaviour
 
     public void ResetPasswordButton()
     {
-        var request = new SendAccountRecoveryEmailRequest
-        {
-            Email = m_registrationEmailInput.text,
-            TitleId = "B1C48"
-        };
-        PlayFabClientAPI.SendAccountRecoveryEmail(request, OnPasswordReset, OnError);
+        PlayFabManager.Instance.RequestResetPassword(m_registrationEmailInput.text, OnPasswordReset, OnError);
     }
 
     private void OnPasswordReset(SendAccountRecoveryEmailResult obj)
@@ -174,22 +205,17 @@ public class UILoginView : MonoBehaviour
             m_namingMessageLabel.SetText("Name not long enough.");
             return;
         }
-        
+
         //Check Characters
         if (!CheckIsNonAlphanumeric(m_displayNameInput.text))
         {
             m_namingMessageLabel.SetText("Name cannot include special characters.");
             return;
         }
-        
-        
-        var request = new UpdateUserTitleDisplayNameRequest
-        {
-            DisplayName = m_displayNameInput.text
-        };
-        PlayFabClientAPI.UpdateUserTitleDisplayName(request, OnDisplayNameUpdate, OnDisplayNameError);
+
+        PlayFabManager.Instance.RequestDisplayNameUpdate(m_displayNameInput.text, OnDisplayNameUpdate, OnDisplayNameError);
     }
-    
+
     private void OnDisplayNameUpdate(UpdateUserTitleDisplayNameResult result)
     {
         Debug.Log($"{result.DisplayName} submitted.");
@@ -201,6 +227,7 @@ public class UILoginView : MonoBehaviour
         Debug.Log($"{error.GenerateErrorReport()}");
         m_namingMessageLabel.SetText(error.ErrorMessage);
     }
+
     public bool CheckIsNonAlphanumeric(string input)
     {
         // Define a regular expression pattern to match non-alphanumeric characters

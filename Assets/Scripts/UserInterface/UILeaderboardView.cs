@@ -9,6 +9,7 @@ public class UILeaderboardView : MonoBehaviour
     public GameObject m_listRootObj;
     public GameObject m_leaderboardTitleObj;
     public GameObject m_leaderboardPlayerObj;
+    public GameObject m_loginRequiredDisplay;
 
 
     // Start is called before the first frame update
@@ -17,12 +18,18 @@ public class UILeaderboardView : MonoBehaviour
         if (PlayFabManager.Instance)
         {
             PlayFabManager.Instance.OnLeaderboardReceived += UpdateLeaderboardView;
-            GetLeaderboardData();
+            PlayFabManager.Instance.OnLoginComplete += GetLeaderboardData;
+            
+            if (PlayFabManager.Instance.m_playerProfile != null)
+            {
+                m_loginRequiredDisplay.SetActive(false);
+                GetLeaderboardData();
+            }
         }
-    }
-
-    void Start()
-    {
+        else
+        {
+            m_loginRequiredDisplay.SetActive(true);
+        }
     }
 
     public void GetLeaderboardData()
@@ -38,7 +45,6 @@ public class UILeaderboardView : MonoBehaviour
 
         //When we want to make tabs:
         //tab for Mission 1, it knows to use the dictionary entry dict["Mission1LeaderBoardName"]
-
         for (int i = 0; i < missionList.Length; ++i)
         {
             foreach (KeyValuePair<string, GetLeaderboardResult> kvp in results)
@@ -53,7 +59,8 @@ public class UILeaderboardView : MonoBehaviour
                 foreach (PlayerLeaderboardEntry item in kvp.Value.Leaderboard)
                 {
                     LeaderboardListItem playerListItem = Instantiate(m_leaderboardPlayerObj, m_listRootObj.transform).GetComponent<LeaderboardListItem>();
-                    playerListItem.SetPlayerData(item.PlayFabId, item.Position, item.StatValue);
+                    bool isMe = item.DisplayName == PlayFabManager.Instance.m_playerProfile.DisplayName;
+                    playerListItem.SetPlayerData(item.DisplayName, item.Position, item.StatValue, isMe);
                 }
             }
         }
