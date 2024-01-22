@@ -14,12 +14,13 @@ public class PlayFabManager : MonoBehaviour
     public static PlayFabManager Instance;
     public Action<bool, Dictionary<string, GetLeaderboardResult>> OnLeaderboardReceived;
     public PlayerProfileModel m_playerProfile;
+    public string m_playerDisplayName;
     public event Action OnLoginComplete;
     public event Action OnLoginRequired;
-    public bool m_clearPlayerPrefs;
-    
+    public event Action OnNamingRequired;
+
     private List<string> m_leaderboardNames;
-    private Dictionary<string, GetLeaderboardResult> m_results = new Dictionary<string, GetLeaderboardResult>();
+    private Dictionary<string, GetLeaderboardResult> m_getLeaderboardResults = new Dictionary<string, GetLeaderboardResult>();
     private bool m_inProgress;
     private bool m_failed;
     private string m_titleId = "B1C48";
@@ -42,7 +43,7 @@ public class PlayFabManager : MonoBehaviour
         get { return PlayerPrefs.GetInt(_LogInRememberKey, 0) == 0 ? false : true; }
         set { PlayerPrefs.SetInt(_LogInRememberKey, value ? 1 : 0); }
     }
-    
+
     private void Awake()
     {
         Instance = this;
@@ -58,11 +59,9 @@ public class PlayFabManager : MonoBehaviour
     // Update is called once per frame
     void Start()
     {
-        if (m_clearPlayerPrefs) ClearRememberMe();
+        //Debug.Log($"Remember Me: {m_rememberMe}");
+        //Debug.Log($"Remember Me Key: {PlayerPrefs.GetString(_PlayFabRememberMeIdKey)}");
 
-        //Debug.Log($"{PlayerPrefs.GetString(_LogInRememberKey)}, {m_rememberMe}");
-        //Debug.Log($"{PlayerPrefs.GetString(_PlayFabRememberMeIdKey)}, {m_rememberMeId}");
-        
         //Try to log in.
         if (m_rememberMe && !string.IsNullOrEmpty(m_rememberMeId))
         {
@@ -84,15 +83,8 @@ public class PlayFabManager : MonoBehaviour
         }
     }
 
-    private void ClearRememberMe()
-    {
-        PlayerPrefs.DeleteKey(_LogInRememberKey);
-        PlayerPrefs.DeleteKey(_PlayFabRememberMeIdKey);
-    }
-
     private void RememberMeLoginSuccess(LoginResult result)
     {
-        Debug.Log($"Logged in as {result.InfoResultPayload.PlayerProfile.DisplayName}");
         CompleteLogin(result.InfoResultPayload.PlayerProfile);
     }
 
@@ -101,7 +93,7 @@ public class PlayFabManager : MonoBehaviour
         //Debug.Log($"Login Failure.");
         Debug.Log($"{error.GenerateErrorReport()}");
     }
-
+    
     public void SendLeaderboard(string leaderboardName, int score)
     {
         var request = new UpdatePlayerStatisticsRequest
@@ -151,7 +143,7 @@ public class PlayFabManager : MonoBehaviour
 
         m_inProgress = true;
         m_failed = false;
-        if (m_results != null) m_results.Clear();
+        if (m_getLeaderboardResults != null) m_getLeaderboardResults.Clear();
 
         foreach (String leaderboardName in m_leaderboardNames)
         {
@@ -171,7 +163,7 @@ public class PlayFabManager : MonoBehaviour
 
     private void OnAllLeaderboardGet(GetLeaderboardResult result, string leaderboardName)
     {
-        m_results[leaderboardName] = result;
+        m_getLeaderboardResults[leaderboardName] = result;
 
         CheckFinished();
     }
@@ -179,7 +171,7 @@ public class PlayFabManager : MonoBehaviour
     private void OnErrorGetLeaderboard(PlayFabError error, string leaderboardName)
     {
         m_failed = true;
-        m_results[leaderboardName] = null;
+        m_getLeaderboardResults[leaderboardName] = null;
 
         Debug.Log($"Error getting leaderboard {leaderboardName}.");
         Debug.Log($"{error.GenerateErrorReport()}");
@@ -188,9 +180,9 @@ public class PlayFabManager : MonoBehaviour
 
     private void CheckFinished()
     {
-        if (m_results.Count == m_leaderboardNames.Count)
+        if (m_getLeaderboardResults.Count == m_leaderboardNames.Count)
         {
-            OnLeaderboardReceived(m_failed, m_results);
+            OnLeaderboardReceived(m_failed, m_getLeaderboardResults);
             m_inProgress = false;
         }
     }
@@ -209,10 +201,20 @@ public class PlayFabManager : MonoBehaviour
 
     public void CompleteLogin(PlayerProfileModel profile)
     {
-        m_playerProfile = profile;
-        OnLoginComplete?.Invoke();
+        Debug.Log($"Check for profile name: {profile.DisplayName}");
+        m_playerDisplayName = profile.DisplayName;
+        if (m_playerDisplayName != null)
+        {
+            Debug.Log($"Logged in as {m_playerDisplayName}.");
+            OnLoginComplete?.Invoke();
+        }
+        else
+        {
+            Debug.Log($"Naming Required.");
+            OnNamingRequired?.Invoke();
+        }
     }
-    
+
     public void RequestRegistration(string email, string password, bool rememberMe, Action<RegisterPlayFabUserResult> onRegistrationSuccess, Action<PlayFabError> onRegistrationError)
     {
         var request = new RegisterPlayFabUserRequest()
@@ -261,6 +263,7 @@ public class PlayFabManager : MonoBehaviour
             //On Success
             (result) =>
             {
+                m_rememberMe = rememberMe;
                 if (rememberMe)
                 {
                     m_rememberMeId = Guid.NewGuid().ToString();
@@ -289,19 +292,6 @@ public class PlayFabManager : MonoBehaviour
         PlayFabClientAPI.SendAccountRecoveryEmail(request, onPasswordReset, onError);
     }
 
-    public void GetPlayerProfile(string playFabId)
-    {
-        // Specify the request to get player profile
-        GetPlayerProfileRequest request = new GetPlayerProfileRequest
-        {
-            PlayFabId = playFabId,
-            ProfileConstraints = new PlayerProfileViewConstraints()
-        };
-
-        // Call the PlayFab API to get player profile
-        PlayFabClientAPI.GetPlayerProfile(request, OnGetProfileSuccess, OnError);
-    }
-
     public void GetPlayerProfile(string playFabId, Action<GetPlayerProfileResult> onGetPlayerProfile)
     {
         // Specify the request to get player profile
@@ -312,20 +302,28 @@ public class PlayFabManager : MonoBehaviour
         };
 
         // Call the PlayFab API to get player profile
-        PlayFabClientAPI.GetPlayerProfile(request, onGetPlayerProfile, OnError);
+        PlayFabClientAPI.GetPlayerProfile(request, onGetPlayerProfile, OnGetProfileError);
     }
 
-    private void OnGetProfileSuccess(GetPlayerProfileResult result)
+    void OnGetProfileError(PlayFabError error)
     {
-        Debug.Log($"Player Profile received.");
+        //Debug.Log($"Login Failure.");
+        Debug.Log($"{error.GenerateErrorReport()}");
     }
 
     public void RequestDisplayNameUpdate(string name, Action<UpdateUserTitleDisplayNameResult> onDisplayNameUpdate, Action<PlayFabError> onDisplayNameError)
     {
+        m_playerDisplayName = name;
         var request = new UpdateUserTitleDisplayNameRequest
         {
             DisplayName = name
         };
         PlayFabClientAPI.UpdateUserTitleDisplayName(request, onDisplayNameUpdate, onDisplayNameError);
+    }
+
+    public void RequestLogout()
+    {
+        PlayFabClientAPI.ForgetAllCredentials();
+        OnLoginRequired?.Invoke();
     }
 }

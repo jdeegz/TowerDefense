@@ -1,14 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
+using PlayFab;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class UIVictoryView : MonoBehaviour
 {
     [SerializeField] private Button m_exitButton;
-    
+    [SerializeField] private Button m_retryButton;
+
+    public TextMeshProUGUI m_resultLabel;
+    public List<TierScoreDisplayObjects> m_scoreDisplayObjects;
+    public Color m_positiveColor;
+    public Color m_negativeColor;
+    public Color m_neutralColor;
+    public UIStringData m_uiStrings;
+
+    private CanvasGroup m_canvasGroup;
+
     void Awake()
     {
+        m_canvasGroup = GetComponent<CanvasGroup>();
+        m_canvasGroup.alpha = 0;
+        m_canvasGroup.blocksRaycasts = false;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
@@ -19,16 +35,126 @@ public class UIVictoryView : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState state)
     {
-        gameObject.SetActive(state == GameplayManager.GameplayState.Victory);
+        if (state == GameplayManager.GameplayState.Victory || state == GameplayManager.GameplayState.Defeat)
+        {
+            m_canvasGroup.alpha = 1;
+            m_canvasGroup.blocksRaycasts = true;
+        }
+        else
+        {
+            m_canvasGroup.alpha = 0;
+            m_canvasGroup.blocksRaycasts = false;
+        }
+
+        if (state == GameplayManager.GameplayState.Victory)
+        {
+            m_resultLabel.SetText(m_uiStrings.m_victory);
+            SetData();
+        }
+
+        if (state == GameplayManager.GameplayState.Defeat)
+        {
+            m_resultLabel.SetText(m_uiStrings.m_defeat);
+            SetData();
+        }
     }
-    
+
+    void SetData()
+    {
+        (List<ScoreResultsPerWaveTier>, int) data = ScoreManager.Instance.GetScore();
+        List<ScoreResultsPerWaveTier> scoreTiers = data.Item1;
+        int currentScoreTotal;
+        Sequence tallyScoreSequence = DOTween.Sequence();
+        float counterDuration = 1f;
+        float counterDelay = .5f;
+
+        //Total Score
+        int index = m_scoreDisplayObjects.Count - 1;
+        m_scoreDisplayObjects[index].m_titleLabel.SetText(m_uiStrings.m_totalScore);
+        m_scoreDisplayObjects[index].m_valueLabel.SetText(0.ToString());
+
+        //Obelisk Objs.
+        m_scoreDisplayObjects[0].m_titleLabel.SetText(m_uiStrings.m_scoreObelisk);
+        m_scoreDisplayObjects[0].m_valueLabel.SetText(0.ToString());
+
+        currentScoreTotal = data.Item2;
+        Tween obeliskScoreTween = m_scoreDisplayObjects[0].m_valueLabel.DOCounter(0, data.Item2, counterDuration).SetAutoKill(true);
+        Tween addobeliskScoreToTotal = m_scoreDisplayObjects[index].m_valueLabel.DOCounter(0, currentScoreTotal, counterDuration).SetAutoKill(true);
+
+        tallyScoreSequence.Append(obeliskScoreTween);
+        tallyScoreSequence.Join(addobeliskScoreToTotal);
+
+        tallyScoreSequence.AppendInterval(counterDelay);
+
+        //Wave Penalties
+        for (int i = 0; i < scoreTiers.Count; ++i)
+        {
+            //If first, min is 0, else is previous wave + 1.
+            int min = i == 0 ? 1 : scoreTiers[i - 1].m_tierWaveBreakpoint + 1;
+            int max = scoreTiers[i].m_tierWaveBreakpoint;
+            m_scoreDisplayObjects[i + 1].m_titleLabel.SetText(string.Format(m_uiStrings.m_scoreWaves, min, max, scoreTiers[i].m_tierScorePerWave, scoreTiers[i].m_tierWaveCount));
+
+            //If we're the last tier, pick new formatting for the string.
+            if (i == scoreTiers.Count - 1)
+            {
+                m_scoreDisplayObjects[i + 1].m_titleLabel.SetText(string.Format(m_uiStrings.m_scoreLastTierWaves, min, scoreTiers[i].m_tierScorePerWave, scoreTiers[i].m_tierWaveCount));
+            }
+
+            m_scoreDisplayObjects[i + 1].m_valueLabel.SetText(0.ToString());
+
+            int newTotalScore = currentScoreTotal - scoreTiers[i].m_tierScore;
+            Tween wavePenaltyTween = m_scoreDisplayObjects[i + 1].m_valueLabel.DOCounter(0, -scoreTiers[i].m_tierScore, counterDuration).SetAutoKill(true);
+            Tween addWavePenaltyToTotal = m_scoreDisplayObjects[index].m_valueLabel.DOCounter(currentScoreTotal, newTotalScore, counterDuration).SetAutoKill(true);
+            currentScoreTotal = newTotalScore;
+
+            tallyScoreSequence.Append(wavePenaltyTween);
+            tallyScoreSequence.Join(addWavePenaltyToTotal);
+
+            tallyScoreSequence.AppendInterval(counterDelay);
+        }
+
+        tallyScoreSequence.Play().SetUpdate(true);
+        SendScore(currentScoreTotal);
+    }
+
+    void SendScore(int score)
+    {
+        //If we have playfab manager and a logged in profile, send score.
+        if (PlayFabClientAPI.IsClientLoggedIn())
+        {
+            PlayFabManager.Instance.SendLeaderboard(GameManager.Instance.m_curMission.m_playFableaderboardId, score);
+        }
+    }
+
     void Start()
     {
         m_exitButton.onClick.AddListener(OnExitButtonClicked);
+        m_retryButton.onClick.AddListener(OnRetryButtonClicked);
+    }
+
+    private void OnRetryButtonClicked()
+    {
+        if (GameManager.Instance != null)
+        {
+            Debug.Log("Restarting Mission.");
+            PlayerDataManager.Instance.UpdateMissionSaveData(1);
+            GameManager.Instance.RequestSceneRestart();
+        }
     }
 
     private void OnExitButtonClicked()
     {
-        GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
+        }
     }
+}
+
+[System.Serializable]
+public class TierScoreDisplayObjects
+{
+    public CanvasGroup m_canvasGroup;
+    public TextMeshProUGUI m_titleLabel;
+    public TextMeshProUGUI m_valueLabel;
 }

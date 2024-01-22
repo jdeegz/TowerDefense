@@ -182,8 +182,8 @@ public class BossSequenceController : MonoBehaviour
 
     void HandleBossIntroduction()
     {
-        m_activeBossIntroObj = Instantiate(m_bossIntroductionObj, CameraController.Instance.transform.position, quaternion.identity, transform);
-        BossIntroductionController bossIntroController = m_activeBossIntroObj.GetComponent<BossIntroductionController>();
+        BossIntroductionController bossIntroController = Instantiate(m_bossIntroductionObj, CameraController.Instance.transform.position, quaternion.identity, transform).GetComponent<BossIntroductionController>();;
+        m_activeBossIntroObj = bossIntroController.gameObject;
         bossIntroController.OnIntroductionComplete += BossIntroductionCompleted;
     }
 
@@ -389,6 +389,7 @@ public class BossSequenceController : MonoBehaviour
     }*/
 }
 
+[System.Serializable]
 public class BossObeliskObj
 {
     public List<Vector2Int> m_obeliskPointPositions;

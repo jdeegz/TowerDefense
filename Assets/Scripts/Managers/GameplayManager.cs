@@ -70,7 +70,8 @@ public class GameplayManager : MonoBehaviour
     public float m_firstBuildDuraction = 15;
     [HideInInspector] public float m_timeToNextWave;
 
-    [FormerlySerializedAs("m_activeObelisks")] public List<Obelisk> m_obelisksInMission;
+    [FormerlySerializedAs("m_activeObelisks")]
+    public List<Obelisk> m_obelisksInMission;
 
     public enum GameplayState
     {
@@ -130,8 +131,8 @@ public class GameplayManager : MonoBehaviour
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             ++m_wave;
-            Debug.Log($"wave: {m_wave} -- wave factor: {(m_wave+1) % m_bossWaveFactor}");
-            if (m_wave != 0 && (m_wave+1) % m_bossWaveFactor == 0)
+            Debug.Log($"wave: {m_wave} -- wave factor: {(m_wave + 1) % m_bossWaveFactor}");
+            if (m_wave != 0 && (m_wave + 1) % m_bossWaveFactor == 0)
             {
                 Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.SpawnBoss);
@@ -322,12 +323,20 @@ public class GameplayManager : MonoBehaviour
         m_playbackSpeed = m_playbackSpeed == minSpeed ? maxSpeed : minSpeed;
         Time.timeScale = m_playbackSpeed;
     }
-    
+
     public void UpdateGameSpeed(GameSpeed newSpeed)
     {
+        m_gameSpeed = newSpeed;
+
         switch (newSpeed)
         {
             case GameSpeed.Paused:
+                //Cancel tower preconstruction
+                if (m_interactionState == InteractionState.PreconstructionTower)
+                {
+                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                    ClearPreconstructedTower();
+                }
                 Time.timeScale = 0;
                 break;
             case GameSpeed.Normal:
@@ -377,16 +386,18 @@ public class GameplayManager : MonoBehaviour
                 {
                     m_timeToNextWave = m_buildDuration;
                 }
+
                 break;
             case GameplayState.Paused:
                 break;
             case GameplayState.Victory:
-                if(PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
+                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
+                UpdateGameSpeed(GameSpeed.Paused);
                 m_interactionState = InteractionState.Disabled;
-                PlayFabManager.Instance.SendLeaderboard(GameManager.Instance.m_curMission.m_playFableaderboardId, m_wave);
                 break;
             case GameplayState.Defeat:
-                if(PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
+                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
+                UpdateGameSpeed(GameSpeed.Paused);
                 m_interactionState = InteractionState.Disabled;
                 break;
             default:
@@ -448,6 +459,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     UpdateInteractionState(InteractionState.SelectedTower);
                 }
+
                 break;
             case Selectable.SelectedObjectType.Gatherer:
                 UpdateInteractionState(InteractionState.SelectedGatherer);
@@ -698,7 +710,7 @@ public class GameplayManager : MonoBehaviour
                     }
                 }
             }
-            
+
             //Check that the exits can path to one another.
             int exitsPathable = 0;
             //Define the start
@@ -707,7 +719,7 @@ public class GameplayManager : MonoBehaviour
                 bool startObjPathable = false;
                 GameObject startObj = m_castleController.m_castleEntrancePoints[x];
                 Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
-                
+
                 //Define the end
                 for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
                 {
@@ -719,7 +731,7 @@ public class GameplayManager : MonoBehaviour
                     {
                         continue;
                     }
-                    
+
                     //Path from Start to End and exclude the Game's Goal cell.
                     List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
                     if (testPath != null)
@@ -730,7 +742,7 @@ public class GameplayManager : MonoBehaviour
                         break;
                     }
                 }
-                
+
                 //We could not path to any other exit. So check to see if we can path to atleast one spawner.
                 if (!startObjPathable)
                 {
@@ -748,7 +760,7 @@ public class GameplayManager : MonoBehaviour
                     }
                 }
             }
-            
+
             //If the number of pathable exits is less than the number of exits, return false. One cannot path to another exit.
             if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
             {
@@ -962,6 +974,19 @@ public class GameplayManager : MonoBehaviour
             ClearPreconstructedTower();
         }
 
+        OnGameObjectSelected?.Invoke(obj);
+    }
+    
+    public void RequestSelectGatherer(int i)
+    {
+        if (i >= m_woodGathererList.Count) return;
+        
+        if (m_interactionState == InteractionState.PreconstructionTower)
+        {
+            ClearPreconstructedTower();
+        }
+
+        GameObject obj = m_woodGathererList[i].gameObject;
         OnGameObjectSelected?.Invoke(obj);
     }
 }

@@ -50,7 +50,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_stoneGathererDisplay;
 
     [SerializeField] private Image m_castleRepairFill;
-    [SerializeField] private AudioSource m_audioSource;
 
     private float m_timeToNextWave;
     private int m_curCastleHealth;
@@ -85,8 +84,31 @@ public class UICombatView : MonoBehaviour
             m_buttons = new List<Button>();
         }
         
-        gameObject.SetActive(false);
+        m_towerKeyMap = new Dictionary<KeyCode, int>
+        {
+            { KeyCode.Alpha1, 0 },
+            { KeyCode.Alpha2, 1 },
+            { KeyCode.Alpha3, 2 },
+            { KeyCode.Alpha4, 3 },
+            { KeyCode.Alpha5, 4 },
+            { KeyCode.Alpha6, 5 },
+            { KeyCode.Alpha7, 6 },
+            { KeyCode.Alpha8, 7 },
+            { KeyCode.Alpha9, 8 },
+            { KeyCode.Alpha0, 9 },
+        };
         
+        m_gathererKeyMap = new Dictionary<KeyCode, int>
+        {
+            { KeyCode.Q, 0 },
+            { KeyCode.W, 1 },
+            { KeyCode.E, 2 },
+            { KeyCode.R, 3 },
+            { KeyCode.T, 4 },
+            { KeyCode.Y, 5 },
+        };
+        
+        gameObject.SetActive(false);
     }
 
     private void UpdateCastleHealthDisplay(int i)
@@ -159,9 +181,9 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         GameplayManager.OnGameSpeedChanged -= GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed -= Alert;
-        GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
-        GameplayManager.OnGathererAdded += BuildGathererTrayButton;
-        GameplayManager.OnGathererRemoved += RemoveGathererTrayButton;
+        GameplayManager.OnObelisksCharged -= UpdateObeliskDisplay;
+        GameplayManager.OnGathererAdded -= BuildGathererTrayButton;
+        GameplayManager.OnGathererRemoved -= RemoveGathererTrayButton;
         
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
@@ -267,40 +289,26 @@ public class UICombatView : MonoBehaviour
         m_buttons.Add(m_nextWaveButton);
 
         BuildTowerTrayDisplay();
-        
-        m_towerKeyMap = new Dictionary<KeyCode, int>
-        {
-            { KeyCode.Alpha1, 0 },
-            { KeyCode.Alpha2, 1 },
-            { KeyCode.Alpha3, 2 },
-            { KeyCode.Alpha4, 3 },
-            { KeyCode.Alpha5, 4 },
-            { KeyCode.Alpha6, 5 },
-            { KeyCode.Alpha7, 6 },
-            { KeyCode.Alpha8, 7 },
-            { KeyCode.Alpha9, 8 },
-            { KeyCode.Alpha0, 9 },
-        };
-        
-        m_gathererKeyMap = new Dictionary<KeyCode, int>
-        {
-            { KeyCode.Q, 0 },
-            { KeyCode.W, 1 },
-            { KeyCode.E, 2 },
-            { KeyCode.R, 3 },
-            { KeyCode.T, 4 },
-            { KeyCode.Y, 5 },
-        };
     }
 
-    
-    
+
+    private int gathererIndex;
     public void BuildGathererTrayButton(GathererController gathererController)
     {
         GameObject buttonPrefab = Instantiate(m_gathererTrayButtonPrefab, m_gathererTrayLayoutObj);
         GathererTrayButton gathererTrayButtonScript = buttonPrefab.GetComponent<GathererTrayButton>();
-        gathererTrayButtonScript.SetupGathererTrayButton(gathererController, 1);
         
+        string keyString = null;
+        foreach (KeyValuePair<KeyCode, int> kvp in m_gathererKeyMap)
+        {
+            if (kvp.Value == gathererIndex)
+            {
+                keyString = kvp.Key.ToString();
+                break;
+            }
+        }
+        gathererTrayButtonScript.SetupGathererTrayButton(gathererController, keyString);
+        ++gathererIndex;
         
         Button buttonScript = buttonPrefab.GetComponent<Button>();
         
@@ -314,6 +322,7 @@ public class UICombatView : MonoBehaviour
     private void RemoveGathererTrayButton(GathererController gathererController)
     {
         //To Do if i ever need to remove gatherers.
+        
     }
     
     private void BuildTowerTrayDisplay()
@@ -402,9 +411,17 @@ public class UICombatView : MonoBehaviour
 
         foreach (var kvp in m_towerKeyMap)
         {
-            if (Input.GetKeyDown(kvp.Key))
+            if (Input.GetKeyDown(kvp.Key) && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
             {
                 GameplayManager.Instance.PreconstructTower(kvp.Value);
+            }
+        }
+        
+        foreach (var kvp in m_gathererKeyMap)
+        {
+            if (Input.GetKeyDown(kvp.Key) && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
+            {
+                GameplayManager.Instance.RequestSelectGatherer(kvp.Value);
             }
         }
 

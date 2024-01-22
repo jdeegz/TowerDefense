@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine;
 
@@ -11,35 +12,77 @@ public class UILeaderboardView : MonoBehaviour
     public GameObject m_leaderboardPlayerObj;
     public GameObject m_loginRequiredDisplay;
 
+    private bool Initialized;
+    public bool m_initialized
+    { 
+        get { return Initialized; }
+        set
+        {
+            // Check if the value is different to avoid unnecessary event triggers
+            if (Initialized != value)
+            {
+                // Set the value
+                Initialized = value;
+
+                if (Initialized == false) return;
+
+                // Trigger the event with the new value
+                Debug.Log($"Subscribing Leaderboard View to PlayFabManager.");
+                PlayFabManager.Instance.OnLoginComplete += GetLeaderboardData;
+                PlayFabManager.Instance.OnLeaderboardReceived += UpdateLeaderboardView;
+            }
+        }
+    }
+
 
     // Start is called before the first frame update
     void Awake()
     {
+        Debug.Log($"Leaderboard Subscribing to MenuManager.");
+        MenuManager.OnMenuStateChanged += MenuStateChanged;
+    }
+
+    private void MenuStateChanged(MenuManager.MenuState newState)
+    {
+        if (newState != MenuManager.MenuState.StartMenu) return;
+
+        Debug.Log($"We're in Start Menus. Trying to Show Leaderboards.");
+
         if (PlayFabManager.Instance)
         {
-            PlayFabManager.Instance.OnLeaderboardReceived += UpdateLeaderboardView;
-            PlayFabManager.Instance.OnLoginComplete += GetLeaderboardData;
-            
-            if (PlayFabManager.Instance.m_playerProfile != null)
+            if (PlayFabClientAPI.IsClientLoggedIn())
             {
-                m_loginRequiredDisplay.SetActive(false);
+                m_initialized = true;
                 GetLeaderboardData();
             }
         }
-        else
+    }
+
+    void OnDestroy()
+    {
+        MenuManager.OnMenuStateChanged -= MenuStateChanged;
+        if (PlayFabManager.Instance)
         {
-            m_loginRequiredDisplay.SetActive(true);
+            PlayFabManager.Instance.OnLoginComplete -= GetLeaderboardData;
+            PlayFabManager.Instance.OnLeaderboardReceived -= UpdateLeaderboardView;
         }
     }
 
     public void GetLeaderboardData()
     {
+        Debug.Log($"Leaderboard View: Get Leaderboard Data");
         PlayFabManager.Instance.GetAllLeaderboards();
     }
 
     private void UpdateLeaderboardView(bool failed, Dictionary<string, GetLeaderboardResult> results)
     {
+        Debug.Log($"Leaderboard View: Update Leaderboard View Failed: {failed}");
+        Debug.Log($"{results.Count} Results found.");
+        m_loginRequiredDisplay.SetActive(failed);
+
         if (failed) return;
+
+        ClearList();
 
         MissionData[] missionList = GameManager.Instance.m_MissionContainer.m_MissionList;
 
@@ -58,9 +101,21 @@ public class UILeaderboardView : MonoBehaviour
                 //Build the list item for each player & score in the value for this key.
                 foreach (PlayerLeaderboardEntry item in kvp.Value.Leaderboard)
                 {
+                    string name;
+                    bool isMe = false;
+
                     LeaderboardListItem playerListItem = Instantiate(m_leaderboardPlayerObj, m_listRootObj.transform).GetComponent<LeaderboardListItem>();
-                    bool isMe = item.DisplayName == PlayFabManager.Instance.m_playerProfile.DisplayName;
-                    playerListItem.SetPlayerData(item.DisplayName, item.Position, item.StatValue, isMe);
+                    if (item.DisplayName != null)
+                    {
+                        isMe = item.DisplayName == PlayFabManager.Instance.m_playerDisplayName;
+                        name = item.DisplayName;
+                    }
+                    else
+                    {
+                        name = "Unnamed";
+                    }
+
+                    playerListItem.SetPlayerData(name, item.Position, item.StatValue, isMe);
                 }
             }
         }

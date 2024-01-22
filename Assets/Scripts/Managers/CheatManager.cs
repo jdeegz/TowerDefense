@@ -41,7 +41,7 @@ public class CheatManager : MonoBehaviour
         //Increment Wave
         if (Input.GetKeyDown(KeyCode.RightBracket))
         {
-            ModifyWave(1);
+            ModifyWave(75);
         }
         
         //Trigger Victory
@@ -83,7 +83,7 @@ public class CheatManager : MonoBehaviour
         foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
         {
             if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charged) continue;
-            obelisk.IncreaseObeliskCharge(Random.Range(0, 30));
+            obelisk.IncreaseObeliskCharge(Random.Range(249, 251));
         }
     }
 }

@@ -50,6 +50,7 @@ GameObject:
   - component: {fileID: 3212631690550248205}
   - component: {fileID: 5505796040316762428}
   - component: {fileID: 7222722299706754376}
+  - component: {fileID: 1995192273931389547}
   m_Layer: 0
   m_Name: UpgradeTowerButton0
   m_TagString: Untagged
@@ -133,7 +134,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2271707815806025731}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4620532785563502688}
+        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+        m_MethodName: PlayOneShot
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 8300000, guid: b098b61df3c660b4aab0f99dae1a585f, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &7222722299706754376
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,6 +167,35 @@ MonoBehaviour:
   m_backgroundBaseColor: {r: 0.27450982, g: 0.3647059, b: 0.62352943, a: 1}
   m_backgroundCannotAffordColor: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
   m_parentHUD: {fileID: 3659254796527534263}
+--- !u!114 &1995192273931389547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1272574517287421059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 4620532785563502688}
+          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+          m_MethodName: PlayOneShot
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 8300000, guid: 53e6a8250c70f894984323a1287d44da, type: 3}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &1276134976694003641
 GameObject:
   m_ObjectHideFlags: 0
@@ -892,6 +934,7 @@ GameObject:
   - component: {fileID: 5617500146635805191}
   - component: {fileID: 8365208463581833921}
   - component: {fileID: 4072483373268049328}
+  - component: {fileID: 1147622342078936180}
   m_Layer: 0
   m_Name: UpgradeTowerButton2
   m_TagString: Untagged
@@ -975,7 +1018,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5725395518413412257}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4620532785563502688}
+        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+        m_MethodName: PlayOneShot
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 8300000, guid: b098b61df3c660b4aab0f99dae1a585f, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &4072483373268049328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -996,6 +1051,35 @@ MonoBehaviour:
   m_backgroundBaseColor: {r: 0.27450982, g: 0.3647059, b: 0.62352943, a: 1}
   m_backgroundCannotAffordColor: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
   m_parentHUD: {fileID: 3659254796527534263}
+--- !u!114 &1147622342078936180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2964236782192563961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 4620532785563502688}
+          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+          m_MethodName: PlayOneShot
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 8300000, guid: 53e6a8250c70f894984323a1287d44da, type: 3}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &2970382481007534715
 GameObject:
   m_ObjectHideFlags: 0
@@ -2406,6 +2490,7 @@ GameObject:
   m_Component:
   - component: {fileID: 735853570067233773}
   - component: {fileID: 1656724952712971341}
+  - component: {fileID: 4620532785563502688}
   m_Layer: 0
   m_Name: IngameUI
   m_TagString: Untagged
@@ -2455,6 +2540,102 @@ MonoBehaviour:
   m_currencyGoodcolor: {r: 0.5025469, g: 0.7735849, b: 0.16420436, a: 1}
   m_currencyBadcolor: {r: 0.7735849, g: 0.14960839, b: 0.14960839, a: 1}
   m_levelUpColor: {r: 1, g: 0.7531938, b: 0, a: 1}
+--- !u!82 &4620532785563502688
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7380076134839678501}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 5282078640344360130, guid: ba47649c8093841448bae7cec5e9c34d, type: 2}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &7645539698805081479
 GameObject:
   m_ObjectHideFlags: 0
@@ -2732,6 +2913,7 @@ GameObject:
   - component: {fileID: 1101937281647221172}
   - component: {fileID: 6825351288145005629}
   - component: {fileID: 224370086600812192}
+  - component: {fileID: 898782824111225380}
   m_Layer: 0
   m_Name: SellTowerButton
   m_TagString: Untagged
@@ -2815,7 +2997,48 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5318084889569475766}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4620532785563502688}
+        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+        m_MethodName: PlayOneShot
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 8300000, guid: b098b61df3c660b4aab0f99dae1a585f, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &898782824111225380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8741991871099459261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 4620532785563502688}
+          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+          m_MethodName: PlayOneShot
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 8300000, guid: 53e6a8250c70f894984323a1287d44da, type: 3}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &8815302899584416834
 GameObject:
   m_ObjectHideFlags: 0
@@ -3039,6 +3262,7 @@ GameObject:
   - component: {fileID: 6934250057034245776}
   - component: {fileID: 4359791654137201227}
   - component: {fileID: 3019092728261974956}
+  - component: {fileID: 2163117273492121677}
   m_Layer: 0
   m_Name: UpgradeTowerButton1
   m_TagString: Untagged
@@ -3122,7 +3346,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2752816764983636468}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4620532785563502688}
+        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+        m_MethodName: PlayOneShot
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 8300000, guid: b098b61df3c660b4aab0f99dae1a585f, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &3019092728261974956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3143,3 +3379,32 @@ MonoBehaviour:
   m_backgroundBaseColor: {r: 0.27450982, g: 0.3647059, b: 0.62352943, a: 1}
   m_backgroundCannotAffordColor: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
   m_parentHUD: {fileID: 3659254796527534263}
+--- !u!114 &2163117273492121677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9160834008106290510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 4620532785563502688}
+          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+          m_MethodName: PlayOneShot
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 8300000, guid: 53e6a8250c70f894984323a1287d44da, type: 3}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2

@@ -95,6 +95,9 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
+        //Do nothing if we are paused.
+        if (GameplayManager.Instance.m_gameSpeed == GameplayManager.GameSpeed.Paused) return;
+        
         HandleScreenEdgePan();
 
         if (GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
