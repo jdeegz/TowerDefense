@@ -10,6 +10,7 @@ public class Obelisk : MonoBehaviour
     public ObeliskData m_obeliskData;
     public GameObject m_chargedVFXGroup;
     public LineRenderer m_obeliskRangeCircle;
+    public GameObject m_ambientEffectsRoot;
 
     private float m_obeliskRadius;
     private int m_curChargeCount;
@@ -85,6 +86,10 @@ public class Obelisk : MonoBehaviour
             m_meter.SetupMeter(this.gameObject, m_meterOffset);
             
             SetupRangeCircle(48, m_obeliskRadius);
+            Vector3 scale = m_ambientEffectsRoot.transform.localScale;
+            scale.x *= m_obeliskRadius * 2;
+            scale.z *= m_obeliskRadius * 2;
+            m_ambientEffectsRoot.transform.localScale = scale;
 
             GameplayManager.Instance.AddObeliskToList(this);
         }

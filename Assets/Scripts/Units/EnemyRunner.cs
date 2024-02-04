@@ -45,7 +45,7 @@ public class EnemyRunner : EnemyController
 
 
         //Update Speed Trails
-        if (cumulativeMoveSpeed > 1.0 && m_speedTrailVFXObj != null)
+        if (cumulativeMoveSpeed / Time.deltaTime > 1.0 && m_speedTrailVFXObj != null)
         {
             m_speedTrailVFXObj.SetActive(true);
         }

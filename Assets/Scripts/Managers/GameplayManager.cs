@@ -213,6 +213,10 @@ public class GameplayManager : MonoBehaviour
 
             if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
             {
+                if (m_hoveredSelectable.m_selectedObjectType == Selectable.SelectedObjectType.ResourceWood)
+                {
+                    return;
+                }
                 //Debug.Log(m_hoveredSelectable + " : selected.");
                 OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
                 //Clear Hoverable because we've selected.
@@ -220,7 +224,12 @@ public class GameplayManager : MonoBehaviour
             }
             else if (m_curSelectable && m_hoveredSelectable == null)
             {
-                OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                //If we click, and we dont have a hoverable, and current selected is NOT a gatherer, deselect the object.
+                //This allows us to pan while having the gatherer selected.
+                if (m_curSelectable.m_selectedObjectType != Selectable.SelectedObjectType.Gatherer)
+                {
+                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                }
             }
         }
 
@@ -337,6 +346,7 @@ public class GameplayManager : MonoBehaviour
                     OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                     ClearPreconstructedTower();
                 }
+
                 Time.timeScale = 0;
                 break;
             case GameSpeed.Normal:
@@ -438,7 +448,10 @@ public class GameplayManager : MonoBehaviour
         //Deselect current selection.
         if (m_curSelectable)
         {
-            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+            if (m_curSelectable.gameObject != obj)
+            {
+                OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+            }
         }
 
         Selectable objSelectable = obj.GetComponent<Selectable>();
@@ -976,17 +989,29 @@ public class GameplayManager : MonoBehaviour
 
         OnGameObjectSelected?.Invoke(obj);
     }
-    
+
     public void RequestSelectGatherer(int i)
     {
         if (i >= m_woodGathererList.Count) return;
-        
+
+        GameObject obj = m_woodGathererList[i].gameObject;
+
         if (m_interactionState == InteractionState.PreconstructionTower)
         {
             ClearPreconstructedTower();
         }
 
-        GameObject obj = m_woodGathererList[i].gameObject;
         OnGameObjectSelected?.Invoke(obj);
+    }
+
+    public void KillAllEnemies()
+    {
+        if (m_enemyList.Count <= 0) return;
+        
+        List<EnemyController> livingEnemies = new List<EnemyController>(m_enemyList);
+        foreach (EnemyController enemy in livingEnemies)
+        {
+            enemy.OnTakeDamage(999999);
+        }
     }
 }

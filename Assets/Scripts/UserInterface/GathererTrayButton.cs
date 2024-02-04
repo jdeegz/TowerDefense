@@ -38,6 +38,7 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     public void SelectGatherer()
     {
         GameplayManager.Instance.RequestSelectGatherer(m_gathererController.gameObject);
+        CameraController.Instance.RequestOnRailsMove(m_gathererController.transform.position);
     }
     
     private void GathererSelected(GameObject selectedObj)

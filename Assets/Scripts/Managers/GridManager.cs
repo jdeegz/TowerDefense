@@ -64,7 +64,7 @@ public class GridManager : MonoBehaviour
             case GameplayManager.GameplayState.PlaceObstacles:
                 break;
             case GameplayManager.GameplayState.FloodFillGrid:
-                FloodFillGrid(m_gridCells);
+                FloodFillGrid(m_gridCells, null);
                 break;
             case GameplayManager.GameplayState.CreatePaths:
                 BuildPathList();
@@ -90,7 +90,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    public void FloodFillGrid(Cell[] gridCells)
+    public void FloodFillGrid(Cell[] gridCells, Action callback)
     {
         int goalCellIndex = Util.GetCellIndex(GameplayManager.Instance.m_enemyGoal.position);
         Cell goalCell = gridCells[goalCellIndex];
@@ -118,7 +118,7 @@ public class GridManager : MonoBehaviour
             {
                 //Break out if the array entry for this neighbor is null
                 if (neighborCells[i] == null) continue;
-                
+
                 var neighbor = neighborCells[i];
                 if (visited.Contains(neighbor) == false && frontier.Contains(neighbor) == false)
                 {
@@ -146,7 +146,7 @@ public class GridManager : MonoBehaviour
         }
 
         Debug.Log($"{spawnPointCellsFound} of {spawnPointCells.Count} spawners found during FloodFill.");
-        
+
         //If we've found all the spawn points, this is good, we can update each path.
         if (m_spawnPointsAccessible = spawnPointCellsFound == spawnPointCells.Count)
         {
@@ -157,8 +157,8 @@ public class GridManager : MonoBehaviour
                 Debug.Log("Grid has been Flood Filled.");
                 GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
             }
-            
-            
+
+            Debug.Log($"GridManager: Drawing new Unit Paths");
             foreach (UnitPath unitPath in m_unitPaths)
             {
                 //Break this into its own function outside of flood fill.
@@ -168,6 +168,11 @@ public class GridManager : MonoBehaviour
         else
         {
             Debug.Log($"We did not find all exit paths.");
+        }
+
+        if (callback != null)
+        {
+            callback.Invoke();
         }
     }
 
@@ -222,27 +227,40 @@ public class GridManager : MonoBehaviour
     void PreconTowerMoved(Vector2Int preconTowerPos)
     {
         int preconTowerCellIndex = preconTowerPos.y * m_gridWidth + preconTowerPos.x;
-        Debug.Log($"Precon Index: {preconTowerCellIndex}");
+        //Debug.Log($"Precon Index: {preconTowerCellIndex}");
 
-        Debug.Log($"Updating temporary Grid Cell occupancy.");
+        Debug.Log($"GridManager: Updating Grid Cell {preconTowerCellIndex} temp occupancy to TRUE.");
         m_gridCells[preconTowerCellIndex].UpdateTempOccupancyDisplay(true);
 
         //Set the values back to their original state if this is not our first iteration.
-        if (m_previousPreconIndex > 0)
+        if (m_previousPreconIndex > 0 && m_previousPreconIndex != preconTowerCellIndex)
         {
-            Debug.Log($"Setting previous Grid Cell occupancy.");
+            Debug.Log($"GridManager: Updating Grid Cell {m_previousPreconIndex} temp occupancy to FALSE.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
         }
 
         m_previousPreconIndex = preconTowerCellIndex;
 
-        FloodFillGrid(m_gridCells);
+        Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
+        FloodFillGrid(m_gridCells, null);
     }
 
     void TowerBuilt()
     {
         SetCellDirections();
-        
+
+        RevertPreconTempChanges();
+    }
+
+    void PreconstructedTowerClear()
+    {
+        RevertPreconTempChanges();
+
+        FloodFillGrid(m_gridCells, null);
+    }
+
+    void RevertPreconTempChanges()
+    {
         //Set the values back to their original state if this is not our first iteration.
         if (m_previousPreconIndex > 0)
         {
@@ -252,25 +270,37 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void PreconstructedTowerClear()
+    public void oldRefreshGrid()
     {
-        //Set the values back to their original state if this is not our first iteration.
-        if (m_previousPreconIndex > 0)
-        {
-            Debug.Log($"Setting previous Grid Cell occupancy.");
-            m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
-            m_previousPreconIndex = -1;
-        }
-        
-        FloodFillGrid(m_gridCells);
+        FloodFillGrid(m_gridCells, SetCellDirections);
     }
-    
+
     public void RefreshGrid()
     {
-        FloodFillGrid(m_gridCells);
-        
-        SetCellDirections();
+        //A node depleted!
+        //If we're in precon, we want to unset precon mode's temporary assignments of occupancy and direction.
+        //Then flood fill to update temp directions. Then SET those directions.
+        //Then return to precon testing.
+        Debug.Log($"GridManager: Node Depletion Detected.");
+        if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
+        {
+            Debug.Log($"GridManager: Reverting Precon Temp Changes.");
+            int preconIndex = m_previousPreconIndex;
+            RevertPreconTempChanges();
+
+            Debug.Log($"GridManager: Flood Filling and Setting directions.");
+            FloodFillGrid(m_gridCells, SetCellDirections);
+
+            //I think I could also cheat this by setting GameplayManagers m_preconstructedTowerPos to Vector2Int.zero, which will get flagged as the 'new pos' invoking its action.
+            Debug.Log($"GridManager: Returning to Precon Tower temp changes.");
+            PreconTowerMoved(m_gridCells[preconIndex].m_cellPos);
+        }
+        else
+        {
+            FloodFillGrid(m_gridCells, SetCellDirections);
+        }
     }
+
 
     private void HitTestCellForGround(Vector3 pos, Cell cell)
     {
@@ -479,6 +509,7 @@ public class Cell
             default:
                 break;
         }
+
         m_tempDirectionToNextCell = direction;
     }
 
@@ -516,7 +547,8 @@ public class UnitPath
         {
             m_lineRenderer.lineRendererProperties = new TBLineRenderer();
             //m_lineRenderer.lineRendererProperties.linePoints = m_path.Count;
-            m_lineRenderer.lineRendererProperties.texture = GridManager.Instance.m_lineRendererMaterial;
+            Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
+            m_lineRenderer.lineRendererProperties.texture = instancedMaterial;
             m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
             ColorUtility.TryParseHtmlString("#73B549", out Color lineColor);
             m_lineRenderer.lineRendererProperties.startColor = lineColor;
@@ -671,6 +703,16 @@ public class UnitPath
     {
         if (m_lineRenderer == null) return;
         List<Vector2Int> path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
+        
+        float length = 0;
+        for (int i = 1; i < path.Count; i++)
+        {
+            length += Vector2Int.Distance(path[i - 1], path[i]);
+        }
+
+        length *= 2;
+        m_lineRenderer.lineRendererProperties.texture.SetFloat("_Tiling", length);
+        
         m_path = path;
         m_lineRenderer.SetPoints(path);
     }

@@ -252,7 +252,7 @@ public class UITooltipController : MonoBehaviour
                 // After the first fade completes, add a 3-second delay
                 m_curTween = m_canvasGroup.DOFade(0f, 0.1f).SetDelay(4f);
             });
-            m_curTween.Play();
+            m_curTween.Play().SetUpdate(true);
         }
     }
 

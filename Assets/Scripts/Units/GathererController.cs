@@ -317,12 +317,15 @@ public class GathererController : MonoBehaviour
                 }
                 else
                 {
-                    UpdateTask(GathererTask.TravelingToHarvest);
+                    UpdateTask(GathererTask.TravelingToCastle);
                 }
                 break;
             case Selectable.SelectedObjectType.Ruin:
                 Debug.Log("Gatherer going to castle.");
                 RequestTravelToRuin(requestObj);
+                break;
+            case Selectable.SelectedObjectType.Obelisk:
+                Debug.Log($"Obelisk selected for command, nothing to do here.");
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);

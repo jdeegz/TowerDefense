@@ -41,7 +41,7 @@ public class CheatManager : MonoBehaviour
         //Increment Wave
         if (Input.GetKeyDown(KeyCode.RightBracket))
         {
-            ModifyWave(75);
+            ModifyWave(1);
         }
         
         //Trigger Victory
@@ -55,6 +55,17 @@ public class CheatManager : MonoBehaviour
         {
             TriggerGameStateChange(GameplayManager.GameplayState.Defeat);
         }
+        
+        //Kill all enemies
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            TriggerKillAll();
+        }
+    }
+
+    void TriggerKillAll()
+    {
+        GameplayManager.Instance.KillAllEnemies();
     }
 
     void GiveWood()

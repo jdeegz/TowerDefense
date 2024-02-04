@@ -419,7 +419,7 @@ public class UICombatView : MonoBehaviour
         
         foreach (var kvp in m_gathererKeyMap)
         {
-            if (Input.GetKeyDown(kvp.Key) && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
+            if (Input.GetKeyDown(kvp.Key))
             {
                 GameplayManager.Instance.RequestSelectGatherer(kvp.Value);
             }

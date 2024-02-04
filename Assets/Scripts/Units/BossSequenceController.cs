@@ -8,10 +8,12 @@ using Random = UnityEngine.Random;
 
 public class BossSequenceController : MonoBehaviour
 {
-    [Header("Boss Objects")] public GameObject m_bossIntroductionObj;
+    [Header("Boss Objects")] 
+    public GameObject m_bossIntroductionObj;
     public EnemyData m_bossEnemyData;
 
-    [Header("Grid Info")] public List<Vector2Int> m_bossGridCellPositions = new List<Vector2Int>();
+    [Header("Grid Info")] 
+    public List<Vector2Int> m_bossGridCellPositions = new List<Vector2Int>();
     public List<BossObeliskObj> m_bossObeliskPathPoints = new List<BossObeliskObj>();
     private int m_bossObeliskPathIndex = 0;
 
@@ -50,6 +52,11 @@ public class BossSequenceController : MonoBehaviour
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         UpdateTask(BossSequenceTask.Idle);
+    }
+
+    void OnDestroy()
+    {
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
     }
 
     // Update is called once per frame
@@ -182,7 +189,10 @@ public class BossSequenceController : MonoBehaviour
 
     void HandleBossIntroduction()
     {
-        BossIntroductionController bossIntroController = Instantiate(m_bossIntroductionObj, CameraController.Instance.transform.position, quaternion.identity, transform).GetComponent<BossIntroductionController>();;
+        Debug.Log($"{gameObject.name} / {transform.name}");
+        Transform t = this.transform;
+        GameObject bossIntroControllerObj = Instantiate(m_bossIntroductionObj, CameraController.Instance.transform.position, quaternion.identity, t);
+        BossIntroductionController bossIntroController = bossIntroControllerObj.GetComponent<BossIntroductionController>();
         m_activeBossIntroObj = bossIntroController.gameObject;
         bossIntroController.OnIntroductionComplete += BossIntroductionCompleted;
     }

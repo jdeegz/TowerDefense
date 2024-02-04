@@ -37,15 +37,12 @@ public class CameraController : MonoBehaviour
     {
         Instance = this;
     }
-    
+
     void Start()
     {
         float x = GridManager.Instance.m_gridWidth / 2;
         float z = GridManager.Instance.m_gridHeight / 2;
-
-        //Center the camera
-        transform.position = GameplayManager.Instance.m_castleController.transform.position;
-
+        
         //Get Screen to Plane corners.
         //North East
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width, Screen.height, 100));
@@ -55,7 +52,7 @@ public class CameraController : MonoBehaviour
             m_cameraNorthEast = ray.origin + t * ray.direction;
             //Instantiate(m_testDummy, m_cameraNorthEast, quaternion.identity);
         }
-        
+
         //North West
         ray = Camera.main.ScreenPointToRay(new Vector3(0, Screen.height, 100));
         if (ray.direction.y != 0)
@@ -64,7 +61,7 @@ public class CameraController : MonoBehaviour
             m_cameraNorthWest = ray.origin + t * ray.direction;
             //Instantiate(m_testDummy, m_cameraNorthWest, quaternion.identity);
         }
-        
+
         //South East -- Not needed for any calculations.
         /*ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width, 0, 100));
         if (ray.direction.y != 0)
@@ -73,7 +70,7 @@ public class CameraController : MonoBehaviour
             m_cameraSouthEast = ray.origin + t * ray.direction;
             //Instantiate(m_testDummy, m_cameraSouthEast, quaternion.identity);
         }*/
-        
+
         //South West
         ray = Camera.main.ScreenPointToRay(new Vector3(0, 0, 100));
         if (ray.direction.y != 0)
@@ -91,20 +88,28 @@ public class CameraController : MonoBehaviour
 
         m_camera = Camera.main;
         m_startZoom = m_camera.gameObject.transform.localPosition.z;
+        
+        //Center the camera
+        transform.position = GetPositionInBounds(GameplayManager.Instance.m_castleController.transform.position);
     }
 
     void Update()
     {
         //Do nothing if we are paused.
-        if (GameplayManager.Instance.m_gameSpeed == GameplayManager.GameSpeed.Paused) return;
-        
+        //if (GameplayManager.Instance.m_gameSpeed == GameplayManager.GameSpeed.Paused) return;
+
+        if (m_onRails)
+        {
+            HandleOnRailsMovement();
+        }
+
         HandleScreenEdgePan();
 
         if (GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
         {
             HandleMouseInput();
         }
-        
+
         // Detect mouse wheel scrolling
         float scrollDelta = Input.mouseScrollDelta.y;
 
@@ -118,7 +123,7 @@ public class CameraController : MonoBehaviour
             SetCameraPosition(newZoom);
         }
     }
-    
+
     void SetCameraPosition(float zoomLevel)
     {
         // Set the camera position along the z-axis
@@ -138,6 +143,8 @@ public class CameraController : MonoBehaviour
             if (plane.Raycast(ray, out entry))
             {
                 m_dragStartPosition = ray.GetPoint(entry);
+
+                CancelOnRailsMove();
             }
         }
 
@@ -209,6 +216,81 @@ public class CameraController : MonoBehaviour
         if (atTopEdge && transform.position.z < m_maxZBounds) cameraMovement.z += m_scrollSpeed;
         if (atBotEdge && transform.position.z > m_minZBounds) cameraMovement.z -= m_scrollSpeed;
 
+        if (cameraMovement != Vector3.zero) CancelOnRailsMove();
+
         transform.Translate(cameraMovement * Time.deltaTime, Space.World);
+    }
+
+    private bool m_onRails;
+    private Vector3 m_railsDestination;
+
+    public void RequestOnRailsMove(Vector3 pos)
+    {
+        //Debug.Log($"CameraController: Request On Rails Move to: {pos}");
+        m_onRails = true;
+        m_railsDestination = pos;
+    }
+
+    void CancelOnRailsMove()
+    {
+        m_onRails = false;
+        m_railsDestination = Vector3.zero;
+        //Debug.Log($"CameraController: On Rails movement cancelled.");
+    }
+
+    void HandleOnRailsMovement()
+    {
+        //Debug.Log($"CameraController: Handling On Rails Movement to: {m_railsDestination}");
+        float stoppingDistance = 0.1f;
+
+        //Check to see if we're close enough.
+        if (Vector3.Distance(transform.position, m_railsDestination) <= stoppingDistance)
+        {
+            //Debug.Log($"CameraController: Reached stopping distance for On Rails Movement.");
+            m_onRails = false;
+            return;
+        }
+
+        bool xAxisComplete = false;
+        bool zAxisComplete = false;
+        Vector3 newPos = transform.position;
+
+        //If we're NOT at the X bounds, keep moving on X.
+        if (transform.position.x > m_minXBounds && transform.position.x < m_maxXBounds)
+        {
+            newPos.x = Mathf.Lerp(transform.position.x, m_railsDestination.x, m_scrollSpeed * Time.deltaTime);
+        }
+        else
+        {
+            xAxisComplete = true;
+        }
+
+        //If we're NOT at the Z bounds, keep moving on Z.
+        if (transform.position.z > m_minZBounds && transform.position.z < m_maxZBounds)
+        {
+            newPos.z = Mathf.Lerp(transform.position.z, m_railsDestination.z, m_scrollSpeed * Time.deltaTime);
+        }
+        else
+        {
+            zAxisComplete = true;
+        }
+
+        //Do the MOVE unless we're done on each axis.
+        if (xAxisComplete && zAxisComplete)
+        {
+            m_onRails = false;
+        }
+        else
+        {
+            transform.position = newPos;
+        }
+    }
+
+    Vector3 GetPositionInBounds(Vector3 positionRequested)
+    {
+        float clampedX = Mathf.Clamp(positionRequested.x, m_minXBounds, m_maxXBounds);
+        float clampedZ = Mathf.Clamp(positionRequested.z, m_minZBounds, m_maxZBounds);
+
+        return new Vector3(clampedX, positionRequested.y, clampedZ);
     }
 }
