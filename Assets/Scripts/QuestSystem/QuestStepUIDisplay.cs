@@ -15,7 +15,7 @@ public class QuestStepUIDisplay : MonoBehaviour
     public void SetupQuestStepUIDisplay(QuestStep questStep)
     {
         m_questStep = questStep;
-        questStep.onProgressUpdate += ProgressUpdate;
+        gameObject.name = m_questStep.name;
         ProgressUpdate();
     }
 
@@ -38,5 +38,12 @@ public class QuestStepUIDisplay : MonoBehaviour
         //Format the string.
         string progressString = $"<b>{m_curQuestStepUIData.m_progressValue} / {m_curQuestStepUIData.m_requiredValue}</b>";
         m_questStepLabel.SetText($"{progressString} {m_curQuestStepUIData.m_descriptionString}");
+    }
+
+    public void SetSubscription(QuestStep newStep)
+    {
+        Debug.Log($"Subscribing: {gameObject.name} to {newStep}");
+        m_questStep = newStep;
+        m_questStep.onProgressUpdate += ProgressUpdate;
     }
 }

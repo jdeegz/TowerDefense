@@ -49,4 +49,16 @@ public class QuestEvents
         }
     }
     
+    // FINISH QUEST
+    public event Action<QuestStep> onQuestStepCreated;
+
+    public void QuestStepCreated(QuestStep questStep)
+    {
+        if (onQuestStepCreated != null)
+        {
+            Debug.Log($"Quest Step Created.");
+            onQuestStepCreated(questStep);
+        }
+    }
+    
 }

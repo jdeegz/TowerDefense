@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
@@ -8,6 +9,7 @@ public class QuestManager : MonoBehaviour
     public static QuestManager Instance;
     public QuestEvents m_questEvents;
     private Dictionary<string, Quest> m_questMap;
+    public event Action<QuestStep> onQuestStepCreated;
 
     private void Awake()
     {
@@ -82,8 +84,9 @@ public class QuestManager : MonoBehaviour
     {
         Debug.Log($"Start Quest {id}");
         Quest quest = GetQuestById(id);
-        quest.InstantiateCurrentQuestStep(gameObject.transform);
+        QuestStep newStep = quest.InstantiateCurrentQuestStep(transform);
         ChangeQuestState(quest.m_info.m_id, QuestState.IN_PROGRESS);
+        m_questEvents.QuestStepCreated(newStep);
     }
 
     private void AdvanceQuest(string id)
@@ -94,7 +97,8 @@ public class QuestManager : MonoBehaviour
 
         if (quest.CurrentStepExists())
         {
-            quest.InstantiateCurrentQuestStep(transform);
+            QuestStep newStep = quest.InstantiateCurrentQuestStep(transform);
+            m_questEvents.QuestStepCreated(newStep);
         }
         else
         {
@@ -132,7 +136,7 @@ public class QuestManager : MonoBehaviour
         return idToQuestMap;
     }
 
-    private Quest GetQuestById(string id)
+    public Quest GetQuestById(string id)
     {
         Quest quest = m_questMap[id];
         if (quest == null)
