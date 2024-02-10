@@ -4431,9 +4431,9 @@ MonoBehaviour:
   m_gameSpeed: 1
   m_totalWaves: 9999
   m_wave: -1
-  m_bossWaveFactor: 10
+  m_bossWaveFactor: 99
   m_delayForQuest: 1
-  m_firstBuildDuraction: 1
+  m_firstBuildDuraction: 6
   m_buildDuration: 6
   m_timeToNextWave: 0
   m_castleController: {fileID: 1429581217}
@@ -7767,7 +7767,7 @@ PrefabInstance:
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_spawnerWaves
       value: 
-      objectReference: {fileID: 11400000, guid: 6b5468c63b41e984e84e38bd3eb295db, type: 2}
+      objectReference: {fileID: 11400000, guid: 647199f3a30dffa4bab725b5afbceefd, type: 2}
     - target: {fileID: 3698104283116156141, guid: bafe6e3bb162b4241a558f66333b068f, type: 3}
       propertyPath: m_unitsPerWave
       value: 1
@@ -10703,7 +10703,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 956046119}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -50}
+  m_LocalPosition: {x: 0, y: 0, z: -55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -13639,7 +13639,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1170876656}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13, y: 0, z: 6}
+  m_LocalPosition: {x: 12.5, y: 0, z: 6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -16244,7 +16244,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1350161376}
   m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -16259,7 +16259,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1350161376}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95325b86a96bab64bb8b27841454c53a, type: 3}
   m_Name: 
@@ -16391,7 +16391,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1384274519}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 16, y: -1, z: 10}
+  m_LocalPosition: {x: 12.5, y: 0, z: 8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -16461,7 +16461,7 @@ MeshRenderer:
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
   m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 2
+  m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -16538,15 +16538,15 @@ MonoBehaviour:
   - m_Vertices: 03000000
   m_SharedTextures: []
   m_Positions:
-  - {x: -16.5, y: 1, z: -10.5}
-  - {x: -16.5, y: 1, z: 6.5}
-  - {x: 9.5, y: 1, z: -10.5}
-  - {x: 9.5, y: 1, z: 6.5}
+  - {x: -13, y: 0, z: -8.5}
+  - {x: -13, y: 0, z: 8.5}
+  - {x: 13, y: 0, z: -8.5}
+  - {x: 13, y: 0, z: 8.5}
   m_Textures0:
-  - {x: -16.5, y: -10.5}
-  - {x: -16.5, y: 6.5}
-  - {x: 9.5, y: -10.5}
-  - {x: 9.5, y: 6.5}
+  - {x: -13, y: -8.5}
+  - {x: -13, y: 8.5}
+  - {x: 13, y: -8.5}
+  - {x: 13, y: 8.5}
   m_Textures2: []
   m_Textures3: []
   m_Tangents:
@@ -16563,7 +16563,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 1761876085}
-  m_VersionIndex: 4057
+  m_VersionIndex: 4060
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -20803,7 +20803,7 @@ Mesh:
     firstVertex: 0
     vertexCount: 4
     localAABB:
-      m_Center: {x: -3.5, y: 1, z: -2}
+      m_Center: {x: 0, y: 0, z: 0}
       m_Extent: {x: 13, y: 0, z: 8.5}
   m_Shapes:
     vertices: []
@@ -20883,7 +20883,7 @@ Mesh:
       format: 0
       dimension: 0
     m_DataSize: 192
-    _typelessdata: 000084c10000803f000028c1000000000000803f000000000000803f0000000000000000000080bf000084c1000028c1000084c10000803f0000d040000000000000803f000000000000803f0000000000000000000080bf000084c10000d040000018410000803f000028c1000000000000803f000000000000803f0000000000000000000080bf00001841000028c1000018410000803f0000d040000000000000803f000000000000803f0000000000000000000080bf000018410000d040
+    _typelessdata: 000050c100000000000008c1000000000000803f000000000000803f0000000000000000000080bf000050c1000008c1000050c10000000000000841000000000000803f000000000000803f0000000000000000000080bf000050c1000008410000504100000000000008c1000000000000803f000000000000803f0000000000000000000080bf00005041000008c1000050410000000000000841000000000000803f000000000000803f0000000000000000000080bf0000504100000841
   m_CompressedMesh:
     m_Vertices:
       m_NumItems: 0
@@ -20937,7 +20937,7 @@ Mesh:
       m_BitSize: 0
     m_UVInfo: 0
   m_LocalAABB:
-    m_Center: {x: -3.5, y: 1, z: -2}
+    m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 13, y: 0, z: 8.5}
   m_MeshUsageFlags: 0
   m_CookingOptions: 30
@@ -24481,7 +24481,7 @@ PrefabInstance:
     - target: {fileID: 1525738370656599536, guid: a543a8e0277b80a4f839c8d135627b2c, type: 3}
       propertyPath: m_obeliskData
       value: 
-      objectReference: {fileID: 11400000, guid: 82d4dae06f62aec459eed8b4702c5e48, type: 2}
+      objectReference: {fileID: 11400000, guid: 825f92b353852444eb9db7ef5855d7bb, type: 2}
     - target: {fileID: 1525738370656599536, guid: a543a8e0277b80a4f839c8d135627b2c, type: 3}
       propertyPath: m_maxChargeCount
       value: 80

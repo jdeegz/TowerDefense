@@ -29,8 +29,8 @@ public class Obelisk : MonoBehaviour
 
     public ObeliskState m_obeliskState;
 
-    public static event Action<ObeliskState> OnObeliskStateChanged;
-    public static event Action<int> OnObeliskChargeChanged;
+    public event Action<ObeliskState> OnObeliskStateChanged;
+    public event Action<int> OnObeliskChargeChanged;
 
     public void UpdateObeliskState(ObeliskState newState)
     {

@@ -28,6 +28,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action OnPreconstructedTowerClear;
     public static event Action OnTowerBuild;
     public static event Action OnTowerSell;
+    public static event Action OnTowerUpgrade;
     public static event Action<int, int> OnObelisksCharged;
     public static event Action<GathererController> OnGathererAdded;
     public static event Action<GathererController> OnGathererRemoved;
@@ -896,6 +897,7 @@ public class GameplayManager : MonoBehaviour
 
         m_curSelectable = null;
         UpdateInteractionState(InteractionState.Idle);
+        OnTowerUpgrade?.Invoke();
         Debug.Log("Tower upgraded.");
     }
 

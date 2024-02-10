@@ -101,6 +101,10 @@ public class QuestUIDisplay : MonoBehaviour
                 {
                     display.RemoveDisplay();
                 }
+
+                //Remove the quests from the list.
+                m_questsInProgress.Remove(questInProgress);
+                break;
             }
         }
     }

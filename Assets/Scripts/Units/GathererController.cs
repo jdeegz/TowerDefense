@@ -818,7 +818,7 @@ public class GathererController : MonoBehaviour
     {
         GathererTooltipData data = new GathererTooltipData();
         data.m_gathererType = m_gathererData.m_type;
-        data.m_gathererName = m_gathererData.m_gathererName;
+        data.m_gathererName = gameObject.name;
         data.m_gathererDescription = m_gathererData.m_gathererDescription;
         data.m_harvestDuration = m_harvestDuration;
         data.m_storingDuration = m_storingDuration;
