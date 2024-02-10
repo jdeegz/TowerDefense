@@ -46,7 +46,7 @@ public class QuestManager : MonoBehaviour
         {
             if (quest.m_questState == QuestState.REQUIREMENTS_NOT_MET && CheckRequirementsMet(quest))
             {
-                if (quest.m_info.m_byPassRequirements)
+                if (quest.m_info.m_startAutomatically)
                 {
                     StartQuest(quest.m_info.m_id);
                 }
@@ -102,7 +102,9 @@ public class QuestManager : MonoBehaviour
         }
         else
         {
-            ChangeQuestState(quest.m_info.m_id, QuestState.CAN_FINISH);
+            //This used to change state to CAN FINISH (Can turn in to complete). If we need the player to 'turn a quest in' extend here.
+            //ChangeQuestState(quest.m_info.m_id, QuestState.CAN_FINISH);
+            m_questEvents.FinishQuest(id);
         }
     }
 
@@ -110,8 +112,10 @@ public class QuestManager : MonoBehaviour
     {
         Debug.Log($"Finish Quest {id}");
         Quest quest = GetQuestById(id);
+        quest.m_questState = QuestState.FINISHED;
+        
         ClaimRewards(quest);
-        ChangeQuestState(quest.m_info.m_id, QuestState.FINISHED);
+        //ChangeQuestState(quest.m_info.m_id, QuestState.FINISHED);
     }
 
     private void ClaimRewards(Quest quest)

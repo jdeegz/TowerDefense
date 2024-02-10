@@ -9,15 +9,13 @@ using UnityEngine.EventSystems;
 using UnityEngine.Rendering.VirtualTexturing;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
+using UnityEngine.TextCore.Text;
 
 public class GameplayManager : MonoBehaviour
 {
     public static GameplayManager Instance;
     public GameplayState m_gameplayState;
     public GameSpeed m_gameSpeed;
-    public int m_totalWaves = 10;
-    public int m_wave;
-    public int m_bossWaveFactor = 20; //Spawn a boss every N waves.
 
     public static event Action<GameplayState> OnGameplayStateChanged;
     public static event Action<GameSpeed> OnGameSpeedChanged;
@@ -34,44 +32,60 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GathererController> OnGathererAdded;
     public static event Action<GathererController> OnGathererRemoved;
 
+    [Header("Wave Settings")]
+    public int m_totalWaves = 10;
+    public int m_wave;
+    public int m_bossWaveFactor = 20; //Spawn a boss every N waves.
+    public bool m_delayForQuest;
+    public float m_firstBuildDuraction = 15;
+    public float m_buildDuration = 6;
+    [HideInInspector] public float m_timeToNextWave;
 
-    [Header("Castle")] public CastleController m_castleController;
+    [Header("Castle")]
+    public CastleController m_castleController;
     public Transform m_enemyGoal;
-    [Header("Equipped Towers")] public TowerData[] m_equippedTowers;
-    [Header("Unit Spawners")] public List<UnitSpawner> m_unitSpawners;
-    private int m_activeSpawners;
-    [Header("Active Enemies")] public List<EnemyController> m_enemyList;
+
+    [Header("Equipped Towers")]
+    public TowerData[] m_equippedTowers;
+
+    [Header("Unit Spawners")]
+    public List<UnitSpawner> m_unitSpawners;
+
+    [Header("Active Enemies")]
+    public List<EnemyController> m_enemyList;
     public Transform m_enemiesObjRoot;
 
+    private int m_activeSpawners;
     private Vector2Int m_curCellPos;
     [HideInInspector] public Vector2Int m_goalPointPos;
 
-    [Header("Player Constructed")] public List<GathererController> m_woodGathererList;
+    [Header("Player Constructed")]
+    public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
     public Transform m_towerObjRoot;
     public List<Tower> m_towerList;
 
-    [Header("Selected Object Info")] private Selectable m_curSelectable;
+    [Header("Selected Object Info")]
+    private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
-    public bool m_canAfford;
-    public bool m_canPlace;
-    public bool m_canBuild;
+    
+    [FormerlySerializedAs("m_activeObelisks")]
+    public List<Obelisk> m_obelisksInMission;
 
-    [Header("Preconstructed Tower Info")] public GameObject m_preconstructedTowerObj;
+    [Header("Preconstructed Tower Info")]
+    public GameObject m_preconstructedTowerObj;
     public Tower m_preconstructedTower;
     public Vector2Int m_preconstructedTowerPos;
     public LayerMask m_buildSurface;
+    public bool m_canAfford;
+    public bool m_canPlace;
+    public bool m_canBuild;
     private int m_preconstructedTowerIndex;
 
+    [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
-
+    
     private Camera m_mainCamera;
-    public float m_buildDuration = 6;
-    public float m_firstBuildDuraction = 15;
-    [HideInInspector] public float m_timeToNextWave;
-
-    [FormerlySerializedAs("m_activeObelisks")]
-    public List<Obelisk> m_obelisksInMission;
 
     public enum GameplayState
     {
@@ -127,7 +141,11 @@ public class GameplayManager : MonoBehaviour
             DrawPreconstructedTower();
         }
 
-        m_timeToNextWave -= Time.deltaTime;
+        if (m_delayForQuest == false)
+        {
+            m_timeToNextWave -= Time.deltaTime;
+        }
+
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             ++m_wave;
@@ -217,6 +235,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     return;
                 }
+
                 //Debug.Log(m_hoveredSelectable + " : selected.");
                 OnGameObjectSelected?.Invoke(m_hoveredSelectable.gameObject);
                 //Clear Hoverable because we've selected.
@@ -301,7 +320,7 @@ public class GameplayManager : MonoBehaviour
         OnGameObjectSelected -= GameObjectSelected;
         OnGameObjectDeselected -= GameObjectDeselected;
     }
-
+    
     private void GameplaySpeedChanged(GameSpeed state)
     {
         //
@@ -1007,11 +1026,16 @@ public class GameplayManager : MonoBehaviour
     public void KillAllEnemies()
     {
         if (m_enemyList.Count <= 0) return;
-        
+
         List<EnemyController> livingEnemies = new List<EnemyController>(m_enemyList);
         foreach (EnemyController enemy in livingEnemies)
         {
             enemy.OnTakeDamage(999999);
         }
+    }
+
+    public Selectable GetCurSelectedObj()
+    {
+        return m_curSelectable;
     }
 }

@@ -27,6 +27,7 @@ public class CollectWoodQuestStep : QuestStep
         if (m_progressValue >= m_progressRequired)
         {
             FinishedQuestStep();
+            GameplayManager.Instance.m_delayForQuest = false;
         }
     }
 

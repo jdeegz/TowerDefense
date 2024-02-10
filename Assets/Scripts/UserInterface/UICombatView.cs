@@ -237,7 +237,7 @@ public class UICombatView : MonoBehaviour
         }
 
         //gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
-        m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build);
+        m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_delayForQuest);
         m_castleRepairDisplayObj.SetActive(state == GameplayManager.GameplayState.Build && m_curCastleHealth < m_maxCastleHealth);
     }
 
@@ -377,7 +377,7 @@ public class UICombatView : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        m_timeToNextWave -= Time.deltaTime;
+        m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
         TimeSpan timeSpan = TimeSpan.FromSeconds(m_timeToNextWave);
         
         //String Formatting

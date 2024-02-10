@@ -5,6 +5,18 @@ using UnityEngine;
 public class SelectGathererQuestStep : QuestStep
 {
     private QuestState m_currentQuestState;
+    public int m_gathererIndex;
+    private GathererController m_gathererController;
+
+    void Awake()
+    {
+        if (!m_gathererController) GetGathererController();
+    }
+
+    private void GetGathererController()
+    {
+        m_gathererController = GameplayManager.Instance.m_woodGathererList[m_gathererIndex];
+    }
 
     void OnEnable()
     {
@@ -29,8 +41,7 @@ public class SelectGathererQuestStep : QuestStep
 
     private void GameObjectSelected(GameObject obj)
     {
-        Selectable objSelectable = obj.GetComponent<Selectable>();
-        if (objSelectable.m_selectedObjectType == Selectable.SelectedObjectType.Gatherer)
+        if (obj == m_gathererController.gameObject)
         {
             GathererSelected();
         }
@@ -52,7 +63,9 @@ public class SelectGathererQuestStep : QuestStep
 
     public override QuestStepUIData GetQuestStepUIData()
     {
-        QuestStepUIData questStepUIData = new QuestStepUIData(m_isFinished, m_progressValue, m_progressRequired, m_questStepDescription);
+        if (!m_gathererController) GetGathererController();
+        string formattedString = string.Format(m_questStepDescription, m_gathererController.gameObject.name);
+        QuestStepUIData questStepUIData = new QuestStepUIData(m_isFinished, m_progressValue, m_progressRequired, formattedString);
         return questStepUIData;
     }
 }

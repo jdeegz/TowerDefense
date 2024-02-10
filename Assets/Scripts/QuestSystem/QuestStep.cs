@@ -34,6 +34,11 @@ public abstract class QuestStep : MonoBehaviour
     }
 
     public abstract QuestStepUIData GetQuestStepUIData();
+
+    public string GetQuestID()
+    {
+        return m_questId;
+    }
 }
 
 public class QuestStepUIData

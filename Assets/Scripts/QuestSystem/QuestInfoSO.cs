@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "QuestInfoSO", menuName = "ScriptableObjects/QuestInfoSO")]
 public class QuestInfoSO : ScriptableObject
@@ -12,8 +13,7 @@ public class QuestInfoSO : ScriptableObject
     public string m_displayName;
     
     [Header("Requirements")]
-    public int m_levelRequirement;
-    public bool m_byPassRequirements;
+    public bool m_startAutomatically;
     public QuestInfoSO[] m_questPrerequisites;
 
     [Header("Steps")]

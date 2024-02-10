@@ -4432,6 +4432,10 @@ MonoBehaviour:
   m_totalWaves: 9999
   m_wave: -1
   m_bossWaveFactor: 10
+  m_delayForQuest: 1
+  m_firstBuildDuraction: 1
+  m_buildDuration: 6
+  m_timeToNextWave: 0
   m_castleController: {fileID: 1429581217}
   m_enemyGoal: {fileID: 110411549}
   m_equippedTowers:
@@ -4445,20 +4449,17 @@ MonoBehaviour:
   m_towerObjRoot: {fileID: 770534015}
   m_towerList: []
   m_hoveredSelectable: {fileID: 0}
-  m_canAfford: 0
-  m_canPlace: 0
-  m_canBuild: 1
+  m_obelisksInMission: []
   m_preconstructedTowerObj: {fileID: 0}
   m_preconstructedTower: {fileID: 0}
   m_preconstructedTowerPos: {x: 0, y: 0}
   m_buildSurface:
     serializedVersion: 2
     m_Bits: 64
+  m_canAfford: 0
+  m_canPlace: 0
+  m_canBuild: 1
   m_UIStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
-  m_buildDuration: 6
-  m_firstBuildDuraction: 20
-  m_timeToNextWave: 0
-  m_obelisksInMission: []
   m_interactionState: 0
   m_playbackSpeed: 1
   m_obeliskCount: 0
@@ -20481,7 +20482,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4210381068918428856, guid: dc614f64287e5ec4ba258d661b751de7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 4210381068918428856, guid: dc614f64287e5ec4ba258d661b751de7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -22238,7 +22239,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4210381068918428856, guid: dc614f64287e5ec4ba258d661b751de7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 9
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4210381068918428856, guid: dc614f64287e5ec4ba258d661b751de7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -26338,7 +26339,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4731573084662451459, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 360
       objectReference: {fileID: 0}
     - target: {fileID: 4731573084662451459, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_SizeDelta.y
@@ -26346,7 +26347,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4731573084662451459, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 4731573084662451459, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -26474,7 +26475,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6797324920670043805, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 360
       objectReference: {fileID: 0}
     - target: {fileID: 6797324920670043805, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_SizeDelta.y
@@ -26482,7 +26483,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6797324920670043805, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 6797324920670043805, guid: 354d7135497311840b46b12fba834eda, type: 3}
       propertyPath: m_AnchoredPosition.y
