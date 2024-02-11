@@ -7754,6 +7754,10 @@ MonoBehaviour:
   m_totalWaves: 9999
   m_wave: -1
   m_bossWaveFactor: 10
+  m_delayForQuest: 0
+  m_firstBuildDuraction: 15
+  m_buildDuration: 6
+  m_timeToNextWave: 0
   m_castleController: {fileID: 1429581217}
   m_enemyGoal: {fileID: 110411549}
   m_equippedTowers:
@@ -7771,20 +7775,17 @@ MonoBehaviour:
   m_towerObjRoot: {fileID: 770534015}
   m_towerList: []
   m_hoveredSelectable: {fileID: 0}
-  m_canAfford: 0
-  m_canPlace: 0
-  m_canBuild: 1
+  m_obelisksInMission: []
   m_preconstructedTowerObj: {fileID: 0}
   m_preconstructedTower: {fileID: 0}
   m_preconstructedTowerPos: {x: 0, y: 0}
   m_buildSurface:
     serializedVersion: 2
     m_Bits: 64
+  m_canAfford: 0
+  m_canPlace: 0
+  m_canBuild: 1
   m_UIStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
-  m_buildDuration: 6
-  m_firstBuildDuraction: 20
-  m_timeToNextWave: 0
-  m_obelisksInMission: []
   m_interactionState: 0
   m_playbackSpeed: 1
   m_obeliskCount: 0
@@ -20072,6 +20073,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1020040622}
   - component: {fileID: 1020040623}
+  - component: {fileID: 1020040624}
   m_Layer: 0
   m_Name: MusicSource
   m_TagString: Untagged
@@ -20104,7 +20106,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -6031520834327703355, guid: ba47649c8093841448bae7cec5e9c34d, type: 2}
-  m_audioClip: {fileID: 8300000, guid: b171d2264bb5d114f8bb042839516c98, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -20190,6 +20192,21 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1020040624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1020040621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 993488678b17b4c4493f6cb59a20d080, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_defaultMusic: {fileID: 8300000, guid: b171d2264bb5d114f8bb042839516c98, type: 3}
+  m_bossMusic: {fileID: 8300000, guid: 0879e3f66d6dc764e824ea77ab406252, type: 3}
+  m_crossFadeDuration: 1
 --- !u!1001 &1020750607
 PrefabInstance:
   m_ObjectHideFlags: 0

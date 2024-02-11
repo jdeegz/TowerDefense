@@ -9,23 +9,29 @@ public class QuestUIDisplay : MonoBehaviour
 {
     public QuestStepUIDisplay m_questStepUIDisplay;
     public List<QuestStepGroup> m_questsInProgress;
-    
+
     void Awake()
     {
-        QuestManager.Instance.m_questEvents.onStartQuest += StartQuest;
-        QuestManager.Instance.m_questEvents.onAdvanceQuest += AdvanceQuest;
-        QuestManager.Instance.m_questEvents.onFinishQuest += FinishQuest;
-        QuestManager.Instance.m_questEvents.onQuestStateChange += QuestStateChange;
-        QuestManager.Instance.m_questEvents.onQuestStepCreated += QuestStepCreated;
+        if (QuestManager.Instance)
+        {
+            QuestManager.Instance.m_questEvents.onStartQuest += StartQuest;
+            QuestManager.Instance.m_questEvents.onAdvanceQuest += AdvanceQuest;
+            QuestManager.Instance.m_questEvents.onFinishQuest += FinishQuest;
+            QuestManager.Instance.m_questEvents.onQuestStateChange += QuestStateChange;
+            QuestManager.Instance.m_questEvents.onQuestStepCreated += QuestStepCreated;
+        }
     }
 
     void OnDestroy()
     {
-        QuestManager.Instance.m_questEvents.onStartQuest -= StartQuest;
-        QuestManager.Instance.m_questEvents.onAdvanceQuest -= AdvanceQuest;
-        QuestManager.Instance.m_questEvents.onFinishQuest -= FinishQuest;
-        QuestManager.Instance.m_questEvents.onQuestStateChange -= QuestStateChange;
-        QuestManager.Instance.m_questEvents.onQuestStepCreated -= QuestStepCreated;
+        if (QuestManager.Instance)
+        {
+            QuestManager.Instance.m_questEvents.onStartQuest -= StartQuest;
+            QuestManager.Instance.m_questEvents.onAdvanceQuest -= AdvanceQuest;
+            QuestManager.Instance.m_questEvents.onFinishQuest -= FinishQuest;
+            QuestManager.Instance.m_questEvents.onQuestStateChange -= QuestStateChange;
+            QuestManager.Instance.m_questEvents.onQuestStepCreated -= QuestStepCreated;
+        }
     }
 
     private void QuestStateChange(Quest quest)
@@ -54,7 +60,7 @@ public class QuestUIDisplay : MonoBehaviour
     private void BuildQuestStepUIDisplay(Quest quest)
     {
         if (m_questsInProgress == null) m_questsInProgress = new List<QuestStepGroup>();
-        
+
         QuestStepGroup newQuestStepGroup = new QuestStepGroup();
         newQuestStepGroup.m_quest = quest;
         newQuestStepGroup.m_questStepUIDisplays = new QuestStepUIDisplay[quest.m_info.m_questStepPrefabs.Length];
@@ -68,6 +74,7 @@ public class QuestUIDisplay : MonoBehaviour
 
             newQuestStepGroup.m_questStepUIDisplays[i] = obj;
         }
+
         m_questsInProgress.Add(newQuestStepGroup);
     }
 
@@ -84,8 +91,8 @@ public class QuestUIDisplay : MonoBehaviour
             }
         }
     }
-    
-    
+
+
     private void FinishQuest(string id)
     {
         Debug.Log($"Quest {id} has finished. Attempting to destroy quest list.");
@@ -111,12 +118,10 @@ public class QuestUIDisplay : MonoBehaviour
 
     private void AdvanceQuest(string id)
     {
-        
     }
 
     private void StartQuest(string id)
     {
-        
     }
 }
 

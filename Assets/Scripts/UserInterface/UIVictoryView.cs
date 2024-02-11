@@ -120,7 +120,7 @@ public class UIVictoryView : MonoBehaviour
     void SendScore(int score)
     {
         //If we have playfab manager and a logged in profile, send score.
-        if (PlayFabClientAPI.IsClientLoggedIn())
+        if (PlayFabClientAPI.IsClientLoggedIn() && !string.IsNullOrEmpty(GameManager.Instance.m_curMission.m_playFableaderboardId))
         {
             PlayFabManager.Instance.SendLeaderboard(GameManager.Instance.m_curMission.m_playFableaderboardId, score);
         }

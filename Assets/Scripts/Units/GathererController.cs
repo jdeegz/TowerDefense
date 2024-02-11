@@ -412,7 +412,7 @@ public class GathererController : MonoBehaviour
                 }
 
                 SetHarvestVars(node, harvestPoint.m_harvestPointPos, i);
-                
+                m_gathererPath = null;
                 UpdateTask(GathererTask.Harvesting);
                 
                 m_curHarvestNode.WasSelected();

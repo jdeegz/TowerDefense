@@ -52,6 +52,11 @@ public class PlayFabManager : MonoBehaviour
         m_leaderboardNames = new List<string>();
         foreach (MissionData data in GameManager.Instance.m_MissionContainer.m_MissionList)
         {
+            if (string.IsNullOrEmpty(data.m_playFableaderboardId))
+            {
+                continue;
+            }
+
             m_leaderboardNames.Add(data.m_playFableaderboardId);
         }
     }

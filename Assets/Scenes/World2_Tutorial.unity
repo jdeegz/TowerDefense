@@ -11490,6 +11490,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1020040622}
   - component: {fileID: 1020040623}
+  - component: {fileID: 1020040624}
   m_Layer: 0
   m_Name: MusicSource
   m_TagString: Untagged
@@ -11608,6 +11609,21 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1020040624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1020040621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 993488678b17b4c4493f6cb59a20d080, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_defaultMusic: {fileID: 8300000, guid: b171d2264bb5d114f8bb042839516c98, type: 3}
+  m_bossMusic: {fileID: 8300000, guid: 0879e3f66d6dc764e824ea77ab406252, type: 3}
+  m_crossFadeDuration: 1
 --- !u!1001 &1023820303
 PrefabInstance:
   m_ObjectHideFlags: 0
