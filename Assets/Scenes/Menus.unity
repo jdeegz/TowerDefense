@@ -3208,7 +3208,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 826437569}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.23240924
+  m_Size: 0.20396696
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -11289,36 +11289,43 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "What's coming\r\n<align=\"center\"> - Updated January 27th 2024  - </align>\r\n-
-    Boss Music\r\n- Quality of life improvements.\r\n- Balancing based on player
-    feedback.\r\n- Bug Fixing\r\n- Creative / Visual Development\r\n\r\n\r\nPatch
-    Notes\r\n<align=\"center\"> - January 27th 2024  - </align>\r\n- Camera may Pan
-    while paused.\r\n- Tooltips appear while paused.\r\n- Tooltips appear before
-    starting the mission.\r\n- Clicking on the Gatherer UI Button will center the
-    camera on the Gatherer.\r\n- Camera starts on Castle but also within map bounds.\r\n-
-    Issuing a command will show a highlight on selected object.\r\n- Added Ambient
-    VFX to the Obelisks.\r\n- Adjusted the pathing arrow shape.\r\n- Menus now scale
-    for different device resolutions. 1920x1080 is Base Resolution.\r\n\r\nBug Fixes:\r\n-
-    Pathfinding updates to hand issues when in a Preconstructed Tower state.\r\n-
-    Adjusted turning speed of faster enemies so they don't get stuck in tree cells.\r\n-
-    Gatherers no longer go unresponsive when commanded to travel to Ruins.\r\n- Options
-    Menu now interactive in missions (ESC key).\r\n- Adjusted Maximum number of sounds
-    allowed to play.\r\n- Added audio priority to audio sources.\r\n- Fixed the missing
-    outline on part of the Gatherers.\r\n- Fixed the Tree's sway shader to affect
-    all faces correctly.\r\n- Speed Trails now appear on units above 1.0 move speed.\r\n-
-    Panning the camera no longer deselects a selected Gatherer.\n- Various animates
-    elements granted Unscaled Time to animate while paused.\n\r- Fixed pitch change
-    on the 'wave start' horn. RIP funny sounds!\n\r\n<align=\"center\"> - January
-    21st 2024  - </align>\r\n- Added Global Leaderboards\r\n- Added Account Creation
-    & Login System.\r\n- Added Scoring System:\r\n\t- 100pts per Completly Charged
-    Obelisk\r\n\t- Minus 3 points for each of the first 30 waves.\r\n\t- Minus 2
-    points for each wave from 31 to 50.\r\n\t- Minus 1 point for each wave past 51.\r\n-
-    Added Keyboard Controls for Forms (Tab to select input fields, enter to submit)\r\n-
-    Added Volume Controls (Master, Music, and Sound FX)\r\n- Added Animated Idle
-    Gatherer Effects on HUD Buttons\r\n- Added Selected visualization on Gatherer
-    HUD Buttons\r\n- Added Gatherer Selection Hotkeys (QWERTY)\r\n- Added UI Sound
-    FX\r\n- Updated Obelisk Tooltip text to help communicate it as the Win objective.\r\n\r\nBug
-    Fixes:\r\n- Disabled Interaction (Camera pan, use of hotkeys) with the game while
-    Options Menu or End-of-Match UI is on screen.\r\n- Addressed some spelling errors.\r\n\r\n\r\n<align=\"center\">
+    Balancing & Feature development based on player feedback.\r\n- Bug Fixing\r\n-
+    Creative / Visual Development\r\n\r\n\r\nPatch Notes\r\n<align=\"center\"> -
+    February 11th 2024  - </align>\r\n- New introduction mission.\r\n- In-mission
+    quest system added, used in the introduction mission.\r\n- Added boss music during
+    the boss waves.\r\n- Added music cross fading between clips.\r\n- Updated to
+    a calmer music for the menus.\r\n\r\nBug Fixes\r\n- Finally fixed the boss spawning
+    issue.\r\n- Gatherers that are given a new command mid-command correctly stop
+    what they're doing.\r\n- Pathing Arrow no longer changes shape as the path length
+    changes.\r\n- Ambient tree sway no longer uniform. All trees sway as you must.\r\n\r\n<align=\"center\">
+    - January 27th 2024  - </align>\r\n- Camera may Pan while paused.\r\n- Tooltips
+    appear while paused.\r\n- Tooltips appear before starting the mission.\r\n- Clicking
+    on the Gatherer UI Button will center the camera on the Gatherer.\r\n- Camera
+    starts on Castle but also within map bounds.\r\n- Issuing a command will show
+    a highlight on selected object.\r\n- Added Ambient VFX to the Obelisks.\r\n-
+    Adjusted the pathing arrow shape.\r\n- Menus now scale for different device resolutions.
+    1920x1080 is Base Resolution.\r\n\r\nBug Fixes:\r\n- Pathfinding updates to hand
+    issues when in a Preconstructed Tower state.\r\n- Adjusted turning speed of faster
+    enemies so they don't get stuck in tree cells.\r\n- Gatherers no longer go unresponsive
+    when commanded to travel to Ruins.\r\n- Options Menu now interactive in missions
+    (ESC key).\r\n- Adjusted Maximum number of sounds allowed to play.\r\n- Added
+    audio priority to audio sources.\r\n- Fixed the missing outline on part of the
+    Gatherers.\r\n- Fixed the Tree's sway shader to affect all faces correctly.\r\n-
+    Speed Trails now appear on units above 1.0 move speed.\r\n- Panning the camera
+    no longer deselects a selected Gatherer.\r\n- Various animates elements granted
+    Unscaled Time to animate while paused.\r\n- Fixed pitch change on the 'wave start'
+    horn. RIP funny sounds!\r\n\r\n<align=\"center\"> - January 21st 2024  - </align>\r\n-
+    Added Global Leaderboards\r\n- Added Account Creation & Login System.\r\n- Added
+    Scoring System:\r\n\t- 100pts per Completly Charged Obelisk\r\n\t- Minus 3 points
+    for each of the first 30 waves.\r\n\t- Minus 2 points for each wave from 31 to
+    50.\r\n\t- Minus 1 point for each wave past 51.\r\n- Added Keyboard Controls
+    for Forms (Tab to select input fields, enter to submit)\r\n- Added Volume Controls
+    (Master, Music, and Sound FX)\r\n- Added Animated Idle Gatherer Effects on HUD
+    Buttons\r\n- Added Selected visualization on Gatherer HUD Buttons\r\n- Added
+    Gatherer Selection Hotkeys (QWERTY)\r\n- Added UI Sound FX\r\n- Updated Obelisk
+    Tooltip text to help communicate it as the Win objective.\r\n\r\nBug Fixes:\r\n-
+    Disabled Interaction (Camera pan, use of hotkeys) with the game while Options
+    Menu or End-of-Match UI is on screen.\r\n- Addressed some spelling errors.\r\n\r\n\r\n<align=\"center\">
     - January 8th 2024  - </align>\r\nMetagame Features\r\n- Mission pool increased
     from 3 -> 6\r\n- Added progression to unlocking missions.\r\n- Create World Map
     to pick missions.\r\n\r\nMission Features\r\n- Added Dragon Boss (Spawns at wave

@@ -6,6 +6,7 @@ using Random = UnityEngine.Random;
 
 public class BasicTower : Tower
 {
+    public GameObject m_fireVFX;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
     private int m_shotsFired;
@@ -40,6 +41,7 @@ public class BasicTower : Tower
         if (!IsTargetInRange(m_curTarget.transform.position))
         {
             m_curTarget = null;
+            m_animator.SetTrigger("TargetUnacquired");
         }
         else
         {
@@ -76,6 +78,12 @@ public class BasicTower : Tower
 
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
+        m_animator.SetTrigger("Fire");
+    }
+    
+    void FireVFX()
+    {
+        m_fireVFX.SetActive(true);
     }
 
     private void FindTarget()
@@ -97,6 +105,7 @@ public class BasicTower : Tower
             }
 
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
+            m_animator.SetTrigger("TargetAcquired");
         }
     }
 

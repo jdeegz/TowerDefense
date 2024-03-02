@@ -230,7 +230,8 @@ public class GameplayManager : MonoBehaviour
                 return;
             }
 
-            if (m_hoveredSelectable != null && m_curSelectable != m_hoveredSelectable)
+            // && m_curSelectable != m_hoveredSelectable
+            if (m_hoveredSelectable != null)
             {
                 if (m_hoveredSelectable.m_selectedObjectType == Selectable.SelectedObjectType.ResourceWood)
                 {

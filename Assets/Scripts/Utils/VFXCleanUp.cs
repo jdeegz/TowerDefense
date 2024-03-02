@@ -5,9 +5,12 @@ using UnityEngine;
 public class VFXCleanUp : MonoBehaviour
 {
     private float m_longestDuration = 0f;
+    private float m_elapsedTime;
     private ParticleSystem m_tempChild;
-    // Start is called before the first frame update
-    void Start()
+    
+    public GameObject m_rootObj;
+    
+    void Awake()
     {
         var m_particleSystems = GetComponentsInChildren<ParticleSystem>();
         {
@@ -20,7 +23,16 @@ public class VFXCleanUp : MonoBehaviour
                 }
             }
         }
+        m_rootObj.SetActive(false);
+    }
 
-        Destroy(gameObject, m_longestDuration);
+    void Update()
+    {
+        m_elapsedTime += Time.deltaTime;
+        if (m_elapsedTime >= m_longestDuration && m_rootObj.activeSelf)
+        {
+            m_rootObj.SetActive(false);
+            m_elapsedTime = 0f;
+        }
     }
 }

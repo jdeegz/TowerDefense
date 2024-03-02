@@ -15,6 +15,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected int m_towerRangeCircleSegments;
     [SerializeField] protected bool m_isBuilt;
 
+    protected Animator m_animator;
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
 
@@ -26,6 +27,7 @@ public abstract class Tower : MonoBehaviour
         m_towerRangeCircle.enabled = false;
         SetupRangeCircle(m_towerRangeCircleSegments, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
+        m_animator = GetComponent<Animator>();
 
         //If we have a status effect on this tower, create an instance of it to use when applying.
     }
@@ -66,6 +68,7 @@ public abstract class Tower : MonoBehaviour
         if (obj == gameObject)
         {
             m_towerRangeCircle.enabled = true;
+            m_animator.SetTrigger("Selected");
         }
         else
         {
@@ -103,10 +106,12 @@ public abstract class Tower : MonoBehaviour
         GameplayManager.Instance.AddTowerToList(this);
 
         //Operational
-        gameObject.GetComponent<Collider>().enabled = true;
-        gameObject.GetComponent<NavMeshObstacle>().enabled = true;
+        gameObject.GetComponent<Collider>().enabled = true;        
         m_isBuilt = true;
 
+        //Animation
+        m_animator.SetTrigger("Construct");
+        
         //Audio
         m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
 
