@@ -41,7 +41,6 @@ public class BasicTower : Tower
         if (!IsTargetInRange(m_curTarget.transform.position))
         {
             m_curTarget = null;
-            m_animator.SetTrigger("TargetUnacquired");
         }
         else
         {
@@ -65,7 +64,7 @@ public class BasicTower : Tower
 
     private void Fire()
     {
-        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
+        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_turretPivot.rotation);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
         if (m_statusEffectData)
         {
@@ -88,7 +87,6 @@ public class BasicTower : Tower
 
     private void FindTarget()
     {
-        m_curTarget = null;
         Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
         float closestDistance = 999;
         int closestIndex = -1;
@@ -105,8 +103,28 @@ public class BasicTower : Tower
             }
 
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
+            HasTargets(true);
+        }
+        else
+        {
+            HasTargets(false);
+        }
+    }
+
+    private void HasTargets(bool b)
+    {
+        if (m_hasTargets == b) return;
+        
+        m_hasTargets = b;
+        if (m_hasTargets)
+        {
             m_animator.SetTrigger("TargetAcquired");
         }
+        else
+        {
+            m_animator.SetTrigger("TargetUnacquired");
+        }
+        
     }
 
     private bool IsTargetInSight()

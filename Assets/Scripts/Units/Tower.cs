@@ -14,6 +14,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;
     [SerializeField] protected bool m_isBuilt;
+    [SerializeField] protected bool m_hasTargets;
 
     protected Animator m_animator;
     protected AudioSource m_audioSource;

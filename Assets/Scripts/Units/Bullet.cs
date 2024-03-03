@@ -36,6 +36,10 @@ public class Bullet : Projectile
         m_directPos = Vector3.Lerp(m_startPos, m_targetPos, t);
 
         transform.position = m_directPos;
+        
+        //Get Direction
+        Vector3 direction = m_targetPos - transform.position;
+        transform.rotation = Quaternion.LookRotation(direction);
 
         m_elapsedTime += Time.deltaTime * m_projectileSpeed;
     }
@@ -64,7 +68,8 @@ public class Bullet : Projectile
         }
 
         //Destroy this missile.
-        Destroy(gameObject);
+        //Adding a delay for the trail to complete-ish
+        Destroy(gameObject, .2f);
     }
 
     private void OnCollisionEnter(Collision other)
