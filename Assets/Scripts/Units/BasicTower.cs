@@ -6,7 +6,6 @@ using Random = UnityEngine.Random;
 
 public class BasicTower : Tower
 {
-    public GameObject m_fireVFX;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
     private int m_shotsFired;

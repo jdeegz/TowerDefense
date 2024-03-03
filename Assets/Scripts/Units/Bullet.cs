@@ -69,7 +69,7 @@ public class Bullet : Projectile
 
         //Destroy this missile.
         //Adding a delay for the trail to complete-ish
-        Destroy(gameObject, .2f);
+        Destroy(gameObject, .1f);
     }
 
     private void OnCollisionEnter(Collision other)

@@ -6,16 +6,25 @@ using UnityEngine.AI;
 
 public abstract class Tower : MonoBehaviour
 {
-    [SerializeField] protected Transform m_turretPivot;
-    [SerializeField] protected Transform m_muzzlePoint;
+    [Header("Tower Data")]
     [SerializeField] protected TowerData m_towerData;
     [SerializeField] protected StatusEffectData m_statusEffectData;
     [SerializeField] protected LayerMask m_layerMask;
+    
+    [Header("Attachment Points")]
+    [SerializeField] protected Transform m_turretPivot;
+    [SerializeField] protected Transform m_muzzlePoint;
+    
+    [Header("Range Circle")]
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;
-    [SerializeField] protected bool m_isBuilt;
-    [SerializeField] protected bool m_hasTargets;
-
+    
+    [Header("Baked Visual Effects")]
+    [SerializeField] protected GameObject m_towerConstructionVFXPrefab;
+    [SerializeField] protected GameObject m_fireVFX;
+    
+    protected bool m_isBuilt;
+    protected bool m_hasTargets;
     protected Animator m_animator;
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
@@ -117,6 +126,7 @@ public abstract class Tower : MonoBehaviour
         m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
 
         //VFX
+        m_towerConstructionVFXPrefab.SetActive(true);
     }
 
     public void OnDestroy()

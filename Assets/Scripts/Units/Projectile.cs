@@ -22,6 +22,10 @@ public abstract class Projectile : MonoBehaviour
     protected Vector3 m_directPos;
     protected StatusEffect m_statusEffect;
     protected Collider m_enemyCollider;
+
+    void Awake()
+    {
+    }
     
     public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos)
     {
@@ -46,11 +50,6 @@ public abstract class Projectile : MonoBehaviour
     void Update()
     {
         if(!m_enemy) Destroy(gameObject);
-    }
-
-    void Awake()
-    {
-        
     }
 
     private void OnDestroy()
