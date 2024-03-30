@@ -8,27 +8,30 @@ public class Missile : Projectile
     public GameObject m_impactEffect;
     public float m_impactRadius;
     public LayerMask m_layerMask;
-    public AnimationCurve m_curveLateral;
-    public AnimationCurve m_curveHeight;
-    public AnimationCurve m_curveDistance;
+    public float m_lookSpeed = 10;
+    public float m_lookAcceleration = 5;
+    public float m_speedAcceleration = 0.3f;
 
     void Update()
     {
-        if (m_enemy) m_targetPos = m_enemy.m_targetPoint.position;
-
-        if (CheckTargetDistance())
+        if (m_enemy)
+        {
+            m_targetPos = m_enemy.m_targetPoint.position;
+        }
+        
+        if (IsTargetInStoppingDistance() && m_isFired)
         {
             DestroyProjectile();
-            return;
         }
+        
     }
 
     void FixedUpdate()
     {
-        TravelToTarget();
+        if (m_isFired) TravelToTarget();
     }
 
-    private bool CheckTargetDistance()
+    private bool IsTargetInStoppingDistance()
     {
         float distanceToTarget = Vector3.Distance(transform.position, m_targetPos);
         return distanceToTarget <= m_stoppingDistance;
@@ -36,29 +39,21 @@ public class Missile : Projectile
 
     void TravelToTarget()
     {
-        float t = m_elapsedTime;
+        //Rotate towards Target.
+        Vector3 direction = m_targetPos - transform.position;
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, m_lookSpeed * Time.deltaTime);
 
-        //Straight line position at this step.
-        m_directPos = Vector3.LerpUnclamped(m_startPos, m_targetPos, m_curveDistance.Evaluate(t));
+        //Move Forward.
+        transform.position += transform.forward * (m_projectileSpeed * Time.deltaTime);
 
-        //Lateral adjustment.
-        Quaternion beeLineRotation = Quaternion.LookRotation(m_targetPos - m_startPos, Vector3.up);
-        Vector3 localRightInWorldSpace = beeLineRotation * Vector3.right;
-        Vector3 offsetLateral = localRightInWorldSpace * m_curveLateral.Evaluate(t);
+        //Increase Lookspeed (greatly)
+        var lookStep = (m_lookAcceleration + Time.deltaTime);
+        m_lookSpeed += lookStep;
 
-        //Vertical adjustment.
-        Vector3 offsetHeight = new Vector3(0, m_curveHeight.Evaluate(t), 0);
-
-        //Combine for new position.
-        Vector3 newPos = m_directPos + offsetLateral + offsetHeight;
-
-        //Rotation
-        Quaternion lookRotation = Quaternion.LookRotation((newPos - transform.position).normalized);
-        transform.rotation = lookRotation;
-
-        transform.position = newPos;
-
-        m_elapsedTime += Time.deltaTime * m_projectileSpeed;
+        //Increase Move Speed up to 50%
+        var speedStep = (m_speedAcceleration + Time.deltaTime);
+        m_projectileSpeed += speedStep;
     }
 
     void DestroyProjectile()

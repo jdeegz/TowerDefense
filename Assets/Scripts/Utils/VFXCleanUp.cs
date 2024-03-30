@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class VFXCleanUp : MonoBehaviour
 {
+    public bool m_hideOnAwake;
+    public bool m_destroyAfterPlay;
     private float m_longestDuration = 0f;
     private float m_elapsedTime;
     private ParticleSystem m_tempChild;
@@ -20,10 +22,10 @@ public class VFXCleanUp : MonoBehaviour
                 if (t > m_longestDuration)
                 {
                     m_longestDuration = t;
-                }
+                    }
             }
         }
-        m_rootObj.SetActive(false);
+        m_rootObj.SetActive(!m_hideOnAwake);
     }
 
     void Update()
@@ -33,6 +35,10 @@ public class VFXCleanUp : MonoBehaviour
         {
             m_rootObj.SetActive(false);
             m_elapsedTime = 0f;
+            if (m_destroyAfterPlay)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

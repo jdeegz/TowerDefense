@@ -63,7 +63,7 @@ public class BasicTower : Tower
 
     private void Fire()
     {
-        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_turretPivot.rotation);
+        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
         if (m_statusEffectData)
         {
@@ -79,8 +79,11 @@ public class BasicTower : Tower
         m_animator.SetTrigger("Fire");
     }
     
+    //Fired via a keyframe in Animation.
     void FireVFX()
     {
+        if (!m_fireVFX) return;
+        
         m_fireVFX.SetActive(true);
     }
 

@@ -11,8 +11,8 @@ public abstract class Projectile : MonoBehaviour
 {
     [SerializeField] protected float m_projectileSpeed = .5f;
     [SerializeField] protected float m_stoppingDistance = .1f;
-    
-    
+
+    protected bool m_isFired = false;
     protected Vector3 m_targetPos;
     protected EnemyController m_enemy;
     protected float m_projectileDamage = 1;
@@ -34,6 +34,7 @@ public abstract class Projectile : MonoBehaviour
         m_projectileDamage = dmg;
         m_enemyCollider = enemy.GetComponent<Collider>();
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
+        m_isFired = true;
     }
 
     public void SetProjectileStatusEffect(StatusEffect statusEffect)
