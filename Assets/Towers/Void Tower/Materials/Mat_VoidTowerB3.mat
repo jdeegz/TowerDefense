@@ -20,29 +20,28 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_VoidTower_Radiant_MaxStacks
-  m_Shader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
+  m_Name: Mat_VoidTowerB3
+  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _SURFACE_TYPE_TRANSPARENT
-  m_InvalidKeywords:
   - _EMISSION
+  - _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+  - _SPECULAR_SETUP
+  m_InvalidKeywords: []
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 1
-  m_CustomRenderQueue: 3000
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
   stringTagMap:
-    RenderType: Transparent
-  disabledShaderPasses:
-  - DepthOnly
-  - SHADOWCASTER
+    RenderType: Opaque
+  disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: a54a2404a4cc8c64183465375bd4c39c, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0e996b55c86c4454f96f78d5d69b914d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -62,15 +61,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _MainNormal:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: fcbbfb220958fcd4da2dc9deecbbdb4e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: a54a2404a4cc8c64183465375bd4c39c, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0e996b55c86c4454f96f78d5d69b914d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -82,10 +77,6 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _SecondNormal:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -109,64 +100,39 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _Blend: 2
+    - _Blend: 0
     - _BlendModePreserveSpecular: 1
-    - _BlendOp: 0
     - _BumpScale: 1
-    - _CastShadows: 0
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _Cull: 0
+    - _Cull: 2
     - _Cutoff: 0.5
-    - _Depth: 3.02
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _Displacement: -0.5
-    - _DstBlend: 1
-    - _DstBlendAlpha: 1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FoamAmount: 0.07
-    - _FoamCutoff: 1.33
-    - _FoamDistance: 0.22
-    - _FoamScale: 1
-    - _FoamSize: 30
-    - _FoamSpeed: 1
-    - _FoamThickness: 1
     - _GlossMapScale: 1
     - _Glossiness: 0
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
-    - _NormalStrength: 0.046
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _RippleDensity: 80
-    - _RippleSpeed: 1
-    - _RippleThickness: 10
-    - _SampleGI: 0
-    - _Smoothness: 0
+    - _Smoothness: 0.55
     - _SmoothnessTextureChannel: 1
     - _SpecularHighlights: 1
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Strength: 0
-    - _Surface: 1
+    - _Surface: 0
     - _UVSec: 0
     - _WorkflowMode: 0
-    - _ZTest: 4
-    - _ZWrite: 0
-    - _ZWriteControl: 0
+    - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.99215686, g: 0.92941177, b: 0.6039216, a: 1}
-    - _Color: {r: 0.9921568, g: 0.92941177, b: 0.6039216, a: 1}
-    - _DeepWater: {r: 0.05931826, g: 0.2531199, b: 0.4056604, a: 0.8588235}
-    - _EmissionColor: {r: 0.0010669322, g: 0, b: 0.1792453, a: 1}
-    - _FlowSpeed: {r: 0, g: 0.1, b: 0, a: 0}
-    - _FoamColor: {r: 1.5295861, g: 0, b: 0.029354693, a: 0.9843137}
-    - _RippleColor: {r: 0.06020826, g: 0.31132078, b: 0.23863035, a: 0.9843137}
-    - _ShallowWater: {r: 0.10030261, g: 0.3628323, b: 0.4339623, a: 1}
-    - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecColor: {r: 0.21960784, g: 0.16862746, b: 0.13725491, a: 1}
   m_BuildTextureStacks: []
