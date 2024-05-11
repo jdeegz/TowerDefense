@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5563286962897768558}
   - component: {fileID: 2362380194317959618}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Core Shards 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -150,7 +150,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1620148770442118008}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Turret Pivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -183,7 +183,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6810337848782104196}
   - component: {fileID: 3628637841618982602}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Core Shards 0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -324,7 +324,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 831643190842696665}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Muzzle Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -361,7 +361,7 @@ GameObject:
   - component: {fileID: -7005396196458977181}
   - component: {fileID: -6322527113016510451}
   - component: {fileID: 4762523341124674810}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: CannonTower_UpgradeB2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -384,8 +384,9 @@ Transform:
   - {fileID: 5563286962897768558}
   - {fileID: 1620148770442118008}
   - {fileID: 2955184097422491128}
+  - {fileID: 7390483689305657130}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7648209937381634350
 MonoBehaviour:
@@ -408,7 +409,7 @@ MonoBehaviour:
   m_muzzlePoint: {fileID: 831643190842696665}
   m_towerRangeCircle: {fileID: -7005396196458977181}
   m_towerRangeCircleSegments: 24
-  m_towerConstructionVFXPrefab: {fileID: 5476407597205610909, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+  m_towerConstructionVFXPrefab: {fileID: 7626780992792901812}
   m_fireVFX: {fileID: 0}
   m_muzzlePoints:
   - {fileID: 831643190842696665}
@@ -729,6 +730,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shard 01
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 37688470b4b65cd47bcf7d21db3f639c, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -738,6 +743,85 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 37688470b4b65cd47bcf7d21db3f639c, type: 3}
   m_PrefabInstance: {fileID: 1812299813813339537}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2726893661126121769
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8795141251248142417}
+    m_Modifications:
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_RootOrder
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5476407597205610909, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_Name
+      value: TowerConstructionVFX
+      objectReference: {fileID: 0}
+    - target: {fileID: 5476407597205610909, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936114404036154305, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+--- !u!4 &7390483689305657130 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+  m_PrefabInstance: {fileID: 2726893661126121769}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7626780992792901812 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5476407597205610909, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
+  m_PrefabInstance: {fileID: 2726893661126121769}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3353023634376317459
 PrefabInstance:
@@ -818,6 +902,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0fefc75ccae107b44b315ec1eec9be0f, type: 3}
       propertyPath: m_Name
       value: Missile A 2 Test
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0fefc75ccae107b44b315ec1eec9be0f, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0fefc75ccae107b44b315ec1eec9be0f, type: 3}
       propertyPath: m_IsActive
@@ -919,6 +1007,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shard 05
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: b22b98155f6789d40bf4864dce1b1c9d, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -988,6 +1080,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 7467d6fb8efc5ed428c296aeac137d5e, type: 3}
       propertyPath: m_Name
       value: Shard 04
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7467d6fb8efc5ed428c296aeac137d5e, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
