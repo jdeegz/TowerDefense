@@ -10,7 +10,7 @@ public class ChargeUpTowerController : Tower
     public int m_maxStacks;
     public Gradient m_beamGradient;
     public Gradient m_panelGradient;
-    public MeshRenderer m_panelMeshRenderer;
+    public List<MeshRenderer> m_panelMeshRenderers;
 
 
     private float m_curStackDropDelay;
@@ -119,9 +119,10 @@ public class ChargeUpTowerController : Tower
 
         float normalizedTime = m_curStacks / m_maxStacks;
         Color color = m_panelGradient.Evaluate(normalizedTime);
-        m_panelMeshRenderer.materials[0].SetColor("_BaseColor", color);
-        m_panelMeshRenderer.materials[1].SetColor("_BaseColor", color);
-
+        foreach (MeshRenderer mesh in m_panelMeshRenderers)
+        {
+            mesh.material.SetColor("_EmissionColor", color);
+        }
         m_lastStacks = m_curStacks;
     }
 

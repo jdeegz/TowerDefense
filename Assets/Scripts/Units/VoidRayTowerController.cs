@@ -18,8 +18,9 @@ public class VoidRayTowerController : Tower
     public float m_speedCap;
     public int m_maxStacks;
     public Gradient m_beamGradient;
+    [GradientUsage(true)]
     public Gradient m_panelGradient;
-    public MeshRenderer m_panelMeshRenderer;
+    public List<MeshRenderer> m_panelMeshRenderers;
 
 
     private int m_curStacks;
@@ -120,8 +121,10 @@ public class VoidRayTowerController : Tower
 
         float normalizedTime = (float)m_curStacks / m_maxStacks;
         Color color = m_panelGradient.Evaluate(normalizedTime);
-        m_panelMeshRenderer.materials[0].SetColor("_BaseColor", color);
-        m_panelMeshRenderer.materials[1].SetColor("_BaseColor", color);
+        foreach (MeshRenderer mesh in m_panelMeshRenderers)
+        {
+            mesh.material.SetColor("_EmissionColor", color);
+        }
 
         //m_lastStacks = m_curStacks;
     }
