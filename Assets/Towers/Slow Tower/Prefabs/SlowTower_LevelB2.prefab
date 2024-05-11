@@ -56,10 +56,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: TowerConstructionVFX
       objectReference: {fileID: 0}
-    - target: {fileID: 7936114404036154305, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -744,12 +740,13 @@ MonoBehaviour:
   m_layerMask:
     serializedVersion: 2
     m_Bits: 1024
-  m_turretPivot: {fileID: 0}
+  m_turretPivot: {fileID: 8807272703932726323}
   m_muzzlePoint: {fileID: 5407863763268012418}
   m_towerRangeCircle: {fileID: 6278354036822932288}
   m_towerRangeCircleSegments: 24
   m_towerConstructionVFXPrefab: {fileID: 8106165934770000536}
   m_fireVFX: {fileID: 0}
+  m_isBuilt: 0
 --- !u!65 &4478089951611948086
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1196,3 +1193,8 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!4 &8807272703932726323 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4433343354001165620, guid: 7107b5f57ccccac42a900e3c7ead22db, type: 3}
+  m_PrefabInstance: {fileID: 5170081343101694215}
+  m_PrefabAsset: {fileID: 0}

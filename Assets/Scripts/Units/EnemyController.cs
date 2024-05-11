@@ -69,8 +69,15 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void SetupEnemy()
     {
         //Setup with Gameplay Manager
-        m_goal = GameplayManager.Instance.m_enemyGoal;
-        GameplayManager.Instance.AddEnemyToList(this);
+        //If check used for target dummy to remove the need for the gameplay manager in the test scene.
+        int wave = 1;
+        
+        if (GameplayManager.Instance)
+        {
+            m_goal = GameplayManager.Instance.m_enemyGoal;
+            GameplayManager.Instance.AddEnemyToList(this);
+            wave = GameplayManager.Instance.m_wave;
+        }
 
         //Setup with GridManager
         m_curPos = Vector2Int.zero;
@@ -78,7 +85,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Setup Data
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         m_baseLookSpeed = m_enemyData.m_lookSpeed;
-        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.075f, GameplayManager.Instance.m_wave));
+        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.075f, wave));
         m_curHealth = m_curMaxHealth;
         m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
 
@@ -104,7 +111,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_speedTrailVFXObj.SetActive(false);
         
         //Setup ObeliskData if the mission has obelisks
-        if (GameplayManager.Instance.m_obelisksInMission.Count > 0)
+        if (GameplayManager.Instance && GameplayManager.Instance.m_obelisksInMission.Count > 0)
         {
             m_obeliskData = GameplayManager.Instance.m_obelisksInMission[0].m_obeliskData;
         }

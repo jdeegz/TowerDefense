@@ -42,7 +42,7 @@ public class CameraController : MonoBehaviour
     {
         float x = GridManager.Instance.m_gridWidth / 2;
         float z = GridManager.Instance.m_gridHeight / 2;
-        
+
         //Get Screen to Plane corners.
         //North East
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width, Screen.height, 100));
@@ -88,9 +88,12 @@ public class CameraController : MonoBehaviour
 
         m_camera = Camera.main;
         m_startZoom = m_camera.gameObject.transform.localPosition.z;
-        
+
         //Center the camera
-        transform.position = GetPositionInBounds(GameplayManager.Instance.m_castleController.transform.position);
+        if (GameplayManager.Instance)
+        {
+            transform.position = GetPositionInBounds(GameplayManager.Instance.m_castleController.transform.position);
+        }
     }
 
     void Update()
@@ -105,7 +108,7 @@ public class CameraController : MonoBehaviour
 
         HandleScreenEdgePan();
 
-        if (GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
+        if (GameplayManager.Instance != null && GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
         {
             HandleMouseInput();
         }
@@ -193,10 +196,11 @@ public class CameraController : MonoBehaviour
 
     void HandleScreenEdgePan()
     {
-        if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
+        if (GameplayManager.Instance != null && GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
             m_isDragging = false;
         }
+
 
         if (m_isDragging) return;
 

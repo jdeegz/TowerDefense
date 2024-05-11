@@ -23,7 +23,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected GameObject m_towerConstructionVFXPrefab;
     [SerializeField] protected GameObject m_fireVFX;
     
-    protected bool m_isBuilt;
+    [SerializeField] protected bool m_isBuilt;
     protected bool m_hasTargets;
     protected Animator m_animator;
     protected AudioSource m_audioSource;
@@ -59,7 +59,8 @@ public abstract class Tower : MonoBehaviour
         }
 
         //If we have no target, rotate away from the base during the Build phase. The isBuilt flag will stop this from happening when precon.
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
+        //Adding a instance check for the target dummy scene.
+        if (GameplayManager.Instance && GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
         {
             //Use enemy Goal as the 'target'.
             Vector3 direction = GameplayManager.Instance.m_enemyGoal.position - transform.position;
