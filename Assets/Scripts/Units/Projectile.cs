@@ -22,6 +22,9 @@ public abstract class Projectile : MonoBehaviour
     protected Vector3 m_directPos;
     protected StatusEffect m_statusEffect;
     protected Collider m_enemyCollider;
+    public Renderer m_renderer;
+    public BulletTrailData m_bulletTrailData;
+    protected TrailRenderer m_trail;
 
     void Awake()
     {

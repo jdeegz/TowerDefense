@@ -5,7 +5,24 @@ using UnityEngine;
 
 public class Bullet : Projectile
 {
-    // Update is called once per frame
+    void Awake()
+    {
+        m_trail = GetComponent<TrailRenderer>();
+    }
+
+    void OnEnable()
+    {
+        ConfigureTrail();
+    }
+
+    private void ConfigureTrail()
+    {
+        if (m_trail != null && m_bulletTrailData != null)
+        {
+            m_bulletTrailData.SetupTrail(m_trail);
+        }
+    }
+    
     void Update()
     {
         if (m_enemy) m_targetPos = m_enemy.m_targetPoint.position;
@@ -69,7 +86,13 @@ public class Bullet : Projectile
 
         //Destroy this missile.
         //Adding a delay for the trail to complete-ish
-        Destroy(gameObject, .1f);
+        m_renderer.enabled = false;
+        float destroyDelay = 0.1f;
+        if (m_trail != null && m_bulletTrailData != null)
+        {
+            destroyDelay = m_bulletTrailData.m_time;
+        }
+        Destroy(gameObject, destroyDelay);
     }
 
     private void OnCollisionEnter(Collision other)
