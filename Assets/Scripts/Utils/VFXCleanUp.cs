@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class VFXCleanUp : MonoBehaviour
 {
@@ -37,7 +38,7 @@ public class VFXCleanUp : MonoBehaviour
             m_elapsedTime = 0f;
             if (m_destroyAfterPlay)
             {
-                Destroy(gameObject);
+                ObjectPoolManager.ReturnObjectToPool(gameObject);
             }
         }
     }

@@ -37,15 +37,16 @@ public class BasicTower : Tower
             return;
         }
 
-        if (!IsTargetInRange(m_curTarget.transform.position))
+        //If the target is out of firing range, or has less than 0 HP, this is not a valid target.
+        if (!IsTargetInRange(m_curTarget.transform.position) || m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }
+        
         else
         {
             //If we have elapsed time, and are looking at the target, fire.
-            if (m_timeUntilFire >= 1f / m_towerData.m_fireRate && m_timeUntilBurst >= m_towerData.m_burstFireRate &&
-                IsTargetInSight())
+            if (m_timeUntilFire >= 1f / m_towerData.m_fireRate && m_timeUntilBurst >= m_towerData.m_burstFireRate && IsTargetInSight())
             {
                 Fire();
                 m_timeUntilFire = 0;
@@ -63,7 +64,8 @@ public class BasicTower : Tower
 
     private void Fire()
     {
-        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
+        //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
+        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, ObjectPoolManager.PoolType.Projectile);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
         if (m_statusEffectData)
         {

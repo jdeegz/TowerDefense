@@ -25,7 +25,7 @@ public class CannonTower : Tower
         m_loadedProjectiles = new Projectile[m_muzzlePoints.Count];
 
         //The duration we wait to reload is the number of missiles we launch + 1 * the fire rate.
-        m_reloadDelay = 1f / m_towerData.m_fireRate / 2;
+        m_reloadDelay = 1f / m_towerData.m_fireRate / 4;
         for (var i = 0; i < m_muzzlePoints.Count; ++i)
         {
             Reload(i);
@@ -52,7 +52,7 @@ public class CannonTower : Tower
             return;
         }
 
-        if (!IsTargetInRange(m_curTarget.transform.position))
+        if (!IsTargetInRange(m_curTarget.transform.position) || m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }
@@ -92,7 +92,12 @@ public class CannonTower : Tower
     void Reload(int i)
     {
         //Make the projectile objects
-        GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform);
+        //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform);
+        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation);
+        
+        //Position loaded projectile
+        projectileObj.transform.SetParent(m_muzzlePoints[i].transform);
+        
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
 
         //Assign any necessary effects to the projectile.
@@ -116,7 +121,7 @@ public class CannonTower : Tower
         Projectile projectileScript = m_loadedProjectiles[m_projectileCounter];
 
         //Unparent the projectile so it stops rotating around the tower.
-        projectileScript.transform.parent = null;
+        projectileScript.transform.parent = ObjectPoolManager.SetParentObject(ObjectPoolManager.PoolType.Projectile).transform;
         m_loadedProjectiles[m_projectileCounter] = null;
 
         //Give the projectile purpose.

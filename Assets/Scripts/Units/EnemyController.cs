@@ -55,6 +55,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public event Action<float> UpdateHealth;
     public event Action<Vector3> DestroyEnemy;
 
+    private bool m_isComplete;
+    
     public void SetEnemyData(EnemyData data)
     {
         m_enemyData = data;
@@ -68,6 +70,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     void SetupEnemy()
     {
+        m_isComplete = false;
         //Setup with Gameplay Manager
         //If check used for target dummy to remove the need for the gameplay manager in the test scene.
         int wave = 1;
@@ -90,12 +93,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
 
         //Setup Life Meter
-        UIHealthMeter lifeMeter = Instantiate(IngameUIController.Instance.m_healthMeter, IngameUIController.Instance.transform);
+        UIHealthMeter lifeMeter = ObjectPoolManager.SpawnObject(IngameUIController.Instance.m_healthMeter.gameObject, IngameUIController.Instance.transform).GetComponent<UIHealthMeter>();
         lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
 
         //Setup Hit Flash
         CollectMeshRenderers(m_enemyModelRoot.transform);
-
+        
         //Setup Status Effects
         m_statusEffects = new List<StatusEffect>();
 
@@ -192,6 +195,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     void OnUpdateHealth(float i)
     {
+        if (m_curHealth <= 0) return;
+        
         m_curHealth += i;
 
         if (m_curHealth <= 0)
@@ -225,6 +230,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     
     void OnEnemyDestroyed(Vector3 pos)
     {
+        if (m_isComplete) return;
+
+        m_isComplete = true;
+        
         if (m_curCell != null)
         {
             m_curCell.UpdateActorCount(-1, gameObject.name);
@@ -238,14 +247,42 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             {
                 //Instantiate a soul, and set its properties.
                 m_obeliskData = m_closestObelisk.m_obeliskData;
-                GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity);
+                //GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity);
+                GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
                 obeliskSoul.SetupSoul(m_closestObelisk.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
             }
         }
 
         GameplayManager.Instance.RemoveEnemyFromList(this);
-        Destroy(gameObject);
+        
+        //Return effects to pool.
+        foreach (StatusEffect activeEffect in m_statusEffects)
+        {
+            RemoveEffect(activeEffect);
+        }
+        
+        //End the running coroutine
+        if (m_hitFlashCoroutine != null)
+        {
+            StopCoroutine(m_hitFlashCoroutine);
+        }
+        
+        //Reset the coroutine tinting
+        for (int i = 0; i < m_allRenderers.Count; ++i)
+        {
+            foreach (Material material in m_allRenderers[i].materials)
+            {
+                material.SetColor("_EmissionColor", m_allOrigColors[i]);
+            }
+        }
+        
+        ObjectPoolManager.ReturnObjectToPool(gameObject);
+    }
+
+    public float GetCurrentHP()
+    {
+        return m_curHealth;
     }
 
     private Obelisk FindObelisk()
@@ -344,19 +381,24 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         {
             case StatusEffectData.EffectType.DecreaseMoveSpeed:
                 if (m_decreaseMoveSpeedVFXOjb) return;
-                m_decreaseMoveSpeedVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                //m_decreaseMoveSpeedVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                m_decreaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                m_decreaseMoveSpeedVFXOjb.transform.SetParent(transform);
                 break;
             case StatusEffectData.EffectType.IncreaseMoveSpeed:
                 if (m_increaseMoveSpeedVFXOjb) return;
-                m_increaseMoveSpeedVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                m_increaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                m_increaseMoveSpeedVFXOjb.transform.SetParent(transform);
                 break;
             case StatusEffectData.EffectType.DecreaseHealth:
                 if (m_decreaseHealthVFXOjb) return;
-                m_decreaseHealthVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                m_decreaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                m_decreaseHealthVFXOjb.transform.SetParent(transform);
                 break;
             case StatusEffectData.EffectType.IncreaseHealth:
                 if (m_increaseHealthVFXOjb) return;
-                m_increaseHealthVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                m_increaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                m_increaseHealthVFXOjb.transform.SetParent(transform);
                 break;
             case StatusEffectData.EffectType.DecreaseArmor:
                 break;
@@ -419,17 +461,33 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         {
             case StatusEffectData.EffectType.DecreaseMoveSpeed:
                 m_lastSpeedModifierSlower = 1;
-                if (m_decreaseMoveSpeedVFXOjb) Destroy(m_decreaseMoveSpeedVFXOjb);
+                if (m_decreaseMoveSpeedVFXOjb)
+                {
+                    ObjectPoolManager.ReturnObjectToPool(m_decreaseMoveSpeedVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    m_decreaseMoveSpeedVFXOjb = null;
+                }
                 break;
             case StatusEffectData.EffectType.IncreaseMoveSpeed:
                 m_lastSpeedModifierFaster = 1;
-                if (m_increaseMoveSpeedVFXOjb) Destroy(m_increaseMoveSpeedVFXOjb);
+                if (m_increaseMoveSpeedVFXOjb)
+                {
+                    ObjectPoolManager.ReturnObjectToPool(m_increaseMoveSpeedVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    m_increaseMoveSpeedVFXOjb = null;
+                }
                 break;
             case StatusEffectData.EffectType.DecreaseHealth:
-                if (m_decreaseHealthVFXOjb) Destroy(m_decreaseHealthVFXOjb);
+                if (m_decreaseHealthVFXOjb)
+                {
+                    ObjectPoolManager.ReturnObjectToPool(m_decreaseHealthVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    m_decreaseHealthVFXOjb = null;
+                }
                 break;
             case StatusEffectData.EffectType.IncreaseHealth:
-                if (m_increaseHealthVFXOjb) Destroy(m_increaseHealthVFXOjb);
+                if (m_increaseHealthVFXOjb)
+                {
+                    ObjectPoolManager.ReturnObjectToPool(m_increaseHealthVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    m_increaseHealthVFXOjb = null;
+                }
                 break;
             case StatusEffectData.EffectType.DecreaseArmor:
                 m_lastDamageModifierLower = 1;

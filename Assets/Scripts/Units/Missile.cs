@@ -12,23 +12,35 @@ public class Missile : Projectile
     public float m_lookAcceleration = 5;
     public float m_speedAcceleration = 0.3f;
 
-    void Update()
+    private float m_storedProjectileSpeed;
+    private float m_storedLookSpeed;
+
+    void Awake()
     {
-        if (m_enemy)
-        {
-            m_targetPos = m_enemy.m_targetPoint.position;
-        }
-        
-        if (IsTargetInStoppingDistance() && m_isFired)
-        {
-            DestroyProjectile();
-        }
-        
+        m_storedProjectileSpeed = m_projectileSpeed;
+        m_storedLookSpeed = m_lookSpeed;
+    }
+
+    void OnEnable()
+    {
+        //Reset Data
+        m_projectileSpeed = m_storedProjectileSpeed;
+        m_lookSpeed = m_storedLookSpeed;
+        if (m_renderer) m_renderer.enabled = true;
     }
 
     void FixedUpdate()
     {
-        if (m_isFired) TravelToTarget();
+        if (IsTargetInStoppingDistance() && m_isFired == true && m_isComplete == false)
+        {
+            m_isComplete = true;
+            DealDamage();
+            RemoveProjectile();
+            return;
+        }
+        
+        //if we're at our target, we dont need to move any longer, we've exploded.
+        if (m_isFired && m_isComplete == false) TravelToTarget();
     }
 
     private bool IsTargetInStoppingDistance()
@@ -56,7 +68,7 @@ public class Missile : Projectile
         m_projectileSpeed += speedStep;
     }
 
-    void DestroyProjectile()
+    void DealDamage()
     {
         //Deal Damage
         Vector3 searchPos = new Vector3(transform.position.x, 0, transform.position.z);
@@ -78,9 +90,6 @@ public class Missile : Projectile
 
         //Spawn VFX
         Vector3 groundPos = transform.position;
-        Instantiate(m_impactEffect, groundPos, Quaternion.identity);
-
-        //Destroy this missile.
-        Destroy(gameObject);
+        ObjectPoolManager.SpawnObject(m_impactEffect, groundPos, Quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
     }
 }

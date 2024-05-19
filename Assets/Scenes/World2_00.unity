@@ -7755,7 +7755,7 @@ MonoBehaviour:
   m_wave: -1
   m_bossWaveFactor: 10
   m_delayForQuest: 0
-  m_firstBuildDuraction: 15
+  m_firstBuildDuraction: 1
   m_buildDuration: 6
   m_timeToNextWave: 0
   m_castleController: {fileID: 1429581217}
@@ -12785,6 +12785,7 @@ Transform:
   - {fileID: 795814905}
   - {fileID: 548299933}
   - {fileID: 183183800}
+  - {fileID: 876515968}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -16426,6 +16427,51 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5495023557100828211, guid: ea7f00e8117a7a14e9addc7a7f9544f1, type: 3}
   m_PrefabInstance: {fileID: 873032793}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &876515967
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 876515968}
+  - component: {fileID: 876515969}
+  m_Layer: 0
+  m_Name: ObjectPoolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &876515968
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876515967}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 663454553}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &876515969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876515967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd29b9b7f4ff8e4488a27d67cd559dff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_poolType: 0
 --- !u!1001 &879268962
 PrefabInstance:
   m_ObjectHideFlags: 0

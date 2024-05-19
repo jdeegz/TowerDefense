@@ -63,7 +63,7 @@ public class VoidRayTowerController : Tower
         }
 
         //FINDING TARGET
-        if (m_curTarget == null)
+        if (m_curTarget == null || m_curTarget.GetCurrentHP() <= 0)
         {
             m_projectileLineRenderer.enabled = false;
             FindTarget();

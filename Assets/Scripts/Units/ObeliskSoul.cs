@@ -6,12 +6,13 @@ using UnityEngine;
 public class ObeliskSoul : MonoBehaviour
 {
     public float m_moveDuration = 2f;
+    public TrailRenderer m_trail;
+    
     private Vector3 m_endPos;
     private Obelisk m_obelisk;
     private Tween m_tweenToObelisk;
     private int m_soulValue;
-
-
+    
     public void SetupSoul(Vector3 endPos, Obelisk obelisk, int soulValue)
     {
         m_endPos = endPos;
@@ -29,6 +30,6 @@ public class ObeliskSoul : MonoBehaviour
     void RequestObeliskCharge()
     {
         m_obelisk.IncreaseObeliskCharge(m_soulValue);
-        Destroy(gameObject, 2);
+        ObjectPoolManager.OrphanObject(gameObject, m_trail.time, ObjectPoolManager.PoolType.ParticleSystem);
     }
 }

@@ -41,6 +41,8 @@ public class UIHealthMeter : MonoBehaviour
 
     void OnEnemyDestroyed(Vector3 pos)
     {
-        Destroy(gameObject);
+        m_enemy.UpdateHealth -= OnUpdateHealth;
+        m_enemy.DestroyEnemy -= OnEnemyDestroyed;
+        ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
 }

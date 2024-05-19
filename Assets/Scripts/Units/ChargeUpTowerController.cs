@@ -63,7 +63,7 @@ public class ChargeUpTowerController : Tower
         HandlePanelColor();
         
         //FINDING TARGET
-        if (m_curTarget == null)
+        if (m_curTarget == null || m_curTarget.GetCurrentHP() <= 0)
         {
             ChargeDown();
             FindTarget();

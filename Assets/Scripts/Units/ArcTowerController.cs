@@ -28,7 +28,8 @@ public class ArcTowerController : Tower
             //If target is not in range, destroy the flame cone if there is one.
             if (m_activeProjectileObj != null)
             {
-                Destroy(m_activeProjectileObj);
+                //Destroy(m_activeProjectileObj);
+                ObjectPoolManager.OrphanObject(m_activeProjectileObj, 0.25f);
             }
 
             FindTarget();
@@ -36,7 +37,7 @@ public class ArcTowerController : Tower
         }
 
 
-        if (!IsTargetInRange(m_curTarget.transform.position))
+        if (!IsTargetInRange(m_curTarget.transform.position) || m_curTarget.GetCurrentHP() <= 0)
         {
             m_rotationModifier = 1;
             m_curTarget = null;
@@ -50,7 +51,9 @@ public class ArcTowerController : Tower
             {
                 if (m_activeProjectileObj == null)
                 {
-                    m_activeProjectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, m_muzzlePoint.transform);
+                    //m_activeProjectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, m_muzzlePoint.transform);
+                    m_activeProjectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
+                    m_activeProjectileObj.transform.SetParent(m_muzzlePoint.transform);
                 }
 
                 //int a = Random.Range(0, m_towerData.m_audioFireClips.Count);
@@ -73,7 +76,7 @@ public class ArcTowerController : Tower
             m_timeUntilSecondaryFire = 0f;
 
             //Spawn VFX
-            Instantiate(m_towerData.m_secondaryProjectilePrefab, transform.position, Quaternion.identity);
+            ObjectPoolManager.SpawnObject(m_towerData.m_secondaryProjectilePrefab, transform.position, Quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
             Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_secondaryfireRange, m_layerMask.value);
 
             //Find enemies and deal damage
