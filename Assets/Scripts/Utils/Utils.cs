@@ -6,6 +6,27 @@ using System.Linq;
 
 public static class Util
 {
+    public static Vector3 GetRandomPosition(Vector3 objPosition, Vector3 offset)
+    {
+        //Position
+        objPosition += Vector3.Lerp(-offset, offset, UnityEngine.Random.value);
+        return objPosition;
+    }
+    
+    public static Quaternion GetRandomRotation(Quaternion objRotation, Vector3 offset)
+    {
+        //Rotation
+        objRotation *= Quaternion.Euler(Vector3.Lerp(-offset, offset, UnityEngine.Random.value));
+        return objRotation;
+    }
+    
+    public static Vector3 GetRandomScale(Vector3 objScale, Vector3 offset)
+    {
+        //Scale
+        objScale += Vector3.Lerp(-offset, offset, UnityEngine.Random.value);
+        return objScale;
+    }
+    
     public static Vector3 RoundVectorToInt(Vector3 vector)
     {
         return new Vector3(Mathf.FloorToInt(vector.x + 0.5f), Mathf.FloorToInt(vector.y), Mathf.FloorToInt(vector.z + 0.5f));

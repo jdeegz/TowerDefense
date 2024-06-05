@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -18,10 +19,6 @@ public abstract class Tower : MonoBehaviour
     [Header("Range Circle")]
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;
-    
-    [Header("Baked Visual Effects")]
-    [SerializeField] protected GameObject m_towerConstructionVFXPrefab;
-    [SerializeField] protected GameObject m_fireVFX;
     
     [SerializeField] protected bool m_isBuilt;
     protected bool m_hasTargets;
@@ -127,9 +124,17 @@ public abstract class Tower : MonoBehaviour
         m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
 
         //VFX
-        m_towerConstructionVFXPrefab.SetActive(true);
+        ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
+    //Fired via a keyframe in Animation.
+    public void FireVFX()
+    {
+        if (!m_towerData.m_muzzleFlashPrefab) return;
+
+        ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, ObjectPoolManager.PoolType.ParticleSystem);
+    }
+    
     public void OnDestroy()
     {
         //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)

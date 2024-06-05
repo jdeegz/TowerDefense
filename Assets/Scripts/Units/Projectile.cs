@@ -11,6 +11,7 @@ public abstract class Projectile : MonoBehaviour
 {
     [SerializeField] protected float m_projectileSpeed = .5f;
     [SerializeField] protected float m_stoppingDistance = .1f;
+    [SerializeField] protected GameObject m_hitVFXPrefab;
 
     protected bool m_isFired = false;
     protected bool m_isComplete;

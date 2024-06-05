@@ -71,7 +71,7 @@ public class Missile : Projectile
     void DealDamage()
     {
         //Deal Damage
-        Vector3 searchPos = new Vector3(transform.position.x, 0, transform.position.z);
+        Vector3 searchPos = new Vector3(m_targetPos.x, 0, m_targetPos.z);
         Collider[] hits = Physics.OverlapSphere(searchPos, m_impactRadius, m_layerMask.value);
         if (hits.Length > 0)
         {
@@ -79,6 +79,7 @@ public class Missile : Projectile
             {
                 EnemyController enemyHit = col.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_projectileDamage);
+                ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, ObjectPoolManager.PoolType.ParticleSystem);
 
                 //Apply Status Effect
                 if (m_statusEffect != null)
@@ -89,7 +90,6 @@ public class Missile : Projectile
         }
 
         //Spawn VFX
-        Vector3 groundPos = transform.position;
-        ObjectPoolManager.SpawnObject(m_impactEffect, groundPos, Quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_impactEffect, m_targetPos, Util.GetRandomRotation(Quaternion.identity, new Vector3(0,180,0)), ObjectPoolManager.PoolType.ParticleSystem);
     }
 }

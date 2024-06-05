@@ -99,7 +99,6 @@ Transform:
   m_Children:
   - {fileID: 6780170889821803420}
   - {fileID: 4552535233955522817}
-  - {fileID: 7471491316463997588}
   m_Father: {fileID: 0}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -124,8 +123,7 @@ MonoBehaviour:
   m_muzzlePoint: {fileID: 6979452788705849055}
   m_towerRangeCircle: {fileID: -7005396196458977181}
   m_towerRangeCircleSegments: 24
-  m_towerConstructionVFXPrefab: {fileID: 7563673397385651466}
-  m_fireVFX: {fileID: 0}
+  m_isBuilt: 0
   m_muzzlePoints:
   - {fileID: 6979452788705849055}
   m_loadedProjectiles: []
@@ -385,77 +383,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!1001 &2663750881476773015
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 8795141251248142417}
-    m_Modifications:
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_RootOrder
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5476407597205610909, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-      propertyPath: m_Name
-      value: TowerConstructionVFX
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
---- !u!4 &7471491316463997588 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4848013484346971651, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-  m_PrefabInstance: {fileID: 2663750881476773015}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &7563673397385651466 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5476407597205610909, guid: 781c0cf4ca209fb449fb4c88005f064a, type: 3}
-  m_PrefabInstance: {fileID: 2663750881476773015}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6454424613328303223
 PrefabInstance:
   m_ObjectHideFlags: 0

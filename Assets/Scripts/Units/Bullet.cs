@@ -47,6 +47,8 @@ public class Bullet : Projectile
             }
 
             m_enemy.OnTakeDamage(dmg);
+            Quaternion spawnVFXdirection = Quaternion.LookRotation(m_targetPos - m_startPos);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, m_enemy.m_targetPoint.transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
         }
     }
 }

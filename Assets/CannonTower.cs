@@ -25,7 +25,7 @@ public class CannonTower : Tower
         m_loadedProjectiles = new Projectile[m_muzzlePoints.Count];
 
         //The duration we wait to reload is the number of missiles we launch + 1 * the fire rate.
-        m_reloadDelay = 1f / m_towerData.m_fireRate / 4;
+        m_reloadDelay = 1f / m_towerData.m_fireRate / 2;
         for (var i = 0; i < m_muzzlePoints.Count; ++i)
         {
             Reload(i);
@@ -132,7 +132,8 @@ public class CannonTower : Tower
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
 
         //Play fire Animation
-        m_animator.SetTrigger("Fire");
+        //m_animator.SetTrigger("Fire");
+        FireVFX();
 
         //Start a reload timer for this index.
         //Source https://github.com/Mr-sB/UnityTimer
@@ -143,14 +144,6 @@ public class CannonTower : Tower
         //Update projectileCounter
         ++m_projectileCounter;
         if (m_projectileCounter >= m_muzzlePoints.Count) m_projectileCounter = 0;
-    }
-
-    //Fired via a keyframe in Animation.
-    void FireVFX()
-    {
-        if (!m_fireVFX) return;
-
-        m_fireVFX.SetActive(true);
     }
 
     private void FindTarget()

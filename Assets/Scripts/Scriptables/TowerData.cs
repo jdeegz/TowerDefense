@@ -47,6 +47,8 @@ public class TowerData : ScriptableObject
     public GameObject m_prefab;
     public GameObject m_projectilePrefab;
     public GameObject m_secondaryProjectilePrefab;
+    public GameObject m_towerConstructionPrefab;
+    public GameObject m_muzzleFlashPrefab;
     
     [Header("sFX")]
     public List<AudioClip> m_audioFireClips;

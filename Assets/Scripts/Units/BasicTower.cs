@@ -78,17 +78,10 @@ public class BasicTower : Tower
 
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
-        m_animator.SetTrigger("Fire");
+        //m_animator.SetTrigger("Fire");
+        FireVFX();
     }
     
-    //Fired via a keyframe in Animation.
-    void FireVFX()
-    {
-        if (!m_fireVFX) return;
-        
-        m_fireVFX.SetActive(true);
-    }
-
     private void FindTarget()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
