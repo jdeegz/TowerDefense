@@ -124,6 +124,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     {
         UpdateStatusEffects();
         
+        //Target Dummy
+        if (!m_goal) return;
+        
         //If this is the exit cell, we've made it! Deal some damage to the player.
         if (Vector3.Distance(transform.position, m_goal.position) <= 1.5f)
         {
@@ -327,7 +330,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             m_expiredStatusEffects.Clear();
         }
 
-        //Add New Effects
+        //Add New Effects if the sender is unique (Does not already have this effect)
         if (m_newStatusEffects.Count > 0)
         {
             //Check & Add new Effects to list if there are any.
@@ -341,6 +344,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                         //We found a sender match, update the existing effect.
                         m_statusEffects[i] = newStatusEffect;
                         senderFound = true;
+                        Debug.Log($"Sender found, not a new effect.");
                         break;
                     }
                 }

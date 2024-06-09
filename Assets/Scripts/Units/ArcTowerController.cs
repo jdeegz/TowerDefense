@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class ArcTowerController : Tower
 {
+    public VisualEffect m_flameTowerProjectile;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
     private GameObject m_activeProjectileObj;
@@ -26,11 +28,14 @@ public class ArcTowerController : Tower
         if (m_curTarget == null)
         {
             //If target is not in range, destroy the flame cone if there is one.
-            if (m_activeProjectileObj != null)
+            m_flameTowerProjectile.Stop();
+            
+            /*if (m_activeProjectileObj != null)
             {
                 //Destroy(m_activeProjectileObj);
-                ObjectPoolManager.OrphanObject(m_activeProjectileObj, 0.25f);
-            }
+                //ObjectPoolManager.OrphanObject(m_activeProjectileObj, 0.25f);
+                
+            }*/
 
             FindTarget();
             return;
@@ -52,8 +57,9 @@ public class ArcTowerController : Tower
                 if (m_activeProjectileObj == null)
                 {
                     //m_activeProjectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, m_muzzlePoint.transform);
-                    m_activeProjectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
-                    m_activeProjectileObj.transform.SetParent(m_muzzlePoint.transform);
+                    //m_activeProjectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
+                    //m_activeProjectileObj.transform.SetParent(m_muzzlePoint.transform);
+                    m_flameTowerProjectile.Play();
                 }
 
                 //int a = Random.Range(0, m_towerData.m_audioFireClips.Count);

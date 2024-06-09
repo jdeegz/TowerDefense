@@ -22,6 +22,6 @@ public class BulletTrailData : ScriptableObject
         trailRenderer.sharedMaterial = m_material;
         trailRenderer.numCornerVertices = m_cornerVertices;
         trailRenderer.numCapVertices = m_endVertices;
-        Debug.Log($"Trail Setup completed.");
+        //Debug.Log($"Trail Setup completed.");
     }
 }

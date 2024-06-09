@@ -85,7 +85,7 @@ public class ObjectPoolManager : MonoBehaviour
             pool = new PooledObjectInfo() { m_lookUpString = objectToSpawn.name };
             Instance.m_objectPools.Add(pool);
 
-            Debug.Log($"No pool found, created one named {objectToSpawn.name}");
+            //Debug.Log($"No pool found, created one named {objectToSpawn.name}");
         }
 
         //check for inactive obj in pool
@@ -108,7 +108,7 @@ public class ObjectPoolManager : MonoBehaviour
             spawnableObj.transform.rotation = spawnRotation;
             pool.m_inactiveObjects.Remove(spawnableObj);
             spawnableObj.SetActive(true);
-            Debug.Log($"Releasing {spawnableObj.name} from inactive pool.");
+            //Debug.Log($"Releasing {spawnableObj.name} from inactive pool.");
         }
 
         return spawnableObj;
@@ -126,7 +126,7 @@ public class ObjectPoolManager : MonoBehaviour
             pool = new PooledObjectInfo() { m_lookUpString = objectToSpawn.name };
             Instance.m_objectPools.Add(pool);
 
-            Debug.Log($"No pool found, created one named {objectToSpawn.name}");
+            //Debug.Log($"No pool found, created one named {objectToSpawn.name}");
         }
 
         //check for inactive obj in pool
@@ -141,7 +141,7 @@ public class ObjectPoolManager : MonoBehaviour
         {
             pool.m_inactiveObjects.Remove(spawnableObj);
             spawnableObj.SetActive(true);
-            Debug.Log($"Releasing {spawnableObj.name} from inactive pool.");
+            //Debug.Log($"Releasing {spawnableObj.name} from inactive pool.");
         }
 
         return spawnableObj;
@@ -160,12 +160,12 @@ public class ObjectPoolManager : MonoBehaviour
 
         if (pool == null)
         {
-            Debug.LogWarning($"Trying to release an object that is not pooled: {obj.name}");
+            //Debug.LogWarning($"Trying to release an object that is not pooled: {obj.name}");
         }
 
         else
         {
-            Debug.Log($"{obj.name} returned to inactive objects pool.");
+            //Debug.Log($"{obj.name} returned to inactive objects pool.");
             obj.SetActive(false);
             pool.m_inactiveObjects.Add(obj);
         }
@@ -173,7 +173,7 @@ public class ObjectPoolManager : MonoBehaviour
 
     public static void OrphanObject(GameObject obj, float delay, PoolType poolType = PoolType.None)
     {
-        Debug.Log($"New Orphan with delay of: {delay}.");
+        //Debug.Log($"New Orphan with delay of: {delay}.");
         OrphanedObject orphan = new OrphanedObject() { m_orphanObject = obj, m_poolDelay = Time.time + delay, m_poolType = poolType};
         Instance.m_orphanList.Add(orphan);
     }

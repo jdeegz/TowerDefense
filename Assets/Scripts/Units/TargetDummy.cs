@@ -10,12 +10,6 @@ public class TargetDummy : EnemyController
     {
         SetEnemyData(m_enemyData);
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     
     public override void HandleMovement()
     {
