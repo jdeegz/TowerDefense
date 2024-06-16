@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_VoidBeam
+  m_Name: Mat_LightningBeam
   m_Shader: {fileID: -6465566751694194690, guid: 1f64a59dcaff1e442a12297d194d7445, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -48,11 +48,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseSecondayTexture:
-        m_Texture: {fileID: 2800000, guid: 33d31372674bdba47a85d3b2bef22182, type: 3}
+        m_Texture: {fileID: 2800000, guid: bcca05c2b55661f489154e4811286d2f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseTexture:
-        m_Texture: {fileID: 2800000, guid: 9fc829942a847b642b3970e8b7754ab9, type: 3}
+        m_Texture: {fileID: 2800000, guid: e1ceea34b6820b446a857e43622eee9d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -72,11 +72,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DissolveSecondaryTexture:
-        m_Texture: {fileID: 2800000, guid: db044f4fd216cb641a5fde255df5aab1, type: 3}
+        m_Texture: {fileID: 2800000, guid: aac992ed776e7274cbd6a017b52fd663, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DissolveTexture:
-        m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
+        m_Texture: {fileID: 2800000, guid: a3a811d76ebe144479f2057b8edd3933, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -136,7 +136,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DissolveOutlineThickness: 0
-    - _DissolveValue: 0
+    - _DissolveValue: -0.28
     - _DistortionBlend: 0.5
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
@@ -173,16 +173,16 @@ Material:
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorAddSubDiff: {r: 1, g: 0, b: 0, a: 0}
-    - _BaseScrollSpeed: {r: 0, g: 0, b: 0, a: 0}
-    - _BaseSecondaryScrollSpeed: {r: 0, g: 0, b: 0, a: 0}
-    - _BaseSecondaryTiling: {r: 0.25, g: 1, b: 0, a: 0}
-    - _BaseTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _BaseScrollSpeed: {r: -2, g: 0, b: 0, a: 0}
+    - _BaseSecondaryScrollSpeed: {r: -2, g: 0.2, b: 0, a: 0}
+    - _BaseSecondaryTiling: {r: 0.5, g: 1, b: 0, a: 0}
+    - _BaseTiling: {r: 0.2, g: 0.5, b: 0, a: 0}
     - _Bottom_Color: {r: 0, g: 0, b: 0, a: 0}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
-    - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 0, g: 3.0251923, b: 64, a: 1}
     - _DissolveOutlineColor: {r: 0.4380169, g: 0, b: 1, a: 0}
-    - _DissolveScrollSpeed: {r: -0.5, g: 0, b: 0, a: 0}
-    - _DissolveTiling: {r: 0.2, g: 1, b: 0, a: 0}
+    - _DissolveScrollSpeed: {r: -1, g: -0.2, b: 0, a: 0}
+    - _DissolveTiling: {r: 1, g: 1, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColor: {r: 0, g: 0, b: 0, a: 0}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}

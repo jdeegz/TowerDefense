@@ -1,28 +1,43 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using DG.Tweening;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.VFX;
+using Random = UnityEngine.Random;
 
 public class VoidRayTowerController : Tower
 {
+    [Header("Visual Attributes")]
+    public VisualEffect m_projectileImpactVFX;
+    public VisualEffect m_muzzleVFX;
+    //public GameObject m_maxStackVFX;
+    
+    [Space(15)][GradientUsage(true)]
+    public Gradient m_beamGradient;
     public LineRenderer m_projectileLineRenderer;
-    public GameObject m_maxStackVFX;
+    public LineRenderer m_projectileLineRenderer_Darken;
+    public LineRenderer m_projectileLineRenderer_Lightning;
+    
+    [Space(15)][GradientUsage(true)]
+    public Gradient m_panelGradient;
+    public List<MeshRenderer> m_panelMeshRenderers;
+    
+    [Header("Data")]
     public float m_stackDropDelayTime;
     public float m_curStackDropDelay;
     public float m_totalResetTime;
-    private float m_resetStep;
-    private float m_resetTime;
     public float m_damagePower;
     public float m_speedPower;
     public float m_damageCap;
     public float m_speedCap;
     public int m_maxStacks;
-    public Gradient m_beamGradient;
-    [GradientUsage(true)]
-    public Gradient m_panelGradient;
-    public List<MeshRenderer> m_panelMeshRenderers;
-
-
+    public float m_maxBeamWidth;
+    
+    private float m_resetStep;
+    private float m_resetTime;
     private int m_curStacks;
     private float m_curDamage;
     private float m_curFireRate;
@@ -30,6 +45,10 @@ public class VoidRayTowerController : Tower
     private float m_timeUntilFire = 99f;
     private float m_facingThreshold = 10f;
     private int m_lastStacks;
+    private Collider m_targetCollider;
+    private Tween m_curTween;
+    private float m_curBeamWidth = 0;
+    private bool m_beamActive;
 
     void Update()
     {
@@ -39,7 +58,7 @@ public class VoidRayTowerController : Tower
             return;
         }
 
-        if (m_maxStackVFX) HandleMaxStackVisuals();
+        //if (m_maxStackVFX) HandleMaxStackVisuals();
 
         RotateTowardsTarget();
         
@@ -65,7 +84,7 @@ public class VoidRayTowerController : Tower
         //FINDING TARGET
         if (m_curTarget == null || m_curTarget.GetCurrentHP() <= 0)
         {
-            m_projectileLineRenderer.enabled = false;
+            if(m_beamActive) StopBeam();
             FindTarget();
             return;
         }
@@ -92,9 +111,7 @@ public class VoidRayTowerController : Tower
             if (m_timeUntilFire >= 1f / m_curFireRate && Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold)
             {
                 if (m_curStacks < m_maxStacks) m_curStacks++;
-
-                m_projectileLineRenderer.enabled = true;
-
+                StartBeam();
                 Fire();
                 HandlePanelColor();
 
@@ -103,16 +120,66 @@ public class VoidRayTowerController : Tower
         }
     }
 
+    void SetLineWidth()
+    {
+        m_projectileLineRenderer.startWidth = m_curBeamWidth;
+        m_projectileLineRenderer.endWidth = m_curBeamWidth;
+            
+        m_projectileLineRenderer_Darken.startWidth = m_curBeamWidth*2;
+        m_projectileLineRenderer_Darken.endWidth = m_curBeamWidth*2;
+        
+        if (m_projectileLineRenderer_Lightning)
+        {
+            m_projectileLineRenderer_Lightning.startWidth = m_curBeamWidth * 1.4f;
+            m_projectileLineRenderer_Lightning.endWidth = m_curBeamWidth * 0.6f;
+        }
+    }
+    
+    void StopBeam()
+    {
+        m_curTween.Kill();
+        m_curTween = DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, 0f, 0.2f)
+            .OnUpdate(SetLineWidth)
+            .OnComplete(DisableBeam);
+        
+        m_projectileImpactVFX.Stop();
+        m_muzzleVFX.Stop();
+    }
+
+    void DisableBeam()
+    {
+        m_projectileLineRenderer.enabled = false;
+        m_projectileLineRenderer_Darken.enabled = false;
+        if(m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.enabled = false;
+        m_beamActive = false;
+    }
+
+    void StartBeam()
+    {
+        m_curTween.Kill();
+        m_beamActive = true;
+        m_projectileLineRenderer.enabled = true;
+        m_projectileLineRenderer_Darken.enabled = true;
+        if (m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.enabled = true;
+                
+        m_curTween = DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, m_maxBeamWidth, 0.2f)
+            .OnUpdate(SetLineWidth);
+        
+        m_projectileImpactVFX.Play();
+        m_muzzleVFX.Play();
+
+    }
+
     private void HandleMaxStackVisuals()
     {
-        if (m_curStacks == m_maxStacks)
+        /*if (m_curStacks == m_maxStacks)
         {
             m_maxStackVFX.SetActive(true);
         }
         else
         {
             m_maxStackVFX.SetActive(false);
-        }
+        }*/
     }
 
     private void HandlePanelColor()
@@ -161,20 +228,50 @@ public class VoidRayTowerController : Tower
 
     private void HandleBeamVisual()
     {
+        //Setup Target point and rotation
+        Vector3 vfxTarget;
+        Quaternion vfxRotation;
+        GetPointOnColliderSurface(m_muzzlePoint.position, m_curTarget.m_targetPoint.position, m_targetCollider, out vfxTarget, out vfxRotation);
+        m_projectileImpactVFX.transform.position = vfxTarget;
+        m_projectileImpactVFX.transform.rotation = vfxRotation;
+        
         //Setup LineRenderer Data.
         m_projectileLineRenderer.SetPosition(0, m_muzzlePoint.position);
-        m_projectileLineRenderer.SetPosition(1, m_curTarget.m_targetPoint.position);
+        m_projectileLineRenderer.SetPosition(1, vfxTarget);
+        m_projectileLineRenderer_Darken.SetPosition(0, m_muzzlePoint.position);
+        m_projectileLineRenderer_Darken.SetPosition(1, vfxTarget);
+        if (m_projectileLineRenderer_Lightning)
+        {
+            m_projectileLineRenderer_Lightning.SetPosition(0, m_muzzlePoint.position);
+            m_projectileLineRenderer_Lightning.SetPosition(1, vfxTarget);
+        }
+
+        //Line Width based on Stacks
+        /*float width = 0.0f + (m_curStacks - 0f) * (0.5f - 0.0f) / (m_maxStacks - 0f);
+        m_projectileLineRenderer.startWidth = width;
+        m_projectileLineRenderer.endWidth = width;*/
+        
 
         //Scroll the texture.
-        m_scrollOffset -= new Vector2(m_curFireRate * Time.deltaTime, 0);
-        m_projectileLineRenderer.material.SetTextureOffset("_BaseMap", m_scrollOffset);
-
+        m_scrollOffset = new Vector2(-m_curFireRate, 0);
+        m_projectileLineRenderer.material.SetVector("_BaseScrollSpeed", m_scrollOffset);
+        if (m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.material.SetVector("_BaseScrollSpeed", m_scrollOffset);
+        
+        
         //Color the texture.
         float normalizedTime = (float)m_curStacks / m_maxStacks;
         Color color = m_beamGradient.Evaluate(normalizedTime);
-        m_projectileLineRenderer.material.SetColor("_BaseColor", color);
+        m_projectileLineRenderer.material.SetColor("_Color", color);
+        if (m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.material.SetColor("_Color", color);
+        m_projectileImpactVFX.SetVector4("_Color", color);
+        m_muzzleVFX.SetVector4("_Color", color);
+        
+        //Modify Speed & Rate.
+        m_projectileImpactVFX.SetFloat("_Rate", m_curFireRate);
+        m_muzzleVFX.SetFloat("_Speed", m_curFireRate/2);
+        m_muzzleVFX.SetFloat("_Rate", m_curFireRate*3);
     }
-
+    
     private bool IsTargetInRange(Vector3 targetPos)
     {
         float distance = Vector3.Distance(transform.position, targetPos);
@@ -200,6 +297,7 @@ public class VoidRayTowerController : Tower
             }
 
             m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
+            m_targetCollider = m_curTarget.GetComponent<Collider>();
         }
     }
     

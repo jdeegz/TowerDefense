@@ -185,7 +185,34 @@ public abstract class Tower : MonoBehaviour
         return m_turretPivot;
     }
 
-    
+    public void GetPointOnColliderSurface(Vector3 start, Vector3 target, Collider collider, out Vector3 point, out Quaternion rotation)
+    {
+        // Direction vector from start to target
+        Vector3 direction = (target - start).normalized;
+
+        // Setup a Ray
+        Ray ray = new Ray(start, direction);
+        
+        // Calculate the maximum possible distance the ray could travel
+        float maxDistance = Vector3.Distance(start, target);
+
+        // Raycast hit information
+        RaycastHit hit;
+
+        // Perform the raycast
+        if (collider.Raycast(ray, out hit, maxDistance))
+        {
+            // Return the point of intersection and the rotation
+            point = hit.point;
+            rotation = Quaternion.LookRotation(hit.normal);
+        }
+        else
+        {
+            // If no intersection, return the target point and identity rotation as fallback
+            point = target;
+            rotation = Quaternion.identity;
+        }
+    }
 }
 
 public class TowerTooltipData
