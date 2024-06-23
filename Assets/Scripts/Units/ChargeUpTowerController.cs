@@ -1,28 +1,34 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.VFX;
+using Random = UnityEngine.Random;
 
 public class ChargeUpTowerController : Tower
 {
     [Header("Visual Attributes")]
     public VisualEffect m_projectileImpactVFX;
+
     public VisualEffect m_muzzleChargeVFX;
     public VisualEffect m_muzzleBlastVFX;
 
     [Space(15)] [GradientUsage(true)]
     public Gradient m_beamGradient;
+
     public LineRenderer m_projectileLineRenderer;
     public LineRenderer m_projectileLineRenderer_Darken;
 
     [Space(15)] [GradientUsage(true)]
     public Gradient m_panelGradient;
+
     public List<MeshRenderer> m_panelMeshRenderers;
 
     [Header("Data")]
     public float m_stackDropDelayTime;
+
     public int m_maxStacks;
     public float m_maxBeamWidth = 0.5f;
     public float m_beamDuration = .25f;
@@ -209,6 +215,12 @@ public class ChargeUpTowerController : Tower
         m_projectileImpactVFX.Stop();
     }
 
+    public override void RemoveTower()
+    {
+        StopBeam();
+        base.RemoveTower();
+    }
+
     void DisableBeam()
     {
         m_projectileLineRenderer.enabled = false;
@@ -314,5 +326,21 @@ public class ChargeUpTowerController : Tower
 
         data.m_towerDetails = descriptionBuilder.ToString();
         return data;
+    }
+
+    public override TowerUpgradeData GetUpgradeData()
+    {
+        TowerUpgradeData data = new TowerUpgradeData();
+
+        data.m_turretRotation = GetTurretRotation();
+        data.m_stacks = (int)m_curStacks;
+
+        return data;
+    }
+
+    public override void SetUpgradeData(TowerUpgradeData data)
+    {
+        SetTurretRotation(data.m_turretRotation);
+        m_curStacks = data.m_stacks;
     }
 }

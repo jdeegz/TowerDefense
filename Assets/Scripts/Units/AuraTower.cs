@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -11,8 +12,9 @@ public class AuraTower : Tower
     private List<GameObject> m_targetsTracked;
     private VisualEffect m_auraVFX;
     private float m_curDissolve = 1f;
+    private bool m_searchForTargets;
     
-    void Start()
+    void OnEnable()
     {
         m_timeUntilFire = 1f / m_towerData.m_fireRate;
         m_targetsTracked = new List<GameObject>();
@@ -23,7 +25,7 @@ public class AuraTower : Tower
     // Update is called once per frame
     void Update()
     {
-        if (IsReadyToFire())
+        if (IsReadyToFire() && m_searchForTargets)
         {
             SetTargets();
             //Debug.Log($"Searching for targets.");
@@ -68,6 +70,7 @@ public class AuraTower : Tower
             }
         }
 
+        //Remove the effect from items that remain in the Copy of Targets Tracked. They're no longer in the area.
         foreach (GameObject obj in copyTargetsTracked)
         {
             //Debug.Log($"Object left range, removing Effect)");
@@ -76,6 +79,7 @@ public class AuraTower : Tower
             obj.GetComponent<EnemyController>().RequestRemoveEffect(this);
         }
     }
+    
 
     private void SendEffect(EnemyController enemyController)
     {
@@ -103,15 +107,38 @@ public class AuraTower : Tower
         m_auraVFX.Play();
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 0f, 3f)
             .OnUpdate(() => m_auraVFX.SetFloat("Dissolve", m_curDissolve));
+        
+        //Start searching for targets.
+        m_searchForTargets = true;
     }
 
     void StopDome()
     {
+        
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 1f, 1f)
             .OnUpdate(() => m_auraVFX.SetFloat("Dissolve", m_curDissolve))
             .OnComplete(() => m_auraVFX.Stop())
             .OnComplete(() => ObjectPoolManager.ReturnObjectToPool(m_auraVFX.gameObject, ObjectPoolManager.PoolType.ParticleSystem));
         m_auraVFX = null;
+    }
+    
+    public override void RemoveTower()
+    {
+        //Stop the VFX displayed.
+        StopDome();
+        
+        //Stop searching for targets.
+        m_searchForTargets = false;
+        
+        //Remove the effect from targets currently in range.
+        foreach (GameObject obj in m_targetsTracked)
+        {
+            obj.GetComponent<EnemyController>().RequestRemoveEffect(this);
+        }
+        m_targetsTracked.Clear();
+        
+        //Resume virual function
+        base.RemoveTower();
     }
 
     public override TowerTooltipData GetTooltipData()
@@ -162,5 +189,19 @@ public class AuraTower : Tower
 
         data.m_towerDetails = descriptionBuilder.ToString();
         return data;
+    }
+
+    public override TowerUpgradeData GetUpgradeData()
+    {
+        TowerUpgradeData data = new TowerUpgradeData();
+
+        data.m_turretRotation = GetTurretRotation();
+
+        return data;
+    }
+
+    public override void SetUpgradeData(TowerUpgradeData data)
+    {
+        SetTurretRotation(data.m_turretRotation);
     }
 }

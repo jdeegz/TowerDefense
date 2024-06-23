@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -96,6 +97,12 @@ public class BeamTower : Tower
         m_activeBeam.StopBeam();
         m_activeBeam = null;
     }
+    
+    public override void RemoveTower()
+    {
+        StopBeam();
+        base.RemoveTower();
+    }
 
     private void ApplyStatusEffect()
     {
@@ -186,5 +193,19 @@ public class BeamTower : Tower
 
         data.m_towerDetails = descriptionBuilder.ToString();
         return data;
+    }
+    
+    public override TowerUpgradeData GetUpgradeData()
+    {
+        TowerUpgradeData data = new TowerUpgradeData();
+
+        data.m_turretRotation = GetTurretRotation();
+
+        return data;
+    }
+
+    public override void SetUpgradeData(TowerUpgradeData data)
+    {
+        SetTurretRotation(data.m_turretRotation);
     }
 }

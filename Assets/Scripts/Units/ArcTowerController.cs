@@ -206,4 +206,18 @@ public class ArcTowerController : Tower
         data.m_towerDetails = descriptionBuilder.ToString();
         return data;
     }
+    
+    public override TowerUpgradeData GetUpgradeData()
+    {
+        TowerUpgradeData data = new TowerUpgradeData();
+
+        data.m_turretRotation = GetTurretRotation();
+
+        return data;
+    }
+
+    public override void SetUpgradeData(TowerUpgradeData data)
+    {
+        SetTurretRotation(data.m_turretRotation);
+    }
 }

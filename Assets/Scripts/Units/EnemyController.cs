@@ -266,6 +266,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             RemoveEffect(activeEffect);
         }
 
+        m_statusEffects.Clear();
+
         //End the running coroutine
         if (m_hitFlashCoroutine != null)
         {
@@ -370,6 +372,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public void ApplyEffect(StatusEffect statusEffect)
     {
         //Add incoming status effects to a holding list. They will get added to the list then updated in UpdateStatusEffects.
+        if (m_curHealth <= 0) return;
         m_newStatusEffects.Add(statusEffect);
     }
 
@@ -438,6 +441,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                         statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
                     }
                 }
+
                 break;
             case StatusEffectData.EffectType.DecreaseArmor:
                 break;
@@ -462,12 +466,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Move Speed multipliers.
         if (statusEffect.m_data.m_speedModifier != 1)
         {
-            Debug.Log($"Move Speed modifier found.");
+            //Debug.Log($"Move Speed modifier found.");
             //Modify speed
             if (statusEffect.m_data.m_speedModifier < 1 && statusEffect.m_data.m_speedModifier < m_lastSpeedModifierSlower)
             {
                 m_lastSpeedModifierSlower = statusEffect.m_data.m_speedModifier;
-                Debug.Log($"Set slower speed modifier to: {m_lastSpeedModifierSlower}");
+                //Debug.Log($"Set slower speed modifier to: {m_lastSpeedModifierSlower}");
             }
 
             if (statusEffect.m_data.m_speedModifier > 1 && statusEffect.m_data.m_speedModifier > m_lastSpeedModifierFaster)
@@ -520,7 +524,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 if (m_increaseMoveSpeedVFXOjb)
                 {
                     ObjectPoolManager.OrphanObject(m_increaseMoveSpeedVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
-                    visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
+                    visualEffect = m_increaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {
                         visualEffect.Stop();
@@ -534,7 +538,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 if (m_decreaseHealthVFXOjb)
                 {
                     ObjectPoolManager.OrphanObject(m_decreaseHealthVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
-                    visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
+                    visualEffect = m_decreaseHealthVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {
                         visualEffect.Stop();
@@ -548,7 +552,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 if (m_increaseHealthVFXOjb)
                 {
                     ObjectPoolManager.OrphanObject(m_increaseHealthVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
-                    visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
+                    visualEffect = m_increaseHealthVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {
                         visualEffect.Stop();

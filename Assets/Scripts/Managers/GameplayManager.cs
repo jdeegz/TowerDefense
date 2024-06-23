@@ -10,6 +10,7 @@ using UnityEngine.Rendering.VirtualTexturing;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.TextCore.Text;
+using Object = System.Object;
 
 public class GameplayManager : MonoBehaviour
 {
@@ -829,7 +830,7 @@ public class GameplayManager : MonoBehaviour
         // Calculate the rotation angle to make the new object face away from the target.
         float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
 
-        GameObject newTowerObj = Instantiate(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, m_towerObjRoot.transform);
+        GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, ObjectPoolManager.PoolType.Tower);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
@@ -868,36 +869,62 @@ public class GameplayManager : MonoBehaviour
 
     public void SellTower(Tower tower, int stoneValue, int woodValue)
     {
+        //Configure Grid
         GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
+        
+        //Clean up actor list
         RemoveTowerFromList(tower);
+        
+        //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(woodValue);
         IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, true, tower.transform.position);
-        Destroy(tower.gameObject);
+        
+        //Remove the tower
+        tower.RemoveTower();
+        
+        //Set Gameplay Manager's state
         m_curSelectable = null;
         UpdateInteractionState(InteractionState.Idle);
-        Debug.Log("Tower sold.");
+        
+        //Let rest of game know of new tower.
         OnTowerSell?.Invoke();
     }
 
     public void UpgradeTower(Tower oldTower, TowerData newTowerData, int stoneValue, int woodValue)
     {
+        //Configure Grid
         Vector3 pos = oldTower.gameObject.transform.position;
         GridCellOccupantUtil.SetOccupant(oldTower.gameObject, false, 1, 1);
+        
+        //Clean up actor list
         RemoveTowerFromList(oldTower);
+        
+        //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(-stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(-woodValue);
         IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, false, oldTower.transform.position);
-        Quaternion curRotation = oldTower.GetTurretRotation();
-        Destroy(oldTower.gameObject);
+        
+        //Cache current tower data to apply to new tower.
+        TowerUpgradeData towerUpgradeData = oldTower.GetUpgradeData();
+        
+        //Remove the tower
+        oldTower.RemoveTower();
 
-        GameObject newTowerObj = Instantiate(newTowerData.m_prefab, pos, Quaternion.identity, m_towerObjRoot.transform);
+        //Place new tower
+        GameObject newTowerObj = ObjectPoolManager.SpawnObject(newTowerData.m_prefab, pos, Quaternion.identity, ObjectPoolManager.PoolType.Tower);
         Tower newTower = newTowerObj.GetComponent<Tower>();
-        newTower.SetTurretRotation(curRotation);
+        newTower.SetUpgradeData(towerUpgradeData);
         newTower.SetupTower();
+        
+        //Test - If we're a void tower, copy over the stacks.
+        newTower.SetUpgradeData(oldTower.GetUpgradeData());
 
+        //Set Gameplay Manager's state
         m_curSelectable = null;
         UpdateInteractionState(InteractionState.Idle);
+        
+        //Let rest of game know of new tower.
         OnTowerUpgrade?.Invoke();
         Debug.Log("Tower upgraded.");
     }

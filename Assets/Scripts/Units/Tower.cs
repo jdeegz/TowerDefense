@@ -45,6 +45,8 @@ public abstract class Tower : MonoBehaviour
     }
 
     public abstract TowerTooltipData GetTooltipData();
+    public abstract TowerUpgradeData GetUpgradeData();
+    public abstract void SetUpgradeData(TowerUpgradeData data);
 
     public void RotateTowardsTarget()
     {
@@ -155,6 +157,11 @@ public abstract class Tower : MonoBehaviour
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }
 
+    public virtual void RemoveTower()
+    {
+        ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Tower);
+    }
+
     void SetupRangeCircle(int segments, float radius)
     {
         m_towerRangeCircle.positionCount = segments;
@@ -263,4 +270,14 @@ public class TowerTooltipData
 
         return statusEffect;
     }
+
+    
+}
+
+public class TowerUpgradeData
+{
+    public Quaternion m_turretRotation;
+    public int m_stacks;
+        
+    //Add more data her as needed.
 }

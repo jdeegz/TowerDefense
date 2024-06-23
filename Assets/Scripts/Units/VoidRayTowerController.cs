@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -169,6 +170,12 @@ public class VoidRayTowerController : Tower
         m_muzzleVFX.Play();
 
     }
+    
+    public override void RemoveTower()
+    {
+        StopBeam();
+        base.RemoveTower();
+    }
 
     private void HandleMaxStackVisuals()
     {
@@ -329,5 +336,21 @@ public class VoidRayTowerController : Tower
 
         data.m_towerDetails = descriptionBuilder.ToString();
         return data;
+    }
+    
+    public override TowerUpgradeData GetUpgradeData()
+    {
+        TowerUpgradeData data = new TowerUpgradeData();
+
+        data.m_turretRotation = GetTurretRotation();
+        data.m_stacks = m_curStacks;
+
+        return data;
+    }
+    
+    public override void SetUpgradeData(TowerUpgradeData data)
+    {
+        SetTurretRotation(data.m_turretRotation);
+        m_curStacks = data.m_stacks;
     }
 }
