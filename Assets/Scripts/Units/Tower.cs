@@ -20,6 +20,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected LineRenderer m_towerRangeCircle;
     [SerializeField] protected int m_towerRangeCircleSegments;
     
+    [Space(15)]
     [SerializeField] protected bool m_isBuilt;
     protected bool m_hasTargets;
     protected Animator m_animator;
@@ -105,6 +106,11 @@ public abstract class Tower : MonoBehaviour
     public TowerData GetTowerData()
     {
         return m_towerData;
+    }
+
+    public Vector3 GetTowerMuzzlePoint()
+    {
+        return m_muzzlePoint.position;
     }
 
     public void SetupTower()

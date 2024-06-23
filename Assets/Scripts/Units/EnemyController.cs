@@ -6,13 +6,15 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
+using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
 public abstract class EnemyController : MonoBehaviour, IEffectable
 {
     //Enemy Scriptable Data
-    [Header("Enemy Data")] 
+    [Header("Enemy Data")]
     public EnemyData m_enemyData;
+
     public Transform m_targetPoint;
     public GameObject m_enemyModelRoot;
 
@@ -56,7 +58,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public event Action<Vector3> DestroyEnemy;
 
     private bool m_isComplete;
-    
+
     public void SetEnemyData(EnemyData data)
     {
         m_enemyData = data;
@@ -65,7 +67,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     void Awake()
     {
-        
     }
 
     void SetupEnemy()
@@ -74,7 +75,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Setup with Gameplay Manager
         //If check used for target dummy to remove the need for the gameplay manager in the test scene.
         int wave = 1;
-        
+
         if (GameplayManager.Instance)
         {
             m_goal = GameplayManager.Instance.m_enemyGoal;
@@ -98,7 +99,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         //Setup Hit Flash
         CollectMeshRenderers(m_enemyModelRoot.transform);
-        
+
         //Setup Status Effects
         m_statusEffects = new List<StatusEffect>();
 
@@ -112,7 +113,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         //Create Speed Trail Object
         m_speedTrailVFXObj.SetActive(false);
-        
+
         //Setup ObeliskData if the mission has obelisks
         if (GameplayManager.Instance && GameplayManager.Instance.m_obelisksInMission.Count > 0)
         {
@@ -123,10 +124,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void Update()
     {
         UpdateStatusEffects();
-        
+
         //Target Dummy
         if (!m_goal) return;
-        
+
         //If this is the exit cell, we've made it! Deal some damage to the player.
         if (Vector3.Distance(transform.position, m_goal.position) <= 1.5f)
         {
@@ -199,7 +200,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void OnUpdateHealth(float i)
     {
         if (m_curHealth <= 0) return;
-        
+
         m_curHealth += i;
 
         if (m_curHealth <= 0)
@@ -230,13 +231,13 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             }
         }
     }
-    
+
     void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_isComplete) return;
 
         m_isComplete = true;
-        
+
         if (m_curCell != null)
         {
             m_curCell.UpdateActorCount(-1, gameObject.name);
@@ -258,19 +259,19 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         GameplayManager.Instance.RemoveEnemyFromList(this);
-        
+
         //Return effects to pool.
         foreach (StatusEffect activeEffect in m_statusEffects)
         {
             RemoveEffect(activeEffect);
         }
-        
+
         //End the running coroutine
         if (m_hitFlashCoroutine != null)
         {
             StopCoroutine(m_hitFlashCoroutine);
         }
-        
+
         //Reset the coroutine tinting
         for (int i = 0; i < m_allRenderers.Count; ++i)
         {
@@ -279,7 +280,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
-        
+
         ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
 
@@ -342,14 +343,16 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                     if (newStatusEffect.m_towerSender == m_statusEffects[i].m_towerSender)
                     {
                         //We found a sender match, update the existing effect.
+                        //Debug.Log($"Sender found, not a new effect.");
+
                         m_statusEffects[i] = newStatusEffect;
                         senderFound = true;
-                        Debug.Log($"Sender found, not a new effect.");
                         break;
                     }
                 }
 
                 //If we didnt find a matching sender, this is a new effect. Add it to the list.
+                //Debug.Log($"Added new effect: {newStatusEffect.m_data.name}");
                 if (!senderFound) m_statusEffects.Add(newStatusEffect);
             }
 
@@ -372,8 +375,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     public void HandleEffect(StatusEffect statusEffect)
     {
-        statusEffect.m_elapsedTime += Time.deltaTime;
         //Debug.Log($"{statusEffect.m_elapsedTime} / {statusEffect.m_data.m_lifeTime}");
+
+        statusEffect.m_elapsedTime += Time.deltaTime;
         if (statusEffect.m_elapsedTime > statusEffect.m_data.m_lifeTime)
         {
             RemoveEffect(statusEffect);
@@ -381,28 +385,59 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         //If we need to, spawn a vfx for this effect.
+        StatusEffectSource statusEffectSource;
         switch (statusEffect.m_data.m_effectType)
         {
             case StatusEffectData.EffectType.DecreaseMoveSpeed:
-                if (m_decreaseMoveSpeedVFXOjb) return;
-                //m_decreaseMoveSpeedVFXOjb = Instantiate(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
-                m_decreaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                m_decreaseMoveSpeedVFXOjb.transform.SetParent(transform);
+                if (!m_decreaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX)
+                {
+                    m_decreaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                    m_decreaseMoveSpeedVFXOjb.transform.SetParent(transform);
+                    statusEffectSource = m_decreaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
+                    if (statusEffectSource)
+                    {
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                    }
+                }
+
                 break;
             case StatusEffectData.EffectType.IncreaseMoveSpeed:
-                if (m_increaseMoveSpeedVFXOjb) return;
-                m_increaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                m_increaseMoveSpeedVFXOjb.transform.SetParent(transform);
+                if (!m_increaseMoveSpeedVFXOjb && !statusEffect.m_data.m_effectVFX)
+                {
+                    m_increaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                    m_increaseMoveSpeedVFXOjb.transform.SetParent(transform);
+                    statusEffectSource = m_increaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
+                    if (statusEffectSource)
+                    {
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                    }
+                }
+
                 break;
             case StatusEffectData.EffectType.DecreaseHealth:
-                if (m_decreaseHealthVFXOjb) return;
-                m_decreaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                m_decreaseHealthVFXOjb.transform.SetParent(transform);
+                if (!m_decreaseHealthVFXOjb && statusEffect.m_data.m_effectVFX)
+                {
+                    m_decreaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                    m_decreaseHealthVFXOjb.transform.SetParent(transform);
+                    statusEffectSource = m_decreaseHealthVFXOjb.GetComponent<StatusEffectSource>();
+                    if (statusEffectSource)
+                    {
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                    }
+                }
+
                 break;
             case StatusEffectData.EffectType.IncreaseHealth:
-                if (m_increaseHealthVFXOjb) return;
-                m_increaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                m_increaseHealthVFXOjb.transform.SetParent(transform);
+                if (!m_increaseHealthVFXOjb && statusEffect.m_data.m_effectVFX)
+                {
+                    m_increaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
+                    m_increaseHealthVFXOjb.transform.SetParent(transform);
+                    statusEffectSource = m_increaseHealthVFXOjb.GetComponent<StatusEffectSource>();
+                    if (statusEffectSource)
+                    {
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                    }
+                }
                 break;
             case StatusEffectData.EffectType.DecreaseArmor:
                 break;
@@ -427,11 +462,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Move Speed multipliers.
         if (statusEffect.m_data.m_speedModifier != 1)
         {
+            Debug.Log($"Move Speed modifier found.");
             //Modify speed
             if (statusEffect.m_data.m_speedModifier < 1 && statusEffect.m_data.m_speedModifier < m_lastSpeedModifierSlower)
             {
                 m_lastSpeedModifierSlower = statusEffect.m_data.m_speedModifier;
-                //Debug.Log($"Set slower speed modifier to: {m_lastSpeedModifierSlower}");
+                Debug.Log($"Set slower speed modifier to: {m_lastSpeedModifierSlower}");
             }
 
             if (statusEffect.m_data.m_speedModifier > 1 && statusEffect.m_data.m_speedModifier > m_lastSpeedModifierFaster)
@@ -461,37 +497,66 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public void RemoveEffect(StatusEffect statusEffect)
     {
         Debug.Log("Removing Effect");
+        VisualEffect visualEffect;
         switch (statusEffect.m_data.m_effectType)
         {
             case StatusEffectData.EffectType.DecreaseMoveSpeed:
                 m_lastSpeedModifierSlower = 1;
                 if (m_decreaseMoveSpeedVFXOjb)
                 {
-                    ObjectPoolManager.ReturnObjectToPool(m_decreaseMoveSpeedVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    ObjectPoolManager.OrphanObject(m_decreaseMoveSpeedVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
+                    visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
+                    if (visualEffect)
+                    {
+                        visualEffect.Stop();
+                    }
+
                     m_decreaseMoveSpeedVFXOjb = null;
                 }
+
                 break;
             case StatusEffectData.EffectType.IncreaseMoveSpeed:
                 m_lastSpeedModifierFaster = 1;
                 if (m_increaseMoveSpeedVFXOjb)
                 {
-                    ObjectPoolManager.ReturnObjectToPool(m_increaseMoveSpeedVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    ObjectPoolManager.OrphanObject(m_increaseMoveSpeedVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
+                    visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
+                    if (visualEffect)
+                    {
+                        visualEffect.Stop();
+                    }
+
                     m_increaseMoveSpeedVFXOjb = null;
                 }
+
                 break;
             case StatusEffectData.EffectType.DecreaseHealth:
                 if (m_decreaseHealthVFXOjb)
                 {
-                    ObjectPoolManager.ReturnObjectToPool(m_decreaseHealthVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    ObjectPoolManager.OrphanObject(m_decreaseHealthVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
+                    visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
+                    if (visualEffect)
+                    {
+                        visualEffect.Stop();
+                    }
+
                     m_decreaseHealthVFXOjb = null;
                 }
+
                 break;
             case StatusEffectData.EffectType.IncreaseHealth:
                 if (m_increaseHealthVFXOjb)
                 {
-                    ObjectPoolManager.ReturnObjectToPool(m_increaseHealthVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+                    ObjectPoolManager.OrphanObject(m_increaseHealthVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
+                    visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
+                    if (visualEffect)
+                    {
+                        visualEffect.Stop();
+                    }
+
                     m_increaseHealthVFXOjb = null;
                 }
+
                 break;
             case StatusEffectData.EffectType.DecreaseArmor:
                 m_lastDamageModifierLower = 1;
@@ -504,6 +569,22 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         m_expiredStatusEffects.Add(statusEffect);
+    }
+
+    public void RequestRemoveEffect(Tower towerSender)
+    {
+        //For each status effect, see if the sender matches, if it does, remove the effect.
+        for (int i = 0; i < m_statusEffects.Count; i++)
+        {
+            if (towerSender == m_statusEffects[i].m_towerSender)
+            {
+                //We found a sender match, update the existing effect.
+                Debug.Log($"Sender found, removing effect.");
+
+                RemoveEffect(m_statusEffects[i]);
+                break;
+            }
+        }
     }
 }
 

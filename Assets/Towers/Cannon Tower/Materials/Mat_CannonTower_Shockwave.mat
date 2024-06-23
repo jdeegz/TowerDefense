@@ -25,8 +25,6 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHAPREMULTIPLY_ON
-  - _ALPHATEST_ON
   - _RECEIVE_SHADOWS_OFF
   - _SPECULAR_SETUP
   - _SURFACE_TYPE_TRANSPARENT
@@ -73,7 +71,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DissolveSecondaryTexture:
-        m_Texture: {fileID: 2800000, guid: be48d0ddd0ea89c4c8758409699c0ee4, type: 3}
+        m_Texture: {fileID: 2800000, guid: 9c587416d2bb1ba408444ac376dee6db, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DissolveTexture:
@@ -122,10 +120,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaClip: 1
+    - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _Blend: 2
-    - _BlendModePreserveSpecular: 1
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 0
     - _BumpScale: 1
     - _CastShadows: 0
     - _ClearCoatMask: 0
@@ -137,8 +135,8 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DissolveOutlineThickness: 0
-    - _DissolveValue: 0
-    - _DstBlend: 1
+    - _DissolveValue: 0.1
+    - _DstBlend: 10
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
@@ -153,7 +151,7 @@ Material:
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _SrcBlendAlpha: 1
     - _Surface: 1
     - _WorkflowMode: 0
@@ -161,15 +159,16 @@ Material:
     - _ZWrite: 0
     - _ZWriteControl: 0
     m_Colors:
+    - _Alpha_Multiplier: {r: 1, g: 1, b: 1, a: 0.5372549}
     - _BaseColor: {r: 0, g: 0.07144785, b: 1, a: 0}
     - _BaseScrollSpeed: {r: 0, g: 0.5, b: 0, a: 0}
     - _BaseSecondaryScrollSpeed: {r: 0.05, g: 0, b: 0, a: 0}
     - _BaseSecondaryTiling: {r: 1, g: -1, b: 0, a: 0}
     - _BaseTiling: {r: 1, g: 0.2, b: 0, a: 0}
     - _BottomColor: {r: 0.98833746, g: 0, b: 3.9533498, a: 0}
-    - _Bottom_Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Bottom_Color: {r: 0.026179953, g: 0.005206483, b: 0.084905684, a: 1}
     - _Color: {r: 0, g: 0.07058858, b: 1, a: 0}
-    - _DissolveOutlineColor: {r: 0, g: 0, b: 0, a: 0}
+    - _DissolveOutlineColor: {r: 0.045737613, g: 0.024029901, b: 0.11320752, a: 1}
     - _DissolveScrollSpeed: {r: 0, g: 0.2, b: 0, a: 0}
     - _DissolveTiling: {r: 3, g: 0.2, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
@@ -177,5 +176,5 @@ Material:
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 0, g: 0, b: 0, a: 0}
     - _TopColor: {r: 0.14901961, g: 0, b: 0.6039216, a: 0}
-    - _Top_Color: {r: 0.14761907, g: 0, b: 0.6, a: 1}
+    - _Top_Color: {r: 0.03731184, g: 0, b: 0.1509434, a: 1}
   m_BuildTextureStacks: []

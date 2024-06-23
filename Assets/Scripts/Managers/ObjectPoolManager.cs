@@ -140,6 +140,7 @@ public class ObjectPoolManager : MonoBehaviour
         else
         {
             pool.m_inactiveObjects.Remove(spawnableObj);
+            spawnableObj.transform.parent = parent;
             spawnableObj.SetActive(true);
             //Debug.Log($"Releasing {spawnableObj.name} from inactive pool.");
         }

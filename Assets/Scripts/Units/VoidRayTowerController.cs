@@ -268,8 +268,9 @@ public class VoidRayTowerController : Tower
         
         //Modify Speed & Rate.
         m_projectileImpactVFX.SetFloat("_Rate", m_curFireRate);
-        m_muzzleVFX.SetFloat("_Speed", m_curFireRate/2);
-        m_muzzleVFX.SetFloat("_Rate", m_curFireRate*3);
+        m_muzzleVFX.SetFloat("_Speed",  m_curStacks / 8);
+        m_muzzleVFX.SetFloat("_Rate", m_curStacks);
+        //Handle the Charge up VFX
     }
     
     private bool IsTargetInRange(Vector3 targetPos)
