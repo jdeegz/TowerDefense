@@ -178,6 +178,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     public void OnTakeDamage(float dmg)
     {
+        if (m_curHealth <= 0) return;
+        
         //Audio
         int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
         m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
@@ -237,6 +239,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         if (m_isComplete) return;
 
         m_isComplete = true;
+        
+        //Kind of hacky, but this prevents towers from continuing to hit units that reach the castle.
+        m_curHealth = 0;
 
         if (m_curCell != null)
         {

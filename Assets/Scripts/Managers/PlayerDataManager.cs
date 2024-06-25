@@ -12,7 +12,7 @@ public class PlayerDataManager : MonoBehaviour
 
     //private string m_path;
     private string m_persistantPath;
-    private int m_buildNumber = 0; //Increment this to invalidate old save files.
+    private int m_buildNumber = 2; //Increment this to invalidate old save files. Updated June 24th 2024
 
     //Constructor
     void Awake()
@@ -34,16 +34,21 @@ public class PlayerDataManager : MonoBehaviour
 
         string json = JsonUtility.ToJson(m_playerData);
 
-        using StreamWriter writer = new StreamWriter(savePath);
-        writer.Write(json);
+        using (StreamWriter writer = new StreamWriter(savePath))
+        {
+            writer.Write(json);
+        }
     }
 
     public void HandleRead()
     {
         if (File.Exists(m_persistantPath))
         {
-            using StreamReader reader = new StreamReader(m_persistantPath);
-            string json = reader.ReadToEnd();
+            string json;
+            using (StreamReader reader = new StreamReader(m_persistantPath))
+            {
+                json = reader.ReadToEnd();
+            }
 
             m_playerData = JsonUtility.FromJson<PlayerData>(json);
 

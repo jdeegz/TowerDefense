@@ -19,8 +19,10 @@ public class CannonTower : Tower
 
     void Start()
     {
-        m_timeUntilFire = 999f;
-        m_timeUntilBurst = 999f;
+        //Disabling the setting of the reload until i figure out how to spawn small missiles as soon as burst cannon tower is created.
+        //m_timeUntilFire = 999f;
+        //m_timeUntilBurst = 999f;
+        
         //Define the size of the projectile collection we want.
         m_loadedProjectiles = new Projectile[m_muzzlePoints.Count];
 
@@ -82,7 +84,6 @@ public class CannonTower : Tower
 
     bool IsAbleToFire()
     {
-        bool b;
         if (m_towerData.m_burstFireRate == 0) return true;
 
         return m_timeUntilBurst >= 1f / m_towerData.m_burstFireRate;

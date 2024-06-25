@@ -50,12 +50,16 @@ public class BeamTower : Tower
                 //Stop Beam
                 StopBeam();
 
-                //Find and set a target.
+                //Not a valid target anymore.
                 m_curTarget = null;
             }
         }
         else
         {
+            //Stop Beam
+            StopBeam();
+            
+            //Search for a target.
             SetTarget();
         }
 

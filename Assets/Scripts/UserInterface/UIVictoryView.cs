@@ -122,7 +122,12 @@ public class UIVictoryView : MonoBehaviour
         //If we have playfab manager and a logged in profile, send score.
         if (PlayFabClientAPI.IsClientLoggedIn() && !string.IsNullOrEmpty(GameManager.Instance.m_curMission.m_playFableaderboardId))
         {
+            Debug.Log($"Sending score as {GameManager.Instance.m_curMission.m_playFableaderboardId}.");
             PlayFabManager.Instance.SendLeaderboard(GameManager.Instance.m_curMission.m_playFableaderboardId, score);
+        }
+        else
+        {
+            Debug.Log($"Could not send score, Not logged in.");
         }
     }
 

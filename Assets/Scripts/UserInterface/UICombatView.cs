@@ -10,6 +10,8 @@ using UnityEngine.UI;
 
 public class UICombatView : MonoBehaviour
 {
+    [SerializeField] private CanvasGroup m_canvasGroup;
+    
     [Header("Buttons")]
     [SerializeField] private Button m_pauseButton;
 
@@ -71,6 +73,9 @@ public class UICombatView : MonoBehaviour
 
     void Awake()
     {
+        //Trying to remove the Enable/Disable gameobject to assure scripts run.
+        m_canvasGroup.alpha = 0;
+        
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed += Alert;
@@ -112,7 +117,7 @@ public class UICombatView : MonoBehaviour
             { KeyCode.Y, 5 },
         };
 
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
     private void UpdateCastleHealthDisplay(int i)
@@ -226,9 +231,9 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
-                if (!gameObject.activeSelf)
+                if (m_canvasGroup.alpha == 0)
                 {
-                    gameObject.SetActive(true);
+                    m_canvasGroup.alpha = 1;
                 }
 
                 m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;

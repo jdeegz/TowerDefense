@@ -56,4 +56,9 @@ public class MusicManager : MonoBehaviour
             yield return null;
         }
     }
+
+    void OnDestroy()
+    {
+        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
+    }
 }

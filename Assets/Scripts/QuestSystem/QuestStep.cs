@@ -30,7 +30,7 @@ public abstract class QuestStep : MonoBehaviour
 
     protected void ProgressQuestStep()
     {
-        onProgressUpdate.Invoke();
+        onProgressUpdate?.Invoke();
     }
 
     public abstract QuestStepUIData GetQuestStepUIData();

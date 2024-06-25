@@ -20,6 +20,8 @@ public class QuestUIDisplay : MonoBehaviour
             QuestManager.Instance.m_questEvents.onQuestStateChange += QuestStateChange;
             QuestManager.Instance.m_questEvents.onQuestStepCreated += QuestStepCreated;
         }
+
+        Debug.Log($"Quest UI Display awakened.");
     }
 
     void OnDestroy()
@@ -76,6 +78,7 @@ public class QuestUIDisplay : MonoBehaviour
         }
 
         m_questsInProgress.Add(newQuestStepGroup);
+        Debug.Log($"Quest Display Built for {quest.m_info.m_id}");
     }
 
     private void QuestStepCreated(QuestStep newStep)

@@ -482,7 +482,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.22618869, g: 0.37720764, b: 0.6792453, a: 1}
+  m_Color: {r: 0.15294118, g: 0.53333336, b: 0.83137256, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1849,6 +1849,7 @@ GameObject:
   - component: {fileID: 3032980542750083679}
   - component: {fileID: 3032980542750083676}
   - component: {fileID: 3790338852460970388}
+  - component: {fileID: 1205837523169880751}
   m_Layer: 0
   m_Name: CombatView
   m_TagString: Untagged
@@ -1903,6 +1904,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c4419f7b5fb38647a9ff22266c443c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_canvasGroup: {fileID: 1205837523169880751}
   m_pauseButton: {fileID: 5997653719796518367}
   m_playButton: {fileID: 6479849127928314229}
   m_ffwButton: {fileID: 7349008035111287892}
@@ -2030,6 +2032,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!225 &1205837523169880751
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3032980542750083678}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &3240179249797848962
 GameObject:
   m_ObjectHideFlags: 0
@@ -2971,7 +2985,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.22618869, g: 0.37720764, b: 0.6792453, a: 1}
+  m_Color: {r: 0.15294118, g: 0.53333336, b: 0.83137256, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

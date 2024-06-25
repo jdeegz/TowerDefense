@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class QuestManager : MonoBehaviour
 {
@@ -63,6 +64,7 @@ public class QuestManager : MonoBehaviour
         Quest quest = GetQuestById(id);
         quest.m_questState = questState;
         m_questEvents.QuestStateChange(quest);
+        Debug.Log($"Quest State Change for ");
     }
 
     private bool CheckRequirementsMet(Quest quest)
