@@ -44,8 +44,6 @@ public class AuraTower : Tower
         
         //Look for Units in sphere.
         Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
-        float closestDistance = 999;
-        int closestIndex = -1;
         if (hits.Length > 0)
         {
             //Debug.Log($"Hits: {hits.Length} and Layers: {m_layerMask.value}");

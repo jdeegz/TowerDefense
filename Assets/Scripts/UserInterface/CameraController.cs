@@ -101,12 +101,17 @@ public class CameraController : MonoBehaviour
         //Do nothing if we are paused.
         //if (GameplayManager.Instance.m_gameSpeed == GameplayManager.GameSpeed.Paused) return;
 
+        //On rails movement will focus the camera on a destination. (Example: Selecting a gatherer from the UI)
         if (m_onRails)
         {
             HandleOnRailsMovement();
         }
+        else
+        {
+            HandleScreenEdgePan();
 
-        HandleScreenEdgePan();
+            HandleKeyInput();
+        }
 
         if (GameplayManager.Instance != null && GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
         {
@@ -131,6 +136,38 @@ public class CameraController : MonoBehaviour
     {
         // Set the camera position along the z-axis
         m_camera.gameObject.transform.localPosition = new Vector3(m_camera.gameObject.transform.localPosition.x, m_camera.gameObject.transform.localPosition.y, zoomLevel);
+    }
+
+    void HandleKeyInput()
+    {
+        //If we're on rails at the moment, ignore inputs.
+        if (m_onRails) return;
+
+        //Define the vector we wish to move. Make sure we're not moving past the Camera Bounds.
+        Vector3 cameraMovement = Vector3.zero;
+
+        //GetKey is used for doing a function while holding.
+        if (Input.GetKey(KeyCode.W) && transform.position.z < m_maxZBounds)
+        {
+            cameraMovement.z += m_scrollSpeed;
+        }
+
+        if (Input.GetKey(KeyCode.A) && transform.position.x > m_minXBounds)
+        {
+            cameraMovement.x -= m_scrollSpeed;
+        }
+
+        if (Input.GetKey(KeyCode.S) && transform.position.z > m_minZBounds)
+        {
+            cameraMovement.z -= m_scrollSpeed;
+        }
+
+        if (Input.GetKey(KeyCode.D) && transform.position.x < m_maxXBounds)
+        {
+            cameraMovement.x += m_scrollSpeed;
+        }
+
+        transform.Translate(cameraMovement * Time.unscaledDeltaTime, Space.World);
     }
 
     void HandleMouseInput()
@@ -201,8 +238,7 @@ public class CameraController : MonoBehaviour
             m_isDragging = false;
         }
 
-
-        if (m_isDragging) return;
+        if (m_isDragging || !IsCursorInGameWindow()) return;
 
         Vector3 mousePos = Input.mousePosition;
         float screenWidth = Screen.width;
@@ -222,7 +258,14 @@ public class CameraController : MonoBehaviour
 
         if (cameraMovement != Vector3.zero) CancelOnRailsMove();
 
-        transform.Translate(cameraMovement * Time.deltaTime, Space.World);
+        transform.Translate(cameraMovement * Time.unscaledDeltaTime, Space.World);
+    }
+    
+    private bool IsCursorInGameWindow()
+    {
+        Vector2 mousePosition = Input.mousePosition;
+        Rect gameWindowRect = new Rect(0, 0, Screen.width, Screen.height);
+        return gameWindowRect.Contains(mousePosition);
     }
 
     private bool m_onRails;
@@ -259,22 +302,18 @@ public class CameraController : MonoBehaviour
         bool zAxisComplete = false;
         Vector3 newPos = transform.position;
 
-        //If we're NOT at the X bounds, keep moving on X.
-        if (transform.position.x > m_minXBounds && transform.position.x < m_maxXBounds)
-        {
-            newPos.x = Mathf.Lerp(transform.position.x, m_railsDestination.x, m_scrollSpeed * Time.deltaTime);
-        }
-        else
+        newPos.x = Mathf.Lerp(transform.position.x, m_railsDestination.x, m_scrollSpeed * Time.unscaledDeltaTime);
+        newPos.z = Mathf.Lerp(transform.position.z, m_railsDestination.z, m_scrollSpeed * Time.unscaledDeltaTime);
+
+        Mathf.Clamp(newPos.x, m_minXBounds, m_maxXBounds);
+        Mathf.Clamp(newPos.z, m_minZBounds, m_maxZBounds);
+
+        if (transform.position.x == newPos.x)
         {
             xAxisComplete = true;
         }
 
-        //If we're NOT at the Z bounds, keep moving on Z.
-        if (transform.position.z > m_minZBounds && transform.position.z < m_maxZBounds)
-        {
-            newPos.z = Mathf.Lerp(transform.position.z, m_railsDestination.z, m_scrollSpeed * Time.deltaTime);
-        }
-        else
+        if (transform.position.z == newPos.x)
         {
             zAxisComplete = true;
         }

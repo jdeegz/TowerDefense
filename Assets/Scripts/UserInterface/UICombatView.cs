@@ -77,6 +77,7 @@ public class UICombatView : MonoBehaviour
         m_canvasGroup.alpha = 0;
         
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed += Alert;
         GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
@@ -110,11 +111,10 @@ public class UICombatView : MonoBehaviour
         m_gathererKeyMap = new Dictionary<KeyCode, int>
         {
             { KeyCode.Q, 0 },
-            { KeyCode.W, 1 },
-            { KeyCode.E, 2 },
-            { KeyCode.R, 3 },
-            { KeyCode.T, 4 },
-            { KeyCode.Y, 5 },
+            { KeyCode.E, 1 },
+            { KeyCode.R, 2 },
+            { KeyCode.T, 3 },
+            { KeyCode.Y, 4 },
         };
 
         //gameObject.SetActive(false);
@@ -192,6 +192,7 @@ public class UICombatView : MonoBehaviour
     void OnDestroy()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+        GameplayManager.OnGamePlaybackChanged -= GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged -= GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed -= Alert;
         GameplayManager.OnObelisksCharged -= UpdateObeliskDisplay;
@@ -255,7 +256,7 @@ public class UICombatView : MonoBehaviour
         m_castleRepairDisplayObj.SetActive(state == GameplayManager.GameplayState.Build && m_curCastleHealth < m_maxCastleHealth);
     }
 
-    private void GameplaySpeedChanged(GameplayManager.GameSpeed newSpeed)
+    private void GameplayPlaybackChanged(GameplayManager.GameSpeed newSpeed)
     {
         switch (newSpeed)
         {
@@ -271,9 +272,15 @@ public class UICombatView : MonoBehaviour
 
 
         m_playButton.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
-        m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
-
         m_pauseButton.gameObject.SetActive(newSpeed != GameplayManager.GameSpeed.Paused);
+        m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
+    }
+
+    private void GameplaySpeedChanged(int speed)
+    {
+        m_ffwLabel.SetText($"{speed}x");
+        
+        m_ffwActiveDisplayObj.SetActive(speed != 1);
     }
 
     private void ToggleButtonInteractivity(bool b)
@@ -330,7 +337,7 @@ public class UICombatView : MonoBehaviour
 
         if (buttonScript)
         {
-            Debug.Log($"adding gatherer tray button to m_buttons");
+            //Debug.Log($"adding gatherer tray button to m_buttons");
             m_buttons.Add(buttonScript);
         }
     }
@@ -369,19 +376,17 @@ public class UICombatView : MonoBehaviour
 
     private void OnPlayButtonClicked()
     {
-        GameplayManager.Instance.UpdateGameSpeed(GameplayManager.GameSpeed.Normal);
+        GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Normal);
     }
 
     private void OnPauseButtonClicked()
     {
-        GameplayManager.Instance.UpdateGameSpeed(GameplayManager.GameSpeed.Paused);
+        GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
     }
 
     private void OnFFWButtonClicked()
     {
-        GameplayManager.Instance.TogglePlaybackSpeed();
-        m_ffwLabel.SetText($"{(int)GameplayManager.Instance.m_playbackSpeed}x");
-        m_ffwActiveDisplayObj.SetActive(!m_ffwActiveDisplayObj.activeSelf);
+        GameplayManager.Instance.UpdateGameSpeed();
     }
 
     private void OnNextWaveButtonClicked()

@@ -88,18 +88,23 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     private void OnDepletion(bool harvested)
     {
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
-        OnResourceNodeDepletion?.Invoke(this);
-        
+        Debug.Log($"{gameObject.name} has been Depleted.");
         //If we were harvested, check for Ruins.
+        
         if (m_resourcesRemaining == 0 && ResourceManager.Instance.RequestRuin())
         {
             //We found a ruin!
             Instantiate(ResourceManager.Instance.m_resourceManagerData.m_ruinObj, transform.position, quaternion.identity, transform.parent);
         }
+
+        //Setting this to 0 so it wont show up in Nearby Nodes check. (When dragon destroys node, the node was appearing in the FindNearbyNodes check)
+        m_resourcesRemaining = 0;
         
+        OnResourceNodeDepletion?.Invoke(this);
         GridManager.Instance.RefreshGrid();
         Destroy(gameObject);
     }
+    
 
     public ResourceNodeTooltipData GetTooltipData()
     {

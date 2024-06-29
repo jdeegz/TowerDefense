@@ -229,9 +229,10 @@ public class BossSequenceController : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
 
-        GameObject activeBossObj = Instantiate(m_bossEnemyData.m_enemyPrefab, m_bossSpawnPosition, Quaternion.identity, GameplayManager.Instance.m_enemiesObjRoot);
-        activeBossObj.GetComponent<EnemyFlierBoss>().m_bossSequenceController = this;
-        activeBossObj.GetComponent<EnemyController>().SetEnemyData(m_bossEnemyData);
+        GameObject activeBossObj = ObjectPoolManager.SpawnObject(m_bossEnemyData.m_enemyPrefab, m_bossSpawnPosition, Quaternion.identity, ObjectPoolManager.PoolType.Enemy);
+        EnemyFlierBoss enemyController = activeBossObj.GetComponent<EnemyFlierBoss>();
+        enemyController.SetupBoss(this);
+        enemyController.SetEnemyData(m_bossEnemyData);
 
         UpdateTask(BossSequenceTask.BossLifetime);
     }

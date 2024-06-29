@@ -15,12 +15,12 @@ public class Bullet : Projectile
             return;
         }
         
-        TravelToTarget();
+        TravelToTargetFixedUpdate();
     }
 
-    void TravelToTarget()
+    void TravelToTargetFixedUpdate()
     {
-        transform.position += transform.forward * (m_projectileSpeed * Time.deltaTime);
+        transform.position += transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
         
         //Get Direction
         Vector3 direction = m_targetPos - transform.position;

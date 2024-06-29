@@ -154,11 +154,11 @@ public class GridManager : MonoBehaviour
             if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.FloodFillGrid)
             {
                 SetCellDirections();
-                Debug.Log("Grid has been Flood Filled.");
+                //Debug.Log("Grid has been Flood Filled.");
                 GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
             }
 
-            Debug.Log($"GridManager: Drawing new Unit Paths");
+            //Debug.Log($"GridManager: Drawing new Unit Paths");
             foreach (UnitPath unitPath in m_unitPaths)
             {
                 //Break this into its own function outside of flood fill.
@@ -167,7 +167,7 @@ public class GridManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"We did not find all exit paths.");
+            //Debug.Log($"We did not find all exit paths.");
         }
 
         if (callback != null)
@@ -359,7 +359,7 @@ public class GridManager : MonoBehaviour
             unitPath.m_lineRenderer = null;
             unitPath.Setup();
             m_unitPaths.Add(unitPath);
-            Debug.Log($"Added Unit Path for {obj.name}");
+            //Debug.Log($"Added Unit Path for {obj.name}");
         }
 
         //Create Spawners UnitPaths
@@ -367,7 +367,7 @@ public class GridManager : MonoBehaviour
         {
             Vector2Int start = Util.GetVector2IntFrom3DPos(spawner.m_spawnPoint.position);
             UnitPath unitPath = new UnitPath();
-            unitPath.m_sourceObj = spawner.gameObject;
+            unitPath.m_unitSpawner = spawner;
             unitPath.m_startPos = start;
             unitPath.m_isExit = false;
             unitPath.m_exits = m_exits;
@@ -375,14 +375,14 @@ public class GridManager : MonoBehaviour
             unitPath.m_enemyGoalPos = m_enemyGoalPos;
             GameObject lineObj = new GameObject("Line");
             lineObj.transform.SetParent(spawner.gameObject.transform);
-            Debug.Log($"Line Renderer Made.");
+            //Debug.Log($"Line Renderer Made.");
             unitPath.m_lineRenderer = lineObj.AddComponent<TBLineRendererComponent>();
             unitPath.Setup();
             m_unitPaths.Add(unitPath);
-            Debug.Log($"Added Unit Path for {spawner.gameObject.name}");
+            //Debug.Log($"Added Unit Path for {spawner.gameObject.name}");
         }
 
-        Debug.Log("Path List Built.");
+        //Debug.Log("Path List Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Setup);
     }
 }
@@ -522,6 +522,7 @@ public class Cell
 [System.Serializable]
 public class UnitPath
 {
+    public UnitSpawner m_unitSpawner;
     public GameObject m_sourceObj;
     public Vector2Int m_startPos;
     public Vector2Int m_endPos;
@@ -537,6 +538,9 @@ public class UnitPath
     public bool m_preconState;
     public bool m_pathDirty;
 
+    private Color m_lineRendererColorOn;
+    private Color m_lineRendererColorOff;
+
 
     public void Setup()
     {
@@ -545,14 +549,18 @@ public class UnitPath
         //Define desired properties of the line.
         if (m_lineRenderer != null)
         {
+            m_unitSpawner.OnActiveWaveSet += UnitSpawnActiveWaveSet;
             m_lineRenderer.lineRendererProperties = new TBLineRenderer();
             //m_lineRenderer.lineRendererProperties.linePoints = m_path.Count;
             Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
             m_lineRenderer.lineRendererProperties.texture = instancedMaterial;
             m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
-            ColorUtility.TryParseHtmlString("#73B549", out Color lineColor);
-            m_lineRenderer.lineRendererProperties.startColor = lineColor;
-            m_lineRenderer.lineRendererProperties.endColor = lineColor;
+            ColorUtility.TryParseHtmlString("#F2C012", out Color colorOn);
+            m_lineRendererColorOn = colorOn;
+            ColorUtility.TryParseHtmlString("#4674A3", out Color colorOff);
+            m_lineRendererColorOff = colorOff;
+            m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
+            m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOff;
             m_lineRenderer.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
 
             //Assign the properties.
@@ -569,8 +577,22 @@ public class UnitPath
         }
     }
 
-    void Start()
+    private void UnitSpawnActiveWaveSet(List<Creep> creepList)
     {
+        if (creepList.Count > 0)
+        {
+            Debug.Log($"Setting Line Renderer to {m_lineRendererColorOn}");
+            m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOn;
+            m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOn;
+            m_lineRenderer.SetLineRendererColors();
+        }
+        else
+        {
+            Debug.Log($"Setting Line Renderer to {m_lineRendererColorOff}");
+            m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
+            m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOff;
+            m_lineRenderer.SetLineRendererColors();
+        }
     }
 
     void PreconstructedTowerClear()

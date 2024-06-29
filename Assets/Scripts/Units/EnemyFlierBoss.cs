@@ -40,9 +40,10 @@ public class EnemyFlierBoss : EnemyController
         Death,
     }
 
-    void Start()
+    public void SetupBoss(BossSequenceController bossSequenceController)
     {
         //If we just spawned, travel to N units away from the castle.
+        m_bossSequenceController = bossSequenceController;
         (m_curGoal, m_curGoalPos) = m_bossSequenceController.GetStartingGoalPosition();
         m_curPositionList = m_bossSequenceController.m_bossGridCellPositions;
         m_startGoalIndex = m_curGoal;
@@ -53,6 +54,7 @@ public class EnemyFlierBoss : EnemyController
 
     public override void HandleMovement()
     {
+        
     }
 
     void UpdateBossState(BossState newState)
@@ -98,7 +100,7 @@ public class EnemyFlierBoss : EnemyController
 
     private void HandleAttack()
     {
-        GameObject projectileObj = Instantiate(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation);
+        GameObject projectileObj = ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation);
     }
 
     public void Update()
@@ -223,10 +225,8 @@ public class EnemyFlierBoss : EnemyController
         }
     }
 
-    void OnDestroy()
+    public override void RemoveObject()
     {
-        if (m_curHealth >= 0) return;
-
         foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
         {
             GameObject bossShardObj = Instantiate(((BossEnemyData)m_enemyData).m_bossShard, transform.position, quaternion.identity);
@@ -234,5 +234,7 @@ public class EnemyFlierBoss : EnemyController
             bossShardObj.GetComponent<BossShard>().SetupBossShard(spawner.transform.position);
             spawner.SetSpawnerStatusEffect(((BossEnemyData)m_enemyData).m_spawnStatusEffect, ((BossEnemyData)m_enemyData).m_spawnStatusEffectWaveDuration);
         }
+        
+        base.RemoveObject();
     }
 }

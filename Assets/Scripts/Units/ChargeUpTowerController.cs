@@ -163,6 +163,7 @@ public class ChargeUpTowerController : Tower
 
         //Deal Damage.
         m_curTarget.OnTakeDamage(m_towerData.m_baseDamage);
+        Debug.Log($"{name} fired its beam for {m_towerData.m_baseDamage}.");
 
         //Apply Shred
         if (m_statusEffectData)

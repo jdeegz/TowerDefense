@@ -19,7 +19,8 @@ public class GameplayManager : MonoBehaviour
     public GameSpeed m_gameSpeed;
 
     public static event Action<GameplayState> OnGameplayStateChanged;
-    public static event Action<GameSpeed> OnGameSpeedChanged;
+    public static event Action<GameSpeed> OnGamePlaybackChanged;
+    public static event Action<int> OnGameSpeedChanged;
     public static event Action<GameObject> OnGameObjectSelected;
     public static event Action<GameObject> OnGameObjectDeselected;
     public static event Action<GameObject, Selectable.SelectedObjectType> OnCommandRequested;
@@ -121,6 +122,7 @@ public class GameplayManager : MonoBehaviour
 
     void Update()
     {
+        HandleHotkeys();
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
@@ -161,6 +163,20 @@ public class GameplayManager : MonoBehaviour
             {
                 UpdateGameplayState(GameplayState.SpawnEnemies);
             }
+        }
+    }
+
+    void HandleHotkeys()
+    {
+        //Trigger Defeat
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            PauseHotkeyPressed();
+        }
+        
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            FastForwardHotkeyPressed();
         }
     }
 
@@ -311,7 +327,7 @@ public class GameplayManager : MonoBehaviour
         }
 
         OnGameplayStateChanged += GameplayManagerStateChanged;
-        OnGameSpeedChanged += GameplaySpeedChanged;
+        OnGamePlaybackChanged += GameplayPlaybackChanged;
         OnGameObjectSelected += GameObjectSelected;
         OnGameObjectDeselected += GameObjectDeselected;
     }
@@ -319,12 +335,12 @@ public class GameplayManager : MonoBehaviour
     void OnDestroy()
     {
         OnGameplayStateChanged -= GameplayManagerStateChanged;
-        OnGameSpeedChanged -= GameplaySpeedChanged;
+        OnGamePlaybackChanged -= GameplayPlaybackChanged;
         OnGameObjectSelected -= GameObjectSelected;
         OnGameObjectDeselected -= GameObjectDeselected;
     }
     
-    private void GameplaySpeedChanged(GameSpeed state)
+    private void GameplayPlaybackChanged(GameSpeed state)
     {
         //
     }
@@ -345,20 +361,25 @@ public class GameplayManager : MonoBehaviour
         Normal,
     }
 
-    public float m_playbackSpeed = 1f;
+    public int m_playbackSpeed = 1;
 
-    public void TogglePlaybackSpeed()
+    public void UpdateGameSpeed()
     {
-        float minSpeed = 1f;
-        float maxSpeed = 2f;
+        int minSpeed = 1;
+        int maxSpeed = 2;
         m_playbackSpeed = m_playbackSpeed == minSpeed ? maxSpeed : minSpeed;
         Time.timeScale = m_playbackSpeed;
+
+        OnGameSpeedChanged?.Invoke(m_playbackSpeed);
     }
 
-    public void UpdateGameSpeed(GameSpeed newSpeed)
+    public void UpdateGamePlayback(GameSpeed newSpeed)
     {
         m_gameSpeed = newSpeed;
-
+        //Include FFW state
+        //When we get a request check current game speed to identify if we return to normal or return to FFW when leaving pause.
+        //What do we send from the hotkey/button presses?
+        //
         switch (newSpeed)
         {
             case GameSpeed.Paused:
@@ -378,9 +399,26 @@ public class GameplayManager : MonoBehaviour
                 throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
         }
 
-        OnGameSpeedChanged?.Invoke(newSpeed);
+        OnGamePlaybackChanged?.Invoke(newSpeed);
     }
 
+    void PauseHotkeyPressed()
+    {
+        if (m_gameSpeed == GameSpeed.Normal)
+        {
+            UpdateGamePlayback(GameSpeed.Paused);
+        }
+        else
+        {
+            UpdateGamePlayback(GameSpeed.Normal);
+        }
+    }
+
+    void FastForwardHotkeyPressed()
+    {
+        UpdateGameSpeed();
+    }
+    
     public void UpdateGameplayState(GameplayState newState)
     {
         m_gameplayState = newState;
@@ -398,7 +436,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CreatePaths:
                 break;
             case GameplayState.Setup:
-                UpdateGameSpeed(GameSpeed.Normal);
+                UpdateGamePlayback(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
                 //m_wave++;
@@ -424,12 +462,12 @@ public class GameplayManager : MonoBehaviour
                 break;
             case GameplayState.Victory:
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
-                UpdateGameSpeed(GameSpeed.Paused);
+                UpdateGamePlayback(GameSpeed.Paused);
                 m_interactionState = InteractionState.Disabled;
                 break;
             case GameplayState.Defeat:
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
-                UpdateGameSpeed(GameSpeed.Paused);
+                UpdateGamePlayback(GameSpeed.Paused);
                 m_interactionState = InteractionState.Disabled;
                 break;
             default:
@@ -941,6 +979,7 @@ public class GameplayManager : MonoBehaviour
             if (m_enemyList[i] == enemy)
             {
                 m_enemyList.RemoveAt(i);
+                break;
             }
         }
 

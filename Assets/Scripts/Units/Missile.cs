@@ -40,31 +40,25 @@ public class Missile : Projectile
         }
         
         //if we're at our target, we dont need to move any longer, we've exploded.
-        if (m_isFired && m_isComplete == false) TravelToTarget();
+        if (m_isFired && m_isComplete == false) TravelToTargetFixedUpdate();
     }
 
-    private bool IsTargetInStoppingDistance()
-    {
-        float distanceToTarget = Vector3.Distance(transform.position, m_targetPos);
-        return distanceToTarget <= m_stoppingDistance;
-    }
-
-    void TravelToTarget()
+    void TravelToTargetFixedUpdate()
     {
         //Rotate towards Target.
         Vector3 direction = m_targetPos - transform.position;
         Quaternion targetRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, m_lookSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, m_lookSpeed * Time.fixedDeltaTime);
 
         //Move Forward.
-        transform.position += transform.forward * (m_projectileSpeed * Time.deltaTime);
+        transform.position += transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
 
         //Increase Lookspeed (greatly)
-        var lookStep = (m_lookAcceleration + Time.deltaTime);
+        var lookStep = (m_lookAcceleration + Time.fixedDeltaTime);
         m_lookSpeed += lookStep;
 
         //Increase Move Speed up to 50%
-        var speedStep = (m_speedAcceleration + Time.deltaTime);
+        var speedStep = (m_speedAcceleration + Time.fixedDeltaTime);
         m_projectileSpeed += speedStep;
     }
 

@@ -72,6 +72,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void SetupEnemy()
     {
         m_isComplete = false;
+        
         //Setup with Gameplay Manager
         //If check used for target dummy to remove the need for the gameplay manager in the test scene.
         int wave = 1;
@@ -103,10 +104,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Setup Status Effects
         m_statusEffects = new List<StatusEffect>();
 
-        //Subscription to events
-        UpdateHealth += OnUpdateHealth;
-        DestroyEnemy += OnEnemyDestroyed;
-
         //Define AudioSource
         m_audioSource = GetComponent<AudioSource>();
         m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
@@ -133,6 +130,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         {
             Debug.Log("Dealing Castle damage and destroying enemy.");
             GameplayManager.Instance.m_castleController.TakeDamage(1);
+            OnEnemyDestroyed(transform.position);
             DestroyEnemy?.Invoke(transform.position);
         }
     }
@@ -194,19 +192,17 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
+        
+        //Calculate Damage
+        float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
+        m_curHealth -= cumDamage;
+        UpdateHealth?.Invoke(-cumDamage);
 
-        //Deal Damage -- Moved to the end so that if the unit dies from the damage we still get hit flashes and sounds.
-        UpdateHealth?.Invoke(-dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower);
-    }
-
-    void OnUpdateHealth(float i)
-    {
-        if (m_curHealth <= 0) return;
-
-        m_curHealth += i;
-
+        //If we're dead, destroy.
         if (m_curHealth <= 0)
         {
+            Debug.Log($"{name} current health is {m_curHealth} and is being destroyed after taking {cumDamage} damage.");
+            OnEnemyDestroyed(transform.position);
             DestroyEnemy?.Invoke(transform.position);
         }
     }
@@ -287,7 +283,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
+        
+        RemoveObject();
+    }
 
+    public virtual void RemoveObject()
+    {
         ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
 
@@ -462,7 +463,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             if (statusEffect.m_data.m_damage != 0)
             {
                 //Modify health
-                UpdateHealth?.Invoke(-statusEffect.m_data.m_damage);
+                OnTakeDamage(statusEffect.m_data.m_damage);
             }
 
             statusEffect.m_nextTickTime += statusEffect.m_data.m_tickSpeed;

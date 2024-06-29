@@ -10,14 +10,16 @@ using Random = UnityEngine.Random;
 public class UnitSpawner : MonoBehaviour
 {
     public Transform m_spawnPoint;
+    public List<Creep> m_activeWave;
     [SerializeField] private SpawnerWaves m_spawnerWaves;
 
     private bool m_isSpawnerActive = false;
-    private List<Creep> m_activeWave;
     private List<CreepSpawner> m_activeCreepSpawners;
     private StatusEffect m_spawnStatusEffect;
     private int m_spawnStatusEffectWaveDuration;
 
+    public event Action<List<Creep>> OnActiveWaveSet;
+    
     private void Start()
     {
         m_isSpawnerActive = false;
@@ -60,35 +62,11 @@ public class UnitSpawner : MonoBehaviour
 
     private void StartSpawning()
     {
-        //Creep waves start at wave 0, are shown as wave 1.
-        //If we have training waves, use them.
+        //We get the next Wave from GetNextCreepWave, if it is null, we dont need to start Spawning.
+        if (m_activeWave == null) return;
+        
         GameplayManager.Instance.ActivateSpawner();
-        int gameplayWave = GameplayManager.Instance.m_wave;
-        if (gameplayWave < m_spawnerWaves.m_trainingCreepWaves.Count)
-        {
-            m_activeWave = new List<Creep>(m_spawnerWaves.m_trainingCreepWaves[gameplayWave].m_creeps);
-        }
-
-        //Else find out if we spawn normal wave or boss wave.
-        else
-        {
-            //Subtract the number of training ways so that we start at wave 0 in the new lists.
-            gameplayWave -= m_spawnerWaves.m_trainingCreepWaves.Count;
-
-            //Boss waves occur every 5 gameplay Waves.
-            int bossWave = (gameplayWave + 1) % 5;
-            if (bossWave == 0)
-            {
-                int wave = (gameplayWave) % m_spawnerWaves.m_bossWaves.Count;
-                m_activeWave = new List<Creep>(m_spawnerWaves.m_bossWaves[wave].m_creeps);
-            }
-            else
-            {
-                int wave = (gameplayWave) % m_spawnerWaves.m_creepWaves.Count;
-                m_activeWave = new List<Creep>(m_spawnerWaves.m_creepWaves[wave].m_creeps);
-            }
-        }
-
+        
         //Assure each creep has a point to spawn to.
         m_activeCreepSpawners = new List<CreepSpawner>();
         for (int i = 0; i < m_activeWave.Count; ++i)
@@ -109,6 +87,39 @@ public class UnitSpawner : MonoBehaviour
         }
 
         m_isSpawnerActive = true;
+    }
+
+    public List<Creep> GetNextCreepWave()
+    {
+        int gameplayWave = GameplayManager.Instance.m_wave + 1;
+        List<Creep> creepWave = new List<Creep>();
+        if (gameplayWave < m_spawnerWaves.m_trainingCreepWaves.Count)
+        {
+            creepWave = new List<Creep>(m_spawnerWaves.m_trainingCreepWaves[gameplayWave].m_creeps);
+        }
+
+        //Else find out if we spawn normal wave or boss wave.
+        else
+        {
+            //Subtract the number of training ways so that we start at wave 0 in the new lists.
+            gameplayWave -= m_spawnerWaves.m_trainingCreepWaves.Count;
+
+            //Boss waves occur every 5 gameplay Waves.
+            int bossWave = (gameplayWave + 1) % 5;
+            if (bossWave == 0)
+            {
+                int wave = (gameplayWave) % m_spawnerWaves.m_bossWaves.Count;
+                creepWave = new List<Creep>(m_spawnerWaves.m_bossWaves[wave].m_creeps);
+            }
+            else
+            {
+                int wave = (gameplayWave) % m_spawnerWaves.m_creepWaves.Count;
+                creepWave = new List<Creep>(m_spawnerWaves.m_creepWaves[wave].m_creeps);
+            }
+        }
+
+        Debug.Log($"Getting next creep wave.");
+        return creepWave;
     }
 
     public bool IsSpawning()
@@ -150,6 +161,8 @@ public class UnitSpawner : MonoBehaviour
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
+                m_activeWave = GetNextCreepWave();
+                OnActiveWaveSet?.Invoke(m_activeWave);
                 break;
             case GameplayManager.GameplayState.Paused:
                 break;

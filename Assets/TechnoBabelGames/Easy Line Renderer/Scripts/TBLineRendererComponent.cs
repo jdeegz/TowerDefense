@@ -72,6 +72,14 @@ namespace TechnoBabelGames
             }
         }
 
+        public void SetLineRendererColors()
+        {
+            if (lineRenderer == null)
+                lineRenderer = GetComponent<LineRenderer>();
+            lineRenderer.startColor = lineRendererProperties.startColor;
+            lineRenderer.endColor = lineRendererProperties.endColor;
+        }
+
         public void DrawBasicShape()
         {
             /*if (lineRendererProperties.shape == TBLineRenderer.Shape.None)

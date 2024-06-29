@@ -21,7 +21,7 @@ public class FlyingBossProjectile : MonoBehaviour
         if (Vector3.Distance(transform.position, m_goal) <= 1.5f)
         {
             GameplayManager.Instance.m_castleController.TakeDamage(1);
-            Destroy(gameObject);
+            ObjectPoolManager.ReturnObjectToPool(gameObject);
         }
     }
 
