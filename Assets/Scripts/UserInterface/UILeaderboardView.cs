@@ -3,14 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using PlayFab;
 using PlayFab.ClientModels;
+using TMPro;
 using UnityEngine;
 
 public class UILeaderboardView : MonoBehaviour
 {
+    [Header("Display Objs")]
     public GameObject m_listRootObj;
     public GameObject m_leaderboardTitleObj;
     public GameObject m_leaderboardPlayerObj;
     public GameObject m_loginRequiredDisplay;
+    
+    [Header("Labels")]
+    [SerializeField] private TextMeshProUGUI m_loginStatusLabel;
 
     private bool Initialized;
     public bool m_initialized
@@ -40,6 +45,7 @@ public class UILeaderboardView : MonoBehaviour
     {
         Debug.Log($"Leaderboard Subscribing to MenuManager.");
         MenuManager.OnMenuStateChanged += MenuStateChanged;
+        m_loginStatusLabel.SetText("");
     }
 
     private void MenuStateChanged(MenuManager.MenuState newState)
@@ -53,6 +59,9 @@ public class UILeaderboardView : MonoBehaviour
             if (PlayFabClientAPI.IsClientLoggedIn())
             {
                 m_initialized = true;
+                
+                //We succeeded logging in, set the label.
+                m_loginStatusLabel.SetText($"Logged in as: {PlayFabManager.Instance.m_playerDisplayName}");
                 GetLeaderboardData();
             }
         }

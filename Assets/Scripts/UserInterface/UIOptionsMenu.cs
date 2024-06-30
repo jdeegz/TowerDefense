@@ -10,7 +10,6 @@ using UnityEngine.UI;
 public class UIOptionsMenu : MonoBehaviour
 {
     [SerializeField] private GameObject m_menuRoot;
-
     [SerializeField] private AudioClip m_volumeSliderAudioClip;
     [SerializeField] private AudioMixer m_audioMixer;
 
@@ -38,10 +37,10 @@ public class UIOptionsMenu : MonoBehaviour
     [SerializeField] private Button m_closeMenuButton;
     [SerializeField] private Button m_logoutButton;
     [SerializeField] private TMP_Dropdown m_screenModeDropdown;
-
     [SerializeField] private UIStringData m_uiStrings;
-    private int m_windowModeWidth = 1600;
-    private int m_windowModeHeight = 900;
+    
+    private int m_windowModeWidth = 1920;
+    private int m_windowModeHeight = 1080;
     private int m_dropdownIndex;
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
@@ -108,6 +107,16 @@ public class UIOptionsMenu : MonoBehaviour
         }
 
         m_screenModeDropdown.value = m_dropdownIndex;
+        
+#if UNITY_WEBGL
+        //Disable buttons for web build.
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            // Disable the feature for web platform
+            m_screenModeDropdown.gameObject.SetActive(false);
+            m_exitApplicationButton.gameObject.SetActive(false);
+        }
+#endif
     }
 
     void TryChangeMasterVolume(float value)
@@ -203,7 +212,7 @@ public class UIOptionsMenu : MonoBehaviour
         m_elapsedTime += Time.deltaTime;
     }
 
-    private void ToggleMenu()
+    public void ToggleMenu()
     {
         m_canvasGroup.alpha = m_canvasGroup.alpha == 0 ? 1 : 0;
         m_canvasGroup.blocksRaycasts = !m_canvasGroup.blocksRaycasts;

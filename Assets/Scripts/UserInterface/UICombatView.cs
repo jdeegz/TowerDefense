@@ -14,14 +14,13 @@ public class UICombatView : MonoBehaviour
     
     [Header("Buttons")]
     [SerializeField] private Button m_pauseButton;
-
+    [SerializeField] private Button m_menuButton;
     [SerializeField] private Button m_playButton;
     [SerializeField] private Button m_ffwButton;
     [SerializeField] private Button m_nextWaveButton;
 
     [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
-
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
@@ -34,7 +33,6 @@ public class UICombatView : MonoBehaviour
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
-
     [SerializeField] private GameObject m_gathererTrayButtonPrefab;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
@@ -56,6 +54,9 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_stoneGathererDisplay;
 
     [SerializeField] private Image m_castleRepairFill;
+    
+    [Header("Scene References")]
+    [SerializeField] private UIOptionsMenu m_menuObj;
 
     private float m_timeToNextWave;
     private int m_curCastleHealth;
@@ -303,6 +304,7 @@ public class UICombatView : MonoBehaviour
         m_curCastleHealth = m_maxCastleHealth;
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
+        m_menuButton.onClick.AddListener(OnMenuButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_ffwButton.onClick.AddListener(OnFFWButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
@@ -312,6 +314,10 @@ public class UICombatView : MonoBehaviour
         BuildTowerTrayDisplay();
     }
 
+    private void OnMenuButtonClicked()
+    {
+        m_menuObj.ToggleMenu();
+    }
 
     private int gathererIndex;
 

@@ -6,7 +6,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering.VirtualTexturing;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.TextCore.Text;
