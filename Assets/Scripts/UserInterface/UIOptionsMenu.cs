@@ -39,8 +39,8 @@ public class UIOptionsMenu : MonoBehaviour
     [SerializeField] private TMP_Dropdown m_screenModeDropdown;
     [SerializeField] private UIStringData m_uiStrings;
     
-    private int m_windowModeWidth = 1920;
-    private int m_windowModeHeight = 1080;
+    //private int m_windowModeWidth = 1920;
+    //private int m_windowModeHeight = 1080;
     private int m_dropdownIndex;
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
@@ -187,7 +187,7 @@ public class UIOptionsMenu : MonoBehaviour
 
     private void OnDropdownValueChanged(int index)
     {
-        switch (index)
+        /*switch (index)
         {
             case 0:
                 //Debug.Log($"Option {index} selected.");
@@ -199,7 +199,7 @@ public class UIOptionsMenu : MonoBehaviour
                 break;
             default:
                 break;
-        }
+        }*/
     }
 
     void Update()
