@@ -28,7 +28,41 @@ public class PlayerDataManager : MonoBehaviour
         m_persistantPath = Application.persistentDataPath + Path.AltDirectorySeparatorChar + "PlayerSave.json";
     }
 
+    //Switching to use PlayerPrefs
     public void HandleWrite()
+    {
+        string json = JsonUtility.ToJson(m_playerData);
+        PlayerPrefs.SetString("PlayerData", json);
+        PlayerPrefs.Save();
+    }
+
+    
+    public void HandleRead()
+    {
+        if (PlayerPrefs.HasKey("PlayerData"))
+        {
+            string json = PlayerPrefs.GetString("PlayerData");
+            m_playerData = JsonUtility.FromJson<PlayerData>(json);
+
+            // Validate Save Version.
+            if (m_playerData.m_buildNumber != m_buildNumber)
+            {
+                // This data is not valid anymore.
+                Debug.Log("Build Number mismatch. Building new Save File.");
+                ResetPlayerData();
+            }
+        }
+        else
+        {
+            Debug.Log("No Save found. Building Save File.");
+            // No data found, let's build one.
+            ResetPlayerData();
+        }
+    }
+    
+    
+    //Handle Writing to our own data file.
+    /*public void HandleWrite()
     {
         string savePath = m_persistantPath;
 
@@ -38,9 +72,10 @@ public class PlayerDataManager : MonoBehaviour
         {
             writer.Write(json);
         }
-    }
-
-    public void HandleRead()
+    }*/
+    
+    //Handle Reading our own data file.
+    /*public void HandleRead()
     {
         if (File.Exists(m_persistantPath))
         {
@@ -66,7 +101,7 @@ public class PlayerDataManager : MonoBehaviour
             //No file found, let's build one.
             ResetPlayerData();
         }
-    }
+    }*/
 
     public void BuildMissionListSaveData()
     {
