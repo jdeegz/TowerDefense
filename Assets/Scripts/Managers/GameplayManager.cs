@@ -22,6 +22,8 @@ public class GameplayManager : MonoBehaviour
     public static event Action<int> OnGameSpeedChanged;
     public static event Action<GameObject> OnGameObjectSelected;
     public static event Action<GameObject> OnGameObjectDeselected;
+    public static event Action<GameObject> OnGameObjectHoveredEnter;
+    public static event Action<GameObject> OnGameObjectHoveredExit;
     public static event Action<GameObject, Selectable.SelectedObjectType> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
@@ -36,6 +38,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Wave Settings")]
     public int m_totalWaves = 10;
+
     public int m_wave;
     public int m_bossWaveFactor = 20; //Spawn a boss every N waves.
     public bool m_delayForQuest;
@@ -45,6 +48,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Castle")]
     public CastleController m_castleController;
+
     public Transform m_enemyGoal;
 
     [Header("Equipped Towers")]
@@ -55,6 +59,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
+
     public Transform m_enemiesObjRoot;
 
     private int m_activeSpawners;
@@ -63,19 +68,25 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
+
     public List<GathererController> m_stoneGathererList;
     public Transform m_towerObjRoot;
     public List<Tower> m_towerList;
 
     [Header("Selected Object Info")]
+    [SerializeField] private SelectionColors m_selectionColors;
+
+    private Material m_selectedOutlineMaterial; //Assigned on awake
     private Selectable m_curSelectable;
+
     public Selectable m_hoveredSelectable;
-    
+
     [FormerlySerializedAs("m_activeObelisks")]
     public List<Obelisk> m_obelisksInMission;
 
     [Header("Preconstructed Tower Info")]
     public GameObject m_preconstructedTowerObj;
+
     public Tower m_preconstructedTower;
     public Vector2Int m_preconstructedTowerPos;
     public LayerMask m_buildSurface;
@@ -86,7 +97,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
-    
+
     private Camera m_mainCamera;
 
     public enum GameplayState
@@ -131,11 +142,13 @@ public class GameplayManager : MonoBehaviour
             //If we hit a UI Game Object.
             if (EventSystem.current.IsPointerOverGameObject())
             {
-                HandleUIInteraction(hitObj);
+                HandleUIInteraction();
             }
             else //We hit a World Space Object.
             {
-                HandleWorldSpaceInteraction(hitObj);
+                HoverInteraction(hitObj);
+                Mouse1Interaction();
+                Mouse2Interaction();
             }
         }
 
@@ -172,59 +185,25 @@ public class GameplayManager : MonoBehaviour
         {
             PauseHotkeyPressed();
         }
-        
+
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             FastForwardHotkeyPressed();
         }
     }
 
-    void HandleUIInteraction(GameObject obj)
+    void HandleUIInteraction()
     {
         m_hoveredSelectable = null;
     }
 
-    void HandleWorldSpaceInteraction(GameObject obj)
+    void Mouse1Interaction()
     {
-        //Is the object selectable?
-        Selectable hitSelectable = obj.GetComponent<Selectable>();
-        if (m_hoveredSelectable == null || m_hoveredSelectable != hitSelectable)
-        {
-            m_hoveredSelectable = hitSelectable;
-        }
-
-        //
-        //Hovering
-        if (m_hoveredSelectable)
-        {
-            switch (m_interactionState)
-            {
-                case InteractionState.Disabled:
-                    break;
-                case InteractionState.Idle:
-                    break;
-                case InteractionState.SelectedGatherer:
-                    break;
-                case InteractionState.SelectedTower:
-                    break;
-                case InteractionState.PreconstructionTower:
-                    break;
-                case InteractionState.SelectedCastle:
-                    break;
-                case InteractionState.SelecteObelisk:
-                    break;
-                case InteractionState.SelectRuin:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        //
-        //Mouse 1 Clicking
         if (Input.GetMouseButtonUp(0) && m_interactionState != InteractionState.Disabled)
         {
-            //Based on the interaction state we're in, when mouse 1 is pressed, do X.
+            //Reset outline color. This will be overridden by Tower Precon functions.
+            SetOutlineColor(false);
+
             //If the object we're hovering is not currently the selected object.
             if (m_interactionState == InteractionState.PreconstructionTower)
             {
@@ -269,9 +248,10 @@ public class GameplayManager : MonoBehaviour
                 }
             }
         }
+    }
 
-        //
-        //Mouse 2 Clicking
+    void Mouse2Interaction()
+    {
         if (Input.GetMouseButtonDown(1) && m_interactionState != InteractionState.Disabled)
         {
             //If something is selected.
@@ -312,12 +292,56 @@ public class GameplayManager : MonoBehaviour
             else if (m_curSelectable)
             {
                 OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                m_hoveredSelectable = null;
             }
         }
     }
 
+    void HoverInteraction(GameObject obj)
+    {
+        //HOVERING
+
+
+        //Is the object selectable?
+        Selectable hitSelectable = obj.GetComponent<Selectable>();
+
+        //If the object is selected, we dont want to handle Hover state.
+        if (m_curSelectable == hitSelectable)
+        {
+            return;
+        }
+
+        //If we're not hovering anything, and we were.
+        if (m_hoveredSelectable != hitSelectable && m_hoveredSelectable != null)
+        {
+            OnGameObjectHoveredExit?.Invoke(m_hoveredSelectable.gameObject);
+        }
+
+        //If we're not hovering anything we dont need to go further.
+        if (hitSelectable == null)
+        {
+            m_hoveredSelectable = null;
+            return;
+        }
+
+        //Assign new hovered object.
+        if (m_hoveredSelectable != hitSelectable)
+        {
+            m_hoveredSelectable = hitSelectable;
+            OnGameObjectHoveredEnter?.Invoke(m_hoveredSelectable.gameObject);
+        }
+    }
+
+    private void SetOutlineColor(bool isRestricted)
+    {
+        Debug.Log($"Trying to change color: {isRestricted}");
+        Color color = isRestricted ? m_selectionColors.m_outlineRestrictedColor : m_selectionColors.m_outlineBaseColor;
+        m_selectedOutlineMaterial.SetColor("_Outline_Color", color);
+    }
+
     private void Awake()
     {
+        m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
         Instance = this;
         m_mainCamera = Camera.main;
         if (m_enemyGoal != null)
@@ -338,7 +362,7 @@ public class GameplayManager : MonoBehaviour
         OnGameObjectSelected -= GameObjectSelected;
         OnGameObjectDeselected -= GameObjectDeselected;
     }
-    
+
     private void GameplayPlaybackChanged(GameSpeed state)
     {
         //
@@ -417,7 +441,7 @@ public class GameplayManager : MonoBehaviour
     {
         UpdateGameSpeed();
     }
-    
+
     public void UpdateGameplayState(GameplayState newState)
     {
         m_gameplayState = newState;
@@ -634,7 +658,8 @@ public class GameplayManager : MonoBehaviour
         m_canAfford = false;
         m_canBuild = false;
         m_canPlace = false;
-        OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
+        SetOutlineColor(m_canBuild);
+        //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
     }
 
     private void DrawPreconstructedTower()
@@ -683,8 +708,9 @@ public class GameplayManager : MonoBehaviour
             m_canAfford = canAfford;
             m_canPlace = canPlace;
             m_canBuild = canAfford && canPlace;
-            OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
-            Debug.Log("Can Afford : " + m_canAfford + " Can Place: " + m_canPlace);
+            SetOutlineColor(!m_canBuild);
+            //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
+            //Debug.Log("Can Afford : " + m_canAfford + " Can Place: " + m_canPlace);
         }
     }
 
@@ -908,22 +934,22 @@ public class GameplayManager : MonoBehaviour
     {
         //Configure Grid
         GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
-        
+
         //Clean up actor list
         RemoveTowerFromList(tower);
-        
+
         //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(woodValue);
         IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, true, tower.transform.position);
-        
+
         //Remove the tower
         tower.RemoveTower();
-        
+
         //Set Gameplay Manager's state
         m_curSelectable = null;
         UpdateInteractionState(InteractionState.Idle);
-        
+
         //Let rest of game know of new tower.
         OnTowerSell?.Invoke();
     }
@@ -933,18 +959,18 @@ public class GameplayManager : MonoBehaviour
         //Configure Grid
         Vector3 pos = oldTower.gameObject.transform.position;
         GridCellOccupantUtil.SetOccupant(oldTower.gameObject, false, 1, 1);
-        
+
         //Clean up actor list
         RemoveTowerFromList(oldTower);
-        
+
         //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(-stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(-woodValue);
         IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, false, oldTower.transform.position);
-        
+
         //Cache current tower data to apply to new tower.
         TowerUpgradeData towerUpgradeData = oldTower.GetUpgradeData();
-        
+
         //Remove the tower
         oldTower.RemoveTower();
 
@@ -953,14 +979,14 @@ public class GameplayManager : MonoBehaviour
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.SetUpgradeData(towerUpgradeData);
         newTower.SetupTower();
-        
+
         //Test - If we're a void tower, copy over the stacks.
         newTower.SetUpgradeData(oldTower.GetUpgradeData());
 
         //Set Gameplay Manager's state
         m_curSelectable = null;
         UpdateInteractionState(InteractionState.Idle);
-        
+
         //Let rest of game know of new tower.
         OnTowerUpgrade?.Invoke();
         Debug.Log("Tower upgraded.");

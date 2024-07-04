@@ -7,9 +7,13 @@ using UnityEngine.UIElements.Experimental;
 
 public class Selectable : MonoBehaviour
 {
-    [SerializeField] private SelectionColors m_selectionColors;
-    [SerializeField] private Outline[] m_outlines;
     public SelectedObjectType m_selectedObjectType;
+    [SerializeField] private MeshRenderer[] m_meshRenderers;
+
+    private string m_selectedLayerString = "Outline Selected"; //Must sync with layer name.
+    private string m_hoveredLayerString = "Outline Hover"; //Must sync with layer name.
+    private string m_defaultLayerString;
+    private bool m_isSelected;
 
     public enum SelectedObjectType
     {
@@ -24,38 +28,59 @@ public class Selectable : MonoBehaviour
 
     void Awake()
     {
-        GameplayManager.OnObjRestricted += SetOutlineColor;
+        m_defaultLayerString = LayerMask.LayerToName(gameObject.layer);
+        
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
         GameplayManager.OnCommandRequested += GameObjectCommandRequested;
+        GameplayManager.OnGameObjectHoveredEnter += GameObjectHoveredEnter;
+        GameplayManager.OnGameObjectHoveredExit += GameObjectHoveredExit;
+    }
 
-        for (int i = 0; i < m_outlines.Length; ++i)
+    //Not sure we need to make the distinction between Enter and Exit, could this be one action, and one function?
+    private void GameObjectHoveredEnter(GameObject obj)
+    {
+        //we dont want to set the object's layer if it's selected.
+        if (m_isSelected) return;
+        
+        //enable outlines on hover
+        if (obj == gameObject)
         {
-            m_outlines[i].OutlineColor = m_selectionColors.m_outlineBaseColor;
-            m_outlines[i].OutlineWidth = m_selectionColors.m_outlineWidth;
-            m_outlines[i].enabled = false;
+            //Debug.Log($"{obj} Hover Enter.");
+            ToggleHoveredOutline(true);
         }
     }
 
-    void Start()
+    private void GameObjectHoveredExit(GameObject obj)
     {
+        //we dont want to set the object's layer if it's selected.
+        if (m_isSelected) return;
+        
+        //disable outlines when mouse leaves hover
+        if (obj == gameObject)
+        {
+            //Debug.Log($"{obj} Hover Exit.");
+            ToggleHoveredOutline(false);
+        }
     }
 
     private void GameObjectSelected(GameObject obj)
     {
         if (obj == gameObject)
         {
-            EnableOutlines(true);
+            //Debug.Log($"{obj} Selected.");
+            m_isSelected = true;
+            
+            ToggleSelectionOutline(true);
 
             if (m_selectedObjectType == SelectedObjectType.Tower && GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.SelectedTower)
             {
                 IngameUIController.Instance.m_towerSelectHUD.SelectTower(obj);
-                //Put Tower Radius here.
             }
         }
         else
         {
-            EnableOutlines(false);
+            ToggleSelectionOutline(false);
         }
     }
 
@@ -63,8 +88,11 @@ public class Selectable : MonoBehaviour
     {
         if (obj == gameObject)
         {
-            EnableOutlines(false);
+            //Debug.Log($"{obj} Deselected.");
+            m_isSelected = false;
             
+            ToggleSelectionOutline(false);
+
             if (m_selectedObjectType == SelectedObjectType.Tower)
             {
                 IngameUIController.Instance.m_towerSelectHUD.DeselectTower();
@@ -72,26 +100,21 @@ public class Selectable : MonoBehaviour
         }
     }
 
-    public void EnableOutlines(bool enabled)
+    public void ToggleSelectionOutline(bool enabled)
     {
-        for (int i = 0; i < m_outlines.Length; ++i)
+        string layerName = enabled ? m_selectedLayerString : m_defaultLayerString;
+        foreach (MeshRenderer meshRenderer in m_meshRenderers)
         {
-            m_outlines[i].enabled = enabled;
+            meshRenderer.gameObject.layer = LayerMask.NameToLayer(layerName);
         }
     }
 
-    private void SetOutlineColor(GameObject obj, bool isRestricted)
+    public void ToggleHoveredOutline(bool enabled)
     {
-        if (obj != gameObject)
+        string layerName = enabled ? m_hoveredLayerString : m_defaultLayerString;
+        foreach (MeshRenderer meshRenderer in m_meshRenderers)
         {
-            return;
-        }
-
-        //Debug.Log("Trying to change colors");
-        for (int i = 0; i < m_outlines.Length; ++i)
-        {
-            Outline outline = m_outlines[i];
-            outline.OutlineColor = isRestricted ? m_selectionColors.m_outlineBaseColor : m_selectionColors.m_outlineRestrictedColor;
+            meshRenderer.gameObject.layer = LayerMask.NameToLayer(layerName);
         }
     }
 
@@ -99,16 +122,17 @@ public class Selectable : MonoBehaviour
     {
         if (obj == gameObject)
         {
-            EnableOutlines(true);
-            gameObject.transform.DOScale(1f, .2f).OnComplete(() => EnableOutlines(false));
+            ToggleSelectionOutline(true);
+            gameObject.transform.DOScale(1f, .2f).OnComplete(() => ToggleSelectionOutline(false));
         }
     }
 
     void OnDestroy()
     {
-        GameplayManager.OnObjRestricted -= SetOutlineColor;
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
         GameplayManager.OnCommandRequested -= GameObjectCommandRequested;
+        GameplayManager.OnGameObjectHoveredEnter -= GameObjectHoveredEnter;
+        GameplayManager.OnGameObjectHoveredExit -= GameObjectHoveredExit;
     }
 }

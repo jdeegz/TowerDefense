@@ -635,7 +635,7 @@ public class GathererController : MonoBehaviour
 
         foreach (Collider collider in colliders)
         {
-            if (collider != null)
+            if (collider != null) 
             {
                 ResourceNode newNode = collider.GetComponent<ResourceNode>();
                 if (newNode != null)
