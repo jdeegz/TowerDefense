@@ -301,17 +301,18 @@ public class GameplayManager : MonoBehaviour
     {
         //HOVERING
 
-
         //Is the object selectable?
         Selectable hitSelectable = obj.GetComponent<Selectable>();
+        
 
         //If the object is selected, we dont want to handle Hover state.
-        if (m_curSelectable == hitSelectable)
+        if (m_curSelectable != null && m_curSelectable == hitSelectable)
         {
             return;
         }
 
-        //If we're not hovering anything, and we were.
+        //Exit hover if the hit obj is null, or if the obj is new
+        //If we're hovering over something new.
         if (m_hoveredSelectable != hitSelectable && m_hoveredSelectable != null)
         {
             OnGameObjectHoveredExit?.Invoke(m_hoveredSelectable.gameObject);

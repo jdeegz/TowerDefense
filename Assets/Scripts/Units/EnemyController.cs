@@ -201,7 +201,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //If we're dead, destroy.
         if (m_curHealth <= 0)
         {
-            Debug.Log($"{name} current health is {m_curHealth} and is being destroyed after taking {cumDamage} damage.");
+            //Debug.Log($"{name} current health is {m_curHealth} and is being destroyed after taking {cumDamage} damage.");
             OnEnemyDestroyed(transform.position);
             DestroyEnemy?.Invoke(transform.position);
         }
