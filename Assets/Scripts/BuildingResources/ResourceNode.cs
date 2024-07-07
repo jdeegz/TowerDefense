@@ -5,11 +5,13 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class ResourceNode : MonoBehaviour, IResourceNode
 {
     public ResourceNodeData m_nodeData;
     [SerializeField] private Animator m_animator;
+    [SerializeField] private GameObject m_modelRoot;
 
     private int m_resourcesRemaining;
     [HideInInspector] public ResourceManager.ResourceType m_type;
@@ -24,6 +26,10 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         m_resourcesRemaining = m_nodeData.m_maxResources;
         m_type = m_nodeData.m_resourceType;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        if (m_modelRoot != null)
+        {
+            RandomRotation(m_modelRoot);
+        }
     }
 
     void OnDestroy()
@@ -48,6 +54,21 @@ public class ResourceNode : MonoBehaviour, IResourceNode
                 m_harvestPoints.Add(harvestPoint);
             }
         }
+    }
+    
+    void RandomRotation(GameObject obj)
+    {
+        // Define the possible rotation angles
+        int[] angles = { 0, 90, 180, 270 };
+
+        // Select a random index from the angles array
+        int randomIndex = Random.Range(0, angles.Length);
+
+        // Get the corresponding angle
+        int randomAngle = angles[randomIndex];
+
+        // Apply the random rotation to the object
+        obj.transform.rotation = Quaternion.Euler(0, randomAngle, 0);
     }
 
     public (int, int) RequestResource(int i)
