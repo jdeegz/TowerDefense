@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Analytics;
 using UnityEngine.Serialization;
+using UnityEngine.Tilemaps;
 
 public class GridManager : MonoBehaviour
 {
@@ -21,6 +22,10 @@ public class GridManager : MonoBehaviour
 
     [FormerlySerializedAs("m_groundLayer")]
     public LayerMask m_waterLayer;
+
+    [Header("Tile Map Data")]
+    [SerializeField] private Tilemap m_tileMap;
+    [SerializeField] private RuleTile m_ruleTile;
 
     public List<UnitPath> m_unitPaths;
     private List<Vector2Int> m_exits;
@@ -270,6 +275,12 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    public void ToggleTileMap(Vector3Int pos, bool isOccupied)
+    {
+        TileBase tile = isOccupied ? m_ruleTile : null;
+        m_tileMap.SetTile(pos, tile);
+    }
+    
     public void oldRefreshGrid()
     {
         FloodFillGrid(m_gridCells, SetCellDirections);

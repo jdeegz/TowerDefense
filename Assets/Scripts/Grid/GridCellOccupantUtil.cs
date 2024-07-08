@@ -20,7 +20,10 @@ public class GridCellOccupantUtil
                 Vector2Int pos = new Vector2Int((int)m_bottomLeftCell.x + x, (int)m_bottomLeftCell.z + z);
                 Cell cell = Util.GetCellFromPos(pos);
                 cell.UpdateOccupancyDisplay(isOccupied);
-                if(!isOccupied){Debug.Log($"Grid Cell unoccupied: {pos} by: {obj.name}");}
+                
+                //Handle Tile Map update
+                GridManager.Instance.ToggleTileMap(new Vector3Int(cell.m_cellPos.x, cell.m_cellPos.y, 0), isOccupied);
+                //if(!isOccupied){Debug.Log($"Grid Cell unoccupied: {pos} by: {obj.name}");}
             }
         }
     }

@@ -42,7 +42,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-
+            
             //Make list of neighbor positions
             ValueTuple<List<Cell>, List<Vector2Int>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
             for (var i = 0; i < vars.Item1.Count; ++i)
