@@ -142,6 +142,12 @@ public class GameplayManager : MonoBehaviour
             //If we hit a UI Game Object.
             if (EventSystem.current.IsPointerOverGameObject())
             {
+                //Tell hovered selectable to deselect, we're on UI.
+                if (m_hoveredSelectable != null)
+                {
+                    OnGameObjectHoveredExit?.Invoke(m_hoveredSelectable.gameObject);
+                }
+                
                 HandleUIInteraction();
             }
             else //We hit a World Space Object.
@@ -201,9 +207,7 @@ public class GameplayManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0) && m_interactionState != InteractionState.Disabled)
         {
-            //Reset outline color. This will be overridden by Tower Precon functions.
-            SetOutlineColor(false);
-
+            
             //If the object we're hovering is not currently the selected object.
             if (m_interactionState == InteractionState.PreconstructionTower)
             {
@@ -221,6 +225,9 @@ public class GameplayManager : MonoBehaviour
                     return;
                 }
 
+                
+                //Reset outline color. This will be overridden by Tower Precon functions.
+                SetOutlineColor(false);
                 BuildTower();
                 return;
             }
@@ -271,6 +278,9 @@ public class GameplayManager : MonoBehaviour
                         OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                         break;
                     case InteractionState.PreconstructionTower:
+                        //Reset outline color. 
+                        SetOutlineColor(false);
+                        
                         //Cancel tower preconstruction
                         OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                         ClearPreconstructedTower();
@@ -299,6 +309,21 @@ public class GameplayManager : MonoBehaviour
 
     void HoverInteraction(GameObject obj)
     {
+        //DO WE CARE ABOUT HOVERING?
+        if (m_interactionState == InteractionState.PreconstructionTower)
+        {
+            if (m_hoveredSelectable != null)
+            {
+                OnGameObjectHoveredExit?.Invoke(m_hoveredSelectable.gameObject);
+                m_hoveredSelectable = null;
+                return;
+            }
+            {
+                return;
+            }
+        }
+        
+        
         //HOVERING
 
         //Is the object selectable?
@@ -335,7 +360,7 @@ public class GameplayManager : MonoBehaviour
 
     private void SetOutlineColor(bool isRestricted)
     {
-        Debug.Log($"Trying to change color: {isRestricted}");
+        //Debug.Log($"Trying to change color: {isRestricted}");
         Color color = isRestricted ? m_selectionColors.m_outlineRestrictedColor : m_selectionColors.m_outlineBaseColor;
         m_selectedOutlineMaterial.SetColor("_Outline_Color", color);
     }
