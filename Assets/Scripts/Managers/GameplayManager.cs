@@ -94,6 +94,7 @@ public class GameplayManager : MonoBehaviour
     public bool m_canPlace;
     public bool m_canBuild;
     private int m_preconstructedTowerIndex;
+    private GameplayState m_cachedGameplayState; //Saved when we enter a cut scene, returned to when we exit.
 
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
@@ -114,6 +115,7 @@ public class GameplayManager : MonoBehaviour
         Paused,
         Victory,
         Defeat,
+        CutScene
     }
 
     public InteractionState m_interactionState;
@@ -132,6 +134,9 @@ public class GameplayManager : MonoBehaviour
 
     void Update()
     {
+        //We do not want to update _anything_ while we're in a cutscene!
+        if (m_gameplayState == GameplayState.CutScene) return;
+        
         HandleHotkeys();
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -186,12 +191,13 @@ public class GameplayManager : MonoBehaviour
 
     void HandleHotkeys()
     {
-        //Trigger Defeat
+        //Toggle Pause
         if (Input.GetKeyDown(KeyCode.Space))
         {
             PauseHotkeyPressed();
         }
-
+    
+        //Toggle FFW
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             FastForwardHotkeyPressed();
@@ -518,6 +524,23 @@ public class GameplayManager : MonoBehaviour
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
                 UpdateGamePlayback(GameSpeed.Paused);
                 m_interactionState = InteractionState.Disabled;
+                break;
+            case GameplayState.CutScene:
+                //Clear precon if we're precon
+                if(m_preconstructedTowerObj) ClearPreconstructedTower();
+                
+                //Clear selected
+                if (m_curSelectable)
+                {
+                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                    m_curSelectable = null;
+                }
+                
+                //Set interaction to disabled
+                UpdateInteractionState(InteractionState.Disabled);
+                
+                //Set speed to paused
+                UpdateGamePlayback(GameSpeed.Paused);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -1157,5 +1180,23 @@ public class GameplayManager : MonoBehaviour
     public Selectable GetCurSelectedObj()
     {
         return m_curSelectable;
+    }
+
+    public void RequestCutSceneState()
+    {
+        m_cachedGameplayState = m_gameplayState;
+        UpdateGameplayState(GameplayState.CutScene);
+    }
+
+    public void RequestLeaveCutScene()
+    {
+        //Set interaction to disabled
+        UpdateInteractionState(InteractionState.Idle);
+                
+        //Set speed to paused
+        UpdateGamePlayback(GameSpeed.Normal);
+        
+        //Return to pre-Cut Scene state
+        UpdateGameplayState(m_cachedGameplayState);
     }
 }

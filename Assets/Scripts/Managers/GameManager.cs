@@ -12,8 +12,10 @@ public class GameManager : MonoBehaviour
     public MissionContainerData m_MissionContainer;
     public MissionData m_curMission;
     private String m_curScene;
-    public GameObject m_loadingView;
+    private String m_curCutScene;
     public GameState m_gameState;
+    public TransitionController m_cutSceneTransitionController;
+    public TransitionController m_loadingTransitionController;
 
     public enum GameState
     {
@@ -29,7 +31,6 @@ public class GameManager : MonoBehaviour
 
     public void UpdateGameState(GameState newState)
     {
-        //if (newState == m_gameState){ return;}
         Time.timeScale = 1;
         m_gameState = newState;
 
@@ -47,12 +48,16 @@ public class GameManager : MonoBehaviour
         }
 
         OnGameStateChanged?.Invoke(newState);
-        //Debug.Log("Game State:" + newState);
     }
 
     void Start()
     {
         UpdateGameState(GameState.Initialize);
+    }
+
+    private void HandleInitialize()
+    {
+        RequestChangeScene("Menus", GameState.Menus);
     }
 
     public void RequestChangeScene(String sceneName, GameState newState)
@@ -63,19 +68,20 @@ public class GameManager : MonoBehaviour
         }
 
         {
-            m_loadingView.SetActive(true);
-            StartCoroutine(ChangeSceneAsync(sceneName));
+            m_loadingTransitionController.TransitionStart(sceneName, () => StartChangeScene(sceneName));
             UpdateGameState(newState);
-            //Debug.Log("Scene Loading: " + sceneName);
         }
+    }
+
+    void StartChangeScene(String sceneName)
+    {
+        StartCoroutine(ChangeSceneAsync(sceneName));
     }
 
     public void RequestSceneRestart()
     {
         String sceneName = SceneManager.GetActiveScene().name;
-        m_loadingView.SetActive(true);
-        StartCoroutine(ChangeSceneAsync(sceneName));
-        //Debug.Log("Scene Loading: " + sceneName);
+        m_loadingTransitionController.TransitionStart(sceneName, () => StartChangeScene(sceneName));
     }
 
     private IEnumerator ChangeSceneAsync(String newScene)
@@ -101,15 +107,61 @@ public class GameManager : MonoBehaviour
         }
 
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
-
-        m_loadingView.SetActive(false);
-        
-        //Debug.Log("Scene Loaded: " + m_curScene);
+        m_loadingTransitionController.TransitionEnd();
     }
 
-    private void HandleInitialize()
+
+    //START CUTSCENE MANAGEMENT
+    //ADD SCENE
+    public void RequestAdditiveSceneLoad(String sceneName)
     {
-        //do stuff
-        RequestChangeScene("Menus", GameState.Menus);
+        m_cutSceneTransitionController.TransitionStart(sceneName, () => StartCutSceneLoad(sceneName));
     }
+
+    public void StartCutSceneLoad(String sceneName)
+    {
+        GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
+        StartCoroutine(AddCutSceneAsync(sceneName));
+    }
+
+    private IEnumerator AddCutSceneAsync(String sceneName)
+    {
+        m_curCutScene = sceneName;
+
+        AsyncOperation loadSceneOperation = SceneManager.LoadSceneAsync(m_curCutScene, LoadSceneMode.Additive);
+        while (!loadSceneOperation.isDone)
+        {
+            yield return null;
+        }
+
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curCutScene));
+        m_cutSceneTransitionController.TransitionEnd(); //Reveal new scene
+    }
+
+    //REMOVE SCENE
+    public void RequestAdditiveSceneUnload(String sceneName)
+    {
+        m_cutSceneTransitionController.TransitionStart(sceneName, () => StartCutSceneUnload(sceneName));
+    }
+
+    public void StartCutSceneUnload(String sceneName)
+    {
+        StartCoroutine(RemoveCutSceneAsync(sceneName));
+    }
+
+    private IEnumerator RemoveCutSceneAsync(String sceneName)
+    {
+        AsyncOperation loadSceneOperation = SceneManager.UnloadSceneAsync(m_curCutScene);
+        while (!loadSceneOperation.isDone)
+        {
+            yield return null;
+        }
+
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
+        m_cutSceneTransitionController.TransitionEnd(); //Reveal new scene
+        GameplayManager.Instance.RequestLeaveCutScene(); //Return to our last gameplay state.
+
+
+    }
+    //END CUTSCENE MANAGEMENT
 }

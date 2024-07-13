@@ -113,6 +113,8 @@ public class CastleController : MonoBehaviour
                 break;
             case GameplayManager.GameplayState.Defeat:
                 break;
+            case GameplayManager.GameplayState.CutScene:
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
