@@ -35,6 +35,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<int, int> OnObelisksCharged;
     public static event Action<GathererController> OnGathererAdded;
     public static event Action<GathererController> OnGathererRemoved;
+    public static event Action OnCutSceneEnd;
 
     [Header("Wave Settings")]
     public int m_totalWaves = 10;
@@ -59,8 +60,8 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
-
-    public Transform m_enemiesObjRoot;
+    public List<EnemyController> m_enemyBossList;
+    public BossSequenceController m_activeBossSequenceController;
 
     private int m_activeSpawners;
     private Vector2Int m_curCellPos;
@@ -70,7 +71,6 @@ public class GameplayManager : MonoBehaviour
     public List<GathererController> m_woodGathererList;
 
     public List<GathererController> m_stoneGathererList;
-    public Transform m_towerObjRoot;
     public List<Tower> m_towerList;
 
     [Header("Selected Object Info")]
@@ -78,7 +78,6 @@ public class GameplayManager : MonoBehaviour
 
     private Material m_selectedOutlineMaterial; //Assigned on awake
     private Selectable m_curSelectable;
-
     public Selectable m_hoveredSelectable;
 
     [FormerlySerializedAs("m_activeObelisks")]
@@ -94,7 +93,7 @@ public class GameplayManager : MonoBehaviour
     public bool m_canPlace;
     public bool m_canBuild;
     private int m_preconstructedTowerIndex;
-    private GameplayState m_cachedGameplayState; //Saved when we enter a cut scene, returned to when we exit.
+    private bool m_watchingCutScene;
 
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
@@ -109,13 +108,12 @@ public class GameplayManager : MonoBehaviour
         CreatePaths,
         Setup,
         SpawnEnemies,
-        SpawnBoss,
+        BossWave,
         Combat,
         Build,
         Paused,
         Victory,
-        Defeat,
-        CutScene
+        Defeat
     }
 
     public InteractionState m_interactionState;
@@ -135,7 +133,7 @@ public class GameplayManager : MonoBehaviour
     void Update()
     {
         //We do not want to update _anything_ while we're in a cutscene!
-        if (m_gameplayState == GameplayState.CutScene) return;
+        if (m_watchingCutScene) return;
         
         HandleHotkeys();
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -180,7 +178,7 @@ public class GameplayManager : MonoBehaviour
             if (m_wave != 0 && (m_wave + 1) % m_bossWaveFactor == 0)
             {
                 Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
-                UpdateGameplayState(GameplayState.SpawnBoss);
+                UpdateGameplayState(GameplayState.BossWave);
             }
             else
             {
@@ -496,7 +494,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.SpawnEnemies:
                 //m_wave++;
                 break;
-            case GameplayState.SpawnBoss:
+            case GameplayState.BossWave:
                 //m_wave++;
                 break;
             case GameplayState.Combat:
@@ -524,23 +522,6 @@ public class GameplayManager : MonoBehaviour
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
                 UpdateGamePlayback(GameSpeed.Paused);
                 m_interactionState = InteractionState.Disabled;
-                break;
-            case GameplayState.CutScene:
-                //Clear precon if we're precon
-                if(m_preconstructedTowerObj) ClearPreconstructedTower();
-                
-                //Clear selected
-                if (m_curSelectable)
-                {
-                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                    m_curSelectable = null;
-                }
-                
-                //Set interaction to disabled
-                UpdateInteractionState(InteractionState.Disabled);
-                
-                //Set speed to paused
-                UpdateGamePlayback(GameSpeed.Paused);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -1063,6 +1044,29 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
+    public void AddBossToList(EnemyController enemy)
+    {
+        m_enemyBossList.Add(enemy);
+    }
+
+    public void RemoveBossFromList(EnemyController enemy)
+    {
+        for (int i = 0; i < m_enemyBossList.Count; ++i)
+        {
+            if (m_enemyBossList[i] == enemy)
+            {
+                m_enemyBossList.RemoveAt(i);
+                break;
+            }
+        }
+        
+        if (m_activeSpawners == 0 && m_enemyBossList.Count == 0 && m_gameplayState == GameplayState.BossWave)
+        {
+            //Tell sequence that we've killed the boss.
+            m_activeBossSequenceController.BossHasDied();
+        }
+    }
+
     public void AddSpawnerToList(UnitSpawner unitSpawner)
     {
         m_unitSpawners.Add(unitSpawner);
@@ -1182,21 +1186,50 @@ public class GameplayManager : MonoBehaviour
         return m_curSelectable;
     }
 
-    public void RequestCutSceneState()
+    public void WatchingCutScene()
     {
-        m_cachedGameplayState = m_gameplayState;
-        UpdateGameplayState(GameplayState.CutScene);
+        m_watchingCutScene = true;
+        
+        //Clear precon if we're precon
+        if(m_preconstructedTowerObj) ClearPreconstructedTower();
+                
+        //Clear selected
+        if (m_curSelectable)
+        {
+            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+            m_curSelectable = null;
+        }
+                
+        //Set interaction to disabled
+        UpdateInteractionState(InteractionState.Disabled);
+                
+        //Set speed to paused
+        UpdateGamePlayback(GameSpeed.Paused);
     }
 
-    public void RequestLeaveCutScene()
+    public void DoneWatchingLeaveCutScene()
     {
         //Set interaction to disabled
         UpdateInteractionState(InteractionState.Idle);
                 
         //Set speed to paused
         UpdateGamePlayback(GameSpeed.Normal);
+
+        m_watchingCutScene = false;
         
-        //Return to pre-Cut Scene state
-        UpdateGameplayState(m_cachedGameplayState);
+        OnCutSceneEnd?.Invoke();
+    }
+
+    public void CastleControllerDestroyed()
+    {
+        if (m_activeBossSequenceController) //If there's a boss alive, play the bosses Castle Destruction cut scene
+        {
+            m_activeBossSequenceController.BossHasWon();
+        }
+        else
+        {
+            //To replace this with playing a cutscene then triggering defeat, or they're the same?
+            UpdateGameplayState(GameplayState.Defeat);
+        }
     }
 }

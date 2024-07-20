@@ -22,7 +22,7 @@ public class MusicManager : MonoBehaviour
 
     private void GameplayStateChanged(GameplayManager.GameplayState newState)
     {
-        if (newState == GameplayManager.GameplayState.SpawnBoss)
+        if (newState == GameplayManager.GameplayState.BossWave)
         {
             StartCoroutine(CrossfadeRoutine(m_bossMusic));
         }

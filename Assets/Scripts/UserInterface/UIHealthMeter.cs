@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +11,8 @@ public class UIHealthMeter : MonoBehaviour
     [SerializeField] private Track3dObject m_track3dObject;
     [SerializeField] private Image m_lifeImage;
     [SerializeField] private RectTransform m_rootRectTransform;
+    [SerializeField] private CanvasGroup m_canvasGroup;
+    [SerializeField] private TextMeshProUGUI m_bossNameLabel;
 
     private float m_maxHealth;
     private float m_curHealth;
@@ -32,6 +36,22 @@ public class UIHealthMeter : MonoBehaviour
         m_track3dObject.SetupTracking(m_enemy.gameObject, GetComponent<RectTransform>(), yOffset);
         m_enemy.UpdateHealth += OnUpdateHealth;
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
+    }
+
+    public void SetBoss(EnemyController enemy, float health)
+    {
+        m_enemy = enemy;
+        m_maxHealth = health;
+        m_curHealth = health;
+        m_bossNameLabel.SetText(m_enemy.m_enemyData.m_enemyName);
+        m_enemy.UpdateHealth += OnUpdateHealth;
+        m_enemy.DestroyEnemy += OnEnemyDestroyed;
+        HandleFadeIn();
+    }
+
+    void HandleFadeIn()
+    {
+        m_canvasGroup.DOFade(1, 1f);
     }
 
     void OnUpdateHealth(float i)

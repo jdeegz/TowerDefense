@@ -120,7 +120,7 @@ public class GameManager : MonoBehaviour
 
     public void StartCutSceneLoad(String sceneName)
     {
-        GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
+        GameplayManager.Instance.WatchingCutScene();
         StartCoroutine(AddCutSceneAsync(sceneName));
     }
 
@@ -159,9 +159,7 @@ public class GameManager : MonoBehaviour
 
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
         m_cutSceneTransitionController.TransitionEnd(); //Reveal new scene
-        GameplayManager.Instance.RequestLeaveCutScene(); //Return to our last gameplay state.
-
-
+        GameplayManager.Instance.DoneWatchingLeaveCutScene(); //Return to our last gameplay state.
     }
     //END CUTSCENE MANAGEMENT
 }

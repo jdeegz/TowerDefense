@@ -18,7 +18,7 @@ public class UIIngameMeter : MonoBehaviour
 
     public void SetProgress(float f)
     {
-        Debug.Log($"Setting progress to {f}");
+        //Debug.Log($"Setting progress to {f}");
         m_progress = f;
     }
 

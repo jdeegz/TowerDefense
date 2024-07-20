@@ -12,9 +12,11 @@ public class IngameUIController : MonoBehaviour
     public UIStringData m_uiStringData;
     public UITowerSelectHUD m_towerSelectHUD;
     public UIHealthMeter m_healthMeter;
+    public UIHealthMeter m_healthMeterBoss;
     public UIIngameMeter m_ingameMeter;
     public UIAlert m_currencyAlert;
     public UIAlert m_levelUpAlert;
+    public RectTransform m_healthMeterBossRect;
     [SerializeField] private Color m_currencyGoodcolor;
     [SerializeField] private Color m_currencyBadcolor;
     [SerializeField] private Color m_levelUpColor;

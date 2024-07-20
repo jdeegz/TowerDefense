@@ -78,7 +78,7 @@ public class GridManager : MonoBehaviour
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
                 break;
-            case GameplayManager.GameplayState.SpawnBoss:
+            case GameplayManager.GameplayState.BossWave:
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
@@ -89,8 +89,6 @@ public class GridManager : MonoBehaviour
             case GameplayManager.GameplayState.Victory:
                 break;
             case GameplayManager.GameplayState.Defeat:
-                break;
-            case GameplayManager.GameplayState.CutScene:
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -594,14 +592,14 @@ public class UnitPath
     {
         if (creepList.Count > 0)
         {
-            Debug.Log($"Setting Line Renderer to {m_lineRendererColorOn}");
+            //Debug.Log($"Setting Line Renderer to {m_lineRendererColorOn}");
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOn;
             m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOn;
             m_lineRenderer.SetLineRendererColors();
         }
         else
         {
-            Debug.Log($"Setting Line Renderer to {m_lineRendererColorOff}");
+            //Debug.Log($"Setting Line Renderer to {m_lineRendererColorOff}");
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
             m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOff;
             m_lineRenderer.SetLineRendererColors();

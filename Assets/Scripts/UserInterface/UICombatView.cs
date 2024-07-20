@@ -30,6 +30,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
     [SerializeField] private TextMeshProUGUI m_ffwLabel;
+    [SerializeField] private TextMeshProUGUI m_bossNameLabel;
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
@@ -41,11 +42,11 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_waveDisplayObj;
     [SerializeField] private GameObject m_obeliskDisplayObj;
     [SerializeField] private GameObject m_ffwActiveDisplayObj;
+    [SerializeField] private GameObject m_bossHealthDisplayObj;
 
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
-
     [SerializeField] private RectTransform m_gathererTrayLayoutObj;
     [SerializeField] private RectTransform m_healthDisplay;
     [SerializeField] private RectTransform m_woodBankDisplay;
@@ -54,6 +55,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_stoneGathererDisplay;
 
     [SerializeField] private Image m_castleRepairFill;
+    [SerializeField] private Image m_bossHealthFill;
     
     [Header("Scene References")]
     [SerializeField] private UIOptionsMenu m_menuObj;
@@ -84,14 +86,13 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
         GameplayManager.OnGathererAdded += BuildGathererTrayButton;
         GameplayManager.OnGathererRemoved += RemoveGathererTrayButton;
-
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
+        
         if (m_buttons == null)
         {
-            //Debug.Log($"initializing m_buttons in combat view");
             m_buttons = new List<Button>();
         }
 
@@ -117,8 +118,6 @@ public class UICombatView : MonoBehaviour
             { KeyCode.T, 3 },
             { KeyCode.Y, 4 },
         };
-
-        //gameObject.SetActive(false);
     }
 
     private void UpdateCastleHealthDisplay(int i)

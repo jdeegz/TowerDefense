@@ -10,7 +10,7 @@ using Sequence = DG.Tweening.Sequence;
 
 public class EnemyFlierBoss : EnemyController
 {
-    [HideInInspector] public BossSequenceController m_bossSequenceController;
+    [HideInInspector] public OLDBossSequenceController m_bossSequenceController;
     public GameObject m_muzzleObj;
 
     private int m_startGoalIndex;
@@ -40,7 +40,7 @@ public class EnemyFlierBoss : EnemyController
         Death,
     }
 
-    public void SetupBoss(BossSequenceController bossSequenceController)
+    public void SetupBoss(OLDBossSequenceController bossSequenceController)
     {
         //If we just spawned, travel to N units away from the castle.
         m_bossSequenceController = bossSequenceController;

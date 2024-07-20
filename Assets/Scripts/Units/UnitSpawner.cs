@@ -156,7 +156,7 @@ public class UnitSpawner : MonoBehaviour
             case GameplayManager.GameplayState.SpawnEnemies:
                 StartSpawning();
                 break;
-            case GameplayManager.GameplayState.SpawnBoss:
+            case GameplayManager.GameplayState.BossWave:
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;

@@ -24,7 +24,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     protected Transform m_goal;
 
     //Enemy Stats
-    private float m_curMaxHealth;
+    protected float m_curMaxHealth;
     protected float m_curHealth;
     protected float m_baseMoveSpeed;
     protected float m_baseLookSpeed;
@@ -35,18 +35,17 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private float m_baseDamageMultiplier;
 
     //Hit Flash Info
-    List<Renderer> m_allRenderers;
+    protected List<Renderer> m_allRenderers;
     private List<Color> m_allOrigColors;
-    private Coroutine m_hitFlashCoroutine;
+    protected Coroutine m_hitFlashCoroutine;
 
     //VFX
-    public GameObject m_speedTrailVFXObj;
     private GameObject m_decreaseHealthVFXOjb;
     private GameObject m_increaseHealthVFXOjb;
     private GameObject m_decreaseMoveSpeedVFXOjb;
     private GameObject m_increaseMoveSpeedVFXOjb;
 
-    private AudioSource m_audioSource;
+    protected AudioSource m_audioSource;
     private List<StatusEffect> m_statusEffects;
     private List<StatusEffect> m_newStatusEffects = new List<StatusEffect>();
     private List<StatusEffect> m_expiredStatusEffects = new List<StatusEffect>();
@@ -58,6 +57,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public event Action<Vector3> DestroyEnemy;
 
     private bool m_isComplete;
+    private Vector3 m_moveDirection;
 
     public void SetEnemyData(EnemyData data)
     {
@@ -65,23 +65,17 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         SetupEnemy();
     }
 
-    void Awake()
-    {
-    }
-
     void SetupEnemy()
     {
         m_isComplete = false;
-        
-        //Setup with Gameplay Manager
-        //If check used for target dummy to remove the need for the gameplay manager in the test scene.
+
         int wave = 1;
 
         if (GameplayManager.Instance)
         {
             m_goal = GameplayManager.Instance.m_enemyGoal;
-            GameplayManager.Instance.AddEnemyToList(this);
             wave = GameplayManager.Instance.m_wave;
+            AddToGameplayList();
         }
 
         //Setup with GridManager
@@ -94,10 +88,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_curHealth = m_curMaxHealth;
         m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
 
-        //Setup Life Meter
-        UIHealthMeter lifeMeter = ObjectPoolManager.SpawnObject(IngameUIController.Instance.m_healthMeter.gameObject, IngameUIController.Instance.transform).GetComponent<UIHealthMeter>();
-        lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
-
         //Setup Hit Flash
         CollectMeshRenderers(m_enemyModelRoot.transform);
 
@@ -109,13 +99,32 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
 
         //Create Speed Trail Object
-        m_speedTrailVFXObj.SetActive(false);
+        //m_speedTrailVFXObj.SetActive(false);
 
         //Setup ObeliskData if the mission has obelisks
         if (GameplayManager.Instance && GameplayManager.Instance.m_obelisksInMission.Count > 0)
         {
             m_obeliskData = GameplayManager.Instance.m_obelisksInMission[0].m_obeliskData;
         }
+
+        SetupUI();
+    }
+
+    public virtual void AddToGameplayList()
+    {
+        GameplayManager.Instance.AddEnemyToList(this);
+    }
+
+    public virtual void RemoveFromGameplayList()
+    {
+        GameplayManager.Instance.RemoveEnemyFromList(this);
+    }
+
+    public virtual void SetupUI()
+    {
+        //Setup Life Meter
+        UIHealthMeter lifeMeter = ObjectPoolManager.SpawnObject(IngameUIController.Instance.m_healthMeter.gameObject, IngameUIController.Instance.transform).GetComponent<UIHealthMeter>();
+        lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
     }
 
     void Update()
@@ -126,6 +135,11 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         if (!m_goal) return;
 
         //If this is the exit cell, we've made it! Deal some damage to the player.
+        CheckAtGoal();
+    }
+
+    public virtual void CheckAtGoal()
+    {
         if (Vector3.Distance(transform.position, m_goal.position) <= 1.5f)
         {
             Debug.Log("Dealing Castle damage and destroying enemy.");
@@ -142,7 +156,56 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     //Movement
     //Functions
-    public abstract void HandleMovement();
+    public virtual void HandleMovement()
+    {
+        //Update Cell occupancy
+        Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
+        if (newPos != m_curPos)
+        {
+            //Remove self from current cell.
+            if (m_curCell != null)
+            {
+                m_curCell.UpdateActorCount(-1, gameObject.name);
+            }
+
+            //Assign new position
+            m_curPos = newPos;
+
+            //Get new cell from new position.
+            m_curCell = Util.GetCellFromPos(m_curPos);
+
+            //Assign self to cell.
+            m_curCell.UpdateActorCount(1, gameObject.name);
+        }
+
+        //Convert saved cell pos from Vector2 to Vector3
+        Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
+
+        //Get the position of the next cell.
+        Vector3 m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x, 0, m_curCell.m_directionToNextCell.z);
+
+        m_moveDirection = (m_nextCellPosition - transform.position).normalized;
+
+        //Look towards the move direction.
+        float cumulativeLookSpeed = m_baseLookSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * Time.deltaTime;
+        Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
+
+        //Move forward.
+        float cumulativeMoveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * Time.deltaTime;
+        transform.position += transform.forward * cumulativeMoveSpeed;
+
+
+        //Update Speed Trails
+        /*if (cumulativeMoveSpeed / Time.deltaTime > 1.0 && m_speedTrailVFXObj != null)
+        {
+            m_speedTrailVFXObj.SetActive(true);
+        }
+        else
+        {
+            m_speedTrailVFXObj.SetActive(false);
+        }  */
+    }
 
     //Taking Damage
     //Functions
@@ -174,10 +237,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
     }
 
-    public void OnTakeDamage(float dmg)
+    public virtual void OnTakeDamage(float dmg)
     {
         if (m_curHealth <= 0) return;
-        
+
         //Audio
         int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
         m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
@@ -192,7 +255,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
-        
+
         //Calculate Damage
         float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
         m_curHealth -= cumDamage;
@@ -201,13 +264,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //If we're dead, destroy.
         if (m_curHealth <= 0)
         {
-            //Debug.Log($"{name} current health is {m_curHealth} and is being destroyed after taking {cumDamage} damage.");
             OnEnemyDestroyed(transform.position);
             DestroyEnemy?.Invoke(transform.position);
         }
     }
 
-    private IEnumerator HitFlash()
+    public IEnumerator HitFlash()
     {
         //Set the color
         for (int i = 0; i < m_allRenderers.Count; ++i)
@@ -230,12 +292,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
     }
 
-    void OnEnemyDestroyed(Vector3 pos)
+    public virtual void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_isComplete) return;
 
         m_isComplete = true;
-        
+
         //Kind of hacky, but this prevents towers from continuing to hit units that reach the castle.
         m_curHealth = 0;
 
@@ -259,7 +321,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             }
         }
 
-        GameplayManager.Instance.RemoveEnemyFromList(this);
+        RemoveFromGameplayList();
 
         //Return effects to pool.
         foreach (StatusEffect activeEffect in m_statusEffects)
@@ -283,7 +345,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
-        
+
         RemoveObject();
     }
 
@@ -375,7 +437,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
     }
 
-    public void ApplyEffect(StatusEffect statusEffect)
+    public virtual void ApplyEffect(StatusEffect statusEffect)
     {
         //Add incoming status effects to a holding list. They will get added to the list then updated in UpdateStatusEffects.
         if (m_curHealth <= 0) return;
@@ -581,7 +643,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_expiredStatusEffects.Add(statusEffect);
     }
 
-    public void RequestRemoveEffect(Tower towerSender)
+    public virtual void RequestRemoveEffect(Tower towerSender)
     {
         //For each status effect, see if the sender matches, if it does, remove the effect.
         for (int i = 0; i < m_statusEffects.Count; i++)

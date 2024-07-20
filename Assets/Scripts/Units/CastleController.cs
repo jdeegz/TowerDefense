@@ -99,7 +99,7 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.SpawnEnemies:
                 PlayAudio(m_castleData.m_audioWaveStart);
                 break;
-            case GameplayManager.GameplayState.SpawnBoss:
+            case GameplayManager.GameplayState.BossWave:
                 PlayAudio(m_castleData.m_audioWaveStart);
                 break;
             case GameplayManager.GameplayState.Combat:
@@ -112,8 +112,6 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.Victory:
                 break;
             case GameplayManager.GameplayState.Defeat:
-                break;
-            case GameplayManager.GameplayState.CutScene:
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -185,8 +183,7 @@ public class CastleController : MonoBehaviour
 
     void OnCastleDestroyed()
     {
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Defeat);
-        //Destroy(gameObject);
+        GameplayManager.Instance.CastleControllerDestroyed();
     }
 
     private IEnumerator HitFlash()

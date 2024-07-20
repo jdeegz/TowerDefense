@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-public class BossSequenceController : MonoBehaviour
+public class OLDBossSequenceController : MonoBehaviour
 {
     [Header("Boss Objects")] 
     public GameObject m_bossIntroductionObj;
@@ -80,7 +80,7 @@ public class BossSequenceController : MonoBehaviour
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
                 break;
-            case GameplayManager.GameplayState.SpawnBoss:
+            case GameplayManager.GameplayState.BossWave:
                 UpdateTask(BossSequenceTask.Setup);
                 break;
             case GameplayManager.GameplayState.Combat:
@@ -92,8 +92,6 @@ public class BossSequenceController : MonoBehaviour
             case GameplayManager.GameplayState.Victory:
                 break;
             case GameplayManager.GameplayState.Defeat:
-                break;
-            case GameplayManager.GameplayState.CutScene:
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
