@@ -11,6 +11,7 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
 {
     public Image m_gathererImage;
     public TextMeshProUGUI m_hotkeyLabel;
+    public TextMeshProUGUI m_gathererLevelLabel;
     public GameObject m_idleDisplayGroup;
     public GameObject m_selectedDisplayGroup;
     public Image m_gathererTypeImage;
@@ -33,6 +34,7 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         ToggleIdleDisplay(m_gathererController.m_gathererTask == GathererController.GathererTask.Idling);
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnGameObjectDeselected += GathererDeselected;
+        m_gathererController.GathererLevelChange += UpdateGathererLevelLabel;
     }
 
     public void SelectGatherer()
@@ -51,11 +53,6 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         m_selectedDisplayGroup.SetActive(!selectedObj == m_gathererController.gameObject);
     }
 
-    public void DeselectGatherer()
-    {
-        
-    }
-
     void Update()
     {
         if (m_gathererController.m_gathererTask != m_lastTask)
@@ -63,6 +60,11 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
             m_lastTask = m_gathererController.m_gathererTask;
             ToggleIdleDisplay(m_gathererController.m_gathererTask == GathererController.GathererTask.Idling);
         }
+    }
+
+    void UpdateGathererLevelLabel(int level)
+    {
+        m_gathererLevelLabel.SetText($"<sprite name=\"GathererWood\"> Lv {level}");
     }
     
     public void ToggleIdleDisplay(bool b)
@@ -86,5 +88,6 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         GameplayManager.OnGameObjectSelected -= GathererSelected;
         GameplayManager.OnGameObjectDeselected -= GathererDeselected;
+        m_gathererController.GathererLevelChange -= UpdateGathererLevelLabel;
     }
 }

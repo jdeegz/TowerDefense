@@ -30,7 +30,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
     [SerializeField] private TextMeshProUGUI m_ffwLabel;
-    [SerializeField] private TextMeshProUGUI m_bossNameLabel;
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
@@ -39,10 +38,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_alertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
     [SerializeField] private GameObject m_castleRepairDisplayObj;
-    [SerializeField] private GameObject m_waveDisplayObj;
-    [SerializeField] private GameObject m_obeliskDisplayObj;
     [SerializeField] private GameObject m_ffwActiveDisplayObj;
-    [SerializeField] private GameObject m_bossHealthDisplayObj;
 
 
     [Header("Rect Transforms")]
@@ -55,7 +51,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_stoneGathererDisplay;
 
     [SerializeField] private Image m_castleRepairFill;
-    [SerializeField] private Image m_bossHealthFill;
     
     [Header("Scene References")]
     [SerializeField] private UIOptionsMenu m_menuObj;
@@ -171,7 +166,7 @@ public class UICombatView : MonoBehaviour
             m_woodBankDisplay.localScale = Vector3.one;
         }
 
-        m_woodBankLabel.SetText(total.ToString());
+        m_woodBankLabel.SetText($"{total}<sprite name=\"ResourceWood\">");
         m_woodBankShake = m_woodBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_woodBankShake.Play();
     }

@@ -50,7 +50,23 @@ public class GathererController : MonoBehaviour
     private int m_gathererPathProgress;
     private Vector3 m_moveDirection;
     private Quaternion m_previousRotation;
-    private int m_gathererLevel = 1;
+    private int level;
+    public int m_gathererLevel
+    {
+        get
+        {
+            return level;
+        }
+        set
+        {
+            if (level != value) // Only trigger the event if the value actually changes
+            {
+                level = value;
+                GathererLevelChange?.Invoke(level);
+            }
+        }
+    }
+    public event Action<int> GathererLevelChange;
 
     private void Awake()
     {
@@ -98,9 +114,11 @@ public class GathererController : MonoBehaviour
         {
             case ResourceManager.ResourceType.Wood:
                 GameplayManager.Instance.AddGathererToList(this, m_gathererData.m_type);
+                m_gathererLevel += 1;
                 break;
             case ResourceManager.ResourceType.Stone:
                 GameplayManager.Instance.AddGathererToList(this, m_gathererData.m_type);
+                m_gathererLevel += 1;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
