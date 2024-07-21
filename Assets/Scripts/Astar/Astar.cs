@@ -6,6 +6,35 @@ using Vector2Int = UnityEngine.Vector2Int;
 
 public class AStar
 {
+    public static List<Vector2Int> FindShortestPath(Vector2Int start, List<Vector2Int> endPositions)
+    {
+        List<Vector2Int> path = new List<Vector2Int>();
+        List<Vector2Int> shortestPath = null;
+
+        foreach (Vector2Int end in endPositions)
+        {
+            path = FindPath(start, end);
+            if (path == null)
+            {
+                continue;
+            }
+            
+            Debug.Log($"Path to {end} is {path.Count} long.");
+            
+            if (shortestPath == null)
+            {
+                shortestPath = path;
+            }
+            else if (path.Count < shortestPath.Count)
+            {
+                shortestPath = path;
+            }
+        }
+
+        return shortestPath;
+    }
+
+
     public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
     {
         List<Vector2Int> path = new List<Vector2Int>();
@@ -55,7 +84,7 @@ public class AStar
             Cell curCell = Util.GetCellFromPos(new Vector2Int(current.position.x, current.position.y));
             if (curCell.m_canPathNorth) neighbors.Add(new Vector2Int(current.position.x, current.position.y + 1));
             if (curCell.m_canPathEast) neighbors.Add(new Vector2Int(current.position.x + 1, current.position.y));
-            if (curCell.m_canPathSouth) neighbors.Add( new Vector2Int(current.position.x, current.position.y - 1));
+            if (curCell.m_canPathSouth) neighbors.Add(new Vector2Int(current.position.x, current.position.y - 1));
             if (curCell.m_canPathWest) neighbors.Add(new Vector2Int(current.position.x - 1, current.position.y));
 
             foreach (Vector2Int neighbor in neighbors)
@@ -123,7 +152,7 @@ public class AStar
     {
         // Check if the current cell is valid and not already visited
         Cell curCell = Util.GetCellFromPos(new Vector2Int(currentCell.x, currentCell.y));
-        
+
         if (currentCell.x >= 0 && currentCell.x < GridManager.Instance.m_gridWidth &&
             currentCell.y >= 0 && currentCell.y < GridManager.Instance.m_gridHeight &&
             !visited.Contains(currentCell) &&
@@ -137,7 +166,7 @@ public class AStar
             islandCells.Add(currentCell);
 
             // Recursively explore the neighbors of the current cell
-            if(curCell.m_canPathNorth) PerformDFS(new Vector2Int(currentCell.x, currentCell.y + 1), islandCells, visited, preconTowerCell); // Up neighbor
+            if (curCell.m_canPathNorth) PerformDFS(new Vector2Int(currentCell.x, currentCell.y + 1), islandCells, visited, preconTowerCell); // Up neighbor
             if (curCell.m_canPathEast) PerformDFS(new Vector2Int(currentCell.x + 1, currentCell.y), islandCells, visited, preconTowerCell); // Right neighbor
             if (curCell.m_canPathSouth) PerformDFS(new Vector2Int(currentCell.x, currentCell.y - 1), islandCells, visited, preconTowerCell); // Down neighbor
             if (curCell.m_canPathWest) PerformDFS(new Vector2Int(currentCell.x - 1, currentCell.y), islandCells, visited, preconTowerCell); // Left neighbor
@@ -198,9 +227,9 @@ public class AStar
             Cell curCell = Util.GetCellFromPos(new Vector2Int(current.position.x, current.position.y));
             if (curCell.m_canPathNorth) neighbors.Add(new Vector2Int(current.position.x, current.position.y + 1));
             if (curCell.m_canPathEast) neighbors.Add(new Vector2Int(current.position.x + 1, current.position.y));
-            if (curCell.m_canPathSouth) neighbors.Add( new Vector2Int(current.position.x, current.position.y - 1));
+            if (curCell.m_canPathSouth) neighbors.Add(new Vector2Int(current.position.x, current.position.y - 1));
             if (curCell.m_canPathWest) neighbors.Add(new Vector2Int(current.position.x - 1, current.position.y));
-                
+
             foreach (Vector2Int neighbor in neighbors)
             {
                 if (!visited.Contains(neighbor) &&
@@ -228,7 +257,7 @@ public class AStar
         Debug.Log($"No Path Found. {start} - {end}");
         return null;
     }
-    
+
     public static List<Vector2Int> GetExitPath(Vector2Int startPos, Vector2Int endPos)
     {
         List<Vector2Int> path = new List<Vector2Int>();
@@ -236,9 +265,8 @@ public class AStar
 
         while (current != endPos)
         {
-            
             Cell curCell = Util.GetCellFromPos(current);
-            
+
             //If the current cell is occupied, we cannot find the exit, this is not a valid path.
             if (curCell.m_isOccupied && curCell.m_isTempOccupied)
             {
@@ -254,21 +282,19 @@ public class AStar
                 Debug.Log("Cell has no direction value.");
                 return null;
             }
-            
+
             current += direction;
-            
+
             // Path goes out of bounds, return null
             if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth - 1 || current.y < 0 || current.y == GridManager.Instance.m_gridHeight - 1)
             {
                 Debug.LogError("Path goes out of bounds.");
                 return null;
             }
-            
         }
+
         path.Add(endPos);
 
         return path;
     }
-    
-    
 }

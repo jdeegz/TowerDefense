@@ -1,24 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using DG.Tweening;
-using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Sequence = DG.Tweening.Sequence;
+using Random = UnityEngine.Random;
 
-public class EnemyFlierBoss : EnemyController
+public class EnemyDragon : EnemyController
 {
-    [HideInInspector] public OLDBossSequenceController m_bossSequenceController;
     public GameObject m_muzzleObj;
-
+    public int m_castlePathingRadius = 8;
+    
     private int m_startGoalIndex;
     private int m_curGoal;
     private List<Vector2Int> m_curPositionList;
     private Vector3 m_curGoalPos;
     private Vector3 m_castlePos;
-
     private bool m_isStrafing = false;
     private float m_coneStartDelay;
     private float m_coneEndBuffer;
@@ -27,8 +22,10 @@ public class EnemyFlierBoss : EnemyController
     private int m_moveCounter;
     private float m_rotationThreadhold = 0.999f;
     private Coroutine m_curCoroutine;
-
     private BossState m_bossState;
+    private List<Vector2Int> m_bossGridCellPositions = new List<Vector2Int>();
+    private List<BossObeliskObj> m_bossObeliskPathPoints = new List<BossObeliskObj>();
+    private int m_bossObeliskPathIndex = 0;
 
     private enum BossState
     {
@@ -40,17 +37,202 @@ public class EnemyFlierBoss : EnemyController
         Death,
     }
 
-    public void SetupBoss(OLDBossSequenceController bossSequenceController)
+    public void OnEnable()
     {
-        //If we just spawned, travel to N units away from the castle.
-        m_bossSequenceController = bossSequenceController;
-        (m_curGoal, m_curGoalPos) = m_bossSequenceController.GetStartingGoalPosition();
-        m_curPositionList = m_bossSequenceController.m_bossGridCellPositions;
+        SetBossPathPoints();
+        
+        SetSpawnPosition();
+
+        InitiateBossMovement();
+    }
+
+    void SetBossPathPoints()
+    {
+        //Build the grid.
+        Vector2Int centerPoint = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_castleController.transform.position);
+        m_bossGridCellPositions = HexagonGenerator(centerPoint, m_castlePathingRadius);
+        
+        m_curPositionList = m_bossGridCellPositions; //We start rotating around the bass first.
+
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
+        {
+            BossObeliskObj newObeliskObj = new BossObeliskObj();
+            newObeliskObj.m_obeliskProgressPercent = obelisk.GetObeliskProgress();
+
+            Vector2Int obeliskPosition = Util.GetVector2IntFrom3DPos(obelisk.transform.position);
+            newObeliskObj.m_obeliskPointPositions = DiamondGenerator(obeliskPosition, (int)obelisk.m_obeliskData.m_obeliskRange);
+            m_bossObeliskPathPoints.Add(newObeliskObj);
+        }
+
+        m_bossObeliskPathPoints.Sort(new BossObeliskObjComparer());
+    }
+    
+    void SetSpawnPosition()
+    {
+        //Find the position we want to spawn the boss.
+        //Spawn it horizontally centered to the castle, and just off the height of the grid (off screen).
+        
+        float spawnOffset = 5f;
+        
+        Vector3 castlePosition = GameplayManager.Instance.m_castleController.transform.position;
+        float castleXPosition = castlePosition.x;
+        float castleZPosition = castlePosition.z;
+
+        float gridZHeight = GridManager.Instance.m_gridHeight;
+        float gridXWidth = GridManager.Instance.m_gridWidth;
+
+        float xDelta = castleXPosition; //Default to distance from left edge.
+        float zDelta = castleZPosition; //Default to distance from bottom edge.
+        float xMultiplier = -1;
+        float zMultiplier = -1;
+        
+        if (castleXPosition < gridXWidth / 2) //If true, we're closer to the left edge.
+        {
+            xDelta = gridXWidth - castleXPosition; //Furthest horizontal edge is the right.
+            xMultiplier = 1; //We are moving right from the castle position.
+
+        }
+
+        if (castleZPosition < gridZHeight / 2) //If true, we're closer to the bottom edge.
+        {
+            zDelta = gridZHeight - castleZPosition; //Furthest vertical edge is the top.
+            zMultiplier = 1; //We are moving up from the castle position.
+        }
+
+        if (xDelta > zDelta) //Are we moving laterally or horizontally from the castle position?
+        {
+            zMultiplier = 0;
+            if (xMultiplier > 0)
+            {
+                m_spawnDirection = SpawnDirection.East;
+            }
+            else
+            {
+                m_spawnDirection = SpawnDirection.West;
+            }
+        }
+        else
+        {
+            xMultiplier = 0;
+            if (zMultiplier > 0)
+            {
+                m_spawnDirection = SpawnDirection.North;
+            }
+            else
+            {
+                m_spawnDirection = SpawnDirection.South;
+            }
+        }
+
+        Vector3 spawnPos = new Vector3(castleXPosition + ((xDelta +spawnOffset) * xMultiplier), 0, castleZPosition + ((zDelta + spawnOffset) * zMultiplier));
+        transform.position = spawnPos;
+    }
+    
+    void InitiateBossMovement()
+    {
+        //If we just spawned, travel towards N units away from the castle.
+        (m_curGoal, m_curGoalPos) = GetStartingGoalPosition();
         m_startGoalIndex = m_curGoal;
         m_castlePos = GameplayManager.Instance.m_castleController.transform.position;
         transform.rotation = Quaternion.LookRotation(m_curGoalPos - transform.position);
         UpdateBossState(BossState.MoveToDestination);
     }
+    
+    public (List<Vector2Int>, Vector3, int) GetNextGoalList(Vector3 curPos)
+    {
+        //Our obelisks lists are sorted from Closest to completetion to lowest.
+        //We need to know if we've started down this list. And also if we've reased the end of this list to start over.
+        List<Vector2Int> newList = new List<Vector2Int>();
+
+        //If we've looped all the way around, we want to go back to circling the castle and start if all over.
+        if (m_bossObeliskPathIndex == m_bossObeliskPathPoints.Count)
+        {
+            m_bossObeliskPathIndex = 0; //Reset index for next loop
+            newList = m_bossGridCellPositions; //List to send.
+        }
+        else
+        {
+            newList = m_bossObeliskPathPoints[m_bossObeliskPathIndex].m_obeliskPointPositions; //List to send 
+            ++m_bossObeliskPathIndex; //Increment for next loop
+        }
+        
+        //We now need to find the closts point in the list to move to.
+        Vector3 closestGoalPos = new Vector3();
+        int pathingStartIndex = 0;
+        float shortestDistance = 9999f;
+        for (int i = 0; i < newList.Count; ++i)
+        {
+            Vector3 pointPos = new Vector3(newList[i].x, 0, newList[i].y);
+            float distance = Vector3.Distance(curPos, pointPos);
+            if (distance <= shortestDistance)
+            {
+                shortestDistance = distance;
+                closestGoalPos = pointPos;
+                pathingStartIndex = i;
+            }
+        }
+
+        closestGoalPos = GetNextGoalPosition(newList, pathingStartIndex);
+        
+        return (newList, closestGoalPos, pathingStartIndex);
+    }
+
+    public Vector3 GetNextGoalPosition(List<Vector2Int> curPositionList, int i)
+    {
+        //If the new index is equal to our starting index, we've completed a loop and need to pick a new list to operate from.
+
+        Vector3 goalPos = Vector3.zero;
+
+        Vector2Int cellPos = curPositionList[i];
+
+        float offset = 1.5f;
+        float x = Random.Range(-offset, offset);
+        float y = Random.Range(-offset, offset);
+
+        goalPos = new Vector3(cellPos.x + x, 0, cellPos.y + y);
+        Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos}");
+        return goalPos;
+    }
+
+    public (int, Vector3) GetStartingGoalPosition()
+    {
+        Vector3 goalPos = Vector3.zero;
+        Vector2Int cellPos = new Vector2Int();
+        int goalIndex = 0;
+        switch (m_spawnDirection)
+        {
+            case SpawnDirection.North:
+                goalIndex = 0;
+                break;
+            case SpawnDirection.East:
+                goalIndex = 1;
+                break;
+            case SpawnDirection.South:
+                goalIndex = 3;
+                break;
+            case SpawnDirection.West:
+                goalIndex = 4;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        cellPos = m_bossGridCellPositions[goalIndex];
+        goalPos = new Vector3(cellPos.x, 0, cellPos.y);
+        Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos}");
+        return (goalIndex, goalPos);
+    }
+
+    
+    public enum SpawnDirection
+    {
+        North,
+        East,
+        South,
+        West
+    }
+
+    public SpawnDirection m_spawnDirection;
 
     public override void HandleMovement()
     {
@@ -100,7 +282,7 @@ public class EnemyFlierBoss : EnemyController
 
     private void HandleAttack()
     {
-        GameObject projectileObj = ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation);
+        ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation);
     }
 
     public void Update()
@@ -190,11 +372,11 @@ public class EnemyFlierBoss : EnemyController
         if (m_curGoal == m_startGoalIndex)
         {
             //If we have, we need to pick a new list to operate on.
-            (m_curPositionList, m_curGoalPos, m_startGoalIndex) = m_bossSequenceController.GetNextGoalList(transform.position);
+            (m_curPositionList, m_curGoalPos, m_startGoalIndex) = GetNextGoalList(transform.position);
         }
         else
         {
-            m_curGoalPos = m_bossSequenceController.GetNextGoalPosition(m_curPositionList, m_curGoal);
+            m_curGoalPos = GetNextGoalPosition(m_curPositionList, m_curGoal);
         }
 
         m_moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
@@ -224,17 +406,88 @@ public class EnemyFlierBoss : EnemyController
             m_muzzleObj.SetActive(false);
         }
     }
+    
 
     public override void RemoveObject()
     {
-        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        //Disabling the Status Effect application to spawners. Movespeed after maze destruction too punishing.
+        /*foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
         {
             GameObject bossShardObj = Instantiate(((BossEnemyData)m_enemyData).m_bossShard, transform.position, quaternion.identity);
 
             bossShardObj.GetComponent<BossShard>().SetupBossShard(spawner.transform.position);
             spawner.SetSpawnerStatusEffect(((BossEnemyData)m_enemyData).m_spawnStatusEffect, ((BossEnemyData)m_enemyData).m_spawnStatusEffectWaveDuration);
-        }
+        }*/
         
         base.RemoveObject();
+    }
+    
+    private List<Vector2Int> HexagonGenerator(Vector2Int centerPoint, int radius)
+    {
+        List<Vector2Int> points = new List<Vector2Int>();
+        float startAngle = Mathf.PI / 2;
+        for (int i = 0; i < 6; ++i)
+        {
+            float angle = startAngle + 2 * Mathf.PI / 6 * i;
+            int x = Mathf.RoundToInt(centerPoint.x + radius * MathF.Cos(angle));
+            int y = Mathf.RoundToInt(centerPoint.y + radius * MathF.Sin(angle));
+
+            Vector2Int point = new Vector2Int(x, y);
+            points.Add(point);
+            //Instantiate(m_debugShape, new Vector3(point.x, 0, point.y), quaternion.identity, transform);
+        }
+
+        return points;
+    }
+    
+    private List<Vector2Int> DiamondGenerator(Vector2Int centerPoint, int radius)
+    {
+        List<Vector2Int> points = new List<Vector2Int>();
+        float startAngle = Mathf.PI / 2;
+        for (int i = 0; i < 4; ++i)
+        {
+            float angle = startAngle + 2 * Mathf.PI / 4 * i;
+            int x = Mathf.RoundToInt(centerPoint.x + radius * MathF.Cos(angle));
+            int y = Mathf.RoundToInt(centerPoint.y + radius * MathF.Sin(angle));
+
+            Vector2Int point = new Vector2Int(x, y);
+            points.Add(point);
+            //Instantiate(m_debugShape, new Vector3(point.x, 0, point.y), quaternion.identity, transform);
+        }
+
+        return points;
+    }
+    
+    public override void AddToGameplayList()
+    {
+        GameplayManager.Instance.AddBossToList(this);
+    }
+    
+    public override void RemoveFromGameplayList()
+    {
+        GameplayManager.Instance.RemoveBossFromList(this);
+    }
+    
+    public override void SetupUI()
+    {
+        //Setup the Boss health meter.
+        UIHealthMeter lifeMeter = ObjectPoolManager.SpawnObject(IngameUIController.Instance.m_healthMeterBoss.gameObject, IngameUIController.Instance.m_healthMeterBossRect).GetComponent<UIHealthMeter>();
+        lifeMeter.SetBoss(this, m_curMaxHealth);
+    }
+}
+
+[System.Serializable]
+public class BossObeliskObj
+{
+    public List<Vector2Int> m_obeliskPointPositions;
+    public float m_obeliskProgressPercent;
+}
+
+public class BossObeliskObjComparer : IComparer<BossObeliskObj>
+{
+    public int Compare(BossObeliskObj x, BossObeliskObj y)
+    {
+        // Compare based on the YourVariable property
+        return y.m_obeliskProgressPercent.CompareTo(x.m_obeliskProgressPercent);
     }
 }

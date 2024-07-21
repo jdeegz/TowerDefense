@@ -23,4 +23,5 @@ public class GathererData : ScriptableObject
     public List<AudioClip> m_selectedGathererClips;
     public AudioClip m_levelUpClip;
     public List<AudioClip> m_harvestingClips;
+    public AudioClip m_critDepositClip;
 }

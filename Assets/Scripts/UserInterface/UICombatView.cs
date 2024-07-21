@@ -371,7 +371,7 @@ public class UICombatView : MonoBehaviour
     private void Alert(string text)
     {
         GameObject curAlert = Instantiate(m_alertPrefab, m_alertRootObj.transform);
-        curAlert.GetComponent<UIAlert>().SetLabelText(text, Color.red);
+        curAlert.GetComponent<UIAlert>().SetLabelText(text, Color.white);
     }
 
     private void OnPlayButtonClicked()

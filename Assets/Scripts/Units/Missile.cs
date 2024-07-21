@@ -65,8 +65,7 @@ public class Missile : Projectile
     void DealDamage()
     {
         //Deal Damage
-        Vector3 searchPos = new Vector3(m_targetPos.x, 0, m_targetPos.z);
-        Collider[] hits = Physics.OverlapSphere(searchPos, m_impactRadius, m_layerMask.value);
+        Collider[] hits = Physics.OverlapSphere(m_targetPos, m_impactRadius, m_layerMask.value);
         if (hits.Length > 0)
         {
             foreach (Collider col in hits)

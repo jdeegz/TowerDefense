@@ -6,27 +6,39 @@ using System.Linq;
 
 public static class Util
 {
+    static Vector2Int[] m_directions = new Vector2Int[]
+    {
+        new Vector2Int(-1, -1), // Top-left
+        new Vector2Int(0, -1), // Top
+        new Vector2Int(1, -1), // Top-right
+        new Vector2Int(-1, 0), // Left
+        new Vector2Int(1, 0), // Right
+        new Vector2Int(-1, 1), // Bottom-left
+        new Vector2Int(0, 1), // Bottom
+        new Vector2Int(1, 1) // Bottom-right
+    };
+
     public static Vector3 GetRandomPosition(Vector3 objPosition, Vector3 offset)
     {
         //Position
         objPosition += Vector3.Lerp(-offset, offset, UnityEngine.Random.value);
         return objPosition;
     }
-    
+
     public static Quaternion GetRandomRotation(Quaternion objRotation, Vector3 offset)
     {
         //Rotation
         objRotation *= Quaternion.Euler(Vector3.Lerp(-offset, offset, UnityEngine.Random.value));
         return objRotation;
     }
-    
+
     public static Vector3 GetRandomScale(Vector3 objScale, Vector3 offset)
     {
         //Scale
         objScale += Vector3.Lerp(-offset, offset, UnityEngine.Random.value);
         return objScale;
     }
-    
+
     public static Vector3 RoundVectorToInt(Vector3 vector)
     {
         return new Vector3(Mathf.FloorToInt(vector.x + 0.5f), Mathf.FloorToInt(vector.y), Mathf.FloorToInt(vector.z + 0.5f));
@@ -365,7 +377,7 @@ public static class Util
     {
         return pos.y * GridManager.Instance.m_gridWidth + pos.x;
     }
-    
+
     public static Cell GetCellFromPos(Vector2Int pos)
     {
         int x = pos.x;
@@ -455,6 +467,7 @@ public static class Util
         string formattedPercentage = percentageValue.ToString("0") + "%";
         return formattedPercentage;
     }
+
     public static Cell[] GetNeighborCells(Cell startCell, Cell[] gridCells)
     {
         // Get the neighboring cells (North, East, South, and West)
@@ -463,7 +476,7 @@ public static class Util
         Cell curCell = GetCellFromPos(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y));
         if (curCell.m_canPathNorth) neighbors[0] = new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1);
         if (curCell.m_canPathEast) neighbors[1] = new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y);
-        if (curCell.m_canPathSouth) neighbors[2] =  new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1);
+        if (curCell.m_canPathSouth) neighbors[2] = new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1);
         if (curCell.m_canPathWest) neighbors[3] = new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y);
 
         Cell[] neighborCells = new Cell[4];
@@ -477,6 +490,41 @@ public static class Util
         }
 
         return neighborCells;
+    }
+
+    public static List<Vector2Int> GetAdjacentEmptyCellPos(Vector2Int center)
+    {
+        List<Vector2Int> adjacentCells = new List<Vector2Int>();
+
+        foreach (Vector2Int direction in m_directions)
+        {
+            Vector2Int adjacentPosition = center + direction;
+            Cell adjacentCell = GetCellFromPos(adjacentPosition);
+            if (adjacentCell == null) continue;
+            if (!adjacentCell.m_isOccupied)
+            {
+                adjacentCells.Add(adjacentCell.m_cellPos);
+            }
+        }
+
+        return adjacentCells;
+    }
+
+    public static List<Vector2Int> GetAdjacentCellPos(Vector2Int center)
+    {
+        List<Vector2Int> adjacentCells = new List<Vector2Int>();
+
+        foreach (Vector2Int direction in m_directions)
+        {
+            Vector2Int adjacentPosition = center + direction;
+            Cell adjacentCell = GetCellFromPos(adjacentPosition);
+            
+            if (adjacentCell == null) continue;
+
+            adjacentCells.Add(adjacentCell.m_cellPos);
+        }
+
+        return adjacentCells;
     }
 
     public static Vector2Int GetVector2IntFrom3DPos(Vector3 pos)

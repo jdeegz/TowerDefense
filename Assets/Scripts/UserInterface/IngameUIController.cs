@@ -15,6 +15,7 @@ public class IngameUIController : MonoBehaviour
     public UIHealthMeter m_healthMeterBoss;
     public UIIngameMeter m_ingameMeter;
     public UIAlert m_currencyAlert;
+    public UIAlert m_critCurrencyAlert;
     public UIAlert m_levelUpAlert;
     public RectTransform m_healthMeterBossRect;
     [SerializeField] private Color m_currencyGoodcolor;
@@ -46,19 +47,40 @@ public class IngameUIController : MonoBehaviour
 
     public void SpawnCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)
     {
+        var values = SetCurrencyAlertValues(woodValue, stoneValue, isGood);
+        
+        //Build the alert.
+        //GameObject uiAlertObj = ObjectPoolManager.SpawnObject(m_currencyAlert.gameObject, transform);
         UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
         RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
         
-        Vector2 viewportPos = m_camera.WorldToViewportPoint(worldPos);
-        viewportPos.x = viewportPos.x * m_screenWidth - m_screenWidth * 0.5f;
-        viewportPos.y = viewportPos.y * m_screenHeight - m_screenHeight * 0.5f;
-        rectTransform.anchoredPosition = viewportPos;
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
+        uiAlert.SetLabelText($"{values.Item1}", values.Item2);
+    }
+    
+    public void SpawnCritCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)
+    {
+        var values = SetCurrencyAlertValues(woodValue, stoneValue, isGood);
         
+        //Build the alert.
+        //GameObject uiAlertObj = ObjectPoolManager.SpawnObject(m_currencyAlert.gameObject, transform);
+        UIAlert uiAlert = Instantiate(m_critCurrencyAlert, transform);
+        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
+        
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
+        uiAlert.SetLabelText($"{values.Item1}", values.Item2);
+    }
+    
+    public (string, Color) SetCurrencyAlertValues(int woodValue, int stoneValue, bool isGood)
+    {
+        //Define the text
         Color textColor = isGood ? m_currencyGoodcolor : m_currencyBadcolor;
 
         string woodMagnitude;
         string stoneMagnitude;
-        if (isGood)
+        if (isGood) //Determine + or -
         {
             woodMagnitude = woodValue > 0 ? m_positiveValue : m_negativeValue;
             stoneMagnitude = stoneValue > 0 ? m_positiveValue : m_negativeValue;
@@ -79,7 +101,7 @@ public class IngameUIController : MonoBehaviour
             alertString = $"{woodMagnitude}{woodValue}{m_woodIcon}";
         }
         
-        uiAlert.SetLabelText($"{alertString}", textColor);
+        return (alertString, textColor);
     }
 
     public void SpawnLevelUpAlert(GameObject obj, Vector3 worldPos)

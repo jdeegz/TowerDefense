@@ -40,6 +40,7 @@ public class GathererController : MonoBehaviour
     private ResourceNode m_curHarvestNode;
     private RuinController m_curRuin;
     private Vector2Int m_curHarvestPointPos;
+    private List<Vector2Int> m_depositLocations;
     private Coroutine m_curCoroutine;
     private float m_harvestDuration;
     private int m_carryCapacity;
@@ -51,12 +52,10 @@ public class GathererController : MonoBehaviour
     private Vector3 m_moveDirection;
     private Quaternion m_previousRotation;
     private int level;
+
     public int m_gathererLevel
     {
-        get
-        {
-            return level;
-        }
+        get { return level; }
         set
         {
             if (level != value) // Only trigger the event if the value actually changes
@@ -66,6 +65,7 @@ public class GathererController : MonoBehaviour
             }
         }
     }
+
     public event Action<int> GathererLevelChange;
 
     private void Awake()
@@ -95,6 +95,21 @@ public class GathererController : MonoBehaviour
             m_curPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
             m_curCell = Util.GetCellFromPos(m_curPos);
             m_curCell.UpdateActorCount(1, gameObject.name);
+        }
+
+        if (newState == GameplayManager.GameplayState.CreatePaths) // Moved this code out of Place Obstacles, because that is also when Obelisks are added GameplayManager.
+        {
+            m_depositLocations = new List<Vector2Int>();
+            
+            foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
+            {
+                m_depositLocations.AddRange(Util.GetAdjacentCellPos(Util.GetVector2IntFrom3DPos(obelisk.gameObject.transform.position)));
+            }
+
+            foreach (GameObject castleEntrance in GameplayManager.Instance.m_castleController.m_castleEntrancePoints)
+            {
+                m_depositLocations.Add(Util.GetVector2IntFrom3DPos(castleEntrance.transform.position));
+            }
         }
     }
 
@@ -171,7 +186,7 @@ public class GathererController : MonoBehaviour
 
         if (m_gathererTask == GathererTask.TravelingToCastle)
         {
-            stoppingDistance = 2f;
+            stoppingDistance = .5f;
         }
 
         if (remainingDistance <= stoppingDistance)
@@ -196,7 +211,7 @@ public class GathererController : MonoBehaviour
             if (m_gathererTask == GathererTask.Idling)
             {
                 ToggleDisplayIdleVFX();
-                
+
                 if (m_resourceCarried > 0)
                 {
                     UpdateTask(GathererTask.TravelingToCastle);
@@ -438,14 +453,14 @@ public class GathererController : MonoBehaviour
     {
         //Are we next to the node already?
         ResourceNode node = requestObj.GetComponent<ResourceNode>();
-        
+
         //If this is the node we're already harvesting ignore the command.
         if (node == m_curHarvestNode)
         {
             Debug.Log($"{gameObject.name} is already harvesting {node}. Ignoring new request.");
             return;
         }
-        
+
         //Find harvest nodes around the requested resource.
         for (var i = 0; i < node.m_harvestPoints.Count; i++)
         {
@@ -557,12 +572,14 @@ public class GathererController : MonoBehaviour
                 m_curCoroutine = StartCoroutine(Harvesting());
                 break;
             case GathererTask.TravelingToCastle:
+                //Trying a variation where gatherers find the shortest path to a obelisk or the castle and use that path.
+                //endPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
+
                 startPos = Util.GetVector2IntFrom3DPos(transform.position);
-                endPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
-                m_gathererPath = AStar.FindPath(startPos, endPos);
+                m_gathererPath = AStar.FindShortestPath(startPos, m_depositLocations);
                 if (m_gathererPath == null)
                 {
-                    Debug.Log("No path back to castle found");
+                    Debug.Log("No path back to castle found. This should be not possible.");
                 }
 
                 break;
@@ -653,7 +670,7 @@ public class GathererController : MonoBehaviour
 
         foreach (Collider collider in colliders)
         {
-            if (collider != null) 
+            if (collider != null)
             {
                 ResourceNode newNode = collider.GetComponent<ResourceNode>();
                 if (newNode != null)
@@ -800,20 +817,31 @@ public class GathererController : MonoBehaviour
     private IEnumerator Storing()
     {
         yield return new WaitForSeconds(m_storingDuration);
-        //Calculate storage based on level. Lvl 1 = 1, Lvl 2 = 1 + 50% * 2
+
         int storageAmount;
         int random = Random.Range(0, 2);
+        storageAmount = m_carryCapacity + ((m_gathererLevel - 1) * random); //Calculate storage based on level. Lvl 1 = 1, Lvl 2 = 1 + 50% * 2
         switch (m_gathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
-                storageAmount = m_carryCapacity + ((m_gathererLevel - 1) * random);
                 ResourceManager.Instance.UpdateWoodAmount(storageAmount);
-                IngameUIController.Instance.SpawnCurrencyAlert(storageAmount, 0, true, transform.position);
+
+                if (storageAmount > 1) //Did we deposit a crit amount?
+                {
+                    RequestPlayAudio(m_gathererData.m_critDepositClip, m_audioSource);
+                    IngameUIController.Instance.SpawnCritCurrencyAlert(storageAmount, 0, true, transform.position);
+                }
+                else
+                {
+                    IngameUIController.Instance.SpawnCurrencyAlert(storageAmount, 0, true, transform.position);
+                }
+
                 break;
             case ResourceManager.ResourceType.Stone:
                 storageAmount = m_carryCapacity; //To add stone levelng later!
                 ResourceManager.Instance.UpdateStoneAmount(storageAmount);
                 IngameUIController.Instance.SpawnCurrencyAlert(0, storageAmount, true, transform.position);
+                if (storageAmount > 1) RequestPlayAudio(m_gathererData.m_critDepositClip, m_audioSource);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
