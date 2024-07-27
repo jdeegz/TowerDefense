@@ -50,6 +50,7 @@ public class VoidRayTowerController : Tower
     private Tween m_curTween;
     private float m_curBeamWidth = 0;
     private bool m_beamActive;
+    private Collider m_colliderHit;
 
     void Update()
     {
@@ -212,17 +213,22 @@ public class VoidRayTowerController : Tower
             m_curDamage = m_damageCap;
         }
 
-        //Deal Damage.
-        m_curTarget.OnTakeDamage(m_curDamage);
-
-        //Apply Shred
-        if (m_statusEffectData)
+        //Deal Damage if we hit our target (was Raycast was not interrupted)
+        if (m_colliderHit == m_targetCollider)
         {
-            StatusEffect statusEffect = new StatusEffect();
-            statusEffect.SetTowerSender(this);
-            statusEffect.m_data = m_statusEffectData;
-            m_curTarget.ApplyEffect(statusEffect);
+            m_curTarget.OnTakeDamage(m_curDamage);
+            
+            //Apply Shred
+            if (m_statusEffectData)
+            {
+                StatusEffect statusEffect = new StatusEffect();
+                statusEffect.SetTowerSender(this);
+                statusEffect.m_data = m_statusEffectData;
+                m_curTarget.ApplyEffect(statusEffect);
+            }
         }
+
+        
 
         //Play Audio.
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
@@ -233,12 +239,13 @@ public class VoidRayTowerController : Tower
         m_resetStep = m_totalResetTime / m_curStacks;
     }
 
+    
     private void HandleBeamVisual()
     {
         //Setup Target point and rotation
         Vector3 vfxTarget;
         Quaternion vfxRotation;
-        GetPointOnColliderSurface(m_muzzlePoint.position, m_curTarget.m_targetPoint.position, m_targetCollider, out vfxTarget, out vfxRotation);
+        GetPointOnColliderSurface(m_muzzlePoint.position, m_curTarget.m_targetPoint.position, m_targetCollider, out vfxTarget, out vfxRotation, out m_colliderHit);
         m_projectileImpactVFX.transform.position = vfxTarget;
         m_projectileImpactVFX.transform.rotation = vfxRotation;
         
@@ -288,7 +295,7 @@ public class VoidRayTowerController : Tower
 
     private void FindTarget()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask);
         float closestDistance = 999;
         int closestIndex = -1;
         if (hits.Length > 0)

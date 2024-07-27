@@ -9,6 +9,7 @@ public class ObjectPoolManager : MonoBehaviour
     private static ObjectPoolManager Instance;
     private List<PooledObjectInfo> m_objectPools = new List<PooledObjectInfo>();
     private List<OrphanedObject> m_orphanList = new List<OrphanedObject>();
+    private List<OrphanedObject> m_expiredOrphanList = new List<OrphanedObject>();
 
     public enum PoolType
     {
@@ -20,7 +21,6 @@ public class ObjectPoolManager : MonoBehaviour
         None
     }
 
-    public PoolType m_poolType;
     private GameObject m_objectPoolEmptyHolder;
     private GameObject m_particleSystemEmpty;
     private GameObject m_enemyEmpty;
@@ -66,11 +66,18 @@ public class ObjectPoolManager : MonoBehaviour
         {
             if (m_orphanList[i].m_poolDelay < Time.time)
             {
-                ReturnObjectToPool(m_orphanList[i].m_orphanObject, m_orphanList[i].m_poolType);
-                m_orphanList.RemoveAt(i);
-                --i;
+               m_expiredOrphanList.Add(m_orphanList[i]);
             }
         }
+
+        foreach (OrphanedObject orphanedObject in m_expiredOrphanList)
+        {
+            //Debug.Log($"Orphan {orphanedObject.m_orphanObject.name} returned to pool.");
+            ReturnObjectToPool(orphanedObject.m_orphanObject, orphanedObject.m_poolType);
+            m_orphanList.Remove(orphanedObject);
+        }
+        
+        m_expiredOrphanList.Clear();
     }
 
     public static GameObject SpawnObject(GameObject objectToSpawn, Vector3 spawnPosition, Quaternion spawnRotation, PoolType poolType = PoolType.None)
@@ -101,16 +108,15 @@ public class ObjectPoolManager : MonoBehaviour
                 spawnableObj.transform.SetParent(parentObject.transform);
             }
         }
-
         else
         {
+            //Debug.Log($"Releasing {spawnableObj.name} from inactive pool and the object is currently {spawnableObj.activeSelf}.");
+            pool.m_inactiveObjects.Remove(spawnableObj);
             spawnableObj.transform.position = spawnPosition;
             spawnableObj.transform.rotation = spawnRotation;
-            pool.m_inactiveObjects.Remove(spawnableObj);
             spawnableObj.SetActive(true);
-            //Debug.Log($"Releasing {spawnableObj.name} from inactive pool.");
         }
-
+        
         return spawnableObj;
     }
     
@@ -136,15 +142,14 @@ public class ObjectPoolManager : MonoBehaviour
         {
             spawnableObj = Instantiate(objectToSpawn, parent);
         }
-
         else
         {
             pool.m_inactiveObjects.Remove(spawnableObj);
             spawnableObj.transform.parent = parent;
             spawnableObj.SetActive(true);
-            //Debug.Log($"Releasing {spawnableObj.name} from inactive pool.");
         }
 
+        //Debug.Log($"Spawning {spawnableObj.name}.");
         return spawnableObj;
     }
 
@@ -167,24 +172,20 @@ public class ObjectPoolManager : MonoBehaviour
         else
         {
             //Debug.Log($"{obj.name} returned to inactive objects pool.");
-            obj.SetActive(false);
             pool.m_inactiveObjects.Add(obj);
+            obj.SetActive(false);
         }
     }
 
     public static void OrphanObject(GameObject obj, float delay, PoolType poolType = PoolType.None)
     {
-        //Debug.Log($"New Orphan with delay of: {delay}.");
-        OrphanedObject orphan = new OrphanedObject() { m_orphanObject = obj, m_poolDelay = Time.time + delay, m_poolType = poolType};
+        //Debug.Log($"New Orphan {obj.name} with delay of: {delay}.");
+        OrphanedObject orphan = new OrphanedObject{ m_orphanObject = obj, m_poolDelay = Time.time + delay, m_poolType = poolType};
         Instance.m_orphanList.Add(orphan);
     }
 
-    private struct OrphanedObject
-    {
-        public GameObject m_orphanObject;
-        public float m_poolDelay;
-        public PoolType m_poolType;
-    }
+    
+    
 
     public static GameObject SetParentObject(PoolType poolType)
     {
@@ -208,6 +209,14 @@ public class ObjectPoolManager : MonoBehaviour
     }
 }
 
+public struct OrphanedObject
+{
+    public GameObject m_orphanObject;
+    public float m_poolDelay;
+    public ObjectPoolManager.PoolType m_poolType;
+}
+
+[Serializable]
 public class PooledObjectInfo
 {
     public string m_lookUpString;

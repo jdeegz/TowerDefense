@@ -7,7 +7,8 @@ public class Missile : Projectile
 {
     public GameObject m_impactEffect;
     public float m_impactRadius;
-    public LayerMask m_layerMask;
+    public LayerMask m_areaLayerMask;
+    public LayerMask m_raycastLayerMask;
     public float m_lookSpeed = 10;
     public float m_lookAcceleration = 5;
     public float m_speedAcceleration = 0.3f;
@@ -31,14 +32,14 @@ public class Missile : Projectile
 
     void FixedUpdate()
     {
-        if (IsTargetInStoppingDistance() && m_isFired == true && m_isComplete == false)
+        /*if (IsTargetInStoppingDistance() && m_isFired == true && m_isComplete == false)
         {
             m_isComplete = true;
             DealDamage();
             RemoveProjectile();
             return;
-        }
-        
+        }*/
+
         //if we're at our target, we dont need to move any longer, we've exploded.
         if (m_isFired && m_isComplete == false) TravelToTargetFixedUpdate();
     }
@@ -64,25 +65,70 @@ public class Missile : Projectile
 
     void DealDamage()
     {
-        //Deal Damage
-        Collider[] hits = Physics.OverlapSphere(m_targetPos, m_impactRadius, m_layerMask.value);
-        if (hits.Length > 0)
-        {
-            foreach (Collider col in hits)
-            {
-                EnemyController enemyHit = col.GetComponent<EnemyController>();
-                enemyHit.OnTakeDamage(m_projectileDamage);
-                ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, ObjectPoolManager.PoolType.ParticleSystem);
+        //Spawn VFX
+        ObjectPoolManager.SpawnObject(m_impactEffect, transform.position, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), ObjectPoolManager.PoolType.ParticleSystem);
 
-                //Apply Status Effect
-                if (m_statusEffect != null)
-                {
-                    enemyHit.ApplyEffect(m_statusEffect);
-                }
-            }
+        //Find affected enemies
+        Collider[] hits = Physics.OverlapSphere(m_targetPos, m_impactRadius, m_areaLayerMask.value);
+        if (hits.Length <= 0)
+        {
+            return;
         }
 
-        //Spawn VFX
-        ObjectPoolManager.SpawnObject(m_impactEffect, m_targetPos, Util.GetRandomRotation(Quaternion.identity, new Vector3(0,180,0)), ObjectPoolManager.PoolType.ParticleSystem);
+        foreach (Collider col in hits)
+        {
+            //Shoot a ray to each hit. If we hit a shield we stop and go to the next Sphere Overlap hit.
+            Vector3 rayDirection = (col.transform.position - transform.position).normalized;
+            float rayLength = Vector3.Distance(transform.position, col.transform.position);
+
+            Ray ray = new Ray(transform.position, rayDirection);
+            RaycastHit[] raycastHits = Physics.RaycastAll(ray, rayLength, m_raycastLayerMask);
+
+            if (raycastHits.Length == 0)
+            {
+                Debug.Log($"Something broke.");
+                return;
+            }
+
+            //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
+            for (int i = 0; i < raycastHits.Length; i++)
+            {
+                if (raycastHits[i].collider.gameObject.layer == m_shieldLayer)
+                {
+                    //We hit the shield.
+                    //In the future we may want to tell the enemy we hit their shield so they can animate.
+                    return;
+                }
+            }
+
+            EnemyController enemyHit = col.GetComponent<EnemyController>();
+            enemyHit.OnTakeDamage(m_projectileDamage);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, ObjectPoolManager.PoolType.ParticleSystem);
+
+            //Apply Status Effect
+            if (m_statusEffect != null)
+            {
+                enemyHit.ApplyEffect(m_statusEffect);
+            }
+        }
+    }
+    
+    
+    
+    void OnCollisionEnter(Collision collision)
+    {
+        if (m_isComplete) return;
+        
+        m_isComplete = true;
+        
+        if (collision.collider == null) return;
+        
+        if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
+        {
+            Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
+            DealDamage();
+            RemoveProjectile();
+        }
     }
 }

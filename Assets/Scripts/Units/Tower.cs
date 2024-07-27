@@ -11,6 +11,8 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected TowerData m_towerData;
     [SerializeField] protected StatusEffectData m_statusEffectData;
     [SerializeField] protected LayerMask m_layerMask;
+    [SerializeField] protected LayerMask m_raycastLayerMask;
+    protected int m_shieldLayer;
     
     [Header("Attachment Points")]
     [SerializeField] protected Transform m_turretPivot;
@@ -36,6 +38,7 @@ public abstract class Tower : MonoBehaviour
         SetupRangeCircle(m_towerRangeCircleSegments, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
         m_animator = GetComponent<Animator>();
+        m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
 
         //If we have a status effect on this tower, create an instance of it to use when applying.
     }
@@ -198,7 +201,7 @@ public abstract class Tower : MonoBehaviour
         return m_turretPivot;
     }
 
-    public void GetPointOnColliderSurface(Vector3 start, Vector3 target, Collider collider, out Vector3 point, out Quaternion rotation)
+    public void GetPointOnColliderSurface(Vector3 start, Vector3 target, Collider collider, out Vector3 point, out Quaternion rotation, out Collider colliderHit)
     {
         // Direction vector from start to target
         Vector3 direction = (target - start).normalized;
@@ -207,10 +210,10 @@ public abstract class Tower : MonoBehaviour
         Ray ray = new Ray(start, direction);
         
         // Calculate the maximum possible distance the ray could travel
-        float maxDistance = Vector3.Distance(start, target);
+        float rayLength = Vector3.Distance(start, target);
 
         // Raycast hit information
-        RaycastHit hit;
+        /*RaycastHit hit;
 
         // Perform the raycast
         if (collider.Raycast(ray, out hit, maxDistance))
@@ -224,7 +227,32 @@ public abstract class Tower : MonoBehaviour
             // If no intersection, return the target point and identity rotation as fallback
             point = target;
             rotation = Quaternion.identity;
+        }*/
+        
+        RaycastHit[] raycastHits = Physics.RaycastAll(ray, rayLength, m_raycastLayerMask);
+
+        if (raycastHits.Length == 0)
+        {
+            Debug.Log($"Something broke with the void tower Get Point on Collider Surface function.");
         }
+
+        //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
+        for (int i = 0; i < raycastHits.Length; i++)
+        {
+            //We hit the shield OR the target collider
+            if (raycastHits[i].collider.gameObject.layer == m_shieldLayer || raycastHits[i].collider == collider)
+            {
+                point = raycastHits[i].point;
+                rotation = Quaternion.LookRotation(raycastHits[i].normal);
+                colliderHit = raycastHits[i].collider;
+                return;
+            }
+        }
+        
+        // If no intersection, return the target point and identity rotation as fallback
+        point = target;
+        rotation = Quaternion.identity;
+        colliderHit = collider;
     }
 }
 

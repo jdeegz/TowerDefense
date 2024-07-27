@@ -6,7 +6,8 @@ using DG.Tweening;
 using DG.Tweening.Core.Easing;
 using UnityEngine;
 using UnityEngine.Serialization;
-
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(SphereCollider))]
 public abstract class Projectile : MonoBehaviour
 {
     [SerializeField] protected float m_projectileSpeed = .5f;
@@ -26,9 +27,11 @@ public abstract class Projectile : MonoBehaviour
     public Renderer m_renderer;
     public BulletTrailData m_bulletTrailData;
     protected TrailRenderer m_trail;
-
+    protected int m_shieldLayer;
+    
     void Start()
     {
+        m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
         m_trail = GetComponent<TrailRenderer>();
         ConfigureTrail();
     }
@@ -99,6 +102,5 @@ public abstract class Projectile : MonoBehaviour
         {
             ObjectPoolManager.ReturnObjectToPool(gameObject);
         }
-
     }
 }

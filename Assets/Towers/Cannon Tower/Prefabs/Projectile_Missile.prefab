@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 5220714862920923154}
   - component: {fileID: 5310288122973252644}
   - component: {fileID: 2949265901984092581}
+  - component: {fileID: 1346851076403727}
+  - component: {fileID: 4993580654192141207}
   m_Layer: 9
   m_Name: Projectile_Missile
   m_TagString: Untagged
@@ -25,6 +27,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8933404775076088512}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -32,7 +35,6 @@ Transform:
   m_Children:
   - {fileID: 6039594859363598043}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5310288122973252644
 MonoBehaviour:
@@ -53,9 +55,12 @@ MonoBehaviour:
   m_bulletTrailData: {fileID: 11400000, guid: fec77de6c422e134d8ac67e9bc22945c, type: 2}
   m_impactEffect: {fileID: 5150910794510912634, guid: 70a4fdaef8083d74dbb580f063fddfcd, type: 3}
   m_impactRadius: 1
-  m_layerMask:
+  m_areaLayerMask:
     serializedVersion: 2
     m_Bits: 1024
+  m_raycastLayerMask:
+    serializedVersion: 2
+    m_Bits: 33792
   m_lookSpeed: 5
   m_lookAcceleration: 25
   m_speedAcceleration: 0.05
@@ -77,6 +82,9 @@ TrailRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -163,6 +171,54 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!54 &1346851076403727
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8933404775076088512}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 1
+--- !u!135 &4993580654192141207
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8933404775076088512}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.15
+  m_Center: {x: 0, y: 0, z: 0.25}
 --- !u!1001 &6078253093233432880
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -228,7 +284,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 22844977fa5403b42aa1b3cfbaf384e5, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: a8e677e6d2b462248a4f57e9e128eda8, type: 2}
     - target: {fileID: 919132149155446097, guid: 22844977fa5403b42aa1b3cfbaf384e5, type: 3}

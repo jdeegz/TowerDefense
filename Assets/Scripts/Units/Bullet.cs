@@ -7,21 +7,16 @@ public class Bullet : Projectile
 {
     void FixedUpdate()
     {
-        if (IsTargetInStoppingDistance() && m_isComplete == false)
+        if (!m_isComplete)
         {
-            m_isComplete = true;
-            DealDamage();
-            RemoveProjectile();
-            return;
+            TravelToTargetFixedUpdate();
         }
-        
-        TravelToTargetFixedUpdate();
     }
 
     void TravelToTargetFixedUpdate()
     {
         transform.position += transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
-        
+
         //Get Direction
         Vector3 direction = m_targetPos - transform.position;
         transform.rotation = Quaternion.LookRotation(direction);
@@ -47,8 +42,28 @@ public class Bullet : Projectile
             }
 
             m_enemy.OnTakeDamage(dmg);
-            Quaternion spawnVFXdirection = Quaternion.LookRotation(m_targetPos - m_startPos);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, m_enemy.m_targetPoint.transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
+        }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (m_isComplete) return;
+        
+        m_isComplete = true;
+        
+        if (collision.collider == null) return;
+        
+        if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
+        {
+            Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
+            RemoveProjectile();
+        }
+
+        // Also do damage if we hit our target.
+        if (collision.gameObject == m_enemy.gameObject)
+        {
+            DealDamage();
         }
     }
 }

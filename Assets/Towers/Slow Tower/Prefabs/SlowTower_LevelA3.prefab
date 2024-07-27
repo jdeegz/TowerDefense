@@ -55,6 +55,9 @@ MonoBehaviour:
   m_layerMask:
     serializedVersion: 2
     m_Bits: 1024
+  m_raycastLayerMask:
+    serializedVersion: 2
+    m_Bits: 33792
   m_turretPivot: {fileID: 7668231543358243355}
   m_muzzlePoint: {fileID: 6659633019451852039}
   m_towerRangeCircle: {fileID: 6278354036822932288}
@@ -501,67 +504,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2968609167750827889, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4916300274070174363}
-    - targetCorrespondingSourceObject: {fileID: -3007875663206359669, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6086104415668209580}
     - targetCorrespondingSourceObject: {fileID: 3783437799247832910, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4806133806564669982}
-    - targetCorrespondingSourceObject: {fileID: 8020158410014969912, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7573245241494995588}
   m_SourcePrefab: {fileID: 100100000, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
 --- !u!4 &282831017003913219 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8100059514979717508, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
   m_PrefabInstance: {fileID: 8324306297534579079}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2074105463008743871 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8020158410014969912, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
-  m_PrefabInstance: {fileID: 8324306297534579079}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7573245241494995588
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2074105463008743871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 2
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
---- !u!1 &2721301708873554956 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -3007875663206359669, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}
-  m_PrefabInstance: {fileID: 8324306297534579079}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &6086104415668209580
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2721301708873554956}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 2
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
 --- !u!23 &3165835127722586060 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: -2852275827184030133, guid: c6235ff7ef61ad248b42b51000f7c0d5, type: 3}

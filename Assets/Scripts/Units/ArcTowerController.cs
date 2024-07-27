@@ -87,10 +87,34 @@ public class ArcTowerController : Tower
 
             //Find enemies and deal damage
             if (hits.Length <= 0) return;
-            for (int i = 0; i < hits.Length; ++i)
+            foreach (Collider col in hits)
             {
-                // Target is within the cone.
-                EnemyController enemyHit = hits[i].transform.GetComponent<EnemyController>();
+                //DISABLED BECAUSE IT MIGHT BE COOL
+                //Shoot a ray to each hit. If we hit a shield we stop and go to the next Arc hit.
+                /*Vector3 rayDirection = (col.transform.position - transform.position).normalized;
+                float rayLength = Vector3.Distance(transform.position, col.transform.position);
+
+                Ray ray = new Ray(transform.position, rayDirection);
+                RaycastHit[] raycastHits = Physics.RaycastAll(ray, rayLength, m_raycastLayerMask);
+
+                if (raycastHits.Length == 0)
+                {
+                    Debug.Log($"Something broke.");
+                    return;
+                }
+
+                //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
+                for (int i = 0; i < raycastHits.Length; i++)
+                {
+                    if (raycastHits[i].collider.gameObject.layer == m_shieldLayer)
+                    {
+                        //We hit the shield.
+                        //In the future we may want to tell the enemy we hit their shield so they can animate.
+                        return;
+                    }
+                }*/
+                
+                EnemyController enemyHit = col.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_towerData.m_secondaryDamage);
             }
         }
