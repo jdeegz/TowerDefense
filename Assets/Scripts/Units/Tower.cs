@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AI;
 
 public abstract class Tower : MonoBehaviour
 {
@@ -28,6 +26,9 @@ public abstract class Tower : MonoBehaviour
     protected Animator m_animator;
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
+    protected float m_targetDetectionInterval = 0.2f;
+    protected float m_targetDetectionTimer = 0f;
+    protected Collider m_targetCollider;
 
     void Awake()
     {
@@ -51,6 +52,31 @@ public abstract class Tower : MonoBehaviour
     public abstract TowerUpgradeData GetUpgradeData();
     public abstract void SetUpgradeData(TowerUpgradeData data);
 
+    public void FindTarget()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
+        if (hits.Length <= 0)
+        {
+            m_curTarget = null;
+            m_targetCollider = null;
+            return;
+        }
+
+        List<EnemyController> targets = new List<EnemyController>();
+        for (int i = 0; i < hits.Length; ++i)
+        {
+            targets.Add(hits[i].GetComponent<EnemyController>());
+        }
+
+        EnemyController target = GetPriorityTarget(targets);
+        Collider targetCollider = m_curTarget.GetComponent<Collider>();
+        if (m_curTarget == null || target.m_enemyData.m_targetPriority > m_curTarget.m_enemyData.m_targetPriority)
+        {
+            m_curTarget = target;
+            m_targetCollider = targetCollider;
+        }
+    }
+    
     public void RotateTowardsTarget()
     {
         Quaternion targetRotation = new Quaternion();
@@ -75,6 +101,17 @@ public abstract class Tower : MonoBehaviour
 
         m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
             m_towerData.m_rotationSpeed * Time.deltaTime);
+    }
+
+    protected bool IsTargetInSight()
+    {
+        Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
+        return Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_towerData.m_facingThreshold;
+    }
+    
+    protected bool IsTargetInRange(Vector3 targetPos)
+    {
+        return Vector3.Distance(transform.position, targetPos) < m_towerData.m_fireRange;
     }
 
     private void GameObjectSelected(GameObject obj)
@@ -184,6 +221,35 @@ public abstract class Tower : MonoBehaviour
 
             m_towerRangeCircle.SetPosition(i, currentPosition);
         }
+    }
+
+    public EnemyController GetPriorityTarget(List<EnemyController> targets)
+    {
+        float closestTargetDistance = float.PositiveInfinity;
+        int highestPriority = int.MinValue;
+        EnemyController priorityTarget = null;
+
+        foreach (EnemyController enemy in targets)
+        {
+            if (enemy.m_enemyData.m_targetPriority > highestPriority)
+            {
+                priorityTarget = enemy;
+                closestTargetDistance = Vector3.Distance(transform.position, enemy.transform.position);
+            }
+            
+            if (enemy.m_enemyData.m_targetPriority == highestPriority)
+            {
+                priorityTarget = enemy;
+                float distance = Vector3.Distance(transform.position, enemy.transform.position);
+                if (distance < closestTargetDistance)
+                {
+                    priorityTarget = enemy;
+                    closestTargetDistance = distance;
+                }
+            }
+        }
+
+        return priorityTarget;
     }
 
     public Quaternion GetTurretRotation()

@@ -13,7 +13,6 @@ public class CannonTower : Tower
     private int m_projectileCounter;
     private float m_reloadDelay;
     private float m_timeUntilFire;
-    private float m_facingThreshold = 10f;
     private int m_shotsFired;
     private float m_timeUntilBurst;
 
@@ -47,21 +46,28 @@ public class CannonTower : Tower
         m_timeUntilFire += Time.deltaTime;
         m_timeUntilBurst += Time.deltaTime;
 
-        if (m_curTarget == null)
+        m_targetDetectionTimer += Time.deltaTime;
+        if (m_targetDetectionTimer >= m_targetDetectionInterval)
         {
-            m_shotsFired = 0;
-            FindTarget();
-            return;
+            m_targetDetectionTimer = 0f;
+            FindTarget();   
         }
-
-        if (!IsTargetInRange(m_curTarget.transform.position) || m_curTarget.GetCurrentHP() <= 0)
+        
+        if (m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }
-        else
+        
+        if (m_curTarget == null)
+        {
+            m_shotsFired = 0;
+            return;
+        }
+
+        if (IsTargetInRange(m_curTarget.transform.position))
         {
             //If we have elapsed time, and are looking at the target, fire.
-            if (IsAbleToInitiateFireSequence() && IsAbleToFire() && IsTargetInSight())
+            if (IsAbleToInitiateFireSequence() && IsAbleToFire())
             {
                 Fire();
                 m_timeUntilBurst = 0;
@@ -145,53 +151,6 @@ public class CannonTower : Tower
         //Update projectileCounter
         ++m_projectileCounter;
         if (m_projectileCounter >= m_muzzlePoints.Count) m_projectileCounter = 0;
-    }
-
-    private void FindTarget()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
-        float closestDistance = 999;
-        int closestIndex = -1;
-        if (hits.Length > 0)
-        {
-            for (int i = 0; i < hits.Length; ++i)
-            {
-                float distance = Vector3.Distance(transform.position, hits[i].transform.position);
-                if (distance <= closestDistance)
-                {
-                    closestIndex = i;
-                    closestDistance = distance;
-                }
-            }
-
-            m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
-            HasTargets(true);
-        }
-        else
-        {
-            HasTargets(false);
-        }
-    }
-
-    private void HasTargets(bool b)
-    {
-        if (m_hasTargets == b) return;
-
-        m_hasTargets = b;
-        if (m_hasTargets)
-        {
-            m_animator.SetTrigger("TargetAcquired");
-        }
-        else
-        {
-            m_animator.SetTrigger("TargetUnacquired");
-        }
-    }
-
-    private bool IsTargetInSight()
-    {
-        Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
-        return Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold;
     }
 
 

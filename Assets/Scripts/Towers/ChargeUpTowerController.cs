@@ -40,10 +40,8 @@ public class ChargeUpTowerController : Tower
     private Vector2 m_scrollOffset;
     private float m_lastStacks;
     private float m_timeUntilBeamOff;
-    private float m_facingThreshold = 10f;
     private Vector3 m_lastTargetPos;
     private bool m_isCharging;
-    private Collider m_targetCollider;
     private Tween m_curTween;
     private float m_curBeamWidth = 0;
     private bool m_beamActive;
@@ -66,33 +64,39 @@ public class ChargeUpTowerController : Tower
 
         HandlePanelColor();
 
+        m_targetDetectionTimer += Time.deltaTime;
+        if (m_targetDetectionTimer >= m_targetDetectionInterval)
+        {
+            m_targetDetectionTimer = 0f;
+            FindTarget();   
+        }
+
         //FINDING TARGET
-        if (m_curTarget == null || m_curTarget.GetCurrentHP() <= 0)
+        if (m_curTarget.GetCurrentHP() <= 0)
+        {
+            m_curTarget = null;
+        }
+        
+        if (m_curTarget == null)
         {
             //Disable the beam if it's active, not totally necessary
             ChargeDown();
-            FindTarget();
             return;
         }
 
-        if (IsTargetInRange())
+        if (IsTargetInRange(m_curTarget.transform.position))
         {
             ChargeUp();
 
             HandleBeamVisual();
 
             //If we we are fully charged, and target is in cone of view, fire.
-            Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
-            if (m_curStacks >= m_maxStacks && Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold)
+            if (m_curStacks >= m_maxStacks && IsTargetInSight())
             {
                 //Enable the visual effect.
                 StartBeam();
                 Fire();
             }
-        }
-        else
-        {
-            m_curTarget = null;
         }
     }
 
@@ -273,35 +277,6 @@ public class ChargeUpTowerController : Tower
 
         //Modify Speed & Rate.
         m_projectileImpactVFX.SetFloat("_Rate", m_curStacks);
-    }
-
-    private bool IsTargetInRange()
-    {
-        float distance = Vector3.Distance(transform.position, m_curTarget.transform.position);
-        return distance <= m_towerData.m_fireRange;
-    }
-
-    private void FindTarget()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
-        float closestDistance = 999;
-        int closestIndex = -1;
-        if (hits.Length > 0)
-        {
-            //Debug.Log($"Hits: {hits.Length} and Layers: {m_layerMask.value}");
-            for (int i = 0; i < hits.Length; ++i)
-            {
-                float distance = Vector3.Distance(transform.position, hits[i].transform.position);
-                if (distance <= closestDistance)
-                {
-                    closestIndex = i;
-                    closestDistance = distance;
-                }
-            }
-
-            m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
-            m_targetCollider = m_curTarget.GetComponent<Collider>();
-        }
     }
 
     public override TowerTooltipData GetTooltipData()

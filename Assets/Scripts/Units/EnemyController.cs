@@ -59,7 +59,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     private bool m_isComplete;
     private bool m_isActive = true;
-    private Vector3 m_moveDirection;
+    protected Vector3 m_moveDirection;
 
     public void SetEnemyData(EnemyData data, bool active = true)
     {

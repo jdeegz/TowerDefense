@@ -44,9 +44,7 @@ public class VoidRayTowerController : Tower
     private float m_curFireRate;
     private Vector2 m_scrollOffset;
     private float m_timeUntilFire = 99f;
-    private float m_facingThreshold = 10f;
     private int m_lastStacks;
-    private Collider m_targetCollider;
     private Tween m_curTween;
     private float m_curBeamWidth = 0;
     private bool m_beamActive;
@@ -59,10 +57,10 @@ public class VoidRayTowerController : Tower
         {
             return;
         }
-
-        //if (m_maxStackVFX) HandleMaxStackVisuals();
-
+        
         RotateTowardsTarget();
+        
+        m_timeUntilFire += Time.deltaTime;
         
         //RAY STACK MANAGEMENT
         //If we have stacks, increment the time. Time is being set to 0 each fire.
@@ -84,25 +82,27 @@ public class VoidRayTowerController : Tower
         }
 
         //FINDING TARGET
-        if (m_curTarget == null || m_curTarget.GetCurrentHP() <= 0)
+        m_targetDetectionTimer += Time.deltaTime;
+        if (m_targetDetectionTimer >= m_targetDetectionInterval)
         {
-            if(m_beamActive) StopBeam();
-            FindTarget();
-            return;
+            m_targetDetectionTimer = 0f;
+            FindTarget();   
         }
-
-        if (!IsTargetInRange(m_curTarget.transform.position))
+        
+        if (m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }
-        else
+        
+        if (m_curTarget == null)
         {
-            m_timeUntilFire += Time.deltaTime;
+            if(m_beamActive) StopBeam();
+            return;
+        }
 
+        if (IsTargetInRange(m_curTarget.transform.position))
+        {
             HandleBeamVisual();
-
-            //If we have elapsed time, and are looking at the target, fire.
-            Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
 
             m_curFireRate = m_towerData.m_fireRate * Mathf.Pow(m_speedPower, m_curStacks);
             if (m_curFireRate > m_speedCap)
@@ -110,7 +110,7 @@ public class VoidRayTowerController : Tower
                 m_curFireRate = m_speedCap;
             }
 
-            if (m_timeUntilFire >= 1f / m_curFireRate && Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_facingThreshold)
+            if (m_timeUntilFire >= 1f / m_curFireRate && IsTargetInSight())
             {
                 if (m_curStacks < m_maxStacks) m_curStacks++;
                 StartBeam();
@@ -291,29 +291,6 @@ public class VoidRayTowerController : Tower
     {
         float distance = Vector3.Distance(transform.position, targetPos);
         return distance <= m_towerData.m_fireRange;
-    }
-
-    private void FindTarget()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask);
-        float closestDistance = 999;
-        int closestIndex = -1;
-        if (hits.Length > 0)
-        {
-            //Debug.Log($"Hits: {hits.Length} and Layers: {m_layerMask.value}");
-            for (int i = 0; i < hits.Length; ++i)
-            {
-                float distance = Vector3.Distance(transform.position, hits[i].transform.position);
-                if (distance <= closestDistance)
-                {
-                    closestIndex = i;
-                    closestDistance = distance;
-                }
-            }
-
-            m_curTarget = hits[closestIndex].transform.GetComponent<EnemyController>();
-            m_targetCollider = m_curTarget.GetComponent<Collider>();
-        }
     }
     
     public override TowerTooltipData GetTooltipData()
