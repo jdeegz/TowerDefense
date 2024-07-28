@@ -78,11 +78,11 @@ public class Missile : Projectile
         foreach (Collider col in hits)
         {
             //Shoot a ray to each hit. If we hit a shield we stop and go to the next Sphere Overlap hit.
-            Vector3 rayDirection = (col.transform.position - transform.position).normalized;
-            float rayLength = Vector3.Distance(transform.position, col.transform.position);
+            Vector3 rayDirection = (col.bounds.center - transform.position).normalized;
+            //float rayLength = Vector3.Distance(transform.position, col.transform.position);
 
             Ray ray = new Ray(transform.position, rayDirection);
-            RaycastHit[] raycastHits = Physics.RaycastAll(ray, rayLength, m_raycastLayerMask);
+            RaycastHit[] raycastHits = Physics.RaycastAll(ray, Mathf.Infinity, m_raycastLayerMask.value);
 
             if (raycastHits.Length == 0)
             {
@@ -117,14 +117,15 @@ public class Missile : Projectile
     
     void OnCollisionEnter(Collision collision)
     {
-        if (m_isComplete) return;
-        
-        m_isComplete = true;
         
         if (collision.collider == null) return;
         
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {
+            if (m_isComplete) return;
+        
+            m_isComplete = true;
+            
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
             ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
             DealDamage();

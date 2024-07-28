@@ -47,14 +47,14 @@ public class Bullet : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
-        if (m_isComplete) return;
-        
-        m_isComplete = true;
-        
         if (collision.collider == null) return;
         
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {
+            if (m_isComplete) return;
+        
+            m_isComplete = true;
+            
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
             ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
             RemoveProjectile();

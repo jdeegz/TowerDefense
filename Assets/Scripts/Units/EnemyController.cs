@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -57,15 +58,16 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public event Action<Vector3> DestroyEnemy;
 
     private bool m_isComplete;
+    private bool m_isActive = true;
     private Vector3 m_moveDirection;
 
-    public void SetEnemyData(EnemyData data)
+    public void SetEnemyData(EnemyData data, bool active = true)
     {
         m_enemyData = data;
-        SetupEnemy();
+        SetupEnemy(active);
     }
 
-    void SetupEnemy()
+    public virtual void SetupEnemy(bool active)
     {
         m_isComplete = false;
 
@@ -98,9 +100,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_audioSource = GetComponent<AudioSource>();
         m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
 
-        //Create Speed Trail Object
-        //m_speedTrailVFXObj.SetActive(false);
-
         //Setup ObeliskData if the mission has obelisks
         if (GameplayManager.Instance && GameplayManager.Instance.m_obelisksInMission.Count > 0)
         {
@@ -108,6 +107,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         SetupUI();
+        
+        SetEnemyActive(active);
     }
 
     public virtual void AddToGameplayList()
@@ -129,6 +130,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     void Update()
     {
+        if (!m_isActive) return;
+        
         UpdateStatusEffects();
 
         //Target Dummy
@@ -142,15 +145,21 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     {
         if (Vector3.Distance(transform.position, m_goal.position) <= 1.5f)
         {
-            Debug.Log("Dealing Castle damage and destroying enemy.");
-            GameplayManager.Instance.m_castleController.TakeDamage(1);
-            OnEnemyDestroyed(transform.position);
-            DestroyEnemy?.Invoke(transform.position);
+            ReachedCastle();
         }
+    }
+
+    public virtual void ReachedCastle()
+    {
+        GameplayManager.Instance.m_castleController.TakeDamage(1);
+        OnEnemyDestroyed(transform.position);
+        DestroyEnemy?.Invoke(transform.position);
     }
 
     void FixedUpdate()
     {
+        if (!m_isActive) return;
+        
         HandleMovement();
     }
 
@@ -194,17 +203,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //Move forward.
         float cumulativeMoveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * Time.deltaTime;
         transform.position += transform.forward * cumulativeMoveSpeed;
-
-
-        //Update Speed Trails
-        /*if (cumulativeMoveSpeed / Time.deltaTime > 1.0 && m_speedTrailVFXObj != null)
-        {
-            m_speedTrailVFXObj.SetActive(true);
-        }
-        else
-        {
-            m_speedTrailVFXObj.SetActive(false);
-        }  */
     }
 
     //Taking Damage
@@ -384,6 +382,18 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         return closestObelisk;
+    }
+    
+    public void HandleTrojanSpawn(Vector3 startPos, Vector3 endPos)
+    {
+        transform.position = startPos;
+        float moveDuration = Vector3.Distance(transform.position, endPos) / 0.6f;
+        gameObject.transform.DOJump(endPos, 2, 1, moveDuration).OnComplete(()=> SetEnemyActive(true));
+    }
+
+    public void SetEnemyActive(bool active) //Used to halt this unit from functioning. (Trojan created enemies)
+    {
+        m_isActive = active;
     }
 
     //Status Effect
