@@ -26,6 +26,7 @@ public class EnemyData : ScriptableObject
     [Header("Audio")]
     public AudioClip m_audioSpawnClip;
     public AudioClip m_audioDeathClip;
+    public AudioClip m_audioHealedClip;
     public List<AudioClip> m_audioDamagedClips;
 
 }

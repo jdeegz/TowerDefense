@@ -113,7 +113,7 @@ public class BeamTower : Tower
         if (m_statusEffectData == null) return;
 
         StatusEffect statusEffect = new StatusEffect();
-        statusEffect.SetTowerSender(this);
+        statusEffect.SetSender(gameObject);
         statusEffect.m_data = m_statusEffectData;
         m_curTarget.ApplyEffect(statusEffect);
     }

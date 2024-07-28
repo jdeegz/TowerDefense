@@ -140,7 +140,7 @@ public class ArcTowerController : Tower
                 if (m_statusEffectData)
                 {
                     StatusEffect statusEffect = new StatusEffect();
-                    statusEffect.SetTowerSender(this);
+                    statusEffect.SetSender(gameObject);
                     statusEffect.m_data = m_statusEffectData;
                     enemyHit.ApplyEffect(statusEffect);
                 }

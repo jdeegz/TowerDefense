@@ -47,7 +47,7 @@ public class Bullet : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider == null) return;
+        if (collision.collider == null || m_enemy == null) return;
         
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {

@@ -266,7 +266,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             DestroyEnemy?.Invoke(transform.position);
         }
     }
-
+    
     public IEnumerator HitFlash()
     {
         //Set the color
@@ -288,6 +288,32 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
+    }
+    
+    public virtual void OnHealed(float heal, bool percentage)
+    {
+        if (m_curHealth >= m_curMaxHealth) return;
+
+        //Audio
+        m_audioSource.PlayOneShot(m_enemyData.m_audioHealedClip);
+
+        //VFX
+
+        //Hit Flash
+        if (m_allRenderers == null) return;
+        if (m_hitFlashCoroutine != null)
+        {
+            StopCoroutine(m_hitFlashCoroutine);
+        }
+
+        m_hitFlashCoroutine = StartCoroutine(HitFlash());
+
+        //Calculate Damage
+        if (percentage) heal = m_curMaxHealth * heal; //If the heal is sent as percent, calculate based on max HP
+        float curMissingHealth = m_curMaxHealth - m_curHealth; //Don't allow the unit to go above max HP
+        heal = Mathf.Min(heal, curMissingHealth);
+        m_curHealth += heal;
+        UpdateHealth?.Invoke(heal);
     }
 
     public virtual void OnEnemyDestroyed(Vector3 pos)
@@ -356,6 +382,11 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     {
         return m_curHealth;
     }
+    
+    public float GetMaxHP()
+    {
+        return m_curMaxHealth;
+    }
 
     private Obelisk FindObelisk()
     {
@@ -420,7 +451,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 bool senderFound = false;
                 for (int i = 0; i < m_statusEffects.Count; i++)
                 {
-                    if (newStatusEffect.m_towerSender == m_statusEffects[i].m_towerSender)
+                    if (newStatusEffect.m_sender == m_statusEffects[i].m_sender)
                     {
                         //We found a sender match, update the existing effect.
                         //Debug.Log($"Sender found, not a new effect.");
@@ -477,7 +508,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                     statusEffectSource = m_decreaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
-                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_sender);
                     }
                 }
 
@@ -490,7 +521,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                     statusEffectSource = m_increaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
-                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_sender);
                     }
                 }
 
@@ -503,7 +534,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                     statusEffectSource = m_decreaseHealthVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
-                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_sender);
                     }
                 }
 
@@ -516,7 +547,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                     statusEffectSource = m_increaseHealthVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
-                        statusEffectSource.SetStatusEffectSource(statusEffect.m_towerSender);
+                        statusEffectSource.SetStatusEffectSource(statusEffect.m_sender);
                     }
                 }
 
@@ -658,7 +689,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         //For each status effect, see if the sender matches, if it does, remove the effect.
         for (int i = 0; i < m_statusEffects.Count; i++)
         {
-            if (towerSender == m_statusEffects[i].m_towerSender)
+            if (towerSender == m_statusEffects[i].m_sender)
             {
                 //We found a sender match, update the existing effect.
                 Debug.Log($"Sender found, removing effect.");
@@ -676,10 +707,10 @@ public class StatusEffect
     public StatusEffectData m_data;
     public float m_elapsedTime;
     public float m_nextTickTime;
-    public Tower m_towerSender;
+    public GameObject m_sender;
 
-    public void SetTowerSender(Tower tower)
+    public void SetSender(GameObject obj)
     {
-        m_towerSender = tower;
+        m_sender = obj;
     }
 }

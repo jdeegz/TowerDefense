@@ -82,7 +82,7 @@ public class AuraTower : Tower
     private void SendEffect(EnemyController enemyController)
     {
         StatusEffect statusEffect = new StatusEffect();
-        statusEffect.SetTowerSender(this);
+        statusEffect.SetSender(gameObject);
         statusEffect.m_data = m_statusEffectData;
         enemyController.ApplyEffect(statusEffect);
         //Debug.Log($"Sent effect: {statusEffect.m_data.name}");
