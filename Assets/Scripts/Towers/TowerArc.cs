@@ -42,7 +42,7 @@ public class TowerArc : Tower
             return;
         }
 
-        if (IsTargetInRange(m_curTarget.transform.position))
+        if (IsTargetInFireRange(m_curTarget.transform.position))
         {
             m_timeUntilFire += Time.deltaTime;
 
@@ -120,7 +120,7 @@ public class TowerArc : Tower
             Vector3 direction = hits[i].transform.position - transform.position;
             float coneAngleCosine = Mathf.Cos(Mathf.Deg2Rad * (m_towerData.m_fireConeAngle / 2f));
 
-            if (Vector3.Dot(direction.normalized, m_turretPivot.forward.normalized) > coneAngleCosine && IsTargetInRange(hits[i].transform.position))
+            if (Vector3.Dot(direction.normalized, m_turretPivot.forward.normalized) > coneAngleCosine && IsTargetInFireRange(hits[i].transform.position))
             {
                 // Target is within the cone.
                 EnemyController enemyHit = hits[i].transform.GetComponent<EnemyController>();

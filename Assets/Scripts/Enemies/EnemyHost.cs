@@ -64,12 +64,12 @@ public class EnemyHost : EnemyController
         }
     }
 
-    public override void RequestRemoveEffect(Tower towerSender)
+    public override void RequestRemoveEffect(GameObject sender)
     {
         //Remove effect from host
         foreach (EnemyThrall thrall in m_livingThralls)
         {
-            thrall.HostRemoveEffect(towerSender);
+            thrall.HostRemoveEffect(sender);
         }
     }
     

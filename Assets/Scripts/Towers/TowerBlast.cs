@@ -32,12 +32,17 @@ public class TowerBlast : Tower
         m_timeUntilBurst += Time.deltaTime;
 
         m_targetDetectionTimer += Time.deltaTime;
-        if (m_targetDetectionTimer >= m_targetDetectionInterval)
+        if (m_curTarget == null && m_targetDetectionTimer >= m_targetDetectionInterval)
         {
             m_targetDetectionTimer = 0f;
             FindTarget();   
         }
 
+        if (m_curTarget && !IsTargetInTargetRange(m_curTarget.transform.position))
+        {
+            m_curTarget = null;
+        }
+        
         if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
@@ -50,7 +55,7 @@ public class TowerBlast : Tower
         }
 
         //If the target is out of firing range, or has less than 0 HP, this is not a valid target.
-        if (IsTargetInRange(m_curTarget.transform.position))
+        if (IsTargetInFireRange(m_curTarget.transform.position))
         {
             //If we have elapsed time, and are looking at the target, fire.
             if (m_timeUntilFire >= 1f / m_towerData.m_fireRate && m_timeUntilBurst >= m_towerData.m_burstFireRate && IsTargetInSight())

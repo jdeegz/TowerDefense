@@ -54,15 +54,11 @@ public class TowerAura : Tower
                 if (copyTargetsTracked.Contains(hits[i].gameObject))
                 {
                     //If it does, we have already applied an effect.
-                    //Debug.Log($"Not a new target. Skipping.");
-                    
                     copyTargetsTracked.Remove(hits[i].gameObject);
                 }
                 else
                 {
                     //If not, apply an effect, and add to Tracked list
-                    //Debug.Log($"New Target found. Adding effect.");
-                    
                     SendEffect(hits[i].GetComponent<EnemyController>());
                     m_targetsTracked.Add(hits[i].gameObject);
                 }
@@ -72,10 +68,8 @@ public class TowerAura : Tower
         //Remove the effect from items that remain in the Copy of Targets Tracked. They're no longer in the area.
         foreach (GameObject obj in copyTargetsTracked)
         {
-            //Debug.Log($"Object left range, removing Effect)");
-            
             m_targetsTracked.Remove(obj);
-            obj.GetComponent<EnemyController>().RequestRemoveEffect(this);
+            obj.GetComponent<EnemyController>().RequestRemoveEffect(gameObject);
         }
     }
     
@@ -132,7 +126,7 @@ public class TowerAura : Tower
         //Remove the effect from targets currently in range.
         foreach (GameObject obj in m_targetsTracked)
         {
-            obj.GetComponent<EnemyController>().RequestRemoveEffect(this);
+            obj.GetComponent<EnemyController>().RequestRemoveEffect(gameObject);
         }
         m_targetsTracked.Clear();
         

@@ -684,12 +684,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         m_expiredStatusEffects.Add(statusEffect);
     }
 
-    public virtual void RequestRemoveEffect(Tower towerSender)
+    public virtual void RequestRemoveEffect(GameObject sender)
     {
         //For each status effect, see if the sender matches, if it does, remove the effect.
         for (int i = 0; i < m_statusEffects.Count; i++)
         {
-            if (towerSender == m_statusEffects[i].m_sender)
+            if (sender == m_statusEffects[i].m_sender)
             {
                 //We found a sender match, update the existing effect.
                 Debug.Log($"Sender found, removing effect.");

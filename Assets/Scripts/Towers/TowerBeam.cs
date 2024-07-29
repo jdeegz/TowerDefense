@@ -30,13 +30,13 @@ public class TowerBeam : Tower
             return;
         }
 
-        //Rotate towards target. This also rotates to exits during Build Phase.
         RotateTowardsTarget();
 
         Reload();
 
+        //Find a new target only if our current target is out of range.
         m_targetDetectionTimer += Time.deltaTime;
-        if (m_targetDetectionTimer >= m_targetDetectionInterval)
+        if (m_curTarget == null && m_targetDetectionTimer >= m_targetDetectionInterval)
         {
             m_targetDetectionTimer = 0f;
             FindTarget();
@@ -47,13 +47,18 @@ public class TowerBeam : Tower
             m_curTarget = null;
         }
         
+        if (m_curTarget && !IsTargetInTargetRange(m_curTarget.transform.position))
+        {
+            m_curTarget = null;
+        }
+
         if (m_curTarget == null)
         {
             StopBeam();
             return;
         }
-        
-        if (IsTargetInRange(m_curTarget.transform.position) && IsReadyToFire() && IsTargetInSight())
+
+        if (IsTargetInFireRange(m_curTarget.transform.position) && IsReadyToFire() && IsTargetInSight())
         {
             Fire();
         }
@@ -69,6 +74,7 @@ public class TowerBeam : Tower
         m_timeUntilFire += Time.deltaTime;
     }
 
+    private EnemyController m_lastTarget;
     private void Fire()
     {
         //Restart Reload Timer
@@ -77,13 +83,17 @@ public class TowerBeam : Tower
         //Apply Status Effect
         ApplyStatusEffect();
 
-        //Turn on beam
-        StartBeam();
+        //Turn on/update beam if the new target is different.
+        if (m_lastTarget != m_curTarget)
+        {
+            StartBeam();
+            m_lastTarget = m_curTarget;
+        }
     }
 
     void StartBeam()
     {
-        if (m_activeBeam) return;
+        StopBeam(); //Will stop any active beams.
         m_activeBeam = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, Quaternion.identity, ObjectPoolManager.PoolType.Projectile).GetComponent<ProjectileBeam>();
         m_activeBeam.StartBeam(m_curTarget.m_targetPoint, m_muzzlePoint);
     }

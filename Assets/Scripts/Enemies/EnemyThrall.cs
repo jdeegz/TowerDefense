@@ -36,9 +36,9 @@ public class EnemyThrall : EnemyController
     //
     
     //REDIRECT EFFECTS TO HOST.
-    public override void RequestRemoveEffect(Tower towerSender)
+    public override void RequestRemoveEffect(GameObject sender)
     {
-        m_enemyHost.RequestRemoveEffect(towerSender);
+        m_enemyHost.RequestRemoveEffect(sender);
     }
     
     public override void ApplyEffect(StatusEffect statusEffect)
@@ -53,9 +53,9 @@ public class EnemyThrall : EnemyController
         base.ApplyEffect(statusEffect);
     }
     
-    public void HostRemoveEffect(Tower towerSender)
+    public void HostRemoveEffect(GameObject sender)
     {
-        base.RequestRemoveEffect(towerSender);
+        base.RequestRemoveEffect(sender);
     }
     //
     

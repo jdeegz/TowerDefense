@@ -84,7 +84,7 @@ public class TowerChargeUp : Tower
             return;
         }
 
-        if (IsTargetInRange(m_curTarget.transform.position))
+        if (IsTargetInFireRange(m_curTarget.transform.position))
         {
             ChargeUp();
 

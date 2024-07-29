@@ -114,9 +114,14 @@ public abstract class Tower : MonoBehaviour
         return Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_towerData.m_facingThreshold;
     }
     
-    protected bool IsTargetInRange(Vector3 targetPos)
+    protected bool IsTargetInFireRange(Vector3 targetPos)
     {
         return Vector3.Distance(transform.position, targetPos) < m_towerData.m_fireRange;
+    }
+    
+    protected bool IsTargetInTargetRange(Vector3 targetPos)
+    {
+        return Vector3.Distance(transform.position, targetPos) < m_towerData.m_targetRange;
     }
 
     private void GameObjectSelected(GameObject obj)
@@ -241,7 +246,7 @@ public abstract class Tower : MonoBehaviour
         List<EnemyController> targetsInRange = new List<EnemyController>();
         foreach (EnemyController enemy in targets)
         {
-            if (IsTargetInRange(enemy.transform.position))
+            if (IsTargetInFireRange(enemy.transform.position))
             {
                 targetsInRange.Add(enemy);
             }
