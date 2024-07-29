@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
-public class VoidRayTowerController : Tower
+public class TowerRay : Tower
 {
     [Header("Visual Attributes")]
     public VisualEffect m_projectileImpactVFX;
@@ -89,7 +89,7 @@ public class VoidRayTowerController : Tower
             FindTarget();   
         }
         
-        if (m_curTarget.GetCurrentHP() <= 0)
+        if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }

@@ -1,12 +1,10 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.VFX;
 
-public class AuraTower : Tower
+public class TowerAura : Tower
 {
     private float m_timeUntilFire;
     private List<GameObject> m_targetsTracked;
@@ -18,13 +16,16 @@ public class AuraTower : Tower
     {
         m_timeUntilFire = 1f / m_towerData.m_fireRate;
         m_targetsTracked = new List<GameObject>();
-
-        StartDome();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (m_isBuilt && m_auraVFX == null)
+        {
+            StartDome();
+        }
+        
         if (IsReadyToFire() && m_searchForTargets)
         {
             SetTargets();
@@ -101,7 +102,8 @@ public class AuraTower : Tower
     void StartDome()
     {
         //Start Effects
-        m_auraVFX = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, transform).GetComponent<VisualEffect>();
+        var m_auraobj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, transform);
+        m_auraVFX = m_auraobj.GetComponent<VisualEffect>();
         m_auraVFX.Play();
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 0f, 3f)
             .OnUpdate(() => m_auraVFX.SetFloat("Dissolve", m_curDissolve));
@@ -112,7 +114,6 @@ public class AuraTower : Tower
 
     void StopDome()
     {
-        
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 1f, 1f)
             .OnUpdate(() => m_auraVFX.SetFloat("Dissolve", m_curDissolve))
             .OnComplete(() => m_auraVFX.Stop())

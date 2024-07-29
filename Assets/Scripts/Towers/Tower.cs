@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -62,19 +63,23 @@ public abstract class Tower : MonoBehaviour
             return;
         }
 
+        //Maybe escape early if hits.Length is only 1?
+        
         List<EnemyController> targets = new List<EnemyController>();
         for (int i = 0; i < hits.Length; ++i)
         {
             targets.Add(hits[i].GetComponent<EnemyController>());
         }
 
-        EnemyController target = GetPriorityTarget(targets);
-        Collider targetCollider = m_curTarget.GetComponent<Collider>();
-        if (m_curTarget == null || target.m_enemyData.m_targetPriority > m_curTarget.m_enemyData.m_targetPriority)
+        m_curTarget = GetPriorityTarget(targets);
+        m_targetCollider = m_curTarget.GetComponent<Collider>();
+        
+        //Disabling what i thought would help towers from flickering between enemies and never firing.
+        /*if (m_curTarget == null || target.m_enemyData.m_targetPriority > m_curTarget.m_enemyData.m_targetPriority)
         {
             m_curTarget = target;
             m_targetCollider = targetCollider;
-        }
+        }*/
     }
     
     public void RotateTowardsTarget()
@@ -225,30 +230,50 @@ public abstract class Tower : MonoBehaviour
 
     public EnemyController GetPriorityTarget(List<EnemyController> targets)
     {
+        //Dont stop firing at targets in range with lower priority
+        //Fire Range is shorter than Target Range.
+        
         float closestTargetDistance = float.PositiveInfinity;
         int highestPriority = int.MinValue;
         EnemyController priorityTarget = null;
 
+        //Split the list into IN RANGE and OUT OF RANGE.
+        List<EnemyController> targetsInRange = new List<EnemyController>();
         foreach (EnemyController enemy in targets)
         {
-            if (enemy.m_enemyData.m_targetPriority > highestPriority)
+            if (IsTargetInRange(enemy.transform.position))
             {
-                priorityTarget = enemy;
-                closestTargetDistance = Vector3.Distance(transform.position, enemy.transform.position);
+                targetsInRange.Add(enemy);
             }
-            
+        }
+        
+        //If we have targets in range, we can operate only on those units, and ignore out of range.
+        if (targetsInRange.Count > 0)
+        {
+            targets = targetsInRange; //Swap the targets list we sent for our In Range one.
+        }
+        
+        foreach (EnemyController enemy in targets)
+        {
             if (enemy.m_enemyData.m_targetPriority == highestPriority)
             {
-                priorityTarget = enemy;
                 float distance = Vector3.Distance(transform.position, enemy.transform.position);
                 if (distance < closestTargetDistance)
                 {
                     priorityTarget = enemy;
                     closestTargetDistance = distance;
+                    continue;
                 }
             }
+            
+            if (enemy.m_enemyData.m_targetPriority > highestPriority)
+            {
+                highestPriority = enemy.m_enemyData.m_targetPriority;
+                priorityTarget = enemy;
+                closestTargetDistance = Vector3.Distance(transform.position, enemy.transform.position);
+            }
         }
-
+        
         return priorityTarget;
     }
 
@@ -277,23 +302,6 @@ public abstract class Tower : MonoBehaviour
         
         // Calculate the maximum possible distance the ray could travel
         float rayLength = Vector3.Distance(start, target);
-
-        // Raycast hit information
-        /*RaycastHit hit;
-
-        // Perform the raycast
-        if (collider.Raycast(ray, out hit, maxDistance))
-        {
-            // Return the point of intersection and the rotation
-            point = hit.point;
-            rotation = Quaternion.LookRotation(hit.normal);
-        }
-        else
-        {
-            // If no intersection, return the target point and identity rotation as fallback
-            point = target;
-            rotation = Quaternion.identity;
-        }*/
         
         RaycastHit[] raycastHits = Physics.RaycastAll(ray, rayLength, m_raycastLayerMask);
 
@@ -301,7 +309,8 @@ public abstract class Tower : MonoBehaviour
         {
             Debug.Log($"Something broke with the void tower Get Point on Collider Surface function.");
         }
-
+        
+        raycastHits = raycastHits.OrderBy(raycastHits => raycastHits.distance).ToArray();
         //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
         for (int i = 0; i < raycastHits.Length; i++)
         {

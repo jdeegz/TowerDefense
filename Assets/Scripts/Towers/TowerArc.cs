@@ -10,7 +10,6 @@ public class TowerArc : Tower
     public VisualEffect m_flameTowerProjectile;
     private float m_timeUntilFire;
     private GameObject m_activeProjectileObj;
-    private float m_rotationModifier = 1;
 
     void Update()
     {
@@ -31,7 +30,7 @@ public class TowerArc : Tower
             FindTarget();   
         }
         
-        if (m_curTarget.GetCurrentHP() <= 0)
+        if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }

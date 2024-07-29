@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class Missile : Projectile
+public class ProjectileMissile : Projectile
 {
     public GameObject m_impactEffect;
     public float m_impactRadius;
@@ -42,6 +42,12 @@ public class Missile : Projectile
 
         //if we're at our target, we dont need to move any longer, we've exploded.
         if (m_isFired && m_isComplete == false) TravelToTargetFixedUpdate();
+        
+        if (IsTargetInStoppingDistance())
+        {
+            DealDamage();
+            RemoveProjectile();
+        }
     }
 
     void TravelToTargetFixedUpdate()
@@ -117,8 +123,7 @@ public class Missile : Projectile
     
     void OnCollisionEnter(Collision collision)
     {
-        
-        if (collision.collider == null) return;
+        if (collision.collider == null || m_enemy == null) return;
         
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {

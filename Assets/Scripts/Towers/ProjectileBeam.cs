@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.VFX;
 
-public class BeamProjectile : MonoBehaviour
+public class ProjectileBeam : MonoBehaviour
 {
     [SerializeField] private VisualEffect m_visualEffect;
     [SerializeField] private Transform m_pos0;

@@ -7,10 +7,10 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.VFX;
 
-public class BeamTower : Tower
+public class TowerBeam : Tower
 
 {
-    private BeamProjectile m_activeBeam;
+    private ProjectileBeam m_activeBeam;
     private Tween m_curTween;
     private float m_curDissolve = 1f;
     private float m_timeUntilFire;
@@ -42,7 +42,7 @@ public class BeamTower : Tower
             FindTarget();
         }
 
-        if (m_curTarget.GetCurrentHP() <= 0)
+        if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }
@@ -84,7 +84,7 @@ public class BeamTower : Tower
     void StartBeam()
     {
         if (m_activeBeam) return;
-        m_activeBeam = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, Quaternion.identity, ObjectPoolManager.PoolType.Projectile).GetComponent<BeamProjectile>();
+        m_activeBeam = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, Quaternion.identity, ObjectPoolManager.PoolType.Projectile).GetComponent<ProjectileBeam>();
         m_activeBeam.StartBeam(m_curTarget.m_targetPoint, m_muzzlePoint);
     }
 

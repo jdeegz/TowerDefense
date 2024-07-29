@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
-public class ChargeUpTowerController : Tower
+public class TowerChargeUp : Tower
 {
     [Header("Visual Attributes")]
     public VisualEffect m_projectileImpactVFX;
@@ -72,7 +72,7 @@ public class ChargeUpTowerController : Tower
         }
 
         //FINDING TARGET
-        if (m_curTarget.GetCurrentHP() <= 0)
+        if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
         {
             m_curTarget = null;
         }
@@ -196,7 +196,7 @@ public class ChargeUpTowerController : Tower
             m_projectileLineRenderer.enabled = true;
             m_projectileLineRenderer_Darken.enabled = true;
 
-            Debug.Log($"Starting Beam");
+            //Debug.Log($"Starting Beam");
             m_curTween = DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, m_maxBeamWidth, m_beamDuration)
                 .SetEase(Ease.OutBack)
                 .OnUpdate(SetLineWidth)
@@ -213,7 +213,7 @@ public class ChargeUpTowerController : Tower
     void StopBeam()
     {
         m_curTween.Kill();
-        Debug.Log($"Stopping Beam");
+        //Debug.Log($"Stopping Beam");
         m_curTween = DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, 0f, m_beamDuration)
             .SetEase(Ease.InCirc)
             .OnUpdate(SetLineWidth)
@@ -246,7 +246,7 @@ public class ChargeUpTowerController : Tower
         m_projectileLineRenderer_Darken.startWidth = m_curBeamWidth * 2;
         m_projectileLineRenderer_Darken.endWidth = m_curBeamWidth * 2;
 
-        Debug.Log($"Current Beam Width: {m_curBeamWidth}");
+        //Debug.Log($"Current Beam Width: {m_curBeamWidth}");
     }
 
     private void HandleBeamVisual()
