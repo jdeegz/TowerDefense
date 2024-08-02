@@ -60,31 +60,40 @@ public class TowerChargeUp : Tower
             return;
         }
 
-        RotateTowardsTarget();
 
         HandlePanelColor();
 
+        if (m_beamActive)
+        {
+            return;
+        }
+        
+        RotateTowardsTarget();
+        
         m_targetDetectionTimer += Time.deltaTime;
-        if (m_targetDetectionTimer >= m_targetDetectionInterval)
+        if (m_curTarget == null && m_targetDetectionTimer >= m_targetDetectionInterval)
         {
             m_targetDetectionTimer = 0f;
-            FindTarget();   
-        }
-
-        //FINDING TARGET
-        if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
-        {
-            m_curTarget = null;
+            FindTarget();
         }
         
         if (m_curTarget == null)
         {
-            //Disable the beam if it's active, not totally necessary
             ChargeDown();
             return;
         }
 
-        if (IsTargetInFireRange(m_curTarget.transform.position))
+        if (m_curTarget.GetCurrentHP() <= 0)
+        {
+            m_curTarget = null;
+            return;
+        }
+
+        if (!IsTargetInFireRange(m_curTarget.transform.position))
+        {
+            m_curTarget = null;
+        }
+        else
         {
             ChargeUp();
 

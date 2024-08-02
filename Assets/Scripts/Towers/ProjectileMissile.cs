@@ -32,21 +32,15 @@ public class ProjectileMissile : Projectile
 
     void FixedUpdate()
     {
-        /*if (IsTargetInStoppingDistance() && m_isFired == true && m_isComplete == false)
+        if (!m_isComplete && IsTargetInStoppingDistance())
         {
-            m_isComplete = true;
             DealDamage();
             RemoveProjectile();
-            return;
-        }*/
+        }
 
-        //if we're at our target, we dont need to move any longer, we've exploded.
-        if (m_isFired && m_isComplete == false) TravelToTargetFixedUpdate();
-        
-        if (IsTargetInStoppingDistance())
+        if (m_isFired)
         {
-            DealDamage();
-            RemoveProjectile();
+            TravelToTargetFixedUpdate();
         }
     }
 
@@ -118,19 +112,16 @@ public class ProjectileMissile : Projectile
             }
         }
     }
-    
-    
-    
+
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision.collider == null || m_enemy == null) return;
-        
+
+        if (m_isComplete) return;
+
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {
-            if (m_isComplete) return;
-        
-            m_isComplete = true;
-            
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
             ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
             DealDamage();

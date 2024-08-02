@@ -18,10 +18,6 @@ public class TowerCannon : Tower
 
     void Start()
     {
-        //Disabling the setting of the reload until i figure out how to spawn small missiles as soon as burst cannon tower is created.
-        //m_timeUntilFire = 999f;
-        //m_timeUntilBurst = 999f;
-        
         //Define the size of the projectile collection we want.
         m_loadedProjectiles = new Projectile[m_muzzlePoints.Count];
 
@@ -41,43 +37,47 @@ public class TowerCannon : Tower
             return;
         }
 
-        RotateTowardsTarget();
-
         m_timeUntilFire += Time.deltaTime;
         m_timeUntilBurst += Time.deltaTime;
 
+
         m_targetDetectionTimer += Time.deltaTime;
-        if (m_targetDetectionTimer >= m_targetDetectionInterval)
+        if (m_curTarget == null && m_targetDetectionTimer >= m_targetDetectionInterval)
         {
             m_targetDetectionTimer = 0f;
-            FindTarget();   
+            FindTarget();
         }
-        
-       if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
-        {
-            m_curTarget = null;
-        }
-        
+
         if (m_curTarget == null)
         {
             m_shotsFired = 0;
             return;
         }
 
-        if (IsTargetInRange(m_curTarget.transform.position))
+        if (m_curTarget.GetCurrentHP() <= 0)
         {
-            //If we have elapsed time, and are looking at the target, fire.
-            if (IsAbleToInitiateFireSequence() && IsAbleToFire())
+            m_curTarget = null;
+            return;
+        }
+
+        if (!IsTargetInFireRange(m_curTarget.transform.position))
+        {
+            m_curTarget = null;
+        }
+        else
+        {
+            if (IsAbleToInitiateFireSequence() && IsAbleToFire(m_projectileCounter))
             {
-                Fire();
+                Fire(m_projectileCounter);
                 m_timeUntilBurst = 0;
                 ++m_shotsFired;
 
-                //Reset Burst Fire counters
-                if (m_shotsFired >= m_towerData.m_burstSize)
+                //Update projectileCounter
+                ++m_projectileCounter;
+                if (m_projectileCounter >= m_muzzlePoints.Count)
                 {
+                    m_projectileCounter = 0;
                     m_timeUntilFire = 0;
-                    m_shotsFired = 0;
                 }
             }
         }
@@ -88,8 +88,9 @@ public class TowerCannon : Tower
         return m_timeUntilFire >= 1f / m_towerData.m_fireRate;
     }
 
-    bool IsAbleToFire()
+    bool IsAbleToFire(int i)
     {
+        if (m_loadedProjectiles[i] == null) return false;
         if (m_towerData.m_burstFireRate == 0) return true;
 
         return m_timeUntilBurst >= 1f / m_towerData.m_burstFireRate;
@@ -101,10 +102,11 @@ public class TowerCannon : Tower
         //Make the projectile objects
         //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform);
         GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation);
-        
+
+        if (projectileObj == null) Debug.Log($"Projectile Obj is null");
         //Position loaded projectile
         projectileObj.transform.SetParent(m_muzzlePoints[i].transform);
-        
+
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
 
         //Assign any necessary effects to the projectile.
@@ -118,18 +120,17 @@ public class TowerCannon : Tower
 
         //Store the projectiles in a list to pull from later.
         m_loadedProjectiles[i] = projectileScript;
-        Debug.Log($"Cannon Tower: Reloaded Index {i}.");
+        if (projectileScript == null) Debug.Log($"Projectile Script is null");
     }
 
-    private void Fire()
+    private void Fire(int fireIndex)
     {
-        Debug.Log($"Cannon Tower: Fired Index {m_projectileCounter}.");
         //Pull projectile from the pool of loaded projectiles.
         Projectile projectileScript = m_loadedProjectiles[m_projectileCounter];
 
         //Unparent the projectile so it stops rotating around the tower.
         projectileScript.transform.parent = ObjectPoolManager.SetParentObject(ObjectPoolManager.PoolType.Projectile).transform;
-        m_loadedProjectiles[m_projectileCounter] = null;
+        m_loadedProjectiles[fireIndex] = null;
 
         //Give the projectile purpose.
         projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, projectileScript.transform.position);
@@ -144,13 +145,8 @@ public class TowerCannon : Tower
 
         //Start a reload timer for this index.
         //Source https://github.com/Mr-sB/UnityTimer
-        Debug.Log($"Cannon Tower: Reload Initiated for Index {m_projectileCounter}");
-        int reloadIndex = m_projectileCounter;
+        int reloadIndex = fireIndex;
         Timer.DelayAction(m_reloadDelay, () => { Reload(reloadIndex); }, null, Timer.UpdateMode.GameTime, autoDestroyOwner: this);
-
-        //Update projectileCounter
-        ++m_projectileCounter;
-        if (m_projectileCounter >= m_muzzlePoints.Count) m_projectileCounter = 0;
     }
 
 
@@ -199,7 +195,7 @@ public class TowerCannon : Tower
         data.m_towerDetails = descriptionBuilder.ToString();
         return data;
     }
-    
+
     public override TowerUpgradeData GetUpgradeData()
     {
         TowerUpgradeData data = new TowerUpgradeData();

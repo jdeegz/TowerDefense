@@ -46,6 +46,7 @@ public abstract class Projectile : MonoBehaviour
     
     public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos)
     {
+        if(m_isFired) Debug.Log($"We are Setting data for a fired missile.");
         m_startPos = pos;
         m_enemy = enemy;
         m_targetPos = target.position;
@@ -59,12 +60,6 @@ public abstract class Projectile : MonoBehaviour
     public void SetProjectileStatusEffect(StatusEffect statusEffect)
     {
         m_statusEffect = statusEffect;
-    }
-
-    private void OnEnemyDestroyed(Vector3 pos)
-    {
-        m_enemy = null;
-        m_targetPos = pos;
     }
     
     public bool IsTargetInStoppingDistance()
@@ -81,13 +76,19 @@ public abstract class Projectile : MonoBehaviour
             
             if (m_enemy.GetCurrentHP() <= 0)
             {
-                OnEnemyDestroyed(m_enemy.m_targetPoint.position);
+                m_enemy = null;
             }
         }
     }
     
     public void RemoveProjectile()
     {
+        m_isComplete = true;
+
+        m_isFired = false;
+        
+        m_enemy = null;
+        
         if (m_renderer)
         {
             m_renderer.enabled = false;

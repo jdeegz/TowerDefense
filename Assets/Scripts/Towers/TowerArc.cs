@@ -27,14 +27,9 @@ public class TowerArc : Tower
         if (m_targetDetectionTimer >= m_targetDetectionInterval)
         {
             m_targetDetectionTimer = 0f;
-            FindTarget();   
+            FindTarget();
         }
-        
-        if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
-        {
-            m_curTarget = null;
-        }
-        
+
         if (m_curTarget == null)
         {
             //If target is not in range, destroy the flame cone if there is one.
@@ -42,7 +37,17 @@ public class TowerArc : Tower
             return;
         }
 
-        if (IsTargetInFireRange(m_curTarget.transform.position))
+        if (m_curTarget.GetCurrentHP() <= 0)
+        {
+            m_curTarget = null;
+            return;
+        }
+
+        if (!IsTargetInFireRange(m_curTarget.transform.position))
+        {
+            m_curTarget = null;
+        }
+        else
         {
             m_timeUntilFire += Time.deltaTime;
 
@@ -53,6 +58,7 @@ public class TowerArc : Tower
                 {
                     m_flameTowerProjectile.Play();
                 }
+
                 Fire();
                 m_timeUntilFire = 0;
             }
@@ -102,7 +108,7 @@ public class TowerArc : Tower
                         return;
                     }
                 }*/
-                
+
                 EnemyController enemyHit = col.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_towerData.m_secondaryDamage);
             }
@@ -117,10 +123,13 @@ public class TowerArc : Tower
 
         for (int i = 0; i < hits.Length; ++i)
         {
-            Vector3 direction = hits[i].transform.position - transform.position;
+            Vector3 hitPos = hits[i].transform.position;
+            hitPos.y = m_muzzlePoint.transform.position.y;
+            
+            Vector3 direction = hitPos - m_muzzlePoint.transform.position;
             float coneAngleCosine = Mathf.Cos(Mathf.Deg2Rad * (m_towerData.m_fireConeAngle / 2f));
 
-            if (Vector3.Dot(direction.normalized, m_turretPivot.forward.normalized) > coneAngleCosine && IsTargetInFireRange(hits[i].transform.position))
+            if (Vector3.Dot(direction.normalized, m_muzzlePoint.forward.normalized) > coneAngleCosine && IsTargetInFireRange(hitPos))
             {
                 // Target is within the cone.
                 EnemyController enemyHit = hits[i].transform.GetComponent<EnemyController>();
@@ -187,7 +196,7 @@ public class TowerArc : Tower
         data.m_towerDetails = descriptionBuilder.ToString();
         return data;
     }
-    
+
     public override TowerUpgradeData GetUpgradeData()
     {
         TowerUpgradeData data = new TowerUpgradeData();

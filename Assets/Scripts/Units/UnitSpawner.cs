@@ -55,7 +55,7 @@ public class UnitSpawner : MonoBehaviour
             {
                 m_isSpawnerActive = false;
                 GameplayManager.Instance.DisableSpawner();
-                Debug.Log($"{gameObject.name} done spawning.");
+               //Debug.Log($"{gameObject.name} done spawning.");
             }
         }
     }
@@ -118,7 +118,7 @@ public class UnitSpawner : MonoBehaviour
             }
         }
 
-        Debug.Log($"Getting next creep wave.");
+        //Debug.Log($"Getting next creep wave.");
         return creepWave;
     }
 
@@ -171,7 +171,7 @@ public class UnitSpawner : MonoBehaviour
             case GameplayManager.GameplayState.Defeat:
                 break;
             default:
-                Debug.Log($"{this} has no {newState} case.");
+                //Debug.Log($"{this} has no {newState} case.");
                 break;
         }
     }

@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_projectileSpeed: 3
-  m_stoppingDistance: 0.3
+  m_stoppingDistance: 0.5
   m_hitVFXPrefab: {fileID: 8933404775076088512, guid: 00b99f3c7862ad74792f9f8097bdba0b, type: 3}
   m_renderer: {fileID: 4871733000372192692}
   m_bulletTrailData: {fileID: 11400000, guid: fec77de6c422e134d8ac67e9bc22945c, type: 2}
@@ -179,8 +179,8 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8933404775076088512}
   serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
+  m_Mass: 99
+  m_Drag: 99
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -197,7 +197,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 1
+  m_CollisionDetection: 3
 --- !u!135 &4993580654192141207
 SphereCollider:
   m_ObjectHideFlags: 0

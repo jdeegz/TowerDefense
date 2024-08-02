@@ -55,7 +55,7 @@ public abstract class Tower : MonoBehaviour
 
     public void FindTarget()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_fireRange, m_layerMask.value);
         if (hits.Length <= 0)
         {
             m_curTarget = null;
@@ -110,18 +110,26 @@ public abstract class Tower : MonoBehaviour
 
     protected bool IsTargetInSight()
     {
-        Vector3 directionOfTarget = m_curTarget.transform.position - transform.position;
-        return Vector3.Angle(m_turretPivot.transform.forward, directionOfTarget) <= m_towerData.m_facingThreshold;
+        Vector3 targetPos = m_curTarget.transform.position;
+        targetPos.y = 0;
+
+        Vector3 muzzlePos = m_muzzlePoint.transform.position;
+        muzzlePos.y = 0;
+
+        Vector3 directionOfTarget = targetPos - muzzlePos;
+        return Vector3.Angle(m_muzzlePoint.transform.forward, directionOfTarget) <= m_towerData.m_facingThreshold;
     }
     
     protected bool IsTargetInFireRange(Vector3 targetPos)
     {
-        return Vector3.Distance(transform.position, targetPos) < m_towerData.m_fireRange;
+        return Vector3.Distance(transform.position, targetPos) <= m_towerData.m_fireRange;
     }
     
     protected bool IsTargetInTargetRange(Vector3 targetPos)
     {
-        return Vector3.Distance(transform.position, targetPos) < m_towerData.m_targetRange;
+        float distance = Vector3.Distance(transform.position, targetPos);
+        bool isTargetInTargetRange =  distance <= m_towerData.m_targetRange;
+        return isTargetInTargetRange;
     }
 
     private void GameObjectSelected(GameObject obj)
@@ -242,22 +250,6 @@ public abstract class Tower : MonoBehaviour
         int highestPriority = int.MinValue;
         EnemyController priorityTarget = null;
 
-        //Split the list into IN RANGE and OUT OF RANGE.
-        List<EnemyController> targetsInRange = new List<EnemyController>();
-        foreach (EnemyController enemy in targets)
-        {
-            if (IsTargetInFireRange(enemy.transform.position))
-            {
-                targetsInRange.Add(enemy);
-            }
-        }
-        
-        //If we have targets in range, we can operate only on those units, and ignore out of range.
-        if (targetsInRange.Count > 0)
-        {
-            targets = targetsInRange; //Swap the targets list we sent for our In Range one.
-        }
-        
         foreach (EnemyController enemy in targets)
         {
             if (enemy.m_enemyData.m_targetPriority == highestPriority)
@@ -278,7 +270,7 @@ public abstract class Tower : MonoBehaviour
                 closestTargetDistance = Vector3.Distance(transform.position, enemy.transform.position);
             }
         }
-        
+
         return priorityTarget;
     }
 

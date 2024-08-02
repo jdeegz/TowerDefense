@@ -22,6 +22,11 @@ public class EnemyThrall : EnemyController
 
         //VFX
     }
+    
+    public override void OnHealed(float heal, bool percentage)
+    {
+        m_enemyHost.OnHealed(heal, percentage);
+    }
 
     public void HostHit()
     {

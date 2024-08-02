@@ -475,7 +475,7 @@ public class GameplayManager : MonoBehaviour
     public void UpdateGameplayState(GameplayState newState)
     {
         m_gameplayState = newState;
-        Debug.Log($"Game state is now: {m_gameplayState}");
+        //Debug.Log($"Game state is now: {m_gameplayState}");
 
         switch (m_gameplayState)
         {

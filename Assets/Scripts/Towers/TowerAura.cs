@@ -44,7 +44,7 @@ public class TowerAura : Tower
         List<GameObject> copyTargetsTracked = new List<GameObject>(m_targetsTracked);
         
         //Look for Units in sphere.
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_targetRange, m_layerMask.value);
+        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_fireRange, m_layerMask.value);
         if (hits.Length > 0)
         {
             //Debug.Log($"Hits: {hits.Length} and Layers: {m_layerMask.value}");

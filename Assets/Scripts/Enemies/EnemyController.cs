@@ -3,10 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.Serialization;
 using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
@@ -33,11 +30,11 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     protected float m_lastSpeedModifierSlower = 1f;
     protected float m_lastDamageModifierLower = 1f;
     protected float m_lastDamageModifierHigher = 1f;
-    private float m_baseDamageMultiplier;
+    protected float m_baseDamageMultiplier;
 
     //Hit Flash Info
     protected List<Renderer> m_allRenderers;
-    private List<Color> m_allOrigColors;
+    protected List<Color> m_allOrigColors;
     protected Coroutine m_hitFlashCoroutine;
 
     //VFX
@@ -47,9 +44,9 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     private GameObject m_increaseMoveSpeedVFXOjb;
 
     protected AudioSource m_audioSource;
-    private List<StatusEffect> m_statusEffects;
-    private List<StatusEffect> m_newStatusEffects = new List<StatusEffect>();
-    private List<StatusEffect> m_expiredStatusEffects = new List<StatusEffect>();
+    protected List<StatusEffect> m_statusEffects;
+    protected List<StatusEffect> m_newStatusEffects = new List<StatusEffect>();
+    protected List<StatusEffect> m_expiredStatusEffects = new List<StatusEffect>();
 
     //Obelisk
     private ObeliskData m_obeliskData;
@@ -57,11 +54,11 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     public event Action<float> UpdateHealth;
     public event Action<Vector3> DestroyEnemy;
 
-    private bool m_isComplete;
-    private bool m_isActive = true;
+    protected bool m_isComplete;
+    protected bool m_isActive = true;
     protected Vector3 m_moveDirection;
 
-    public void SetEnemyData(EnemyData data, bool active = true)
+    public virtual void SetEnemyData(EnemyData data, bool active = true)
     {
         m_enemyData = data;
         SetupEnemy(active);
@@ -94,6 +91,10 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         CollectMeshRenderers(m_enemyModelRoot.transform);
 
         //Setup Status Effects
+        //Debug.Log($"Clearing status effect lists.");
+        if (m_statusEffects != null) m_statusEffects.Clear();
+        if (m_expiredStatusEffects != null) m_expiredStatusEffects.Clear();
+        if (m_newStatusEffects != null) m_newStatusEffects.Clear();
         m_statusEffects = new List<StatusEffect>();
 
         //Define AudioSource
@@ -107,7 +108,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         }
 
         SetupUI();
-        
+
         SetEnemyActive(active);
     }
 
@@ -131,8 +132,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void Update()
     {
         if (!m_isActive) return;
-        
-        UpdateStatusEffects();
+
+        if (m_curHealth > 0) UpdateStatusEffects();
 
         //Target Dummy
         if (!m_goal) return;
@@ -159,7 +160,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     void FixedUpdate()
     {
         if (!m_isActive) return;
-        
+
         HandleMovement();
     }
 
@@ -207,7 +208,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     //Taking Damage
     //Functions
-    void CollectMeshRenderers(Transform parent)
+    public void CollectMeshRenderers(Transform parent)
     {
         //Get Parent Mesh Renderer if there is one.
         Renderer Renderer = parent.GetComponent<Renderer>();
@@ -266,7 +267,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             DestroyEnemy?.Invoke(transform.position);
         }
     }
-    
+
     public IEnumerator HitFlash()
     {
         //Set the color
@@ -289,7 +290,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             }
         }
     }
-    
+
     public virtual void OnHealed(float heal, bool percentage)
     {
         if (m_curHealth >= m_curMaxHealth) return;
@@ -338,7 +339,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             {
                 //Instantiate a soul, and set its properties.
                 m_obeliskData = m_closestObelisk.m_obeliskData;
-                //GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity);
+                //GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_swarmMemberTarget.position, quaternion.identity);
                 GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
                 obeliskSoul.SetupSoul(m_closestObelisk.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
@@ -352,8 +353,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         {
             RemoveEffect(activeEffect);
         }
-
-        m_statusEffects.Clear();
 
         //End the running coroutine
         if (m_hitFlashCoroutine != null)
@@ -382,10 +381,15 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
     {
         return m_curHealth;
     }
-    
+
     public float GetMaxHP()
     {
         return m_curMaxHealth;
+    }
+
+    public (float, float) GetMoveSpeedModifiers()
+    {
+        return (m_lastSpeedModifierFaster, m_lastSpeedModifierSlower);
     }
 
     private Obelisk FindObelisk()
@@ -414,12 +418,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         return closestObelisk;
     }
-    
+
     public void HandleTrojanSpawn(Vector3 startPos, Vector3 endPos)
     {
         transform.position = startPos;
         float moveDuration = Vector3.Distance(transform.position, endPos) / 0.6f;
-        gameObject.transform.DOJump(endPos, 2, 1, moveDuration).OnComplete(()=> SetEnemyActive(true));
+        gameObject.transform.DOJump(endPos, 2, 1, moveDuration).OnComplete(() => SetEnemyActive(true));
     }
 
     public void SetEnemyActive(bool active) //Used to halt this unit from functioning. (Trojan created enemies)
@@ -440,6 +444,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             }
 
             m_expiredStatusEffects.Clear();
+        }
+        
+        //Update each Effect.
+        foreach (StatusEffect activeEffect in m_statusEffects)
+        {
+            HandleEffect(activeEffect);
         }
 
         //Add New Effects if the sender is unique (Does not already have this effect)
@@ -470,12 +480,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             //Reset the new status effects so it is empty.
             m_newStatusEffects.Clear();
         }
-
-        //Update each Effect.
-        foreach (StatusEffect activeEffect in m_statusEffects)
-        {
-            HandleEffect(activeEffect);
-        }
     }
 
     public virtual void ApplyEffect(StatusEffect statusEffect)
@@ -487,8 +491,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     public void HandleEffect(StatusEffect statusEffect)
     {
-        //Debug.Log($"{statusEffect.m_elapsedTime} / {statusEffect.m_data.m_lifeTime}");
-
         statusEffect.m_elapsedTime += Time.deltaTime;
         if (statusEffect.m_elapsedTime > statusEffect.m_data.m_lifeTime)
         {
@@ -496,6 +498,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             return;
         }
 
+        if (m_expiredStatusEffects.Contains(statusEffect)) return;
+        
         //If we need to, spawn a vfx for this effect.
         StatusEffectSource statusEffectSource;
         switch (statusEffect.m_data.m_effectType)
@@ -609,7 +613,8 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
     public void RemoveEffect(StatusEffect statusEffect)
     {
-        Debug.Log("Removing Effect");
+        m_expiredStatusEffects.Add(statusEffect);
+        
         VisualEffect visualEffect;
         switch (statusEffect.m_data.m_effectType)
         {
@@ -617,12 +622,13 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 m_lastSpeedModifierSlower = 1;
                 if (m_decreaseMoveSpeedVFXOjb)
                 {
-                    ObjectPoolManager.OrphanObject(m_decreaseMoveSpeedVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
                     visualEffect = m_decreaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {
                         visualEffect.Stop();
                     }
+
+                    ObjectPoolManager.ReturnObjectToPool(m_decreaseMoveSpeedVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
 
                     m_decreaseMoveSpeedVFXOjb = null;
                 }
@@ -632,12 +638,13 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 m_lastSpeedModifierFaster = 1;
                 if (m_increaseMoveSpeedVFXOjb)
                 {
-                    ObjectPoolManager.OrphanObject(m_increaseMoveSpeedVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
                     visualEffect = m_increaseMoveSpeedVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {
                         visualEffect.Stop();
                     }
+
+                    ObjectPoolManager.ReturnObjectToPool(m_increaseMoveSpeedVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
 
                     m_increaseMoveSpeedVFXOjb = null;
                 }
@@ -646,12 +653,14 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             case StatusEffectData.EffectType.DecreaseHealth:
                 if (m_decreaseHealthVFXOjb)
                 {
-                    ObjectPoolManager.OrphanObject(m_decreaseHealthVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
+                    Debug.Log($"Trying to remove DoT Visual Effect from {gameObject.name}");
                     visualEffect = m_decreaseHealthVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {
                         visualEffect.Stop();
                     }
+
+                    ObjectPoolManager.ReturnObjectToPool(m_decreaseHealthVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
 
                     m_decreaseHealthVFXOjb = null;
                 }
@@ -660,12 +669,14 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             case StatusEffectData.EffectType.IncreaseHealth:
                 if (m_increaseHealthVFXOjb)
                 {
-                    ObjectPoolManager.OrphanObject(m_increaseHealthVFXOjb, 5f, ObjectPoolManager.PoolType.ParticleSystem);
                     visualEffect = m_increaseHealthVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {
                         visualEffect.Stop();
                     }
+
+                    ObjectPoolManager.ReturnObjectToPool(m_increaseHealthVFXOjb, ObjectPoolManager.PoolType.ParticleSystem);
+
 
                     m_increaseHealthVFXOjb = null;
                 }
@@ -681,7 +692,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
                 throw new ArgumentOutOfRangeException();
         }
 
-        m_expiredStatusEffects.Add(statusEffect);
     }
 
     public virtual void RequestRemoveEffect(GameObject sender)
@@ -692,8 +702,6 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             if (sender == m_statusEffects[i].m_sender)
             {
                 //We found a sender match, update the existing effect.
-                Debug.Log($"Sender found, removing effect.");
-
                 RemoveEffect(m_statusEffects[i]);
                 break;
             }

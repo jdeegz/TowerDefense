@@ -33,7 +33,7 @@ public class TowerBeam : Tower
         RotateTowardsTarget();
 
         Reload();
-
+        
         //Find a new target only if our current target is out of range.
         m_targetDetectionTimer += Time.deltaTime;
         if (m_curTarget == null && m_targetDetectionTimer >= m_targetDetectionInterval)
@@ -41,24 +41,24 @@ public class TowerBeam : Tower
             m_targetDetectionTimer = 0f;
             FindTarget();
         }
-
-        if (m_curTarget && m_curTarget.GetCurrentHP() <= 0)
-        {
-            m_curTarget = null;
-        }
         
-        if (m_curTarget && !IsTargetInTargetRange(m_curTarget.transform.position))
-        {
-            m_curTarget = null;
-        }
-
         if (m_curTarget == null)
         {
             StopBeam();
             return;
         }
 
-        if (IsTargetInFireRange(m_curTarget.transform.position) && IsReadyToFire() && IsTargetInSight())
+        if (m_curTarget.GetCurrentHP() <= 0)
+        {
+            m_curTarget = null;
+            return;
+        }
+        
+        if (!IsTargetInFireRange(m_curTarget.transform.position))
+        {
+            m_curTarget = null;
+        }
+        else if (IsReadyToFire() && IsTargetInSight())
         {
             Fire();
         }

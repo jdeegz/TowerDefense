@@ -1,32 +1,57 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class EnemySwarm : MonoBehaviour
 {
-    public List<GameObject> m_swarmMembers;
-    public float m_speed = 2f;
+    public List<EnemySwarmMember> m_swarmMembers;
+    public int m_swarmSize;
+    public EnemyData m_swarmMemberData;
+    public float m_baseMoveSpeed = 2f;
     public float m_rotationSpeed = 2f;
     public float m_neighborDistance = 0.3f;
     public float m_separationDistance = 0.25f;
     public float m_jitterAmount = 0.1f;
     public float m_startingSpread = 1.5f;
     public float m_maxDistanceFromTarget = 2f;
-    public Transform m_targetPoint;
+    public Transform m_swarmMemberTarget;
+    public Transform m_swarmMemberRoot;
     
     private float m_spreadTimer;
     private float m_nextSpreadTime;
+    private EnemyController m_motherEnemyController;
+    private float m_cumulativeMoveSpeed;
+    private float m_groundClampValue = 0.2f;
 
     void Start()
     {
+        m_motherEnemyController = GetComponent<EnemyController>();
+        for (int i = 0; i < m_swarmSize; ++i)
+        {
+            GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_swarmMemberData.m_enemyPrefab, m_swarmMemberRoot);
+            EnemySwarmMember swarmMemberController = enemyOjb.GetComponent<EnemySwarmMember>();
+            swarmMemberController.SetEnemyData(m_swarmMemberData);
+            swarmMemberController.SetMother(m_motherEnemyController);
+            m_swarmMembers.Add(swarmMemberController);
+        }
         RandomizeMembers();
     }
 
     void RandomizeMembers()
     {
-        foreach (GameObject member in m_swarmMembers)
+        foreach (EnemySwarmMember member in m_swarmMembers)
         {
             Vector3 randomPosition = Random.insideUnitSphere * m_startingSpread;
-            member.transform.position = m_targetPoint.position + randomPosition;
+            member.transform.position = m_swarmMemberTarget.position + randomPosition;
+            
+            if (member.transform.position.y < m_groundClampValue) // Make sure we dont spawn below the ground.
+            {
+                Vector3 clampedPosition = member.transform.position;
+                clampedPosition.y = m_groundClampValue;
+                member.transform.position = clampedPosition;
+            }
 
             Quaternion randomRotation = Random.rotation;
             member.transform.rotation = randomRotation;
@@ -35,21 +60,32 @@ public class EnemySwarm : MonoBehaviour
 
     void Update()
     {
-        foreach (GameObject member in m_swarmMembers)
+        
+        var speeds = m_motherEnemyController.GetMoveSpeedModifiers();
+        m_cumulativeMoveSpeed = m_baseMoveSpeed * speeds.Item1 * speeds.Item2 * Time.deltaTime;
+        
+        foreach (EnemySwarmMember member in m_swarmMembers)
         {
-            Vector3 steering = CalculateSteering(member);
+            Vector3 steering = CalculateSteering(member.gameObject);
             steering += GetRandomJitter();
-            HandleSwarmMove(member, steering);
-            ClampPosition(member);
+            HandleSwarmMove(member.gameObject, steering);
+            ClampPosition(member.gameObject);
         }
     }
 
     void ClampPosition(GameObject member)
     {
-        Vector3 directionToTarget = member.transform.position - m_targetPoint.position;
+        Vector3 directionToTarget = member.transform.position - m_swarmMemberTarget.position;
         if (directionToTarget.magnitude > m_maxDistanceFromTarget)
         {
-            member.transform.position = m_targetPoint.position + directionToTarget.normalized * m_maxDistanceFromTarget;
+            member.transform.position = m_swarmMemberTarget.position + directionToTarget.normalized * m_maxDistanceFromTarget;
+        }
+        
+        if (member.transform.position.y < m_groundClampValue)
+        {
+            Vector3 clampedPosition = member.transform.position;
+            clampedPosition.y = m_groundClampValue;
+            member.transform.position = clampedPosition;
         }
     }
 
@@ -62,7 +98,7 @@ public class EnemySwarm : MonoBehaviour
 
         int count = 0;
 
-        foreach (GameObject otherMember in m_swarmMembers)
+        foreach (EnemySwarmMember otherMember in m_swarmMembers)
         {
             if (otherMember == member) continue;
 
@@ -91,7 +127,7 @@ public class EnemySwarm : MonoBehaviour
             alignment = alignment.normalized;
         }
 
-        Vector3 seek = (m_targetPoint.position - member.transform.position).normalized;
+        Vector3 seek = (m_swarmMemberTarget.position - member.transform.position).normalized;
 
         steering = seek + cohesion + separation + alignment;
         steering = steering.normalized;
@@ -110,7 +146,8 @@ public class EnemySwarm : MonoBehaviour
     void HandleSwarmMove(GameObject member, Vector3 steering)
     {
         Quaternion rotation = Quaternion.LookRotation(steering);
-        member.transform.rotation = Quaternion.Slerp(member.transform.rotation, rotation, m_rotationSpeed * Time.deltaTime);
-        member.transform.position += member.transform.forward * (m_speed * Time.deltaTime);
+        float rotationSpeed = m_rotationSpeed * (m_cumulativeMoveSpeed / m_baseMoveSpeed);
+        member.transform.rotation = Quaternion.Slerp(member.transform.rotation, rotation, rotationSpeed);
+        member.transform.position += member.transform.forward * m_cumulativeMoveSpeed;
     }
 }

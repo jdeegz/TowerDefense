@@ -13,6 +13,6 @@ public class VFXSetPosition : MonoBehaviour
 
     void SetOnGround()
     {
-        transform.localPosition = new Vector3(transform.localPosition.x, -transform.parent.position.y+0.05f, transform.localPosition.z);
+        transform.localPosition = new Vector3(transform.localPosition.x, -transform.parent.position.y+0.1f, transform.localPosition.z);
     }
 }
