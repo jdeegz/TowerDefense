@@ -196,14 +196,15 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
 
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
-        //Look towards the move direction.
-        float cumulativeLookSpeed = m_baseLookSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * Time.deltaTime;
-        Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
-
         //Move forward.
         float cumulativeMoveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * Time.deltaTime;
         transform.position += transform.forward * cumulativeMoveSpeed;
+        
+        //Look towards the move direction.
+        float cumulativeLookSpeed = m_baseLookSpeed * (cumulativeMoveSpeed / m_baseMoveSpeed);
+        Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
+
     }
 
     //Taking Damage

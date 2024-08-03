@@ -86,7 +86,7 @@ public class TowerRay : Tower
         }
 
         m_targetDetectionTimer += Time.deltaTime;
-        if (m_curTarget == null && m_targetDetectionTimer >= m_targetDetectionInterval)
+        if (m_targetDetectionTimer >= m_targetDetectionInterval)
         {
             m_targetDetectionTimer = 0f;
             FindTarget();

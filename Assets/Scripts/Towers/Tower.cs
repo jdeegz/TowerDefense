@@ -27,7 +27,7 @@ public abstract class Tower : MonoBehaviour
     protected Animator m_animator;
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
-    protected float m_targetDetectionInterval = 0.2f;
+    protected float m_targetDetectionInterval = 0.33f;
     protected float m_targetDetectionTimer = 0f;
     protected Collider m_targetCollider;
 
@@ -73,13 +73,6 @@ public abstract class Tower : MonoBehaviour
 
         m_curTarget = GetPriorityTarget(targets);
         m_targetCollider = m_curTarget.GetComponent<Collider>();
-        
-        //Disabling what i thought would help towers from flickering between enemies and never firing.
-        /*if (m_curTarget == null || target.m_enemyData.m_targetPriority > m_curTarget.m_enemyData.m_targetPriority)
-        {
-            m_curTarget = target;
-            m_targetCollider = targetCollider;
-        }*/
     }
     
     public void RotateTowardsTarget()
@@ -269,6 +262,12 @@ public abstract class Tower : MonoBehaviour
                 priorityTarget = enemy;
                 closestTargetDistance = Vector3.Distance(transform.position, enemy.transform.position);
             }
+        }
+
+        // Don't change targets if the discovered priority target is of the same value as current target.
+        if (m_curTarget != null && priorityTarget.m_enemyData.m_targetPriority == m_curTarget.m_enemyData.m_targetPriority)
+        {
+            priorityTarget = m_curTarget;
         }
 
         return priorityTarget;

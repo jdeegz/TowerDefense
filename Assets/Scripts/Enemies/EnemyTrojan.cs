@@ -43,7 +43,9 @@ public class EnemyTrojan : EnemyController
 
     public override void OnEnemyDestroyed(Vector3 pos)
     {
-        SpawnTrojanEnemies();
+        if (m_isComplete) return;
+        
+        if(m_curHealth <= 0) SpawnTrojanEnemies();
 
         base.OnEnemyDestroyed(pos);
     }

@@ -190,6 +190,7 @@ public class CreepSpawner
     private float m_elapsedTime;
     private bool m_delayElapsed;
     private Transform m_creepSpawnPoint;
+    private float m_nextSpawnInterval = 0;
 
 
     public CreepSpawner(Creep creep, Transform spawnPoint)
@@ -213,9 +214,8 @@ public class CreepSpawner
         }
 
         //Interval Timer
-        if (m_delayElapsed && m_unitsSpawned < m_unitsToSpawn && m_elapsedTime >= m_spawnInterval)
+        if (m_delayElapsed && m_unitsSpawned < m_unitsToSpawn && m_elapsedTime >= m_nextSpawnInterval)
         {
-            //Debug.Log("Spawning enemy " + m_enemy.name + " : " + m_unitsSpawned + " of " + m_unitsToSpawn);
             Vector3 spawnPoint = m_creepSpawnPoint.position;
             float xOffset = Random.Range(-0.2f, 0.2f);
             float zOffset = Random.Range(-0.2f, 0.2f);
@@ -223,13 +223,15 @@ public class CreepSpawner
             spawnPoint.x += xOffset;
             spawnPoint.z += zOffset;
 
-            //GameObject enemyOjb = GameObject.Instantiate(m_enemy.m_enemyPrefab, spawnPoint, m_creepSpawnPoint.rotation, GameplayManager.Instance.m_enemiesObjRoot);
             GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_enemy.m_enemyPrefab, spawnPoint, m_creepSpawnPoint.rotation, ObjectPoolManager.PoolType.Enemy);
             EnemyController enemyController = enemyOjb.GetComponent<EnemyController>();
             enemyController.SetEnemyData(m_enemy);
             if(m_spawnStatusEffect != null) enemyController.ApplyEffect(m_spawnStatusEffect);
+            
+            
             m_unitsSpawned++;
             m_elapsedTime = 0;
+            m_nextSpawnInterval = m_spawnInterval;
 
             //Are we done?
             if (m_unitsSpawned >= m_unitsToSpawn)

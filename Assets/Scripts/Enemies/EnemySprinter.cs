@@ -40,7 +40,7 @@ public class EnemySprinter : EnemyController
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
 
         //Move forward.
-        //Sprinter move speed adjustment, slow speed at corners. Any angle greater than 90 returns 0 move speed.
+        //Sprinter move speed adjustment, slow speed at corners. Any angle greater than Clamped Value returns 0 move speed.
         float sprintSpeedMultiplier = Vector3.Angle(transform.forward, m_moveDirection);
         sprintSpeedMultiplier = Mathf.Min(sprintSpeedMultiplier, 60); //Clamp to 60
         sprintSpeedMultiplier = 1 - (sprintSpeedMultiplier / 60f); //Reverse normalization
