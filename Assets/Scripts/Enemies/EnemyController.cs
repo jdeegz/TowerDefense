@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
-public abstract class EnemyController : MonoBehaviour, IEffectable
+public abstract class EnemyController : Dissolvable, IEffectable 
 {
     //Enemy Scriptable Data
     [Header("Enemy Data")]
@@ -323,6 +323,7 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
         if (m_isComplete) return;
 
         m_isComplete = true;
+        m_isActive = false;
 
         //Kind of hacky, but this prevents towers from continuing to hit units that reach the castle.
         m_curHealth = 0;
@@ -370,7 +371,12 @@ public abstract class EnemyController : MonoBehaviour, IEffectable
             }
         }
 
-        RemoveObject();
+        if (m_deathVFX)
+        {
+            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+        }
+        
+        StartDissolve(RemoveObject);
     }
 
     public virtual void RemoveObject()
