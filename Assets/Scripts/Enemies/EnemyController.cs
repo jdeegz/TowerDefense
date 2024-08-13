@@ -10,9 +10,8 @@ using Random = UnityEngine.Random;
 public abstract class EnemyController : Dissolvable, IEffectable 
 {
     //Enemy Scriptable Data
-    [Header("Enemy Data")]
+    [Header("Enemy Controller")]
     public EnemyData m_enemyData;
-
     public Transform m_targetPoint;
     public GameObject m_enemyModelRoot;
 
@@ -36,6 +35,9 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected List<Renderer> m_allRenderers;
     protected List<Color> m_allOrigColors;
     protected Coroutine m_hitFlashCoroutine;
+    
+    //Animation
+    public Animator m_animator;
 
     //VFX
     private GameObject m_decreaseHealthVFXOjb;
@@ -51,12 +53,15 @@ public abstract class EnemyController : Dissolvable, IEffectable
     //Obelisk
     private ObeliskData m_obeliskData;
 
+    //Actions
     public event Action<float> UpdateHealth;
     public event Action<Vector3> DestroyEnemy;
 
+    //Enemy State
     protected bool m_isComplete;
     protected bool m_isActive = true;
     protected Vector3 m_moveDirection;
+    
 
     public virtual void SetEnemyData(EnemyData data, bool active = true)
     {
@@ -204,6 +209,10 @@ public abstract class EnemyController : Dissolvable, IEffectable
         float cumulativeLookSpeed = m_baseLookSpeed * (cumulativeMoveSpeed / m_baseMoveSpeed);
         Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
+        
+        //Send information to Animator
+        float angle = Vector3.SignedAngle(transform.forward, m_moveDirection, Vector3.up);
+        m_animator.SetFloat("LookRotation", angle);
 
     }
 
@@ -322,6 +331,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     {
         if (m_isComplete) return;
 
+        
         m_isComplete = true;
         m_isActive = false;
 
@@ -376,6 +386,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
             ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
         }
         
+        m_animator.SetTrigger("IsDead");
         StartDissolve(RemoveObject);
     }
 
