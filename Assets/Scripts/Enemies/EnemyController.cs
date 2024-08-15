@@ -273,6 +273,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
         //If we're dead, destroy.
         if (m_curHealth <= 0)
         {
+            if (m_deathVFX)
+            {
+                ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+            }
+        
+            m_animator.SetTrigger("IsDead");
+            
             OnEnemyDestroyed(transform.position);
             DestroyEnemy?.Invoke(transform.position);
         }
@@ -330,7 +337,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_isComplete) return;
-
         
         m_isComplete = true;
         m_isActive = false;
@@ -380,13 +386,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
-
-        if (m_deathVFX)
-        {
-            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
-        }
         
-        m_animator.SetTrigger("IsDead");
         StartDissolve(RemoveObject);
     }
 
