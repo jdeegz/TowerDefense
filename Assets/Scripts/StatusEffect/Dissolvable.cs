@@ -18,6 +18,7 @@ public class Dissolvable : MonoBehaviour
     void OnEnable()
     {
         //Reset the properties when the object is pulled from the pool.
+        Debug.Log($"OnEnable, setting Alpha Clip to 0");
         if (m_materials != null)
         {
             foreach (Material material in m_materials)
@@ -60,7 +61,7 @@ public class Dissolvable : MonoBehaviour
     {
         //Get Parent Mesh Renderer if there is one.
         Renderer Renderer = parent.GetComponent<Renderer>();
-        if (Renderer != null)
+        if (Renderer != null && !(Renderer is TrailRenderer) && !(Renderer is VFXRenderer))
         {
             if (m_materials == null)
             {

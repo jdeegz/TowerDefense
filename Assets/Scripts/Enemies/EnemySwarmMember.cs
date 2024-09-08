@@ -135,6 +135,10 @@ public class EnemySwarmMember : EnemyController
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
+        
+        m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
+        
+        StartDissolve(RemoveObject);
     }
     
     public override void ApplyEffect(StatusEffect statusEffect)

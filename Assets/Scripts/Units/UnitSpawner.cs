@@ -185,12 +185,12 @@ public class CreepSpawner
     public float m_spawnInterval;
     public StatusEffect m_spawnStatusEffect;
 
-    private bool m_isCreepSpawning = true;
-    private int m_unitsSpawned;
     private float m_elapsedTime;
-    private bool m_delayElapsed;
-    private Transform m_creepSpawnPoint;
     private float m_nextSpawnInterval = 0;
+    private bool m_isCreepSpawning = true;
+    private bool m_delayElapsed;
+    private int m_unitsSpawned;
+    private Transform m_creepSpawnPoint;
 
 
     public CreepSpawner(Creep creep, Transform spawnPoint)

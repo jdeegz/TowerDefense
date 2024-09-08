@@ -202,8 +202,11 @@ public abstract class EnemyController : Dissolvable, IEffectable
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
         //Move forward.
-        float cumulativeMoveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * Time.deltaTime;
+        float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+        float cumulativeMoveSpeed = speed * Time.deltaTime;
         transform.position += transform.forward * cumulativeMoveSpeed;
+        m_animator.SetFloat("Speed", speed);
+        Debug.Log($"cum spd; {speed}");
         
         //Look towards the move direction.
         float cumulativeLookSpeed = m_baseLookSpeed * (cumulativeMoveSpeed / m_baseMoveSpeed);
@@ -222,7 +225,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     {
         //Get Parent Mesh Renderer if there is one.
         Renderer Renderer = parent.GetComponent<Renderer>();
-        if (Renderer != null)
+        if (Renderer != null && !(Renderer is TrailRenderer) && !(Renderer is VFXRenderer))
         {
             if (m_allRenderers == null)
             {
@@ -234,6 +237,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 m_allOrigColors = new List<Color>();
             }
 
+            
             m_allRenderers.Add(Renderer);
             m_allOrigColors.Add(Renderer.material.GetColor("_EmissionColor"));
         }
@@ -332,6 +336,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         heal = Mathf.Min(heal, curMissingHealth);
         m_curHealth += heal;
         UpdateHealth?.Invoke(heal);
+        Debug.Log($"{gameObject.name} healed for {heal}.");
     }
 
     public virtual void OnEnemyDestroyed(Vector3 pos)
@@ -392,7 +397,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     public virtual void RemoveObject()
     {
-        ObjectPoolManager.ReturnObjectToPool(gameObject);
+        ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
     }
 
     public float GetCurrentHP()
@@ -536,7 +541,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
                 break;
             case StatusEffectData.EffectType.IncreaseMoveSpeed:
-                if (!m_increaseMoveSpeedVFXOjb && !statusEffect.m_data.m_effectVFX)
+                if (!m_increaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
                     m_increaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
                     m_increaseMoveSpeedVFXOjb.transform.SetParent(transform);

@@ -22,7 +22,9 @@ public class EnemyData : ScriptableObject
     [Header("VFX")]
     public GameObject m_spawnVFXPrefab;
     public GameObject m_deathVFXPrefab;
-    
+
+    [Header("Trojan Creep Data")]
+    public GameObject m_trojanSpawner;
     
     [Header("Audio")]
     public AudioClip m_audioSpawnClip;

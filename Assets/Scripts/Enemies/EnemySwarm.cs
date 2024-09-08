@@ -25,9 +25,16 @@ public class EnemySwarm : MonoBehaviour
     private float m_cumulativeMoveSpeed;
     private float m_groundClampValue = 0.2f;
 
-    void Start()
+
+    void Awake()
     {
         m_motherEnemyController = GetComponent<EnemyController>();
+    }
+    
+    void OnEnable()
+    {
+        m_swarmMembers = new List<EnemySwarmMember>();
+        
         for (int i = 0; i < m_swarmSize; ++i)
         {
             GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_swarmMemberData.m_enemyPrefab, m_swarmMemberRoot);

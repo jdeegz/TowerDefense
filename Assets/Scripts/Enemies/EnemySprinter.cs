@@ -45,8 +45,14 @@ public class EnemySprinter : EnemyController
         sprintSpeedMultiplier = Mathf.Min(sprintSpeedMultiplier, 60); //Clamp to 60
         sprintSpeedMultiplier = 1 - (sprintSpeedMultiplier / 60f); //Reverse normalization
         
-        Debug.Log($"{sprintSpeedMultiplier} sprinting multiplier.");
-        float cumulativeMoveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * sprintSpeedMultiplier * Time.deltaTime;
+        //Debug.Log($"{sprintSpeedMultiplier} sprinting multiplier.");
+        float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower * sprintSpeedMultiplier;
+        float cumulativeMoveSpeed = speed * Time.deltaTime;
         transform.position += transform.forward * cumulativeMoveSpeed;
+        m_animator.SetFloat("Speed", speed);
+        
+        //Send information to Animator
+        float angle = Vector3.SignedAngle(transform.forward, m_moveDirection, Vector3.up);
+        m_animator.SetFloat("LookRotation", angle);
     }
 }

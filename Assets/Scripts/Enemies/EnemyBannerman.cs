@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.VFX;
 
 public class EnemyBannerman : MonoBehaviour
@@ -9,6 +10,7 @@ public class EnemyBannerman : MonoBehaviour
     // Heal Data
     [Header("Healing")]
     public GameObject m_healEffect;
+    public GameObject m_thresholdEffect;
     public float m_healRadius = 3f;
     public float m_healPeriod = 2f;
     public float m_healPower = .2f;
@@ -16,8 +18,7 @@ public class EnemyBannerman : MonoBehaviour
     private float m_nextHealTime;
 
     // Status Effect Data
-    [Header("Status Effect")]
-    public StatusEffect m_statusEffect;
+    public StatusEffectData m_statusEffectData;
     public List<float> m_statusEffectThresholds; //0-100 list thresholds to trigger effects.
     private HashSet<float> m_triggeredThresholds;
     private EnemyController m_enemyController;
@@ -49,8 +50,12 @@ public class EnemyBannerman : MonoBehaviour
             if (curHP < curThreshold && !m_triggeredThresholds.Contains(threshold))
             {
                 m_triggeredThresholds.Add(threshold);
+                
                 SendEffect();
-                Debug.Log($"{threshold} threshold passed. Sending Effect.");
+                
+                ObjectPoolManager.SpawnObject(m_thresholdEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+                
+                //Debug.Log($"{threshold} threshold passed. Sending Effect.");
             }
         }
     }
@@ -60,17 +65,18 @@ public class EnemyBannerman : MonoBehaviour
         if (m_nextHealTime <= Time.time)
         {
             m_nextHealTime += m_healPeriod;
-            Debug.Log($"Healing. Next heal at {m_nextHealTime}.");
+            //Debug.Log($"Healing. Next heal at {m_nextHealTime}.");
             Heal();
         }
     }
 
     private void Heal()
     {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, m_healRadius, m_healLayerMask);
+        Collider[] colliders = Physics.OverlapSphere(m_enemyController.m_targetPoint.position, m_healRadius, m_healLayerMask);
 
         if (colliders.Length <= 0) return; //No one found to heal.
 
+        Debug.Log($"Found {colliders.Length} enemies to heal.");
         foreach (Collider col in colliders)
         {
             EnemyController enemyController = col.GetComponent<EnemyController>();
@@ -80,7 +86,7 @@ public class EnemyBannerman : MonoBehaviour
             enemyController.OnHealed(m_healPower, true);
         }
 
-        ObjectPoolManager.SpawnObject(m_healEffect.gameObject, transform.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_healEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
     private void SendEffect()
@@ -92,10 +98,13 @@ public class EnemyBannerman : MonoBehaviour
         foreach (Collider col in colliders)
         {
             EnemyController enemyController = col.GetComponent<EnemyController>();
-            if (m_statusEffect.m_data != null)
+            
+            if (m_statusEffectData)
             {
-                Debug.Log($"This should not trigger if we do not have a status effect.");
-                enemyController.ApplyEffect(m_statusEffect);
+                StatusEffect statusEffect = new StatusEffect();
+                statusEffect.SetSender(gameObject);
+                statusEffect.m_data = m_statusEffectData;
+                enemyController.ApplyEffect(statusEffect);
             }
         }
     }
