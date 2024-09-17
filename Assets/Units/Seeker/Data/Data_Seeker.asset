@@ -12,17 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e6057b9b4b6f6649bfb6f3c2cc3cfb5, type: 3}
   m_Name: Data_Seeker
   m_EditorClassIdentifier: 
-  m_enemyName: Runner
+  m_enemyName: Seeker
   m_enemyPrefab: {fileID: 3339337606177031757, guid: 73a44dab49287d245868c1b118b399f5, type: 3}
-  m_moveSpeed: 1
+  m_moveSpeed: 1.1
+  m_movementWiggleValue: 0.4
   m_lookSpeed: 1.75
   m_damageMultiplier: 1
-  m_health: 5
+  m_health: 6
   m_targetPriority: 0
+  m_challengeRating: 6
   m_healthMeterOffset: 70
   m_healthMeterScale: 1.5
   m_spawnVFXPrefab: {fileID: 0}
   m_deathVFXPrefab: {fileID: 0}
+  m_trojanSpawner: {fileID: 0}
   m_audioSpawnClip: {fileID: 8300000, guid: 3cbe1e9798d7610478287ae21487bbc0, type: 3}
   m_audioDeathClip: {fileID: 8300000, guid: f45ee9c1cd954de46a72c1827d716ef9, type: 3}
   m_audioHealedClip: {fileID: 0}

@@ -100,7 +100,7 @@ public class GathererController : MonoBehaviour
         if (newState == GameplayManager.GameplayState.CreatePaths) // Moved this code out of Place Obstacles, because that is also when Obelisks are added GameplayManager.
         {
             m_depositLocations = new List<Vector2Int>();
-            
+
             foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
             {
                 m_depositLocations.AddRange(Util.GetAdjacentCellPos(Util.GetVector2IntFrom3DPos(obelisk.gameObject.transform.position)));
@@ -513,7 +513,6 @@ public class GathererController : MonoBehaviour
         ToggleDisplayIdleVFX();
         m_resourceAnchor.SetActive(m_resourceCarried > 0);
 
-        Debug.Log($"5. {gameObject.name}'s task updated to: {m_gathererTask}");
         Vector2Int startPos;
         Vector2Int endPos;
         switch (m_gathererTask)
@@ -524,7 +523,7 @@ public class GathererController : MonoBehaviour
             case GathererTask.FindingHarvestablePoint:
                 if (m_curHarvestNode)
                 {
-                    Debug.Log("6. Finding point to harvest from.");
+                    //Debug.Log("6. Finding point to harvest from.");
                     ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPointFromObj(m_curHarvestNode.gameObject);
 
                     //If we're given an index greater equal to or greater than 0, we can harvest this node.
@@ -543,7 +542,7 @@ public class GathererController : MonoBehaviour
                 {
                     //If we dont have a node, find a nearby node.
                     //Get Neighbor Cells.
-                    Debug.Log($"6. Finding new nearby {m_curHarvestNodePos}.");
+                    //Debug.Log($"6. Finding new nearby {m_curHarvestNodePos}.");
                     ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 1f));
                     if (vars.Item1 == null)
                     {
@@ -554,34 +553,46 @@ public class GathererController : MonoBehaviour
                     SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                 }
 
-                Debug.Log($"Moving to {m_curHarvestNode.gameObject.name}");
-                UpdateTask(GathererTask.TravelingToHarvest);
+                //Debug.Log($"Moving to {m_curHarvestNode.gameObject.name}");
+                //If we're already on the desired cell, do not need to move.
+                if (m_curHarvestPointPos != m_curCell.m_cellPos)
+                {
+                    UpdateTask(GathererTask.TravelingToHarvest);
+                }
+                else
+                {
+                    UpdateTask(GathererTask.Harvesting);
+                }
+
                 break;
             case GathererTask.TravelingToHarvest:
                 break;
             case GathererTask.Harvesting:
                 if (m_curHarvestNode)
                 {
-                    Debug.Log($"{gameObject.name} arrived at node and is harvesting.");
+                    //Debug.Log($"{gameObject.name} arrived at node and is harvesting.");
                 }
                 else
                 {
-                    Debug.Log($"{gameObject.name} arrived at node and it is missing.");
+                    //Debug.Log($"{gameObject.name} arrived at node and it is missing.");
                 }
 
                 m_curCoroutine = StartCoroutine(Harvesting());
                 break;
             case GathererTask.TravelingToCastle:
-                //Trying a variation where gatherers find the shortest path to a obelisk or the castle and use that path.
-                //endPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
+
+                foreach (Vector2Int pos in m_depositLocations)
+                {
+                    if (pos == m_curCell.m_cellPos)
+                    {
+                        m_gathererPath = null;
+                        UpdateTask(GathererTask.Storing);
+                        return;
+                    }
+                }
 
                 startPos = Util.GetVector2IntFrom3DPos(transform.position);
                 m_gathererPath = AStar.FindShortestPath(startPos, m_depositLocations);
-                if (m_gathererPath == null)
-                {
-                    Debug.Log("No path back to castle found. This should be not possible.");
-                }
-
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());
@@ -751,6 +762,14 @@ public class GathererController : MonoBehaviour
             {
                 continue;
             }
+            
+            //If we're already on the point, lets use it.
+            if (m_curCell.m_cellPos == node.m_harvestPoints[i].m_harvestPointCell.m_cellPos)
+            {
+                Debug.Log($"we're already on the cell, so we're not moving anywhere to harvest.");
+                m_gathererPath = null;
+                return (node, node.m_harvestPoints[i].m_harvestPointPos, i);
+            }
 
             //Check path to the cell, not the Harvest Point Position.
             List<Vector2Int> path = AStar.FindPath(curPos, node.m_harvestPoints[i].m_harvestPointCell.m_cellPos);
@@ -762,6 +781,7 @@ public class GathererController : MonoBehaviour
 
             if (path.Count <= shortestDistance)
             {
+                Debug.Log($"shortest path to harvest point found.");
                 shortestDistance = path.Count;
                 closestNodePointPos = node.m_harvestPoints[i].m_harvestPointPos;
                 harvestPointIndex = i;
@@ -875,6 +895,7 @@ public class GathererController : MonoBehaviour
         }
 
         m_animator.SetBool(m_isHarvestingHash, false);
+
         UpdateTask(GathererTask.TravelingToCastle);
     }
 

@@ -150,7 +150,7 @@ public class GridManager : MonoBehaviour
             visited.Add(curCell);
         }
 
-        Debug.Log($"{spawnPointCellsFound} of {spawnPointCells.Count} spawners found during FloodFill.");
+        //Debug.Log($"{spawnPointCellsFound} of {spawnPointCells.Count} spawners found during FloodFill.");
 
         //If we've found all the spawn points, this is good, we can update each path.
         if (m_spawnPointsAccessible = spawnPointCellsFound == spawnPointCells.Count)
@@ -220,10 +220,10 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        Debug.Log("Grid Built.");
+        //Debug.Log("Grid Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);
 
-        Debug.Log("Obstacles Placed.");
+        //Debug.Log("Obstacles Placed.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.FloodFillGrid);
     }
 
@@ -234,19 +234,19 @@ public class GridManager : MonoBehaviour
         int preconTowerCellIndex = preconTowerPos.y * m_gridWidth + preconTowerPos.x;
         //Debug.Log($"Precon Index: {preconTowerCellIndex}");
 
-        Debug.Log($"GridManager: Updating Grid Cell {preconTowerCellIndex} temp occupancy to TRUE.");
+        //Debug.Log($"GridManager: Updating Grid Cell {preconTowerCellIndex} temp occupancy to TRUE.");
         m_gridCells[preconTowerCellIndex].UpdateTempOccupancyDisplay(true);
 
         //Set the values back to their original state if this is not our first iteration.
         if (m_previousPreconIndex > 0 && m_previousPreconIndex != preconTowerCellIndex)
         {
-            Debug.Log($"GridManager: Updating Grid Cell {m_previousPreconIndex} temp occupancy to FALSE.");
+            //Debug.Log($"GridManager: Updating Grid Cell {m_previousPreconIndex} temp occupancy to FALSE.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
         }
 
         m_previousPreconIndex = preconTowerCellIndex;
 
-        Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
+        //Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
         FloodFillGrid(m_gridCells, null);
     }
 
@@ -269,7 +269,7 @@ public class GridManager : MonoBehaviour
         //Set the values back to their original state if this is not our first iteration.
         if (m_previousPreconIndex > 0)
         {
-            Debug.Log($"Setting previous Grid Cell occupancy.");
+            //Debug.Log($"Setting previous Grid Cell occupancy.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
             m_previousPreconIndex = -1;
         }
@@ -292,18 +292,18 @@ public class GridManager : MonoBehaviour
         //If we're in precon, we want to unset precon mode's temporary assignments of occupancy and direction.
         //Then flood fill to update temp directions. Then SET those directions.
         //Then return to precon testing.
-        Debug.Log($"GridManager: Node Depletion Detected.");
+        //Debug.Log($"GridManager: Node Depletion Detected.");
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
-            Debug.Log($"GridManager: Reverting Precon Temp Changes.");
+            //Debug.Log($"GridManager: Reverting Precon Temp Changes.");
             int preconIndex = m_previousPreconIndex;
             RevertPreconTempChanges();
 
-            Debug.Log($"GridManager: Flood Filling and Setting directions.");
+            //Debug.Log($"GridManager: Flood Filling and Setting directions.");
             FloodFillGrid(m_gridCells, SetCellDirections);
 
             //I think I could also cheat this by setting GameplayManagers m_preconstructedTowerPos to Vector2Int.zero, which will get flagged as the 'new pos' invoking its action.
-            Debug.Log($"GridManager: Returning to Precon Tower temp changes.");
+            //Debug.Log($"GridManager: Returning to Precon Tower temp changes.");
             PreconTowerMoved(m_gridCells[preconIndex].m_cellPos);
         }
         else
@@ -405,6 +405,7 @@ public class Cell
     public bool m_isGoal;
     public bool m_isOccupied;
     public bool m_isTempOccupied;
+    public bool m_isBuildRestricted;
     public int m_actorCount;
     public List<string> m_actorsList;
     public int m_cellIndex;
@@ -442,6 +443,11 @@ public class Cell
         {
             m_actorsList.Remove(name);
         }
+    }
+    
+    public void UpdateBuildRestrictedValue(bool value)
+    {
+        m_isBuildRestricted = value;
     }
 
     public void UpdateOccupancyDisplay(bool b)
@@ -580,7 +586,7 @@ public class UnitPath
             //UpdateExitPath();
             if (m_path == null)
             {
-                Debug.Log("Unit Path could not path to exit.");
+                //Debug.Log("Unit Path could not path to exit.");
                 return;
             }
 
@@ -728,7 +734,7 @@ public class UnitPath
 
         if (!m_hasPath)
         {
-            Debug.Log("CANNOT BUILD.");
+            //Debug.Log("CANNOT BUILD.");
         }
     }
 

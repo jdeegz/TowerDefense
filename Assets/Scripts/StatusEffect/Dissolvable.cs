@@ -18,7 +18,18 @@ public class Dissolvable : MonoBehaviour
     void OnEnable()
     {
         //Reset the properties when the object is pulled from the pool.
-        Debug.Log($"OnEnable, setting Alpha Clip to 0");
+        if (m_materials != null)
+        {
+            foreach (Material material in m_materials)
+            {
+                material.SetFloat("_AlphaClipThreshold", 0);
+            }
+        }
+    }
+
+    protected void ResetDissolve()
+    {
+        //Reset the properties when the object is pulled from the pool.
         if (m_materials != null)
         {
             foreach (Material material in m_materials)

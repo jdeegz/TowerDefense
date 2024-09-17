@@ -171,6 +171,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     //Movement
     //Functions
+    private Vector2 m_nextCellPosOffset;
     public virtual void HandleMovement()
     {
         //Update Cell occupancy
@@ -191,13 +192,15 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
             //Assign self to cell.
             m_curCell.UpdateActorCount(1, gameObject.name);
+            
+            m_nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f)) * m_enemyData.m_movementWiggleValue;
         }
 
         //Convert saved cell pos from Vector2 to Vector3
         Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
 
         //Get the position of the next cell.
-        Vector3 m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x, 0, m_curCell.m_directionToNextCell.z);
+        Vector3 m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + m_nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + m_nextCellPosOffset.y);
 
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
@@ -206,7 +209,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         float cumulativeMoveSpeed = speed * Time.deltaTime;
         transform.position += transform.forward * cumulativeMoveSpeed;
         m_animator.SetFloat("Speed", speed);
-        Debug.Log($"cum spd; {speed}");
+        //Debug.Log($"cum spd; {speed}");
         
         //Look towards the move direction.
         float cumulativeLookSpeed = m_baseLookSpeed * (cumulativeMoveSpeed / m_baseMoveSpeed);

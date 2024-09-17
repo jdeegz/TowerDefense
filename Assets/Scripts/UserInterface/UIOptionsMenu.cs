@@ -222,12 +222,12 @@ public class UIOptionsMenu : MonoBehaviour
 
         if (m_canvasGroup.blocksRaycasts)
         {
-            Debug.Log($"Trying to pause game.");
+            //Debug.Log($"Trying to pause game.");
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
         }
         else
         {
-            Debug.Log($"Trying to resume game.");
+            //Debug.Log($"Trying to resume game.");
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Normal);
         }
     }

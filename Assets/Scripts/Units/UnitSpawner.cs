@@ -93,28 +93,29 @@ public class UnitSpawner : MonoBehaviour
     {
         int gameplayWave = GameplayManager.Instance.m_wave + 1;
         List<Creep> creepWave = new List<Creep>();
-        if (gameplayWave < m_spawnerWaves.m_trainingCreepWaves.Count)
+        
+        if (gameplayWave < m_spawnerWaves.m_introWaves.Count)
         {
-            creepWave = new List<Creep>(m_spawnerWaves.m_trainingCreepWaves[gameplayWave].m_creeps);
+            creepWave = new List<Creep>(m_spawnerWaves.m_introWaves[gameplayWave].m_creeps);
         }
 
         //Else find out if we spawn normal wave or boss wave.
         else
         {
             //Subtract the number of training ways so that we start at wave 0 in the new lists.
-            gameplayWave -= m_spawnerWaves.m_trainingCreepWaves.Count;
+            gameplayWave -= m_spawnerWaves.m_introWaves.Count;
 
             //Boss waves occur every 5 gameplay Waves.
-            int bossWave = (gameplayWave + 1) % 5;
-            if (bossWave == 0)
+            int challengingWave = (gameplayWave + 1) % 5;
+            if (challengingWave == 0)
             {
-                int wave = (gameplayWave) % m_spawnerWaves.m_bossWaves.Count;
-                creepWave = new List<Creep>(m_spawnerWaves.m_bossWaves[wave].m_creeps);
+                int wave = (gameplayWave) % m_spawnerWaves.m_challengingWaves.Count;
+                creepWave = new List<Creep>(m_spawnerWaves.m_challengingWaves[wave].m_creeps);
             }
             else
             {
-                int wave = (gameplayWave) % m_spawnerWaves.m_creepWaves.Count;
-                creepWave = new List<Creep>(m_spawnerWaves.m_creepWaves[wave].m_creeps);
+                int wave = (gameplayWave) % m_spawnerWaves.m_loopingWaves.Count;
+                creepWave = new List<Creep>(m_spawnerWaves.m_loopingWaves[wave].m_creeps);
             }
         }
 
@@ -145,7 +146,8 @@ public class UnitSpawner : MonoBehaviour
                 break;
             case GameplayManager.GameplayState.PlaceObstacles:
                 GameplayManager.Instance.AddSpawnerToList(this);
-                GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+                //GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+                GridCellOccupantUtil.SetActor(gameObject, 1, 1, 1);
                 break;
             case GameplayManager.GameplayState.FloodFillGrid:
                 break;

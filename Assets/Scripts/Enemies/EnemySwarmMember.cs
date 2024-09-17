@@ -58,6 +58,7 @@ public class EnemySwarmMember : EnemyController
         }*/
 
         //SetupUI();
+        ResetDissolve();
         SetEnemyActive(active);
     }
 
@@ -109,13 +110,12 @@ public class EnemySwarmMember : EnemyController
         Debug.Log($"OnEnemyDestroyed called on Swarm Member.");
         if (m_isComplete) return;
 
+        //transform.SetParent(ObjectPoolManager.SetParentObject(ObjectPoolManager.PoolType.Enemy).transform);
         m_isComplete = true;
         
         m_curHealth = 0;
         
         //Return effects to pool.
-        
-        Debug.Log($"Trying to remove {m_statusEffects.Count} status effects from Swarm Member.");
         foreach (StatusEffect activeEffect in m_statusEffects)
         {
             RemoveEffect(activeEffect);
@@ -138,7 +138,7 @@ public class EnemySwarmMember : EnemyController
         
         m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
         
-        StartDissolve(RemoveObject);
+        StartDissolve(null);
     }
     
     public override void ApplyEffect(StatusEffect statusEffect)

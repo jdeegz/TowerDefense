@@ -10,39 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ecac5781f4942d286bc188f12e8139f, type: 3}
-  m_Name: Spawner_North
+  m_Name: Spawner_West
   m_EditorClassIdentifier: 
   m_introWaves:
+  - m_creeps: []
+    m_challengeRating: 0
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
-      m_unitsToSpawn: 2
-      m_spawnDelay: 0
-      m_spawnInterval: 5
-    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
-      m_unitsToSpawn: 2
-      m_spawnDelay: 1
-      m_spawnInterval: 5
-    m_challengeRating: 20
-  - m_creeps:
-    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
-      m_unitsToSpawn: 4
+      m_unitsToSpawn: 1
       m_spawnDelay: 0
       m_spawnInterval: 3
     - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
-      m_unitsToSpawn: 4
+      m_unitsToSpawn: 1
       m_spawnDelay: 1
       m_spawnInterval: 3
-    m_challengeRating: 40
+    m_challengeRating: 10
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
-      m_unitsToSpawn: 5
+      m_unitsToSpawn: 3
       m_spawnDelay: 1
       m_spawnInterval: 3
     - m_enemy: {fileID: 11400000, guid: c286f0c05774ab04d8f93acdceb76daa, type: 2}
-      m_unitsToSpawn: 5
+      m_unitsToSpawn: 2
       m_spawnDelay: 0
       m_spawnInterval: 3
-    m_challengeRating: 55
+    m_challengeRating: 27
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: 992ef9b906f9ee245886b86cb190bd34, type: 2}
       m_unitsToSpawn: 2
@@ -104,11 +96,11 @@ MonoBehaviour:
       m_unitsToSpawn: 9
       m_spawnDelay: 0.5
       m_spawnInterval: 2
-    - m_enemy: {fileID: 11400000, guid: c286f0c05774ab04d8f93acdceb76daa, type: 2}
+    - m_enemy: {fileID: 11400000, guid: f5e4ea81a25ac804ba7aa6ccdcb65142, type: 2}
       m_unitsToSpawn: 14
       m_spawnDelay: 0
       m_spawnInterval: 2
-    m_challengeRating: 174
+    m_challengeRating: 188
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
       m_unitsToSpawn: 12
@@ -174,10 +166,10 @@ MonoBehaviour:
       m_spawnDelay: 1
       m_spawnInterval: 6
     - m_enemy: {fileID: 11400000, guid: 992ef9b906f9ee245886b86cb190bd34, type: 2}
-      m_unitsToSpawn: 8
+      m_unitsToSpawn: 7
       m_spawnDelay: 2
       m_spawnInterval: 6
-    m_challengeRating: 216
+    m_challengeRating: 210
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: f5e4ea81a25ac804ba7aa6ccdcb65142, type: 2}
       m_unitsToSpawn: 8
@@ -199,7 +191,7 @@ MonoBehaviour:
       m_unitsToSpawn: 7
       m_spawnDelay: 2
       m_spawnInterval: 5
-    m_challengeRating: 201
+    m_challengeRating: 217
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: 992ef9b906f9ee245886b86cb190bd34, type: 2}
       m_unitsToSpawn: 9
@@ -239,7 +231,21 @@ MonoBehaviour:
       m_unitsToSpawn: 7
       m_spawnDelay: 3
       m_spawnInterval: 5
-    m_challengeRating: 204
+    m_challengeRating: 218
+  - m_creeps:
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 7
+      m_spawnDelay: 1.5
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 15
+      m_spawnDelay: 0
+      m_spawnInterval: 3
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 15
+      m_spawnDelay: 1
+      m_spawnInterval: 3
+    m_challengeRating: 206
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
       m_unitsToSpawn: 12
@@ -268,62 +274,94 @@ MonoBehaviour:
       m_spawnDelay: 0
       m_spawnInterval: 2
     - m_enemy: {fileID: 11400000, guid: c286f0c05774ab04d8f93acdceb76daa, type: 2}
-      m_unitsToSpawn: 12
+      m_unitsToSpawn: 10
       m_spawnDelay: 0.5
       m_spawnInterval: 3
-    m_challengeRating: 206
-  m_challengingWaves:
+    m_challengeRating: 201
   - m_creeps:
-    - m_enemy: {fileID: 11400000, guid: 2d86ddda348ef9c47a381e4ee7672b1f, type: 2}
-      m_unitsToSpawn: 10
-      m_spawnDelay: 15
-      m_spawnInterval: 4
-    - m_enemy: {fileID: 11400000, guid: 2d86ddda348ef9c47a381e4ee7672b1f, type: 2}
-      m_unitsToSpawn: 10
-      m_spawnDelay: 16
-      m_spawnInterval: 4
-    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
-      m_unitsToSpawn: 16
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 7
       m_spawnDelay: 0
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 7
+      m_spawnDelay: 1
       m_spawnInterval: 3
-    - m_enemy: {fileID: 11400000, guid: 992ef9b906f9ee245886b86cb190bd34, type: 2}
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 6
+      m_spawnDelay: 32
+      m_spawnInterval: 5
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 6
+      m_spawnDelay: 33
+      m_spawnInterval: 5
+    m_challengeRating: 208
+  - m_creeps:
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 8
+      m_spawnDelay: 1.5
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
       m_unitsToSpawn: 8
       m_spawnDelay: 1
-      m_spawnInterval: 6
-    m_challengeRating: 248
+      m_spawnInterval: 3
+    m_challengeRating: 104
+  m_challengingWaves:
   - m_creeps:
-    - m_enemy: {fileID: 11400000, guid: f5e4ea81a25ac804ba7aa6ccdcb65142, type: 2}
-      m_unitsToSpawn: 10
-      m_spawnDelay: 12
-      m_spawnInterval: 5
-    - m_enemy: {fileID: 11400000, guid: f5e4ea81a25ac804ba7aa6ccdcb65142, type: 2}
-      m_unitsToSpawn: 10
-      m_spawnDelay: 13
-      m_spawnInterval: 5
-    - m_enemy: {fileID: 11400000, guid: f5e4ea81a25ac804ba7aa6ccdcb65142, type: 2}
-      m_unitsToSpawn: 10
-      m_spawnDelay: 14
-      m_spawnInterval: 5
-    - m_enemy: {fileID: 11400000, guid: 992ef9b906f9ee245886b86cb190bd34, type: 2}
-      m_unitsToSpawn: 6
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 8
       m_spawnDelay: 0
-      m_spawnInterval: 5
-    - m_enemy: {fileID: 11400000, guid: 992ef9b906f9ee245886b86cb190bd34, type: 2}
-      m_unitsToSpawn: 6
-      m_spawnDelay: 1
-      m_spawnInterval: 5
-    m_challengeRating: 252
-  - m_creeps:
-    - m_enemy: {fileID: 11400000, guid: 2d86ddda348ef9c47a381e4ee7672b1f, type: 2}
-      m_unitsToSpawn: 14
-      m_spawnDelay: 3
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 12
+      m_spawnDelay: 5
+      m_spawnInterval: 4
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 12
+      m_spawnDelay: 5.5
       m_spawnInterval: 4
     - m_enemy: {fileID: 11400000, guid: 2d86ddda348ef9c47a381e4ee7672b1f, type: 2}
-      m_unitsToSpawn: 14
+      m_unitsToSpawn: 12
+      m_spawnDelay: 6
+      m_spawnInterval: 4
+    m_challengeRating: 256
+  - m_creeps:
+    - m_enemy: {fileID: 11400000, guid: 4c071730d2eb917439f82c30fb3529eb, type: 2}
+      m_unitsToSpawn: 5
+      m_spawnDelay: 1.5
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 10
+      m_spawnDelay: 0
+      m_spawnInterval: 4
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 10
+      m_spawnDelay: 0.75
+      m_spawnInterval: 4
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 10
+      m_spawnDelay: 1.5
+      m_spawnInterval: 4
+    - m_enemy: {fileID: 11400000, guid: f5e4ea81a25ac804ba7aa6ccdcb65142, type: 2}
+      m_unitsToSpawn: 8
       m_spawnDelay: 2
       m_spawnInterval: 4
-    - m_enemy: {fileID: 11400000, guid: f5e4ea81a25ac804ba7aa6ccdcb65142, type: 2}
-      m_unitsToSpawn: 14
+    m_challengeRating: 266
+  - m_creeps:
+    - m_enemy: {fileID: 11400000, guid: 69f280b40ba48b844b206e4e054180a5, type: 2}
+      m_unitsToSpawn: 3
+      m_spawnDelay: 3
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: 69f280b40ba48b844b206e4e054180a5, type: 2}
+      m_unitsToSpawn: 3
+      m_spawnDelay: 5
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: c286f0c05774ab04d8f93acdceb76daa, type: 2}
+      m_unitsToSpawn: 13
+      m_spawnDelay: 1.33
+      m_spawnInterval: 4
+    - m_enemy: {fileID: 11400000, guid: c286f0c05774ab04d8f93acdceb76daa, type: 2}
+      m_unitsToSpawn: 13
       m_spawnDelay: 0
       m_spawnInterval: 4
     m_challengeRating: 252

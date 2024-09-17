@@ -33,8 +33,12 @@ public class EnemySwarm : MonoBehaviour
     
     void OnEnable()
     {
+        RandomizeMembers();
+    }
+
+    void Start()
+    {
         m_swarmMembers = new List<EnemySwarmMember>();
-        
         for (int i = 0; i < m_swarmSize; ++i)
         {
             GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_swarmMemberData.m_enemyPrefab, m_swarmMemberRoot);

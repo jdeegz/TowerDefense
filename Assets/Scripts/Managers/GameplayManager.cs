@@ -41,7 +41,7 @@ public class GameplayManager : MonoBehaviour
     public int m_totalWaves = 10;
 
     public int m_wave;
-    public int m_bossWaveFactor = 20; //Spawn a boss every N waves.
+    public int m_bossWaveFactor = 20; //Spawn a boss every N waves. -1 means No Bosses.
     public bool m_delayForQuest;
     public float m_firstBuildDuraction = 15;
     public float m_buildDuration = 6;
@@ -175,7 +175,7 @@ public class GameplayManager : MonoBehaviour
         {
             ++m_wave;
             Debug.Log($"wave: {m_wave} -- wave factor: {(m_wave + 1) % m_bossWaveFactor}");
-            if (m_wave != 0 && (m_wave + 1) % m_bossWaveFactor == 0)
+            if (m_wave != 0 && (m_wave + 1) % m_bossWaveFactor == 0 && m_bossWaveFactor > 0)
             {
                 Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.BossWave);
@@ -783,6 +783,13 @@ public class GameplayManager : MonoBehaviour
         if (curCell.m_isOccupied)
         {
             Debug.Log($"Cannot Place: This cell is already occupied.");
+            return false;
+        }
+        
+        //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
+        if (curCell.m_isBuildRestricted)
+        {
+            Debug.Log($"Cannot Place: This cell is build restricted.");
             return false;
         }
 
