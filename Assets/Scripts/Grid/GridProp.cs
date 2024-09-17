@@ -56,7 +56,7 @@ public class GridProp : MonoBehaviour
             //Setup Cell Occupancy info.
             Vector2Int cellPos = Util.GetVector2IntFrom3DPos(transform.position);
             m_cell = Util.GetCellFromPos(cellPos);
-            if(!m_isBuildable) m_cell.UpdateActorCount(1, gameObject.name);
+            m_cell.UpdateBuildRestrictedValue(!m_isBuildable);
             m_cell.UpdateOccupancyDisplay(false);
             
             //Setup Walls
