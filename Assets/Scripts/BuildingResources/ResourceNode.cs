@@ -12,6 +12,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     public ResourceNodeData m_nodeData;
     [SerializeField] private Animator m_animator;
     [SerializeField] private GameObject m_modelRoot;
+    [SerializeField] private List<GameObject> m_objectsToToggle;
 
     private int m_resourcesRemaining;
     [HideInInspector] public ResourceManager.ResourceType m_type;
@@ -29,6 +30,17 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (m_modelRoot != null)
         {
             RandomRotation(m_modelRoot);
+        }
+
+        RandomResourceAmount();
+    }
+
+    private void RandomResourceAmount()
+    {
+        int randomInt = Random.Range(0, 33);
+        if (randomInt == 1)
+        {
+            RequestResource(m_resourcesRemaining - 1);
         }
     }
 
@@ -79,6 +91,14 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             //Give the gatherer how much they ask for or all that is remaining.
             resourcesHarvested = Math.Min(i, m_resourcesRemaining);
             m_resourcesRemaining -= resourcesHarvested;
+        }
+
+        if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
+        {
+            foreach (GameObject obj in m_objectsToToggle)
+            {
+                obj.SetActive(!obj.activeSelf);
+            }
         }
 
         if (m_resourcesRemaining <= 0)
