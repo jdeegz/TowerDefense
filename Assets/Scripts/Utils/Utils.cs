@@ -6,7 +6,7 @@ using System.Linq;
 
 public static class Util
 {
-    static Vector2Int[] m_directions = new Vector2Int[]
+    public static Vector2Int[] m_directions = new Vector2Int[]
     {
         new Vector2Int(-1, -1), // Top-left
         new Vector2Int(0, -1), // Top
@@ -17,6 +17,30 @@ public static class Util
         new Vector2Int(0, 1), // Bottom
         new Vector2Int(1, 1) // Bottom-right
     };
+
+    public static List<Vector2Int> GetBoxAround3x3Grid(Vector2Int center)
+    {
+        List<Vector2Int> result = new List<Vector2Int>();
+
+        // Loop through the 5x5 grid centered around the target
+        for (int x = -2; x <= 2; x++)
+        {
+            for (int z = -2; z <= 2; z++)
+            {
+                // Get the current grid cell
+                Vector2Int currentCell = new Vector2Int(center.x + x, center.y + z);
+
+                // Skip the inner 3x3 grid (which would be from -1 to 1 on both axes)
+                if (Mathf.Abs(x) <= 1 && Mathf.Abs(z) <= 1)
+                    continue;
+
+                // Add outer cells to the list
+                result.Add(currentCell);
+            }
+        }
+
+        return result;
+    }
 
     public static Vector3 GetRandomPosition(Vector3 objPosition, Vector3 offset)
     {
@@ -518,7 +542,7 @@ public static class Util
         {
             Vector2Int adjacentPosition = center + direction;
             Cell adjacentCell = GetCellFromPos(adjacentPosition);
-            
+
             if (adjacentCell == null) continue;
 
             adjacentCells.Add(adjacentCell.m_cellPos);

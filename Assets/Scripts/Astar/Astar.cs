@@ -19,7 +19,7 @@ public class AStar
                 continue;
             }
             
-            Debug.Log($"Path to {end} is {path.Count} long.");
+            //Debug.Log($"Path to {end} is {path.Count} long.");
             
             if (shortestPath == null)
             {
@@ -43,7 +43,7 @@ public class AStar
 
         if (start == end)
         {
-            Debug.Log($"end is same as start, returning end as path.");
+            Debug.Log($"End is same as start, returning end as path.");
             path.Add(end);
             return path;
         }

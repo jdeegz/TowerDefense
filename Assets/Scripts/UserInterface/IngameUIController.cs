@@ -11,16 +11,24 @@ public class IngameUIController : MonoBehaviour
 
     public UIStringData m_uiStringData;
     public UITowerSelectHUD m_towerSelectHUD;
+    
+    [Header("Meter Prefabs")]
     public UIHealthMeter m_healthMeter;
     public UIHealthMeter m_healthMeterBoss;
     public UIIngameMeter m_ingameMeter;
+    
+    [Header("Alert Prefabs")]
     public UIAlert m_currencyAlert;
     public UIAlert m_critCurrencyAlert;
     public UIAlert m_levelUpAlert;
+    public UIAlert m_gathererIdleAlert;
     public RectTransform m_healthMeterBossRect;
+    
+    [Header("Colors")]
     [SerializeField] private Color m_currencyGoodcolor;
     [SerializeField] private Color m_currencyBadcolor;
     [SerializeField] private Color m_levelUpColor;
+    [SerializeField] private Color m_idleColor;
     private String m_stoneIcon = "<sprite name=\"ResourceStone\">";
     private String m_woodIcon = "<sprite name=\"ResourceWood\">";
     private String m_positiveValue = "+";
@@ -43,6 +51,17 @@ public class IngameUIController : MonoBehaviour
         m_canvas = GetComponentInParent<Canvas>();
         m_screenWidth = Screen.width / m_canvas.scaleFactor;
         m_screenHeight = Screen.height / m_canvas.scaleFactor;
+    }
+    
+    public void SpawnIdleAlert(GameObject obj, Vector3 worldPos)
+    {
+        UIAlert uiAlert = Instantiate(m_gathererIdleAlert, transform);
+        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
+        
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
+        string alertString = string.Format(m_uiStringData.m_gathererIdle, obj.name);
+        uiAlert.SetLabelText($"{alertString}", m_idleColor);
     }
 
     public void SpawnCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)

@@ -100,7 +100,7 @@ public class ResourceManager : MonoBehaviour
         bool canSpawnRuin = false;
 
         ++m_depletionCounter;
-
+        
         int randomNumber = Random.Range(0, m_resourceManagerData.m_ruinsChance + 1);
 
         if (m_depletionCounter >= m_resourceManagerData.m_minDepletions && m_foundRuinCounter < m_resourceManagerData.m_totalRuinsPossible)

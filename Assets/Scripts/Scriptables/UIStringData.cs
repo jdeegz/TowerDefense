@@ -9,6 +9,7 @@ public class UIStringData : ScriptableObject
     public string m_cannotAfford;
     public string m_cannotPlace;
     public string m_gathererLevelUp;
+    public string m_gathererIdle;
     
     [Header("End of Game Strings")]
     public string m_victory;

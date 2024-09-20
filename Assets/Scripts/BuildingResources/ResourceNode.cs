@@ -54,7 +54,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-            
+
             //Make list of neighbor positions
             ValueTuple<List<Cell>, List<Vector2Int>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
             for (var i = 0; i < vars.Item1.Count; ++i)
@@ -67,7 +67,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             }
         }
     }
-    
+
     void RandomRotation(GameObject obj)
     {
         // Define the possible rotation angles
@@ -132,21 +132,40 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
         Debug.Log($"{gameObject.name} has been Depleted.");
         //If we were harvested, check for Ruins.
-        
-        if (m_resourcesRemaining == 0 && ResourceManager.Instance.RequestRuin())
+
+        //If we're within the charge range of an obelisk, do not allow a ruin to be placed here.
+        var nodePosition = Util.GetCellFrom3DPos(transform.position).m_cellPos;
+        bool isInObeliskRange = false;
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
         {
-            //We found a ruin!
-            Instantiate(ResourceManager.Instance.m_resourceManagerData.m_ruinObj, transform.position, quaternion.identity, transform.parent);
+            var obeliskPosition = Util.GetCellFrom3DPos(obelisk.transform.position).m_cellPos;
+            float distance = Vector2.Distance(nodePosition, obeliskPosition);
+
+            if (distance <= obelisk.m_obeliskData.m_obeliskRange)
+            {
+                isInObeliskRange = true;
+                break;
+            }
         }
+
+        if (!isInObeliskRange)
+        {
+            if (ResourceManager.Instance.RequestRuin())
+            {
+                //We found a ruin!
+                Instantiate(ResourceManager.Instance.m_resourceManagerData.m_ruinObj, transform.position, quaternion.identity, transform.parent);
+            }
+        }
+
 
         //Setting this to 0 so it wont show up in Nearby Nodes check. (When dragon destroys node, the node was appearing in the FindNearbyNodes check)
         m_resourcesRemaining = 0;
-        
+
         OnResourceNodeDepletion?.Invoke(this);
         GridManager.Instance.RefreshGrid();
         Destroy(gameObject);
     }
-    
+
 
     public ResourceNodeTooltipData GetTooltipData()
     {
@@ -172,7 +191,9 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 public class HarvestPoint
 {
     public Vector2Int m_harvestPointPos;
+
     public Cell m_harvestPointCell;
+
     //public bool m_isOccupied;
     public GathererController m_gatherer;
 }
