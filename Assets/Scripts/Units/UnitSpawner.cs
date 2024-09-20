@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening.Core.Enums;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -17,6 +18,7 @@ public class UnitSpawner : MonoBehaviour
     private List<CreepSpawner> m_activeCreepSpawners;
     private StatusEffect m_spawnStatusEffect;
     private int m_spawnStatusEffectWaveDuration;
+    private Cell m_spawnerCell;
 
     public event Action<List<Creep>> OnActiveWaveSet;
     
@@ -92,6 +94,7 @@ public class UnitSpawner : MonoBehaviour
     public List<Creep> GetNextCreepWave()
     {
         int gameplayWave = GameplayManager.Instance.m_wave + 1;
+        Debug.Log($"Spawner fetching wave data. Index: {gameplayWave}.");
         List<Creep> creepWave = new List<Creep>();
         
         if (gameplayWave < m_spawnerWaves.m_introWaves.Count)
@@ -106,7 +109,7 @@ public class UnitSpawner : MonoBehaviour
             gameplayWave -= m_spawnerWaves.m_introWaves.Count;
 
             //Boss waves occur every 5 gameplay Waves.
-            int challengingWave = (gameplayWave + 1) % 5;
+            int challengingWave = gameplayWave % 5;
             if (challengingWave == 0)
             {
                 int wave = (gameplayWave) % m_spawnerWaves.m_challengingWaves.Count;
@@ -148,6 +151,7 @@ public class UnitSpawner : MonoBehaviour
                 GameplayManager.Instance.AddSpawnerToList(this);
                 //GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
                 GridCellOccupantUtil.SetActor(gameObject, 1, 1, 1);
+                m_spawnerCell = Util.GetCellFrom3DPos(transform.position);
                 break;
             case GameplayManager.GameplayState.FloodFillGrid:
                 break;
@@ -207,6 +211,7 @@ public class CreepSpawner
 
     public void UpdateCreep()
     {
+        
         m_elapsedTime += Time.deltaTime;
 
         if (m_elapsedTime >= m_spawnDelay && !m_delayElapsed)
@@ -219,13 +224,14 @@ public class CreepSpawner
         if (m_delayElapsed && m_unitsSpawned < m_unitsToSpawn && m_elapsedTime >= m_nextSpawnInterval)
         {
             Vector3 spawnPoint = m_creepSpawnPoint.position;
-            float xOffset = Random.Range(-0.2f, 0.2f);
-            float zOffset = Random.Range(-0.2f, 0.2f);
+            Quaternion spawnRotation = Quaternion.LookRotation(Util.GetCellFrom3DPos(m_creepSpawnPoint.position).m_directionToNextCell);
+            float xOffset = Random.Range(-0.4f, 0.4f);
+            float zOffset = Random.Range(-0.4f, 0.4f);
 
             spawnPoint.x += xOffset;
             spawnPoint.z += zOffset;
 
-            GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_enemy.m_enemyPrefab, spawnPoint, m_creepSpawnPoint.rotation, ObjectPoolManager.PoolType.Enemy);
+            GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_enemy.m_enemyPrefab, spawnPoint, spawnRotation, ObjectPoolManager.PoolType.Enemy);
             EnemyController enemyController = enemyOjb.GetComponent<EnemyController>();
             enemyController.SetEnemyData(m_enemy);
             if(m_spawnStatusEffect != null) enemyController.ApplyEffect(m_spawnStatusEffect);

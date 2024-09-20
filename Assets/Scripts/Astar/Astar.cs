@@ -39,8 +39,14 @@ public class AStar
     {
         List<Vector2Int> path = new List<Vector2Int>();
 
-        if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied)
-            return null;
+        //if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied) return null;
+
+        if (start == end)
+        {
+            Debug.Log($"end is same as start, returning end as path.");
+            path.Add(end);
+            return path;
+        }
 
         // Priority queue for open nodes
         PriorityQueue<Node> openNodes = new PriorityQueue<Node>();

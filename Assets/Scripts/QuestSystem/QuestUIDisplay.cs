@@ -21,7 +21,7 @@ public class QuestUIDisplay : MonoBehaviour
             QuestManager.Instance.m_questEvents.onQuestStepCreated += QuestStepCreated;
         }
 
-        Debug.Log($"Quest UI Display awakened.");
+        //Debug.Log($"Quest UI Display awakened.");
     }
 
     void OnDestroy()

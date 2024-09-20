@@ -107,7 +107,7 @@ public class EnemySwarmMember : EnemyController
 
     public override void OnEnemyDestroyed(Vector3 pos)
     {
-        Debug.Log($"OnEnemyDestroyed called on Swarm Member.");
+        //Debug.Log($"OnEnemyDestroyed called on Swarm Member.");
         if (m_isComplete) return;
 
         //transform.SetParent(ObjectPoolManager.SetParentObject(ObjectPoolManager.PoolType.Enemy).transform);

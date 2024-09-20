@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class ObeliskSoul : MonoBehaviour
 {
     public float m_moveDuration = 2f;
-    public TrailRenderer m_trail;
+    public VisualEffect m_soulVFX;
     
     private Vector3 m_endPos;
     private Obelisk m_obelisk;
@@ -30,6 +31,7 @@ public class ObeliskSoul : MonoBehaviour
     void RequestObeliskCharge()
     {
         m_obelisk.IncreaseObeliskCharge(m_soulValue);
-        ObjectPoolManager.OrphanObject(gameObject, m_trail.time, ObjectPoolManager.PoolType.ParticleSystem);
+        m_soulVFX.Stop();
+        ObjectPoolManager.OrphanObject(gameObject, 1.2f, ObjectPoolManager.PoolType.ParticleSystem); //1.2f is the max life duration of the vfx particle.
     }
 }

@@ -13,6 +13,7 @@ public class GathererController : MonoBehaviour
     public GathererData m_gathererData;
     public GameObject m_resourceAnchor;
     [SerializeField] private ParticleSystem m_idleStateVFX;
+    [SerializeField] private GameObject m_idleVFXParent;
     public GathererTask m_gathererTask;
     public Animator m_animator;
     [SerializeField] private Vector2Int m_curPos;
@@ -186,7 +187,7 @@ public class GathererController : MonoBehaviour
 
         if (m_gathererTask == GathererTask.TravelingToCastle)
         {
-            stoppingDistance = .5f;
+            stoppingDistance = .1f;
         }
 
         if (remainingDistance <= stoppingDistance)
@@ -195,19 +196,20 @@ public class GathererController : MonoBehaviour
             m_gathererPath = null;
             m_gathererPathProgress = 0;
 
-            //If we are/were traveling to a harvest point, transition to harvesting.
+            // If we are/were traveling to a harvest point, transition to harvesting.
             if (m_gathererTask == GathererTask.TravelingToHarvest)
             {
+                Debug.Log($"Arrived at harvest position.");
                 UpdateTask(GathererTask.Harvesting);
             }
 
-            //If we are/were travelling to storage, transition to storing.
+            // If we are/were travelling to storage, transition to storing.
             if (m_gathererTask == GathererTask.TravelingToCastle)
             {
                 UpdateTask(GathererTask.Storing);
             }
 
-            //Enable the ZZZ vfx if we're idle.
+            // Enable the ZZZ vfx if we're idle.
             if (m_gathererTask == GathererTask.Idling)
             {
                 ToggleDisplayIdleVFX();
@@ -229,7 +231,7 @@ public class GathererController : MonoBehaviour
                     UpdateTask(GathererTask.Idling);
                 }
 
-                //Request the level up.
+                // Request the level up.
                 RequestIncrementGathererLevel(1);
             }
 
@@ -367,7 +369,7 @@ public class GathererController : MonoBehaviour
 
                 break;
             case Selectable.SelectedObjectType.Ruin:
-                Debug.Log("Gatherer going to castle.");
+                Debug.Log("Gatherer going to Ruin.");
                 RequestTravelToRuin(requestObj);
                 break;
             case Selectable.SelectedObjectType.Obelisk:
@@ -461,6 +463,13 @@ public class GathererController : MonoBehaviour
             return;
         }
 
+        ClearHarvestVars();
+        if (m_curCoroutine != null) //Assumption; if there is an active coroutine, it is Harvesting.
+        {
+            StopCoroutine(m_curCoroutine);
+            m_curCoroutine = null;
+        }
+        
         //Find harvest nodes around the requested resource.
         for (var i = 0; i < node.m_harvestPoints.Count; i++)
         {
@@ -468,13 +477,6 @@ public class GathererController : MonoBehaviour
             if (harvestPoint.m_harvestPointCell == m_curCell && (harvestPoint.m_gatherer == this || harvestPoint.m_gatherer == null))
             {
                 //We're in a harvest point cell.
-                ClearHarvestVars();
-                if (m_curCoroutine != null)
-                {
-                    StopCoroutine(m_curCoroutine);
-                    m_curCoroutine = null;
-                }
-
                 SetHarvestVars(node, harvestPoint.m_harvestPointPos, i);
                 m_gathererPath = null;
                 UpdateTask(GathererTask.Harvesting);
@@ -491,13 +493,6 @@ public class GathererController : MonoBehaviour
         //Do we have a path to the node, and is there a valid point to harvest from?
         if (vars.Item1 && vars.Item3 >= 0)
         {
-            ClearHarvestVars();
-            if (m_curCoroutine != null)
-            {
-                StopCoroutine(m_curCoroutine);
-                m_curCoroutine = null;
-            }
-
             SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
 
             UpdateTask(GathererTask.TravelingToHarvest);
@@ -606,7 +601,7 @@ public class GathererController : MonoBehaviour
 
     private void ToggleDisplayIdleVFX()
     {
-        m_idleStateVFX.gameObject.SetActive(m_gathererTask == GathererTask.Idling);
+        m_idleVFXParent.gameObject.SetActive(m_gathererTask == GathererTask.Idling);
     }
 
     private void SetHarvestVars(ResourceNode harvestNode, Vector2Int harvestPointPos, int harvestPointIndex)
@@ -631,7 +626,7 @@ public class GathererController : MonoBehaviour
         if (m_curHarvestNode)
         {
             Debug.Log($"2. Clearing {m_curHarvestNode.gameObject.name} from {gameObject.name} vars.");
-            m_curHarvestNode.SetIsHarvesting(-1);
+            if(m_gathererTask == GathererTask.Harvesting) m_curHarvestNode.SetIsHarvesting(-1); // We only want to do this if we've started harvesting, which increments the value.
             m_curHarvestNode.m_harvestPoints[m_curHarvestPointIndex].m_gatherer = null;
             m_curHarvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
         }

@@ -7,11 +7,12 @@ using UnityEngine;
 using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
-public abstract class EnemyController : Dissolvable, IEffectable 
+public abstract class EnemyController : Dissolvable, IEffectable
 {
     //Enemy Scriptable Data
     [Header("Enemy Controller")]
     public EnemyData m_enemyData;
+
     public Transform m_targetPoint;
     public GameObject m_enemyModelRoot;
 
@@ -35,7 +36,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected List<Renderer> m_allRenderers;
     protected List<Color> m_allOrigColors;
     protected Coroutine m_hitFlashCoroutine;
-    
+
     //Animation
     public Animator m_animator;
 
@@ -61,7 +62,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected bool m_isComplete;
     protected bool m_isActive = true;
     protected Vector3 m_moveDirection;
-    
+
 
     public virtual void SetEnemyData(EnemyData data, bool active = true)
     {
@@ -171,11 +172,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     //Movement
     //Functions
-    private Vector2 m_nextCellPosOffset;
+    private Vector3 m_nextCellPosition;
+
     public virtual void HandleMovement()
     {
         //Update Cell occupancy
         Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
+
         if (newPos != m_curPos)
         {
             //Remove self from current cell.
@@ -184,42 +187,64 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 m_curCell.UpdateActorCount(-1, gameObject.name);
             }
 
-            //Assign new position
+            //Assign new position, we are now in a new cell.
             m_curPos = newPos;
 
             //Get new cell from new position.
+            Cell previousCell = m_curCell;
             m_curCell = Util.GetCellFromPos(m_curPos);
 
             //Assign self to cell.
             m_curCell.UpdateActorCount(1, gameObject.name);
+
+            Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f)) * m_enemyData.m_movementWiggleValue;
+
+            //Convert saved cell pos from Vector2 to Vector3
+            Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
+
+            //Get the position of the next cell.
+            //If the current cell is occupied, we go in the reverse direction until we're in an unoccupied cell.
+            //If the current cell has no direction, we go back to the previous cell.
             
-            m_nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f)) * m_enemyData.m_movementWiggleValue;
+            //Most common path
+            m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
+            
+            if (m_curCell.m_isOccupied && m_curCell.m_directionToNextCell != Vector3.zero)
+            {
+                //If this cell is occupied and has a direction, so go the reverse direction.
+                m_nextCellPosition = m_curCell3dPos + new Vector3(-m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, -m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
+                Debug.Log($"{gameObject.name} is in an occupied cell. Travelling to: {m_nextCellPosition}");
+            }
+            
+            if (m_curCell.m_isOccupied && m_curCell.m_directionToNextCell == Vector3.zero)
+            {
+                //If this cell is occupied and has no direction, go to the previous cell.
+                m_nextCellPosition = m_curCell3dPos + new Vector3(-previousCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, -previousCell.m_directionToNextCell.z + nextCellPosOffset.y);
+                Debug.Log($"{gameObject.name} is in an occupied cell with no direction. Travelling to: {m_nextCellPosition}");
+            }
+            
         }
-
-        //Convert saved cell pos from Vector2 to Vector3
-        Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
-
-        //Get the position of the next cell.
-        Vector3 m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + m_nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + m_nextCellPosOffset.y);
 
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
+        //Send information to Animator
+        float angle = Vector3.SignedAngle(transform.forward, m_moveDirection, Vector3.up);
+        m_animator.SetFloat("LookRotation", angle);
+        
         //Move forward.
         float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+        float tightTurn = angle > 90 ? 0 : 1;
         float cumulativeMoveSpeed = speed * Time.deltaTime;
-        transform.position += transform.forward * cumulativeMoveSpeed;
+        transform.position += (transform.forward * cumulativeMoveSpeed) * tightTurn;
         m_animator.SetFloat("Speed", speed);
         //Debug.Log($"cum spd; {speed}");
-        
+
         //Look towards the move direction.
         float cumulativeLookSpeed = m_baseLookSpeed * (cumulativeMoveSpeed / m_baseMoveSpeed);
         Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
-        
-        //Send information to Animator
-        float angle = Vector3.SignedAngle(transform.forward, m_moveDirection, Vector3.up);
-        m_animator.SetFloat("LookRotation", angle);
 
+        
     }
 
     //Taking Damage
@@ -240,7 +265,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 m_allOrigColors = new List<Color>();
             }
 
-            
+
             m_allRenderers.Add(Renderer);
             m_allOrigColors.Add(Renderer.material.GetColor("_EmissionColor"));
         }
@@ -284,9 +309,9 @@ public abstract class EnemyController : Dissolvable, IEffectable
             {
                 ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
             }
-        
+
             m_animator.SetTrigger("IsDead");
-            
+
             OnEnemyDestroyed(transform.position);
             DestroyEnemy?.Invoke(transform.position);
         }
@@ -345,7 +370,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_isComplete) return;
-        
+
         m_isComplete = true;
         m_isActive = false;
 
@@ -394,7 +419,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
-        
+
         StartDissolve(RemoveObject);
     }
 
@@ -471,7 +496,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
             m_expiredStatusEffects.Clear();
         }
-        
+
         //Update each Effect.
         foreach (StatusEffect activeEffect in m_statusEffects)
         {
@@ -525,7 +550,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         }
 
         if (m_expiredStatusEffects.Contains(statusEffect)) return;
-        
+
         //If we need to, spawn a vfx for this effect.
         StatusEffectSource statusEffectSource;
         switch (statusEffect.m_data.m_effectType)
@@ -640,7 +665,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public void RemoveEffect(StatusEffect statusEffect)
     {
         m_expiredStatusEffects.Add(statusEffect);
-        
+
         VisualEffect visualEffect;
         switch (statusEffect.m_data.m_effectType)
         {
@@ -717,7 +742,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
             default:
                 throw new ArgumentOutOfRangeException();
         }
-
     }
 
     public virtual void RequestRemoveEffect(GameObject sender)

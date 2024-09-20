@@ -64,7 +64,7 @@ public class Dissolvable : MonoBehaviour
             }
 
             onDissolveComplete?.Invoke();
-            Debug.Log($"dissolve complete.");
+            //Debug.Log($"dissolve complete.");
         }
     }
     

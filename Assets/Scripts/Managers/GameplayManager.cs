@@ -175,7 +175,7 @@ public class GameplayManager : MonoBehaviour
         {
             ++m_wave;
             Debug.Log($"wave: {m_wave} -- wave factor: {(m_wave + 1) % m_bossWaveFactor}");
-            if (m_wave != 0 && (m_wave + 1) % m_bossWaveFactor == 0 && m_bossWaveFactor > 0)
+            if (m_wave != 0 && m_wave % m_bossWaveFactor == 0 && m_bossWaveFactor > 0)
             {
                 Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.BossWave);

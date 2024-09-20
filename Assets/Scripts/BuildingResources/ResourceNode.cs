@@ -124,6 +124,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     {
         m_harvesters += i;
         m_animator.SetInteger(m_gatherersHarvestingHash, m_harvesters);
+        Debug.Log($"{gameObject.name} harvester count updated from {m_harvesters - i} to {m_harvesters}");
     }
 
     private void OnDepletion(bool harvested)

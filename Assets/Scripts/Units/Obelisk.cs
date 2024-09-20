@@ -134,7 +134,7 @@ public class Obelisk : MonoBehaviour
     private void ObeliskChargeChanged(int i)
     {
         //This is not in use at the moment.
-        Debug.Log($"Obelisk {gameObject.name} charge changed.");
+        //Debug.Log($"Obelisk {gameObject.name} charge changed.");
     }
     
     void SetupRangeCircle(int segments, float radius)
