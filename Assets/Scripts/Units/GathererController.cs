@@ -585,7 +585,7 @@ public class GathererController : MonoBehaviour
                     //If we dont have a node, find a nearby node.
                     //Get Neighbor Cells.
                     Debug.Log($"{m_debugIndex += 1}. Finding NEW nearby {m_curHarvestNodePos}.");
-                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 2f));
+                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 3f));
                     if (vars.Item1 == null)
                     {
                         UpdateTask(GathererTask.Idling);
@@ -738,7 +738,10 @@ public class GathererController : MonoBehaviour
         List<ResourceNode> nearbyNodes = new List<ResourceNode>();
 
         //Get a bunch of nodes near the point.
-        Collider[] colliders = Physics.OverlapSphere(pos, searchRange, layerMask);
+        Collider[] colliders = Physics.OverlapBox(center: pos, 
+            halfExtents: new Vector3(searchRange * .5f, 1f, searchRange * .5f), 
+            orientation: Quaternion.identity, 
+            layerMask: layerMask);
 
         foreach (Collider collider in colliders)
         {
