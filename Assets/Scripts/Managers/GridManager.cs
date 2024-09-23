@@ -245,6 +245,7 @@ public class GridManager : MonoBehaviour
         }
 
         m_previousPreconIndex = preconTowerCellIndex;
+        Debug.Log($"Precon Tower Moved, new index: {m_previousPreconIndex}");
 
         //Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
         FloodFillGrid(m_gridCells, null);
@@ -254,7 +255,7 @@ public class GridManager : MonoBehaviour
     {
         SetCellDirections();
 
-        RevertPreconTempChanges();
+        //RevertPreconTempChanges();
     }
 
     void PreconstructedTowerClear()
@@ -269,7 +270,7 @@ public class GridManager : MonoBehaviour
         //Set the values back to their original state if this is not our first iteration.
         if (m_previousPreconIndex > 0)
         {
-            //Debug.Log($"Setting previous Grid Cell occupancy.");
+            Debug.Log($"Reverting precon temp changes. Current index: {m_previousPreconIndex} new index: -1.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
             m_previousPreconIndex = -1;
         }
@@ -296,6 +297,7 @@ public class GridManager : MonoBehaviour
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
             //Debug.Log($"GridManager: Reverting Precon Temp Changes.");
+            Debug.Log($"Attempting to refresh grid, m_previousPreconIndex of: {m_previousPreconIndex}");
             int preconIndex = m_previousPreconIndex;
             RevertPreconTempChanges();
 
@@ -304,6 +306,7 @@ public class GridManager : MonoBehaviour
 
             //I think I could also cheat this by setting GameplayManagers m_preconstructedTowerPos to Vector2Int.zero, which will get flagged as the 'new pos' invoking its action.
             //Debug.Log($"GridManager: Returning to Precon Tower temp changes.");
+            Debug.Log($"Moving precon tower back to cell index: {preconIndex}");
             PreconTowerMoved(m_gridCells[preconIndex].m_cellPos);
         }
         else

@@ -12,5 +12,6 @@ public class RuinData : ScriptableObject
     
     [Header("Audio")]
     public AudioClip m_discoveredAudioClip;
+    public AudioClip m_unclaimedAudioClip;
     public AudioClip m_chargeConsumedAudioClip;
 }

@@ -424,24 +424,51 @@ public class GathererController : MonoBehaviour
     private void RequestTravelToRuin(GameObject requestObj)
     {
         ClearHarvestVars();
-
-        m_curRuin = requestObj.GetComponent<RuinController>();
         if (m_curCoroutine != null)
         {
             StopCoroutine(m_curCoroutine);
             m_curCoroutine = null;
         }
+        
+        m_curRuin = requestObj.GetComponent<RuinController>();
+        //Get a path to the ruin.
+        //If the path returned is of length 0, we can activate the ruin, else we travel to it.
+        m_gathererPath = GetShortestPathToObj(requestObj);
+        Debug.Log($"Gatherer Path to ruin is {m_gathererPath.Count} cells long.");
+        if (m_gathererPath.Count == 0)
+        {
+            m_gathererPath = null;
 
-        //If the current position is within stopping distance of the ruin...
+            //Resume returning to castle if carrying resources, else await further instruction.
+            if (m_resourceCarried > 1)
+            {
+                UpdateTask(GathererTask.TravelingToCastle);
+            }
+            else
+            {
+                UpdateTask(GathererTask.Idling);
+            }
+
+            //Request the level up.
+            RequestIncrementGathererLevel(1);
+        }
+        else
+        {
+            UpdateTask(GathererTask.TravelingToRuin);
+        }
+
+        /*//If the current position is within stopping distance of the ruin...
         float stoppingDistance = 1.41f;
         Vector2Int requestObjPos = Util.GetVector2IntFrom3DPos(requestObj.transform.position);
         float currentDistance = Vector2Int.Distance(m_curCell.m_cellPos, requestObjPos);
 
+        Debug.Log($"Current distance to ruin is {currentDistance}.");
         //If we are far away, path home.
         if (currentDistance > stoppingDistance)
         {
             //Generate a path to the ruin.
             m_gathererPath = GetShortestPathToObj(requestObj);
+            Debug.Log($"Gatherer Path to ruin is {m_gathererPath.Count} cells long.");
 
             //Move to the ruin.
             UpdateTask(GathererTask.TravelingToRuin);
@@ -462,7 +489,7 @@ public class GathererController : MonoBehaviour
 
             //Request the level up.
             RequestIncrementGathererLevel(1);
-        }
+        }*/
     }
 
     private void RequestedHarvest(GameObject requestObj)
@@ -558,7 +585,7 @@ public class GathererController : MonoBehaviour
                     //If we dont have a node, find a nearby node.
                     //Get Neighbor Cells.
                     Debug.Log($"{m_debugIndex += 1}. Finding NEW nearby {m_curHarvestNodePos}.");
-                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 1f));
+                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 2f));
                     if (vars.Item1 == null)
                     {
                         UpdateTask(GathererTask.Idling);

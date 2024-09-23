@@ -21,7 +21,7 @@ public class UnitSpawner : MonoBehaviour
     private Cell m_spawnerCell;
 
     public event Action<List<Creep>> OnActiveWaveSet;
-    
+
     private void Start()
     {
         m_isSpawnerActive = false;
@@ -57,7 +57,7 @@ public class UnitSpawner : MonoBehaviour
             {
                 m_isSpawnerActive = false;
                 GameplayManager.Instance.DisableSpawner();
-               //Debug.Log($"{gameObject.name} done spawning.");
+                //Debug.Log($"{gameObject.name} done spawning.");
             }
         }
     }
@@ -66,9 +66,9 @@ public class UnitSpawner : MonoBehaviour
     {
         //We get the next Wave from GetNextCreepWave, if it is null, we dont need to start Spawning.
         if (m_activeWave == null) return;
-        
+
         GameplayManager.Instance.ActivateSpawner();
-        
+
         //Assure each creep has a point to spawn to.
         m_activeCreepSpawners = new List<CreepSpawner>();
         for (int i = 0; i < m_activeWave.Count; ++i)
@@ -78,7 +78,7 @@ public class UnitSpawner : MonoBehaviour
             creepSpawner.m_spawnStatusEffect = m_spawnStatusEffect;
             m_activeCreepSpawners.Add(creepSpawner);
         }
-        
+
         //Decrement Spawn Status Effect Duration.
         --m_spawnStatusEffectWaveDuration;
 
@@ -96,35 +96,45 @@ public class UnitSpawner : MonoBehaviour
         int gameplayWave = GameplayManager.Instance.m_wave + 1;
         Debug.Log($"Spawner fetching wave data. Index: {gameplayWave}.");
         List<Creep> creepWave = new List<Creep>();
-        
+
+        //INTRO WAVES
         if (gameplayWave < m_spawnerWaves.m_introWaves.Count)
         {
             creepWave = new List<Creep>(m_spawnerWaves.m_introWaves[gameplayWave].m_creeps);
+            return creepWave;
+        }
+        
+        //Subtract the number of training ways so that we start at wave 0 in the new lists.
+        gameplayWave -= m_spawnerWaves.m_introWaves.Count;
+
+        //NEW UNIT TYPE WAVES
+        foreach (NewTypeCreepWave newTypeCreepWave in m_spawnerWaves.m_newEnemyTypeWaves)
+        {
+            if (gameplayWave == newTypeCreepWave.m_waveToSpawnOn)
+            {
+                creepWave = new List<Creep>(newTypeCreepWave.m_creeps);
+                return creepWave;
+            }
         }
 
-        //Else find out if we spawn normal wave or boss wave.
+        //LOOPING WAVE OR CHALLENGING WAVE
+        //Boss waves occur every 5 gameplay Waves.
+        int challengingWave = gameplayWave % 5;
+        if (challengingWave == 0)
+        {
+            int wave = (gameplayWave) % m_spawnerWaves.m_challengingWaves.Count;
+            creepWave = new List<Creep>(m_spawnerWaves.m_challengingWaves[wave].m_creeps);
+        }
         else
         {
-            //Subtract the number of training ways so that we start at wave 0 in the new lists.
-            gameplayWave -= m_spawnerWaves.m_introWaves.Count;
-
-            //Boss waves occur every 5 gameplay Waves.
-            int challengingWave = gameplayWave % 5;
-            if (challengingWave == 0)
-            {
-                int wave = (gameplayWave) % m_spawnerWaves.m_challengingWaves.Count;
-                creepWave = new List<Creep>(m_spawnerWaves.m_challengingWaves[wave].m_creeps);
-            }
-            else
-            {
-                int wave = (gameplayWave) % m_spawnerWaves.m_loopingWaves.Count;
-                creepWave = new List<Creep>(m_spawnerWaves.m_loopingWaves[wave].m_creeps);
-            }
+            int wave = (gameplayWave) % m_spawnerWaves.m_loopingWaves.Count;
+            creepWave = new List<Creep>(m_spawnerWaves.m_loopingWaves[wave].m_creeps);
         }
 
         //Debug.Log($"Getting next creep wave.");
         return creepWave;
     }
+
 
     public bool IsSpawning()
     {
@@ -211,7 +221,6 @@ public class CreepSpawner
 
     public void UpdateCreep()
     {
-        
         m_elapsedTime += Time.deltaTime;
 
         if (m_elapsedTime >= m_spawnDelay && !m_delayElapsed)
@@ -234,9 +243,9 @@ public class CreepSpawner
             GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_enemy.m_enemyPrefab, spawnPoint, spawnRotation, ObjectPoolManager.PoolType.Enemy);
             EnemyController enemyController = enemyOjb.GetComponent<EnemyController>();
             enemyController.SetEnemyData(m_enemy);
-            if(m_spawnStatusEffect != null) enemyController.ApplyEffect(m_spawnStatusEffect);
-            
-            
+            if (m_spawnStatusEffect != null) enemyController.ApplyEffect(m_spawnStatusEffect);
+
+
             m_unitsSpawned++;
             m_elapsedTime = 0;
             m_nextSpawnInterval = m_spawnInterval;

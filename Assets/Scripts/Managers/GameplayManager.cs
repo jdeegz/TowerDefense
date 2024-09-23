@@ -533,7 +533,7 @@ public class GameplayManager : MonoBehaviour
     public void UpdateInteractionState(InteractionState newState)
     {
         m_interactionState = newState;
-        //Debug.Log($"Interaction state is now: {m_interactionState}");
+        Debug.Log($"Interaction state is now: {m_interactionState}");
 
         switch (m_interactionState)
         {
@@ -667,7 +667,7 @@ public class GameplayManager : MonoBehaviour
         ClearPreconstructedTower();
 
         //Set up the objects
-        m_preconstructedTowerObj = Instantiate(m_equippedTowers[i].m_prefab, Vector3.zero, Quaternion.identity);
+        m_preconstructedTowerObj = Instantiate(m_equippedTowers[i].m_prefab, m_castleController.transform.position + Vector3.up, Quaternion.identity);
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
         m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);

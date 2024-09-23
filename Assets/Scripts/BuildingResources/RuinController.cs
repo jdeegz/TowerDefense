@@ -18,12 +18,16 @@ public class RuinController : MonoBehaviour
         m_ruinChargeVisualObj.SetActive(true);
         m_audioSource = GetComponent<AudioSource>();
         m_audioSource.PlayOneShot(m_ruinData.m_discoveredAudioClip);
+
+        m_audioSource.clip = m_ruinData.m_unclaimedAudioClip;
+        m_audioSource.Play();
     }
 
     public bool RequestPowerUp()
     {
         if (m_ruinIsCharged)
         {
+            m_audioSource.Stop();
             m_ruinChargeVisualObj.SetActive(false);
             m_ruinIsCharged = false;
             m_audioSource.PlayOneShot(m_ruinData.m_chargeConsumedAudioClip);

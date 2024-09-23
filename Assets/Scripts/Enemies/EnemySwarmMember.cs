@@ -136,7 +136,7 @@ public class EnemySwarmMember : EnemyController
             }
         }
         
-        m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
+        //m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
         
         StartDissolve(null);
     }
