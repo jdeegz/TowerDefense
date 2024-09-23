@@ -53,7 +53,8 @@ public class GameplayManager : MonoBehaviour
     public Transform m_enemyGoal;
 
     [Header("Equipped Towers")]
-    public TowerData[] m_equippedTowers;
+    public List<TowerData> m_equippedTowers;
+    public TowerData m_blueprintTower;
 
     [Header("Unit Spawners")]
     public List<UnitSpawner> m_unitSpawners;
@@ -94,6 +95,7 @@ public class GameplayManager : MonoBehaviour
     public bool m_canBuild;
     private int m_preconstructedTowerIndex;
     private bool m_watchingCutScene;
+    private List<Tower> m_builtBlueprintTowers;
 
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
@@ -378,6 +380,8 @@ public class GameplayManager : MonoBehaviour
         {
             m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
         }
+        
+        m_equippedTowers.Add(m_blueprintTower);
 
         OnGameplayStateChanged += GameplayManagerStateChanged;
         OnGamePlaybackChanged += GameplayPlaybackChanged;
@@ -428,6 +432,9 @@ public class GameplayManager : MonoBehaviour
 
     public void UpdateGamePlayback(GameSpeed newSpeed)
     {
+
+        if (newSpeed == m_gameSpeed) return;
+        
         m_gameSpeed = newSpeed;
         //Include FFW state
         //When we get a request check current game speed to identify if we return to normal or return to FFW when leaving pause.
@@ -437,15 +444,21 @@ public class GameplayManager : MonoBehaviour
         {
             case GameSpeed.Paused:
                 //Cancel tower preconstruction
-                if (m_interactionState == InteractionState.PreconstructionTower)
+                /*if (m_interactionState == InteractionState.PreconstructionTower)
                 {
                     OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                     ClearPreconstructedTower();
-                }
+                }*/
 
                 Time.timeScale = 0;
                 break;
             case GameSpeed.Normal:
+                if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTower is TowerBlueprint)
+                {
+                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                    ClearPreconstructedTower();
+                }
+                ClearBuiltBlueprintTowers();
                 Time.timeScale = m_playbackSpeed;
                 break;
             default:
@@ -662,7 +675,7 @@ public class GameplayManager : MonoBehaviour
 
     public void PreconstructTower(int i)
     {
-        if (i >= m_equippedTowers.Length) return;
+        if (i >= m_equippedTowers.Count) return;
 
         ClearPreconstructedTower();
 
@@ -716,7 +729,7 @@ public class GameplayManager : MonoBehaviour
 
             //Position the precon Tower at the cursor position.
             m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
-                moveToPosition, 20f * Time.deltaTime);
+                moveToPosition, 20f * Time.unscaledDeltaTime);
         }
 
         //We want to rotate towers to they look away from the Castle.
@@ -934,7 +947,7 @@ public class GameplayManager : MonoBehaviour
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
-
+        
         //Update banks
         ValueTuple<int, int> cost = newTower.GetTowercost();
         if (cost.Item1 > 0)
@@ -949,6 +962,50 @@ public class GameplayManager : MonoBehaviour
 
         IngameUIController.Instance.SpawnCurrencyAlert(cost.Item2, cost.Item1, false, newTowerObj.transform.position);
         OnTowerBuild?.Invoke();
+    }
+
+    private void ClearBuiltBlueprintTowers()
+    {
+        if (m_towerList.Count == 0) return;
+        
+        Debug.Log($"Clearing Built Blueprint Towers");
+        
+        //Set Gameplay Manager's state
+        if (m_interactionState == InteractionState.SelectedTower && m_curSelectable.GetComponent<TowerBlueprint>() != null)
+        {
+            Debug.Log($"Currently selected a blueprint, deselecting.");
+            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+        }
+        
+        if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTowerIndex == m_equippedTowers.Count + 1)
+        {
+            Debug.Log($"Currently in preconstruction with a blueprint Tower, removing precon.");
+            //Reset outline color. 
+            SetOutlineColor(false);
+                        
+            //Cancel tower preconstruction
+            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+        }
+        
+        List<Tower> builtTowers = new List<Tower>(m_towerList);
+
+        for (var i = 0; i < builtTowers.Count; ++i)
+        {
+            Tower tower = builtTowers[i];
+            if (tower is TowerBlueprint)
+            {
+                //Configure Grid
+                GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
+                
+                builtTowers.Remove(tower);
+                tower.RemoveTower();
+                --i;
+            }
+        }
+
+        m_towerList = builtTowers;
+
+        GridManager.Instance.RefreshGrid();
     }
 
     public void AddTowerToList(Tower tower)

@@ -11,6 +11,7 @@ public class Obelisk : MonoBehaviour
     public GameObject m_chargedVFXGroup;
     public LineRenderer m_obeliskRangeCircle;
     public GameObject m_ambientEffectsRoot;
+    public GameObject m_targetPoint;
 
     private float m_obeliskRadius;
     private int m_curChargeCount;

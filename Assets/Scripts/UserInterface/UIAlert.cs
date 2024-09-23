@@ -17,6 +17,7 @@ public class UIAlert : MonoBehaviour
     void Start()
     {
         Sequence sequence = DOTween.Sequence();
+        sequence.SetUpdate(true);
         m_objRectTransform = gameObject.GetComponent<RectTransform>();
         Vector2 endPos = new Vector2(m_objRectTransform.anchoredPosition.x, m_objRectTransform.anchoredPosition.y + 100f);
         sequence.Append(m_objRectTransform.DOAnchorPos(endPos, m_lifeTime));

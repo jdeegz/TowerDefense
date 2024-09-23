@@ -282,11 +282,6 @@ public class GridManager : MonoBehaviour
         m_tileMap.SetTile(pos, tile);
     }
     
-    public void oldRefreshGrid()
-    {
-        FloodFillGrid(m_gridCells, SetCellDirections);
-    }
-
     public void RefreshGrid()
     {
         //A node depleted!
@@ -577,7 +572,7 @@ public class UnitPath
             m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
             ColorUtility.TryParseHtmlString("#b5770b", out Color colorOn);
             m_lineRendererColorOn = colorOn;
-            ColorUtility.TryParseHtmlString("#4674A3", out Color colorOff);
+            ColorUtility.TryParseHtmlString("#6D767E", out Color colorOff);
             m_lineRendererColorOff = colorOff;
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
             m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOff;

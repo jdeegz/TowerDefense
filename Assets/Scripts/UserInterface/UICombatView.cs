@@ -11,9 +11,10 @@ using UnityEngine.UI;
 public class UICombatView : MonoBehaviour
 {
     [SerializeField] private CanvasGroup m_canvasGroup;
-    
+
     [Header("Buttons")]
     [SerializeField] private Button m_pauseButton;
+
     [SerializeField] private Button m_menuButton;
     [SerializeField] private Button m_playButton;
     [SerializeField] private Button m_ffwButton;
@@ -21,6 +22,7 @@ public class UICombatView : MonoBehaviour
 
     [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
+
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
@@ -33,6 +35,7 @@ public class UICombatView : MonoBehaviour
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
+
     [SerializeField] private GameObject m_gathererTrayButtonPrefab;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
@@ -43,6 +46,7 @@ public class UICombatView : MonoBehaviour
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
+
     [SerializeField] private RectTransform m_gathererTrayLayoutObj;
     [SerializeField] private RectTransform m_healthDisplay;
     [SerializeField] private RectTransform m_woodBankDisplay;
@@ -51,13 +55,16 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_stoneGathererDisplay;
 
     [SerializeField] private Image m_castleRepairFill;
-    
+
     [Header("Scene References")]
     [SerializeField] private UIOptionsMenu m_menuObj;
+
+    private bool m_menusOpen;
 
     private float m_timeToNextWave;
     private int m_curCastleHealth;
     private int m_maxCastleHealth;
+    private GameObject m_blueprintButtonObj;
     private List<Button> m_buttons;
     private Tween m_healthShake;
     private Tween m_woodBankShake;
@@ -73,7 +80,7 @@ public class UICombatView : MonoBehaviour
     {
         //Trying to remove the Enable/Disable gameobject to assure scripts run.
         m_canvasGroup.alpha = 0;
-        
+
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
@@ -85,7 +92,8 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
-        
+        m_menuObj.OnMenuToggle += SetMenusOpen;
+
         if (m_buttons == null)
         {
             m_buttons = new List<Button>();
@@ -256,10 +264,12 @@ public class UICombatView : MonoBehaviour
         switch (newSpeed)
         {
             case GameplayManager.GameSpeed.Paused:
-                ToggleButtonInteractivity(false);
+                //ToggleButtonInteractivity(false); //Disabled this to allow for building while paused.
+                ToggleBlueprintButton(true);
                 break;
             case GameplayManager.GameSpeed.Normal:
-                ToggleButtonInteractivity(true);
+                //ToggleButtonInteractivity(true);
+                ToggleBlueprintButton(false);
                 break;
             default:
                 break;
@@ -274,7 +284,7 @@ public class UICombatView : MonoBehaviour
     private void GameplaySpeedChanged(int speed)
     {
         m_ffwLabel.SetText($"{speed}x");
-        
+
         m_ffwActiveDisplayObj.SetActive(speed != 1);
     }
 
@@ -313,6 +323,11 @@ public class UICombatView : MonoBehaviour
         m_menuObj.ToggleMenu();
     }
 
+    public void SetMenusOpen(bool value)
+    {
+        m_menusOpen = value;
+    }
+
     private int gathererIndex;
 
     public void BuildGathererTrayButton(GathererController gathererController)
@@ -349,7 +364,8 @@ public class UICombatView : MonoBehaviour
 
     private void BuildTowerTrayDisplay()
     {
-        for (int i = 0; i < GameplayManager.Instance.m_equippedTowers.Length; ++i)
+        int i;
+        for (i = 0; i < GameplayManager.Instance.m_equippedTowers.Count; ++i)
         {
             GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_towerTrayLayoutObj);
             TowerTrayButton towerTrayButtonScript = buttonPrefab.GetComponent<TowerTrayButton>();
@@ -365,7 +381,20 @@ public class UICombatView : MonoBehaviour
             {
                 m_buttons.Add(buttonScript);
             }
+
+            if (i == GameplayManager.Instance.m_equippedTowers.Count - 1) // If this is the last tower we add, it's the blueprint tower.
+            {
+                m_blueprintButtonObj = buttonPrefab;
+                ToggleBlueprintButton(false);
+            }
         }
+    }
+
+    private void ToggleBlueprintButton(bool value)
+    {
+        if (m_blueprintButtonObj == null || m_blueprintButtonObj.activeSelf == value) return;
+
+        m_blueprintButtonObj.SetActive(value);
     }
 
     private void Alert(string text)
@@ -399,6 +428,12 @@ public class UICombatView : MonoBehaviour
     {
         HandleSpawnClock();
 
+        if (m_wave != GameplayManager.Instance.m_wave)
+        {
+            m_wave = GameplayManager.Instance.m_wave;
+            m_waveLabel.SetText($"Wave: {m_wave + 1}");
+        }
+
         if (m_castleRepairDisplayObj.activeSelf)
         {
             m_castleRepairFill.fillAmount = m_castleController.RepairProgress();
@@ -413,24 +448,24 @@ public class UICombatView : MonoBehaviour
 
         foreach (var kvp in m_towerKeyMap)
         {
-            if (Input.GetKeyDown(kvp.Key) && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
+            if (Input.GetKeyDown(kvp.Key) && !m_menusOpen)
             {
+                //Only allow for precon of Blueprint towers while paused.
+                if (kvp.Value == GameplayManager.Instance.m_equippedTowers.Count - 1 && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
+                {
+                    return;
+                }
+
                 GameplayManager.Instance.PreconstructTower(kvp.Value);
             }
         }
 
         foreach (var kvp in m_gathererKeyMap)
         {
-            if (Input.GetKeyDown(kvp.Key))
+            if (Input.GetKeyDown(kvp.Key) && !m_menusOpen)
             {
                 GameplayManager.Instance.RequestSelectGatherer(kvp.Value);
             }
-        }
-
-        if (m_wave != GameplayManager.Instance.m_wave)
-        {
-            m_wave = GameplayManager.Instance.m_wave;
-            m_waveLabel.SetText($"Wave: {m_wave + 1}");
         }
     }
 
@@ -439,7 +474,7 @@ public class UICombatView : MonoBehaviour
         if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
         {
             m_nextWaveButton.gameObject.SetActive(!GameplayManager.Instance.m_delayForQuest);
-            
+
 
             m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
             TimeSpan timeSpan = TimeSpan.FromSeconds(m_timeToNextWave);

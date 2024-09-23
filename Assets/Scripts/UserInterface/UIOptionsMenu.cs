@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -45,7 +46,10 @@ public class UIOptionsMenu : MonoBehaviour
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
     private float m_elapsedTime;
-
+    
+    public event Action<bool> OnMenuToggle;
+    
+    
     void Awake()
     {
         m_audioSource = GetComponent<AudioSource>();
@@ -223,11 +227,13 @@ public class UIOptionsMenu : MonoBehaviour
         if (m_canvasGroup.blocksRaycasts)
         {
             //Debug.Log($"Trying to pause game.");
+            OnMenuToggle?.Invoke(true);
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
         }
         else
         {
             //Debug.Log($"Trying to resume game.");
+            OnMenuToggle?.Invoke(false);
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Normal);
         }
     }

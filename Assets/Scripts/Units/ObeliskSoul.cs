@@ -24,7 +24,7 @@ public class ObeliskSoul : MonoBehaviour
 
     void HandleMovement()
     {
-        m_tweenToObelisk = gameObject.transform.DOJump(m_endPos, 2, 1, m_moveDuration).OnComplete(RequestObeliskCharge);
+        m_tweenToObelisk = gameObject.transform.DOJump(m_endPos, 2, 1, m_moveDuration).OnComplete(RequestObeliskCharge).SetEase(Ease.OutQuint);
         m_tweenToObelisk.Play();
     }
 
