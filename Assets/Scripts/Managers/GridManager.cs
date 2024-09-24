@@ -21,7 +21,8 @@ public class GridManager : MonoBehaviour
     public GameObject[] m_gridcellObjects;
 
     [FormerlySerializedAs("m_groundLayer")]
-    public LayerMask m_waterLayer;
+    public LayerMask m_waterLayer; 
+    public LayerMask m_groundLayer;
 
     [Header("Tile Map Data")]
     [SerializeField] private Tilemap m_tileMap;
@@ -84,7 +85,7 @@ public class GridManager : MonoBehaviour
                 break;
             case GameplayManager.GameplayState.Build:
                 break;
-            case GameplayManager.GameplayState.Paused:
+            case GameplayManager.GameplayState.CutScene:
                 break;
             case GameplayManager.GameplayState.Victory:
                 break;
@@ -316,14 +317,27 @@ public class GridManager : MonoBehaviour
         //Shoot a ray from the cell. Adding a yBuffer to each position above, so we want to shoot the rays down.
         Ray ray = new Ray(pos, Vector3.down);
 
-        //Shoot the ray and collect all the hits.
+        /*//Shoot the ray and collect all the hits.
         RaycastHit[] hits = Physics.RaycastAll(ray, 0.22f);
 
         //If we recieved no hits from our cast, exit.
         if (hits.Length == 0) return;
 
         //If we received hits, check to see if water was the last one hit.
-        if (IsLayerInMask(hits[hits.Length - 1].transform.gameObject.layer, m_waterLayer))
+        if (IsLayerInMask(hits[0].transform.gameObject.layer, m_waterLayer))
+        {
+            cell.UpdateOccupancyDisplay(true);
+        }*/
+        
+        RaycastHit hit;
+
+        // Perform the raycast using the layer mask
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, m_groundLayer))
+        {
+            // Ray hit something on the specified layer
+            Debug.Log("Hit object: " + hit.collider.gameObject.name);
+        }
+        else
         {
             cell.UpdateOccupancyDisplay(true);
         }
@@ -592,9 +606,9 @@ public class UnitPath
         }
     }
 
-    private void UnitSpawnActiveWaveSet(List<Creep> creepList)
+    private void UnitSpawnActiveWaveSet(CreepWave creepList)
     {
-        if (creepList.Count > 0)
+        if (creepList.m_creeps.Count > 0)
         {
             //Debug.Log($"Setting Line Renderer to {m_lineRendererColorOn}");
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOn;

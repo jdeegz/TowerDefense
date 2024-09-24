@@ -107,7 +107,7 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.Build:
                 PlayAudio(m_castleData.m_audioWaveEnd);
                 break;
-            case GameplayManager.GameplayState.Paused:
+            case GameplayManager.GameplayState.CutScene:
                 break;
             case GameplayManager.GameplayState.Victory:
                 break;

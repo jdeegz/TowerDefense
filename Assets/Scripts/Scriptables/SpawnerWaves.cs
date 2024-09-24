@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -44,6 +45,16 @@ public class SpawnerWaves : ScriptableObject
                 creepWave.m_challengeRating += creep.m_enemy.m_challengeRating * creep.m_unitsToSpawn;
             }
         }
+        
+        foreach (CreepWave creepWave in m_newEnemyTypeWaves)
+        {
+            creepWave.m_challengeRating = 0;
+            foreach (Creep creep in creepWave.m_creeps)
+            {
+                if (creep.m_enemy == null) return;
+                creepWave.m_challengeRating += creep.m_enemy.m_challengeRating * creep.m_unitsToSpawn;
+            }
+        }
     }
 }
 
@@ -58,9 +69,8 @@ public class CreepWave
 [System.Serializable]
 public class NewTypeCreepWave : CreepWave
 {
-    //public List<Creep> m_creeps;
     public int m_waveToSpawnOn;
-    //[ReadOnly] public int m_challengeRating;
+    public String m_waveCutscene;
 }
 
 [System.Serializable]

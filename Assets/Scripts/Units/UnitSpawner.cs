@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 public class UnitSpawner : MonoBehaviour
 {
     public Transform m_spawnPoint;
-    public List<Creep> m_activeWave;
+    public CreepWave m_activeWave;
     [SerializeField] private SpawnerWaves m_spawnerWaves;
 
     private bool m_isSpawnerActive = false;
@@ -20,7 +20,7 @@ public class UnitSpawner : MonoBehaviour
     private int m_spawnStatusEffectWaveDuration;
     private Cell m_spawnerCell;
 
-    public event Action<List<Creep>> OnActiveWaveSet;
+    public event Action<CreepWave> OnActiveWaveSet;
 
     private void Start()
     {
@@ -66,15 +66,22 @@ public class UnitSpawner : MonoBehaviour
     {
         //We get the next Wave from GetNextCreepWave, if it is null, we dont need to start Spawning.
         if (m_activeWave == null) return;
+        
+        /*//Check for Unit Cutscene.
+        if (GameManager.Instance && m_activeWave is NewTypeCreepWave newTypeWave && newTypeWave.m_waveCutscene != null)
+        {
+            Debug.Log($"Cutscene named: {newTypeWave.m_waveCutscene} found for this wave.");
+            GameManager.Instance.RequestAdditiveSceneLoad(newTypeWave.m_waveCutscene);
+        }*/
 
         GameplayManager.Instance.ActivateSpawner();
 
         //Assure each creep has a point to spawn to.
         m_activeCreepSpawners = new List<CreepSpawner>();
-        for (int i = 0; i < m_activeWave.Count; ++i)
+        for (int i = 0; i < m_activeWave.m_creeps.Count; ++i)
         {
             //Build list of Active Creep Spawners.
-            CreepSpawner creepSpawner = new CreepSpawner(m_activeWave[i], m_spawnPoint);
+            CreepSpawner creepSpawner = new CreepSpawner(m_activeWave.m_creeps[i], m_spawnPoint);
             creepSpawner.m_spawnStatusEffect = m_spawnStatusEffect;
             m_activeCreepSpawners.Add(creepSpawner);
         }
@@ -91,31 +98,31 @@ public class UnitSpawner : MonoBehaviour
         m_isSpawnerActive = true;
     }
 
-    public List<Creep> GetNextCreepWave()
+    public CreepWave GetNextCreepWave()
     {
         int gameplayWave = GameplayManager.Instance.m_wave + 1;
         Debug.Log($"Spawner fetching wave data. Index: {gameplayWave}.");
-        List<Creep> creepWave = new List<Creep>();
+        CreepWave creepWave = new CreepWave();
 
         //INTRO WAVES
         if (gameplayWave < m_spawnerWaves.m_introWaves.Count)
         {
-            creepWave = new List<Creep>(m_spawnerWaves.m_introWaves[gameplayWave].m_creeps);
+            creepWave = m_spawnerWaves.m_introWaves[gameplayWave];
             return creepWave;
         }
-        
-        //Subtract the number of training ways so that we start at wave 0 in the new lists.
-        gameplayWave -= m_spawnerWaves.m_introWaves.Count;
 
         //NEW UNIT TYPE WAVES
         foreach (NewTypeCreepWave newTypeCreepWave in m_spawnerWaves.m_newEnemyTypeWaves)
         {
             if (gameplayWave == newTypeCreepWave.m_waveToSpawnOn)
             {
-                creepWave = new List<Creep>(newTypeCreepWave.m_creeps);
+                creepWave = newTypeCreepWave;
                 return creepWave;
             }
         }
+        
+        //Subtract the number of training ways so that we start at wave 0 in the new lists.
+        gameplayWave -= m_spawnerWaves.m_introWaves.Count;
 
         //LOOPING WAVE OR CHALLENGING WAVE
         //Boss waves occur every 5 gameplay Waves.
@@ -123,12 +130,12 @@ public class UnitSpawner : MonoBehaviour
         if (challengingWave == 0)
         {
             int wave = (gameplayWave) % m_spawnerWaves.m_challengingWaves.Count;
-            creepWave = new List<Creep>(m_spawnerWaves.m_challengingWaves[wave].m_creeps);
+            creepWave = m_spawnerWaves.m_challengingWaves[wave];
         }
         else
         {
             int wave = (gameplayWave) % m_spawnerWaves.m_loopingWaves.Count;
-            creepWave = new List<Creep>(m_spawnerWaves.m_loopingWaves[wave].m_creeps);
+            creepWave = m_spawnerWaves.m_loopingWaves[wave];
         }
 
         //Debug.Log($"Getting next creep wave.");
@@ -180,7 +187,7 @@ public class UnitSpawner : MonoBehaviour
                 m_activeWave = GetNextCreepWave();
                 OnActiveWaveSet?.Invoke(m_activeWave);
                 break;
-            case GameplayManager.GameplayState.Paused:
+            case GameplayManager.GameplayState.CutScene:
                 break;
             case GameplayManager.GameplayState.Victory:
                 break;

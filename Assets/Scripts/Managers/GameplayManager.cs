@@ -54,6 +54,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Equipped Towers")]
     public List<TowerData> m_equippedTowers;
+
     public TowerData m_blueprintTower;
 
     [Header("Unit Spawners")]
@@ -61,6 +62,7 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
+
     public List<EnemyController> m_enemyBossList;
     public BossSequenceController m_activeBossSequenceController;
 
@@ -113,7 +115,7 @@ public class GameplayManager : MonoBehaviour
         BossWave,
         Combat,
         Build,
-        Paused,
+        CutScene,
         Victory,
         Defeat
     }
@@ -136,7 +138,7 @@ public class GameplayManager : MonoBehaviour
     {
         //We do not want to update _anything_ while we're in a cutscene!
         if (m_watchingCutScene) return;
-        
+
         HandleHotkeys();
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -152,7 +154,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     OnGameObjectHoveredExit?.Invoke(m_hoveredSelectable.gameObject);
                 }
-                
+
                 HandleUIInteraction();
             }
             else //We hit a World Space Object.
@@ -176,7 +178,6 @@ public class GameplayManager : MonoBehaviour
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             ++m_wave;
-            Debug.Log($"wave: {m_wave} -- wave factor: {(m_wave + 1) % m_bossWaveFactor}");
             if (m_wave != 0 && m_wave % m_bossWaveFactor == 0 && m_bossWaveFactor > 0)
             {
                 Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
@@ -184,9 +185,37 @@ public class GameplayManager : MonoBehaviour
             }
             else
             {
-                UpdateGameplayState(GameplayState.SpawnEnemies);
+                //Does a spawner have a cutscene request?
+                string cutsceneName = null;
+                foreach (UnitSpawner spawner in m_unitSpawners)
+                {
+                    //Check for Unit Cutscene.
+                    if (GameManager.Instance && spawner.m_activeWave is NewTypeCreepWave newTypeWave && newTypeWave.m_waveCutscene != null)
+                    {
+                        cutsceneName = newTypeWave.m_waveCutscene;
+                    }
+                }
+
+                if (cutsceneName != null)
+                {
+                    Debug.Log($"Cutscene named: {cutsceneName} found for this wave.");
+                    
+                    UpdateGameplayState(GameplayState.CutScene);
+                    OnCutSceneEnd += ResumeSpawnWave;
+                    GameManager.Instance.RequestAdditiveSceneLoad(cutsceneName);
+                }
+                else
+                {
+                    UpdateGameplayState(GameplayState.SpawnEnemies);
+                }
             }
         }
+    }
+
+    void ResumeSpawnWave()
+    {
+        OnCutSceneEnd -= ResumeSpawnWave;
+        UpdateGameplayState(GameplayState.SpawnEnemies);
     }
 
     void HandleHotkeys()
@@ -196,7 +225,7 @@ public class GameplayManager : MonoBehaviour
         {
             PauseHotkeyPressed();
         }
-    
+
         //Toggle FFW
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
@@ -213,7 +242,6 @@ public class GameplayManager : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(0) && m_interactionState != InteractionState.Disabled)
         {
-            
             //If the object we're hovering is not currently the selected object.
             if (m_interactionState == InteractionState.PreconstructionTower)
             {
@@ -231,7 +259,7 @@ public class GameplayManager : MonoBehaviour
                     return;
                 }
 
-                
+
                 //Reset outline color. This will be overridden by Tower Precon functions.
                 SetOutlineColor(false);
                 BuildTower();
@@ -286,7 +314,7 @@ public class GameplayManager : MonoBehaviour
                     case InteractionState.PreconstructionTower:
                         //Reset outline color. 
                         SetOutlineColor(false);
-                        
+
                         //Cancel tower preconstruction
                         OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                         ClearPreconstructedTower();
@@ -324,17 +352,18 @@ public class GameplayManager : MonoBehaviour
                 m_hoveredSelectable = null;
                 return;
             }
+
             {
                 return;
             }
         }
-        
-        
+
+
         //HOVERING
 
         //Is the object selectable?
         Selectable hitSelectable = obj.GetComponent<Selectable>();
-        
+
 
         //If the object is selected, we dont want to handle Hover state.
         if (m_curSelectable != null && m_curSelectable == hitSelectable)
@@ -380,7 +409,7 @@ public class GameplayManager : MonoBehaviour
         {
             m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
         }
-        
+
         m_equippedTowers.Add(m_blueprintTower);
 
         OnGameplayStateChanged += GameplayManagerStateChanged;
@@ -432,9 +461,8 @@ public class GameplayManager : MonoBehaviour
 
     public void UpdateGamePlayback(GameSpeed newSpeed)
     {
-
         if (newSpeed == m_gameSpeed) return;
-        
+
         m_gameSpeed = newSpeed;
         //Include FFW state
         //When we get a request check current game speed to identify if we return to normal or return to FFW when leaving pause.
@@ -458,6 +486,7 @@ public class GameplayManager : MonoBehaviour
                     OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                     ClearPreconstructedTower();
                 }
+
                 ClearBuiltBlueprintTowers();
                 Time.timeScale = m_playbackSpeed;
                 break;
@@ -524,7 +553,7 @@ public class GameplayManager : MonoBehaviour
                 }
 
                 break;
-            case GameplayState.Paused:
+            case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
@@ -798,7 +827,7 @@ public class GameplayManager : MonoBehaviour
             Debug.Log($"Cannot Place: This cell is already occupied.");
             return false;
         }
-        
+
         //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
         if (curCell.m_isBuildRestricted)
         {
@@ -947,7 +976,7 @@ public class GameplayManager : MonoBehaviour
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
-        
+
         //Update banks
         ValueTuple<int, int> cost = newTower.GetTowercost();
         if (cost.Item1 > 0)
@@ -967,26 +996,26 @@ public class GameplayManager : MonoBehaviour
     private void ClearBuiltBlueprintTowers()
     {
         if (m_towerList.Count == 0) return;
-        
+
         Debug.Log($"Clearing Built Blueprint Towers");
-        
+
         //Set Gameplay Manager's state
         if (m_interactionState == InteractionState.SelectedTower && m_curSelectable.GetComponent<TowerBlueprint>() != null)
         {
             Debug.Log($"Currently selected a blueprint, deselecting.");
             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
         }
-        
+
         if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTowerIndex == m_equippedTowers.Count + 1)
         {
             Debug.Log($"Currently in preconstruction with a blueprint Tower, removing precon.");
             //Reset outline color. 
             SetOutlineColor(false);
-                        
+
             //Cancel tower preconstruction
             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
         }
-        
+
         List<Tower> builtTowers = new List<Tower>(m_towerList);
 
         for (var i = 0; i < builtTowers.Count; ++i)
@@ -996,7 +1025,7 @@ public class GameplayManager : MonoBehaviour
             {
                 //Configure Grid
                 GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
-                
+
                 builtTowers.Remove(tower);
                 tower.RemoveTower();
                 --i;
@@ -1123,7 +1152,7 @@ public class GameplayManager : MonoBehaviour
                 break;
             }
         }
-        
+
         if (m_activeSpawners == 0 && m_enemyBossList.Count == 0 && m_gameplayState == GameplayState.BossWave)
         {
             //Tell sequence that we've killed the boss.
@@ -1253,20 +1282,20 @@ public class GameplayManager : MonoBehaviour
     public void WatchingCutScene()
     {
         m_watchingCutScene = true;
-        
+
         //Clear precon if we're precon
-        if(m_preconstructedTowerObj) ClearPreconstructedTower();
-                
+        if (m_preconstructedTowerObj) ClearPreconstructedTower();
+
         //Clear selected
         if (m_curSelectable)
         {
             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
             m_curSelectable = null;
         }
-                
+
         //Set interaction to disabled
         UpdateInteractionState(InteractionState.Disabled);
-                
+
         //Set speed to paused
         UpdateGamePlayback(GameSpeed.Paused);
     }
@@ -1275,12 +1304,12 @@ public class GameplayManager : MonoBehaviour
     {
         //Set interaction to disabled
         UpdateInteractionState(InteractionState.Idle);
-                
+
         //Set speed to paused
         UpdateGamePlayback(GameSpeed.Normal);
 
         m_watchingCutScene = false;
-        
+
         OnCutSceneEnd?.Invoke();
     }
 

@@ -37,7 +37,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     private void RandomResourceAmount()
     {
-        int randomInt = Random.Range(0, 33);
+        int randomInt = Random.Range(0, 22);
         if (randomInt == 1)
         {
             RequestResource(m_resourcesRemaining - 1);

@@ -92,14 +92,16 @@ public class CameraController : MonoBehaviour
         //Center the camera
         if (GameplayManager.Instance)
         {
-            transform.position = GetPositionInBounds(GameplayManager.Instance.m_castleController.transform.position);
+            Vector3 pos = (GameplayManager.Instance.m_castleController.transform.position);
+            pos.z += 1f;
+            transform.position = GetPositionInBounds(pos);
         }
     }
 
     void Update()
     {
         //Do nothing if we are paused.
-        //if (GameplayManager.Instance.m_gameSpeed == GameplayManager.GameSpeed.Paused) return;
+        //if (GameplayManager.Instance.m_gameSpeed == GameplayManager.GameSpeed.CutScene) return;
 
         //On rails movement will focus the camera on a destination. (Example: Selecting a gatherer from the UI)
         if (m_onRails)

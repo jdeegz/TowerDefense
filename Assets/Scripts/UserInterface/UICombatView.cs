@@ -242,7 +242,7 @@ public class UICombatView : MonoBehaviour
 
                 m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
                 break;
-            case GameplayManager.GameplayState.Paused:
+            case GameplayManager.GameplayState.CutScene:
                 break;
             case GameplayManager.GameplayState.Victory:
                 Time.timeScale = 0;

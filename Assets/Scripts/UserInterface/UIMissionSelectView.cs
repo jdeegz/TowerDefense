@@ -45,7 +45,7 @@ public class UIMissionSelectView : MonoBehaviour
 
     private void BuildMissionList()
     {
-        int numberOfMissions = 7;
+        int numberOfMissions = 5; //why the hell is this hardcoded lol
         for (int i = 0; i < numberOfMissions; i++)
         {
             //Make the button
