@@ -44,6 +44,12 @@ public class CheatManager : MonoBehaviour
             ModifyWave(1);
         }
         
+        //Increment Wave
+        if (Input.GetKeyDown(KeyCode.RightBracket) && Input.GetKey(KeyCode.LeftShift))
+        {
+            ModifyWave(10);
+        }
+        
         //Trigger Victory
         if (Input.GetKeyDown(KeyCode.K))
         {

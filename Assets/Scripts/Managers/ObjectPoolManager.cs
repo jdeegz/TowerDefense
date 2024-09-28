@@ -31,7 +31,11 @@ public class ObjectPoolManager : MonoBehaviour
 
     void Awake()
     {
-        Instance = this;
+        if (!Instance)
+        {
+            Instance = this;
+        }
+
         SetupEmpties();
     }
 

@@ -46,7 +46,7 @@ public abstract class Projectile : MonoBehaviour
     
     public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos)
     {
-        if(m_isFired) Debug.Log($"We are Setting data for a fired missile.");
+        //if(m_isFired) Debug.Log($"We are Setting data for a fired missile.");
         m_startPos = pos;
         m_enemy = enemy;
         m_targetPos = target.position;
@@ -66,19 +66,6 @@ public abstract class Projectile : MonoBehaviour
     {
         float distanceToTarget = Vector3.Distance(transform.position, m_targetPos);
         return distanceToTarget <= m_stoppingDistance;
-    }
-
-    void Update()
-    {
-        if (m_enemy)
-        {
-            m_targetPos = m_enemy.m_targetPoint.position;
-            
-            if (m_enemy.GetCurrentHP() <= 0)
-            {
-                m_enemy = null;
-            }
-        }
     }
     
     public void RemoveProjectile()

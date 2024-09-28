@@ -17,7 +17,17 @@ public class ProjectileBullet : Projectile
             RemoveProjectile();
         }
 
-        TravelToTargetFixedUpdate();
+        if(!m_isComplete) TravelToTargetFixedUpdate();
+        
+        if (m_enemy)
+        {
+            m_targetPos = m_enemy.m_targetPoint.position;
+            
+            if (m_enemy.GetCurrentHP() <= 0)
+            {
+                m_enemy = null;
+            }
+        }
     }
 
     void TravelToTargetFixedUpdate()

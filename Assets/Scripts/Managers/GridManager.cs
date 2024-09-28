@@ -335,7 +335,7 @@ public class GridManager : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, m_groundLayer))
         {
             // Ray hit something on the specified layer
-            Debug.Log("Hit object: " + hit.collider.gameObject.name);
+            //Debug.Log("Hit object: " + hit.collider.gameObject.name);
         }
         else
         {

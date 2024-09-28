@@ -20,12 +20,17 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected Vector2Int m_curPos;
     protected Cell m_curCell;
     protected Transform m_goal;
+    protected Vector3 m_nextCellPosition;
+    protected float m_maxX;
+    protected float m_minX;
+    protected float m_maxZ;
+    protected float m_minZ;
 
     //Enemy Stats
     protected float m_curMaxHealth;
     protected float m_curHealth;
     protected float m_baseMoveSpeed;
-    protected float m_baseLookSpeed;
+    protected float m_baseLookSpeed; // to be removed.
     protected float m_lastSpeedModifierFaster = 1f;
     protected float m_lastSpeedModifierSlower = 1f;
     protected float m_lastDamageModifierLower = 1f;
@@ -172,8 +177,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     //Movement
     //Functions
-    private Vector3 m_nextCellPosition;
-
     public virtual void HandleMovement()
     {
         //Update Cell occupancy
@@ -191,13 +194,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
             m_curPos = newPos;
 
             //Get new cell from new position.
-            Cell previousCell = m_curCell;
             m_curCell = Util.GetCellFromPos(m_curPos);
 
             //Assign self to cell.
             m_curCell.UpdateActorCount(1, gameObject.name);
 
-            Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f)) * m_enemyData.m_movementWiggleValue;
+            float wiggleMagnitude =  m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+            Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
 
             //Convert saved cell pos from Vector2 to Vector3
             Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
@@ -206,23 +209,36 @@ public abstract class EnemyController : Dissolvable, IEffectable
             //If the current cell is occupied, we go in the reverse direction until we're in an unoccupied cell.
             //If the current cell has no direction, we go back to the previous cell.
             
-            //Most common path
             m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
             
-            if (m_curCell.m_isOccupied && m_curCell.m_directionToNextCell != Vector3.zero)
-            {
-                //If this cell is occupied and has a direction, so go the reverse direction.
-                m_nextCellPosition = m_curCell3dPos + new Vector3(-m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, -m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
-                Debug.Log($"{gameObject.name} is in an occupied cell. Travelling to: {m_nextCellPosition}");
-            }
+            //Clamp saftey net.
+            m_maxX = m_curCell.m_cellPos.x + .5f;
+            m_minX = m_curCell.m_cellPos.x - .5f;
+        
+            m_maxZ = m_curCell.m_cellPos.y + .5f;
+            m_minZ = m_curCell.m_cellPos.y - .5f;
             
-            if (m_curCell.m_isOccupied && m_curCell.m_directionToNextCell == Vector3.zero)
+            if (m_curCell.m_directionToNextCell.x < 0)
             {
-                //If this cell is occupied and has no direction, go to the previous cell.
-                m_nextCellPosition = m_curCell3dPos + new Vector3(-previousCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, -previousCell.m_directionToNextCell.z + nextCellPosOffset.y);
-                Debug.Log($"{gameObject.name} is in an occupied cell with no direction. Travelling to: {m_nextCellPosition}");
+                //We're going left.
+                m_minX += -1;
             }
-            
+            else if (m_curCell.m_directionToNextCell.x > 0)
+            {
+                //we're going right.
+                m_maxX += 1;
+            }
+        
+            if (m_curCell.m_directionToNextCell.z < 0)
+            {
+                //We're going down.
+                m_minZ += -1;
+            }
+            else if (m_curCell.m_directionToNextCell.z > 0)
+            {
+                //we're going up.
+                m_maxZ += 1;
+            }
         }
 
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
@@ -233,18 +249,25 @@ public abstract class EnemyController : Dissolvable, IEffectable
         
         //Move forward.
         float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-        float tightTurn = angle > 90 ? 0 : 1;
         float cumulativeMoveSpeed = speed * Time.deltaTime;
-        transform.position += (transform.forward * cumulativeMoveSpeed) * tightTurn;
+        transform.position += transform.forward * cumulativeMoveSpeed;
         m_animator.SetFloat("Speed", speed);
-        //Debug.Log($"cum spd; {speed}");
 
         //Look towards the move direction.
-        float cumulativeLookSpeed = m_baseLookSpeed * (cumulativeMoveSpeed / m_baseMoveSpeed);
+        float baseLookSpeed = Mathf.Max(m_baseLookSpeed, Math.Abs(angle));
+        float cumulativeLookSpeed = baseLookSpeed * speed * Time.deltaTime;
         Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, cumulativeLookSpeed);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
 
-        
+        if (angle >= 90 || angle <= -90)
+        {
+            Debug.Log($"Angle: {angle} at Speed: {speed}. Look Speed: {baseLookSpeed * speed}");
+        }
+
+        //Apply clamping
+        float posX = Mathf.Clamp(transform.position.x, m_minX, m_maxX);
+        float posZ = Mathf.Clamp(transform.position.z, m_minZ, m_maxZ);
+        transform.position = new Vector3(posX, transform.position.y, posZ);
     }
 
     //Taking Damage

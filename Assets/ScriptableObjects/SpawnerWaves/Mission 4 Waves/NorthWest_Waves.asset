@@ -87,16 +87,6 @@ MonoBehaviour:
       m_spawnDelay: 0
       m_spawnInterval: 2
     m_challengeRating: 130
-  - m_creeps:
-    - m_enemy: {fileID: 11400000, guid: 5373b82069f02a44daa500d5aa71c24d, type: 2}
-      m_unitsToSpawn: 6
-      m_spawnDelay: 0.33
-      m_spawnInterval: 10
-    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
-      m_unitsToSpawn: 12
-      m_spawnDelay: 0
-      m_spawnInterval: 5
-    m_challengeRating: 120
   m_loopingWaves:
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: 2d86ddda348ef9c47a381e4ee7672b1f, type: 2}
@@ -370,8 +360,21 @@ MonoBehaviour:
   m_newEnemyTypeWaves:
   - m_creeps:
     - m_enemy: {fileID: 11400000, guid: 9fb91d404a6116b4fa1cede1bfb0454b, type: 2}
-      m_unitsToSpawn: 12
-      m_spawnDelay: 6
-      m_spawnInterval: 3
+      m_unitsToSpawn: 6
+      m_spawnDelay: 2
+      m_spawnInterval: 6
+    - m_enemy: {fileID: 11400000, guid: 9fb91d404a6116b4fa1cede1bfb0454b, type: 2}
+      m_unitsToSpawn: 6
+      m_spawnDelay: 0
+      m_spawnInterval: 6
     m_challengeRating: 96
+    m_waveToSpawnOn: 10
+    m_waveCutscene: 
+  - m_creeps:
+    - m_enemy: {fileID: 11400000, guid: 5373b82069f02a44daa500d5aa71c24d, type: 2}
+      m_unitsToSpawn: 6
+      m_spawnDelay: 0.33
+      m_spawnInterval: 10
+    m_challengeRating: 60
     m_waveToSpawnOn: 15
+    m_waveCutscene: 

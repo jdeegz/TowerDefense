@@ -190,13 +190,13 @@ public class GameplayManager : MonoBehaviour
                 foreach (UnitSpawner spawner in m_unitSpawners)
                 {
                     //Check for Unit Cutscene.
-                    if (GameManager.Instance && spawner.m_activeWave is NewTypeCreepWave newTypeWave && newTypeWave.m_waveCutscene != null)
+                    if (GameManager.Instance && spawner.m_activeWave is NewTypeCreepWave newTypeWave && !string.IsNullOrEmpty(newTypeWave.m_waveCutscene))
                     {
                         cutsceneName = newTypeWave.m_waveCutscene;
                     }
                 }
 
-                if (cutsceneName != null)
+                if (!string.IsNullOrEmpty(cutsceneName))
                 {
                     Debug.Log($"Cutscene named: {cutsceneName} found for this wave.");
                     

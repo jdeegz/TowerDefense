@@ -62,6 +62,7 @@ public class GameManager : MonoBehaviour
 
     public void RequestChangeScene(String sceneName, GameState newState)
     {
+        Time.timeScale = 1.0f;
         if (sceneName == m_curScene)
         {
             return;
@@ -80,6 +81,7 @@ public class GameManager : MonoBehaviour
 
     public void RequestSceneRestart()
     {
+        Time.timeScale = 1.0f;
         String sceneName = SceneManager.GetActiveScene().name;
         m_loadingTransitionController.TransitionStart(sceneName, () => StartChangeScene(sceneName));
     }
