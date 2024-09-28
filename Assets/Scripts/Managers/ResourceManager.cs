@@ -30,9 +30,7 @@ public class ResourceManager : MonoBehaviour
 
     [Header("Tree Resource Node Prefabs")]
     public List<GameObject> m_treePrefabs;
-    
-    [Header("Scene Resource Nodes")]
-    public List<ResourceNode> m_treesInScene;
+    private List<ResourceNode> m_treesInScene;
     
     private int m_badLuckChargeCounter;
     private int m_foundRuinCounter;

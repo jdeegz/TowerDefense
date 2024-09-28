@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using Unity.Plastic.Antlr3.Runtime.Misc;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.SceneManagement;
 
 [CustomEditor(typeof(ResourceManager))]
 public class ResourceNodeEditor : Editor
@@ -24,13 +27,16 @@ public class ResourceNodeEditor : Editor
             }
             
             Debug.Log("Updating Trees");
-            if (m_resourceManager.m_treesInScene == null) m_resourceManager.m_treesInScene = new List<ResourceNode>();
             
-            m_resourceManager.m_treesInScene.Clear();
-            m_resourceManager.m_treesInScene = GetTreesInScene();
-
-            ReplaceTreePrefabs(m_resourceManager.m_treesInScene, m_resourceManager.m_treePrefabs);
+            ReplaceTreePrefabs(GetTreesInScene(), m_resourceManager.m_treePrefabs);
             Debug.Log($"Trees Updated.");
+            
+            Debug.Log($"Trees list cleared.");
+        }
+
+        if (GUILayout.Button("Remove Duplicate Trees"))
+        {
+            RemoveDuplicates(GetTreesInScene());
         }
     }
 
@@ -71,5 +77,42 @@ public class ResourceNodeEditor : Editor
             DestroyImmediate(node.gameObject);
         }
         
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+    }
+
+    public void RemoveDuplicates(List<ResourceNode> nodes)
+    {
+        Debug.Log($"Removing Duplicate Nodes.");
+        HashSet<Vector3> uniquePos = new HashSet<Vector3>();
+        List<GameObject> dupeObjs = new ListStack<GameObject>();
+
+        for (int i = nodes.Count - 1; i >= 0; --i)
+        {
+            if (uniquePos.Contains(nodes[i].transform.position))
+            {
+                dupeObjs.Add(nodes[i].gameObject);
+            }
+            else
+            {
+                uniquePos.Add(nodes[i].transform.position);
+            }
+        }
+
+        if (dupeObjs.Count == 0)
+        {
+            Debug.Log($"No Duplicate Objects found.");
+            Debug.Log($"Duplicate Removal complete.");
+            return;
+        }
+        
+
+        for (int x = dupeObjs.Count - 1; x >= 0; --x)
+        {
+            Debug.Log($"Removing duplicate object: {dupeObjs[x].name}");
+            DestroyImmediate(dupeObjs[x]);
+        }
+
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        Debug.Log($"Duplicate Removal complete.");
     }
 }
