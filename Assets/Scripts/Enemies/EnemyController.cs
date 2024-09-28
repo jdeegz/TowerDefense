@@ -184,20 +184,33 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
         if (newPos != m_curPos)
         {
-            //Remove self from current cell.
-            if (m_curCell != null)
+            //Cell prevCell = m_curCell; //Stash the previous cell incase we need to go back.
+            Cell newCell = Util.GetCellFromPos(newPos);
+            
+            //Check new cells occupancy.
+            if (newCell.m_isOccupied)
             {
-                m_curCell.UpdateActorCount(-1, gameObject.name);
+                //If it is occupied, we do NOT want to continue entering it. Ask our previous cell for it's new direction (assuming we've placed a tower and updated the grid)
+                
             }
+            else
+            {
+                //Remove self from current cell.
+                if (m_curCell != null)
+                {
+                    m_curCell.UpdateActorCount(-1, gameObject.name);
+                }
 
-            //Assign new position, we are now in a new cell.
-            m_curPos = newPos;
+                //Assign new position, we are now in a new cell.
+                m_curPos = newPos;
 
-            //Get new cell from new position.
-            m_curCell = Util.GetCellFromPos(m_curPos);
+                //Get new cell from new position.
+                m_curCell = newCell;
 
-            //Assign self to cell.
-            m_curCell.UpdateActorCount(1, gameObject.name);
+                //Assign self to cell.
+                m_curCell.UpdateActorCount(1, gameObject.name); 
+            }
+            
 
             float wiggleMagnitude =  m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
             Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
@@ -212,11 +225,11 @@ public abstract class EnemyController : Dissolvable, IEffectable
             m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
             
             //Clamp saftey net.
-            m_maxX = m_curCell.m_cellPos.x + .5f;
-            m_minX = m_curCell.m_cellPos.x - .5f;
+            m_maxX = m_curCell.m_cellPos.x + .45f;
+            m_minX = m_curCell.m_cellPos.x - .45f;
         
-            m_maxZ = m_curCell.m_cellPos.y + .5f;
-            m_minZ = m_curCell.m_cellPos.y - .5f;
+            m_maxZ = m_curCell.m_cellPos.y + .45f;
+            m_minZ = m_curCell.m_cellPos.y - .45f;
             
             if (m_curCell.m_directionToNextCell.x < 0)
             {

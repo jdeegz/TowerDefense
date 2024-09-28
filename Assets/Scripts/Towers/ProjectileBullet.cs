@@ -64,7 +64,7 @@ public class ProjectileBullet : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider == null && m_enemy == null) return;
+        if (/*collision.collider == null && */ m_enemy == null) return;
         
         if (m_isComplete) return;
         

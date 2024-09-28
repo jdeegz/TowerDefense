@@ -19,15 +19,25 @@ public class GridCellOccupantUtil
             {
                 Vector2Int pos = new Vector2Int((int)m_bottomLeftCell.x + x, (int)m_bottomLeftCell.z + z);
                 Cell cell = Util.GetCellFromPos(pos);
+
+                if (cell.m_isOccupied)
+                {
+                    if (pos.x != 0 && pos.x != GridManager.Instance.m_gridWidth - 1 && pos.y != 0 && pos.y != GridManager.Instance.m_gridHeight - 1)
+                    {
+                        Debug.Log($"Cell is being double occupied at {pos} by {obj.name}!");
+                        obj.SetActive(false);
+                    }
+                }
+
                 cell.UpdateOccupancyDisplay(isOccupied);
-                
+
                 //Handle Tile Map update
                 GridManager.Instance.ToggleTileMap(new Vector3Int(cell.m_cellPos.x, cell.m_cellPos.y, 0), isOccupied);
                 //if(!isOccupied){Debug.Log($"Grid Cell unoccupied: {pos} by: {obj.name}");}
             }
         }
     }
-    
+
     public static void SetActor(GameObject obj, int i, int width, int height)
     {
         //Get the bottom left cell.
@@ -47,7 +57,7 @@ public class GridCellOccupantUtil
             }
         }
     }
-    
+
     public static void SetBuildRestricted(GameObject obj, bool value, int width, int height)
     {
         //Get the bottom left cell.
@@ -67,6 +77,4 @@ public class GridCellOccupantUtil
             }
         }
     }
-    
-    
 }

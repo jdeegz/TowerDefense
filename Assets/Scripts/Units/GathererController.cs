@@ -54,6 +54,7 @@ public class GathererController : MonoBehaviour
     private Quaternion m_previousRotation;
     private int level;
     private int m_debugIndex;
+    private Vector3 m_nextCellPosition;
 
     public int m_gathererLevel
     {
@@ -274,9 +275,12 @@ public class GathererController : MonoBehaviour
                 ++m_gathererPathProgress;
             }
         }
-
+        
         //Get the position of the next cell.
-        Vector3 m_nextCellPosition = new Vector3(m_gathererPath[m_gathererPathProgress].x, 0, m_gathererPath[m_gathererPathProgress].y);
+        if (m_gathererPathProgress < m_gathererPath.Count && m_gathererPathProgress >= 0) //Getting index out of bounds, so wrapping this position in a check.
+        {
+            m_nextCellPosition = new Vector3(m_gathererPath[m_gathererPathProgress].x, 0, m_gathererPath[m_gathererPathProgress].y);
+        }
 
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
@@ -330,7 +334,7 @@ public class GathererController : MonoBehaviour
         source.clip = clip;
         source.Play();
     }
-    
+
     public void RequestPlayAudio(AudioClip clip, AudioSource source)
     {
         source.Stop();
@@ -429,7 +433,7 @@ public class GathererController : MonoBehaviour
             StopCoroutine(m_curCoroutine);
             m_curCoroutine = null;
         }
-        
+
         m_curRuin = requestObj.GetComponent<RuinController>();
         //Get a path to the ruin.
         //If the path returned is of length 0, we can activate the ruin, else we travel to it.
@@ -738,9 +742,9 @@ public class GathererController : MonoBehaviour
         List<ResourceNode> nearbyNodes = new List<ResourceNode>();
 
         //Get a bunch of nodes near the point.
-        Collider[] colliders = Physics.OverlapBox(center: pos, 
-            halfExtents: new Vector3(searchRange * .5f, 1f, searchRange * .5f), 
-            orientation: Quaternion.identity, 
+        Collider[] colliders = Physics.OverlapBox(center: pos,
+            halfExtents: new Vector3(searchRange * .5f, 1f, searchRange * .5f),
+            orientation: Quaternion.identity,
             layerMask: layerMask);
 
         foreach (Collider collider in colliders)
@@ -782,7 +786,7 @@ public class GathererController : MonoBehaviour
                 //If it's occupied by another gatherer, go next.
                 bool cellOccupied = node.m_harvestPoints[x].m_harvestPointCell.m_isOccupied;
 
-                if ((node.m_harvestPoints[i].m_gatherer != null && node.m_harvestPoints[i].m_gatherer != this) || cellOccupied)
+                if ((node.m_harvestPoints[x].m_gatherer != null && node.m_harvestPoints[x].m_gatherer != this) || cellOccupied)
                 {
                     continue;
                 }

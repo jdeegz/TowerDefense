@@ -126,7 +126,7 @@ public class ProjectileMissile : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider == null || m_enemy == null) return;
+        if (m_enemy == null) return;
 
         if (m_isComplete) return;
 
