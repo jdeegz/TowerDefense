@@ -12,27 +12,37 @@ public class EnemySprinter : EnemyController
         Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
         if (newPos != m_curPos)
         {
-            //Remove self from current cell.
-            if (m_curCell != null)
+            //Cell prevCell = m_curCell; //Stash the previous cell incase we need to go back.
+            Cell newCell = Util.GetCellFromPos(newPos);
+
+            //Check new cells occupancy.
+            if (newCell.m_isOccupied)
             {
-                m_curCell.UpdateActorCount(-1, gameObject.name);
+                //If it is occupied, we do NOT want to continue entering it. Ask our previous cell for it's new direction (assuming we've placed a tower and updated the grid)
             }
+            else
+            {
+                //Remove self from current cell.
+                if (m_curCell != null)
+                {
+                    m_curCell.UpdateActorCount(-1, gameObject.name);
+                }
 
-            //Assign new position
-            m_curPos = newPos;
+                //Assign new position, we are now in a new cell.
+                m_curPos = newPos;
 
-            //Get new cell from new position.
-            m_curCell = Util.GetCellFromPos(m_curPos);
+                //Get new cell from new position.
+                m_curCell = newCell;
 
-            //Assign self to cell.
-            m_curCell.UpdateActorCount(1, gameObject.name);
+                //Assign self to cell.
+                m_curCell.UpdateActorCount(1, gameObject.name);
+            }
             
-            Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f)) * m_enemyData.m_movementWiggleValue;
+            float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+            Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
 
             //Convert saved cell pos from Vector2 to Vector3
             Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
-
-            //Get the position of the next cell.
             
             //Most common path
             m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
@@ -84,14 +94,14 @@ public class EnemySprinter : EnemyController
         float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
         
         //Decrement accelerated speed if we're turning, and above a minimum speed. (20% of speed)
-        if (turningAngle > 20 && m_acceleratedSpeed > speed * 0.2f)
+        if (turningAngle > 12 && m_acceleratedSpeed > speed * 0.1f)
         {
-            Debug.Log($"We're turning, current angle: {turningAngle}. We're still faster than desired turn speed: {m_acceleratedSpeed > speed * 0.2f}.");
-            m_acceleratedSpeed -= m_baseMoveSpeed * Time.deltaTime;
+            //Debug.Log($"We're turning, current angle: {turningAngle}. We're still faster than desired turn speed: {m_acceleratedSpeed > speed * 0.2f}.");
+            m_acceleratedSpeed -= m_baseMoveSpeed * 2 * Time.deltaTime;
         }
 
         //Increment accelerated speed if we're not turning much.
-        if (turningAngle < 20 && m_acceleratedSpeed < speed)
+        if (turningAngle < 12 && m_acceleratedSpeed < speed)
         {
             m_acceleratedSpeed += m_baseMoveSpeed * 0.3f * Time.deltaTime;
         }

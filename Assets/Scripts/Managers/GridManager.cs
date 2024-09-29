@@ -246,8 +246,7 @@ public class GridManager : MonoBehaviour
         }
 
         m_previousPreconIndex = preconTowerCellIndex;
-        Debug.Log($"Precon Tower Moved, new index: {m_previousPreconIndex}");
-
+        
         //Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
         FloodFillGrid(m_gridCells, null);
     }

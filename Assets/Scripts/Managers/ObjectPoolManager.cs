@@ -70,7 +70,7 @@ public class ObjectPoolManager : MonoBehaviour
         {
             if (m_orphanList[i].m_poolDelay < Time.time)
             {
-               m_expiredOrphanList.Add(m_orphanList[i]);
+                m_expiredOrphanList.Add(m_orphanList[i]);
             }
         }
 
@@ -80,7 +80,7 @@ public class ObjectPoolManager : MonoBehaviour
             ReturnObjectToPool(orphanedObject.m_orphanObject, orphanedObject.m_poolType);
             m_orphanList.Remove(orphanedObject);
         }
-        
+
         m_expiredOrphanList.Clear();
     }
 
@@ -114,16 +114,15 @@ public class ObjectPoolManager : MonoBehaviour
         }
         else
         {
-            //Debug.Log($"Releasing {spawnableObj.name} from inactive pool and the object is currently {spawnableObj.activeSelf}.");
             pool.m_inactiveObjects.Remove(spawnableObj);
             spawnableObj.transform.position = spawnPosition;
             spawnableObj.transform.rotation = spawnRotation;
             spawnableObj.SetActive(true);
         }
-        
+
         return spawnableObj;
     }
-    
+
     public static GameObject SpawnObject(GameObject objectToSpawn, Transform parent)
     {
         if (Instance == null) return null;
@@ -161,7 +160,7 @@ public class ObjectPoolManager : MonoBehaviour
     {
         string goName = obj.name.Substring(0, obj.name.Length - 7); // Remove (Clone)
         PooledObjectInfo pool = Instance.m_objectPools.Find(p => p.m_lookUpString == goName);
-        
+
         GameObject parentObject = SetParentObject(poolType);
         if (parentObject != null)
         {
@@ -184,12 +183,10 @@ public class ObjectPoolManager : MonoBehaviour
     public static void OrphanObject(GameObject obj, float delay, PoolType poolType = PoolType.None)
     {
         //Debug.Log($"New Orphan {obj.name} with delay of: {delay}.");
-        OrphanedObject orphan = new OrphanedObject{ m_orphanObject = obj, m_poolDelay = Time.time + delay, m_poolType = poolType};
+        OrphanedObject orphan = new OrphanedObject { m_orphanObject = obj, m_poolDelay = Time.time + delay, m_poolType = poolType };
         Instance.m_orphanList.Add(orphan);
     }
 
-    
-    
 
     public static GameObject SetParentObject(PoolType poolType)
     {

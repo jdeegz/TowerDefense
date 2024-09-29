@@ -81,6 +81,8 @@ public abstract class Projectile : MonoBehaviour
             m_renderer.enabled = false;
         }
 
+        transform.rotation = Quaternion.identity;
+        
         if (m_trail != null && m_bulletTrailData != null)
         {
             ObjectPoolManager.OrphanObject(gameObject, m_bulletTrailData.m_time);

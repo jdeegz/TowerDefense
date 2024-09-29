@@ -303,7 +303,7 @@ public abstract class Tower : MonoBehaviour
 
         if (raycastHits.Length == 0)
         {
-            Debug.Log($"Something broke with the void tower Get Point on Collider Surface function.");
+            //Debug.Log($"Something broke with the void tower Get Point on Collider Surface function.");
         }
         
         raycastHits = raycastHits.OrderBy(raycastHits => raycastHits.distance).ToArray();

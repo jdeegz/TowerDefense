@@ -100,12 +100,11 @@ public class TowerCannon : Tower
     void Reload(int i)
     {
         //Make the projectile objects
-        //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform);
-        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation);
+        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.localRotation);
 
-        if (projectileObj == null) Debug.Log($"Projectile Obj is null");
         //Position loaded projectile
         projectileObj.transform.SetParent(m_muzzlePoints[i].transform);
+        //projectileObj.transform.rotation = Quaternion.identity;
 
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
 

@@ -89,7 +89,14 @@ public abstract class EnemyController : Dissolvable, IEffectable
         }
 
         //Setup with GridManager
+        //Debug.Log($"Setting up {gameObject.name} at {transform.position}.");
         m_curPos = Vector2Int.zero;
+
+        //Get new cell from new position.
+        //m_curCell = Util.GetCellFromPos(m_curPos);
+
+        //Assign self to cell.
+        //m_curCell.UpdateActorCount(1, gameObject.name);
 
         //Setup Data
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
@@ -186,12 +193,11 @@ public abstract class EnemyController : Dissolvable, IEffectable
         {
             //Cell prevCell = m_curCell; //Stash the previous cell incase we need to go back.
             Cell newCell = Util.GetCellFromPos(newPos);
-            
+
             //Check new cells occupancy.
             if (newCell.m_isOccupied)
             {
                 //If it is occupied, we do NOT want to continue entering it. Ask our previous cell for it's new direction (assuming we've placed a tower and updated the grid)
-                
             }
             else
             {
@@ -208,11 +214,10 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 m_curCell = newCell;
 
                 //Assign self to cell.
-                m_curCell.UpdateActorCount(1, gameObject.name); 
+                m_curCell.UpdateActorCount(1, gameObject.name);
             }
             
-
-            float wiggleMagnitude =  m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+            float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
             Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
 
             //Convert saved cell pos from Vector2 to Vector3
@@ -221,16 +226,16 @@ public abstract class EnemyController : Dissolvable, IEffectable
             //Get the position of the next cell.
             //If the current cell is occupied, we go in the reverse direction until we're in an unoccupied cell.
             //If the current cell has no direction, we go back to the previous cell.
-            
+
             m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
-            
+
             //Clamp saftey net.
             m_maxX = m_curCell.m_cellPos.x + .45f;
             m_minX = m_curCell.m_cellPos.x - .45f;
-        
+
             m_maxZ = m_curCell.m_cellPos.y + .45f;
             m_minZ = m_curCell.m_cellPos.y - .45f;
-            
+
             if (m_curCell.m_directionToNextCell.x < 0)
             {
                 //We're going left.
@@ -241,7 +246,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 //we're going right.
                 m_maxX += 1;
             }
-        
+
             if (m_curCell.m_directionToNextCell.z < 0)
             {
                 //We're going down.
@@ -259,7 +264,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         //Send information to Animator
         float angle = Vector3.SignedAngle(transform.forward, m_moveDirection, Vector3.up);
         m_animator.SetFloat("LookRotation", angle);
-        
+
         //Move forward.
         float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
         float cumulativeMoveSpeed = speed * Time.deltaTime;
@@ -272,10 +277,10 @@ public abstract class EnemyController : Dissolvable, IEffectable
         Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
 
-        if (angle >= 90 || angle <= -90)
+        /*if (angle >= 90 || angle <= -90)
         {
             Debug.Log($"Angle: {angle} at Speed: {speed}. Look Speed: {baseLookSpeed * speed}");
-        }
+        }*/
 
         //Apply clamping
         float posX = Mathf.Clamp(transform.position.x, m_minX, m_maxX);
@@ -322,17 +327,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
         int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
         m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
 
-        //VFX
-
-        //Hit Flash
-        if (m_allRenderers == null) return;
-        if (m_hitFlashCoroutine != null)
-        {
-            StopCoroutine(m_hitFlashCoroutine);
-        }
-
-        m_hitFlashCoroutine = StartCoroutine(HitFlash());
-
         //Calculate Damage
         float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
         m_curHealth -= cumDamage;
@@ -350,7 +344,19 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
             OnEnemyDestroyed(transform.position);
             DestroyEnemy?.Invoke(transform.position);
+            return;
         }
+        
+        //VFX
+
+        //Hit Flash
+        if (m_allRenderers == null) return;
+        if (m_hitFlashCoroutine != null)
+        {
+            StopCoroutine(m_hitFlashCoroutine);
+        }
+
+        if(gameObject.activeSelf) m_hitFlashCoroutine = StartCoroutine(HitFlash());
     }
 
     public IEnumerator HitFlash()
@@ -400,7 +406,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         heal = Mathf.Min(heal, curMissingHealth);
         m_curHealth += heal;
         UpdateHealth?.Invoke(heal);
-        Debug.Log($"{gameObject.name} healed for {heal}.");
+        //Debug.Log($"{gameObject.name} healed for {heal}.");
     }
 
     public virtual void OnEnemyDestroyed(Vector3 pos)
@@ -416,6 +422,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
         if (m_curCell != null)
         {
             m_curCell.UpdateActorCount(-1, gameObject.name);
+            m_curCell = null;
+            m_nextCellPosition = Vector3.zero;
         }
 
         //If dead, look for obelisks nearby. If there is one, spawn a soul and have it move to the obelisk.
