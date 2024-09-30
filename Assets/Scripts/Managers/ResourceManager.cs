@@ -23,6 +23,7 @@ public class ResourceManager : MonoBehaviour
     public static event Action<int> UpdateWoodGathererCount;
 
     public static event Action<int, int> UpdateWoodBank;
+    public static event Action<float> UpdateWoodRate;
     public static event Action<int, int> UpdateStoneBank;
 
     [Header("Ruins Data")]
@@ -35,6 +36,14 @@ public class ResourceManager : MonoBehaviour
     private int m_badLuckChargeCounter;
     private int m_foundRuinCounter;
     private int m_depletionCounter;
+
+    //each time wood is deposited, add quantity and timestamp to a list.
+    
+    //When a request to update the gpm display, collect all of the items in the list, within the last 60 seconds.
+    //Sum the quantities in the list and divide by 60.
+    private float m_depositTimer;
+    private List<WoodDeposit> m_woodDeposits;
+    private float m_woodPerMinute;
     
 
     private void Awake()
@@ -52,14 +61,73 @@ public class ResourceManager : MonoBehaviour
         //Debug.Log("RESOURCE MANAGER START");
         UpdateWoodAmount(m_resourceManagerData.m_startingWood);
         UpdateStoneAmount(m_resourceManagerData.m_startingStone);
+        m_woodDeposits = new List<WoodDeposit>();
     }
 
-    public void UpdateWoodAmount(int amount)
+    void Update()
+    {
+        m_depositTimer += Time.deltaTime;
+
+        if (m_depositTimer % 60 == 0)
+        {
+            CalculateWoodRate();
+        }
+    }
+    
+    public void UpdateWoodAmount(int amount, GathererController gatherer = null)
     {
         m_woodBank += amount;
         UpdateWoodBank?.Invoke(m_woodBank, amount);
         //Debug.Log("BANK UPDATED");
+
+        if (gatherer != null && amount > 0) //Check if this is a deposit and not a sell/build/upgrade
+        {
+            WoodDeposit newDeposit = new WoodDeposit();
+            newDeposit.m_quantity = amount;
+            newDeposit.m_timeStamp = m_depositTimer;
+            m_woodDeposits.Add(newDeposit);
+            CalculateWoodRate();
+        }
     }
+
+    private void CalculateWoodRate()
+    {
+        float currentTime = m_depositTimer;
+        int woodSum = 0;
+        float factor;
+        float firstDepositThisMinute = 0;
+        bool minimumTimeMet = false;
+            
+        for (int i = m_woodDeposits.Count -1 ; i >= 0; --i)
+        {
+            if (m_woodDeposits[i].m_timeStamp >= currentTime - 60)
+            {
+                woodSum += m_woodDeposits[i].m_quantity;
+                firstDepositThisMinute = m_woodDeposits[i].m_timeStamp;
+                //last time
+            }
+            else
+            {
+                minimumTimeMet = true;
+                break;
+            }
+        }
+
+        if (minimumTimeMet)
+        {
+            factor = (60 - (currentTime - 60 - firstDepositThisMinute)) / 60;
+            m_woodPerMinute = woodSum * factor;
+        }
+        else
+        {
+            //How long has it been? 30s, 60 / 30 = 2, multiply sum by 2 to get estimated WPM.
+            factor = 60 / currentTime;
+            m_woodPerMinute = woodSum * factor;
+        }
+        
+        UpdateWoodRate?.Invoke(m_woodPerMinute);
+    }
+    
     public void UpdateStoneAmount(int amount)
     {
         m_stoneBank += amount;
@@ -124,4 +192,16 @@ public class ResourceManager : MonoBehaviour
         
         return canSpawnRuin;
     }
+
+    public void StartDepositTimer()
+    {
+        m_depositTimer = 0f;
+    }
+}
+
+[System.Serializable]
+public class WoodDeposit
+{
+    public int m_quantity;
+    public float m_timeStamp;
 }

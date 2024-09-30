@@ -912,7 +912,7 @@ public class GathererController : MonoBehaviour
         switch (m_gathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
-                ResourceManager.Instance.UpdateWoodAmount(storageAmount);
+                ResourceManager.Instance.UpdateWoodAmount(storageAmount, this);
 
                 if (storageAmount > 1) //Did we deposit a crit amount?
                 {

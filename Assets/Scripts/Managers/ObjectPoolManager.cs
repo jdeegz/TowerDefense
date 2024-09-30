@@ -148,7 +148,7 @@ public class ObjectPoolManager : MonoBehaviour
         else
         {
             pool.m_inactiveObjects.Remove(spawnableObj);
-            spawnableObj.transform.parent = parent;
+            spawnableObj.transform.SetParent(parent);
             spawnableObj.SetActive(true);
         }
 

@@ -24,6 +24,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
 
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
+    [SerializeField] private TextMeshProUGUI m_woodRateLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
     [SerializeField] private TextMeshProUGUI m_woodGathererLabel;
     [SerializeField] private TextMeshProUGUI m_gameClockLabel;
@@ -90,6 +91,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGathererRemoved += RemoveGathererTrayButton;
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
+        ResourceManager.UpdateWoodRate += UpdateWoodRateDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
         m_menuObj.OnMenuToggle += SetMenusOpen;
@@ -121,6 +123,11 @@ public class UICombatView : MonoBehaviour
             { KeyCode.T, 3 },
             { KeyCode.Y, 4 },
         };
+    }
+
+    private void UpdateWoodRateDisplay(float rate)
+    {
+        m_woodRateLabel.SetText($"{rate:F1}<sprite name=\"ResourceWood\">/Min");
     }
 
     private void UpdateCastleHealthDisplay(int i)
@@ -204,6 +211,7 @@ public class UICombatView : MonoBehaviour
 
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
+        ResourceManager.UpdateWoodRate -= UpdateWoodRateDisplay;
         ResourceManager.UpdateStoneGathererCount -= UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount -= UpdateWoodGathererDisplay;
     }

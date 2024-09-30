@@ -32,6 +32,7 @@ public class UISetupView : MonoBehaviour
     {
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Build);
         GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Idle);
+        ResourceManager.Instance.StartDepositTimer();
         gameObject.SetActive(false);
     }
 
