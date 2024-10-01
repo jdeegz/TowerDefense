@@ -110,12 +110,18 @@ public class IngameUIController : MonoBehaviour
             stoneMagnitude = stoneValue > 0 ? m_negativeValue : m_positiveValue;
         }
         
-        string alertString;
-        if (stoneValue > 0)
+        string alertString = "Something Broke.";
+        if (woodValue > 0 && stoneValue > 0)
         {
             alertString = $"{woodMagnitude}{woodValue}{m_woodIcon}  {stoneMagnitude}{stoneValue}{m_stoneIcon}";
         }
-        else
+
+        if (stoneValue > 0)
+        {
+            alertString = $"{stoneMagnitude}{stoneValue}{m_stoneIcon}";
+        }
+        
+        if(woodValue > 0)
         {
             alertString = $"{woodMagnitude}{woodValue}{m_woodIcon}";
         }

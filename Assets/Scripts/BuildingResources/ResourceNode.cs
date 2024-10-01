@@ -53,7 +53,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     {
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
-            GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+            GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1, this);
 
             //Make list of neighbor positions
             ValueTuple<List<Cell>, List<Vector2Int>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
@@ -129,7 +129,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     private void OnDepletion(bool harvested)
     {
-        GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
+        GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1, this);
         Debug.Log($"{gameObject.name} has been Depleted.");
 
         //Setting this to 0 so it wont show up in Nearby Nodes check. (When dragon destroys node, the node was appearing in the FindNearbyNodes check)

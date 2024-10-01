@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class GridCellOccupantUtil
 {
-    public static void SetOccupant(GameObject obj, bool isOccupied, int width, int height)
+    
+    public static void SetOccupant(GameObject obj, bool isOccupied, int width, int height, ResourceNode resourceNode = null)
     {
         //Get the bottom left cell.
         Vector3 m_bottomLeftCell = obj.transform.position;
@@ -32,8 +33,11 @@ public class GridCellOccupantUtil
                 cell.UpdateOccupancyDisplay(isOccupied);
 
                 //Handle Tile Map update
-                GridManager.Instance.ToggleTileMap(new Vector3Int(cell.m_cellPos.x, cell.m_cellPos.y, 0), isOccupied);
-                //if(!isOccupied){Debug.Log($"Grid Cell unoccupied: {pos} by: {obj.name}");}
+                if (resourceNode != null)
+                {
+                    GridManager.Instance.ToggleTileMap(new Vector3Int(cell.m_cellPos.x, cell.m_cellPos.y, 0), isOccupied);
+                    cell.m_cellResourceNode = resourceNode;
+                }
             }
         }
     }

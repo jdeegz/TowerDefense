@@ -218,7 +218,7 @@ public class UITooltipController : MonoBehaviour
 
                 break;
             case Selectable.SelectedObjectType.Ruin:
-                RuinTooltipData ruinData = hoveredObj.GetComponent<RuinController>().GetTooltipData();
+                RuinTooltipData ruinData = hoveredObj.GetComponent<Ruin>().GetTooltipData();
                 m_objectNameString = ruinData.m_ruinName;
                 m_objectDescriptionString = ruinData.m_ruinDescription;
                 m_objectDetailsString = ruinData.m_ruinDetails;

@@ -194,7 +194,7 @@ public class UICombatView : MonoBehaviour
             m_stoneBankDisplay.localScale = Vector3.one;
         }
 
-        m_stoneBankLabel.SetText(total.ToString());
+        m_stoneBankLabel.SetText($"{total}<sprite name=\"ResourceStone\">");
         m_stoneBankShake = m_stoneBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_stoneBankShake.Play();
     }

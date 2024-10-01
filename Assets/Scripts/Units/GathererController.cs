@@ -119,7 +119,7 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    public void RequestIncrementGathererLevel(int i)
+    /*public void RequestIncrementGathererLevel(int i)
     {
         //If the ruin has no power up to give, get outta here.
         if (!m_curRuin.RequestPowerUp()) return;
@@ -127,7 +127,7 @@ public class GathererController : MonoBehaviour
         IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
         m_gathererLevel += i;
         RequestPlayAudio(m_gathererData.m_levelUpClip, m_audioSource);
-    }
+    }*/
 
     void Start()
     {
@@ -238,7 +238,7 @@ public class GathererController : MonoBehaviour
                 }
 
                 // Request the level up.
-                RequestIncrementGathererLevel(1);
+                //RequestIncrementGathererLevel(1);
             }
 
             return;
@@ -454,7 +454,7 @@ public class GathererController : MonoBehaviour
             }
 
             //Request the level up.
-            RequestIncrementGathererLevel(1);
+            //RequestIncrementGathererLevel(1);
         }
         else
         {

@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class RuinController : MonoBehaviour
 {
-    public RuinData m_ruinData;
-    public GameObject m_ruinChargeVisualObj;
-    public GameObject m_ruinIndicatorObj;
-    public GameObject m_ruinDiscoveredObj;
+    public GameObject m_ruinIndicatorRoot;
+    public GameObject m_ruinDiscoveredRoot;
     public LayerMask m_resourceNodeLayerMask;
 
     public int m_ruinWeight = 1;
@@ -21,9 +20,6 @@ public class RuinController : MonoBehaviour
         Activated, // Differs per type
     }
     
-    private AudioSource m_audioSource;
-    private bool m_ruinIsCharged;
-
     private List<Vector3> m_validPositionsForIndicators;
     private List<Vector3> m_cornerPositions = new List<Vector3>
     {
@@ -33,49 +29,15 @@ public class RuinController : MonoBehaviour
         new Vector3(0.5f, 0, -0.5f) //NW
     };
 
-    /*void Start()
-    {
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-        GridManager.Instance.RefreshGrid();
-        m_ruinIsCharged = true;
-        m_ruinChargeVisualObj.SetActive(true);
-        m_audioSource = GetComponent<AudioSource>();
-        m_audioSource.PlayOneShot(m_ruinData.m_discoveredAudioClip);
-
-        m_audioSource.clip = m_ruinData.m_unclaimedAudioClip;
-        m_audioSource.Play();
-    }*/
+    private Cell m_ruinCell;
+    private GameObject m_indicatorObj;
+    private Ruin m_ruinObj;
 
     private void UpdateRuinState(RuinState newState)
     {
         m_ruinState = newState;
 
         Debug.Log($"{gameObject.name}'s Ruin State is now {m_ruinState}");
-    }
-
-    public bool RequestPowerUp()
-    {
-        if (m_ruinIsCharged)
-        {
-            m_audioSource.Stop();
-            m_ruinChargeVisualObj.SetActive(false);
-            m_ruinIsCharged = false;
-            m_audioSource.PlayOneShot(m_ruinData.m_chargeConsumedAudioClip);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public RuinTooltipData GetTooltipData()
-    {
-        RuinTooltipData data = new RuinTooltipData();
-        data.m_ruinName = m_ruinData.m_ruinName;
-        data.m_ruinDescription = m_ruinData.m_ruinDescription;
-        data.m_ruinDetails = m_ruinIsCharged ? "Gatherer Level-up Available." : "Level-up Consumed.";
-        return data;
     }
 
     public List<Vector3> GetValidRuinCorners()
@@ -114,18 +76,51 @@ public class RuinController : MonoBehaviour
         Debug.Log($"Choosing the corner of {m_validPositionsForIndicators[i]} to place Indicator.");
         GameObject indicatorObj = ResourceManager.Instance.m_resourceManagerData.m_ruinIndicatorObj;
         Vector3 indicatorPos = m_validPositionsForIndicators[i];
-        ObjectPoolManager.SpawnObject(indicatorObj, indicatorPos, Quaternion.identity, m_ruinIndicatorObj.transform, ObjectPoolManager.PoolType.GameObject);
+        m_indicatorObj = ObjectPoolManager.SpawnObject(indicatorObj, indicatorPos, Quaternion.identity, m_ruinIndicatorRoot.transform, ObjectPoolManager.PoolType.GameObject);
         
         // Get the cell the ruin is on. Subscribe to the OnDepleted event of the resource node on the cell.
-        Cell ruinCell = Util.GetCellFrom3DPos(transform.position);
-        
-        
+        m_ruinCell = Util.GetCellFrom3DPos(transform.position);
+        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion += ResourceNodeDepleted;
+        ResourceManager.OnAllRuinsDiscovered += AllRuinsDiscovered;
     }
-}
 
-public class RuinTooltipData
-{
-    public string m_ruinName;
-    public string m_ruinDescription;
-    public string m_ruinDetails;
+    private void AllRuinsDiscovered()
+    {
+        if (m_ruinState != RuinState.Indicated)
+        {
+            return;
+        }
+        
+        UpdateRuinState(RuinState.Idle);
+        ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
+        m_indicatorObj = null;
+        
+        ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
+        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
+    }
+
+    private void ResourceNodeDepleted(ResourceNode obj)
+    {
+        // We've discovered the ruin.
+        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
+        UpdateRuinState(RuinState.Discovered);
+
+        GameObject ruinObj = ObjectPoolManager.SpawnObject(ResourceManager.Instance.RuinDiscovered(), transform.position, Quaternion.identity, m_ruinDiscoveredRoot.transform, ObjectPoolManager.PoolType.GameObject);
+        m_ruinObj = ruinObj.GetComponent<Ruin>();
+        
+        ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
+        m_indicatorObj = null;
+        
+        ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
+    }
+
+    void OnDestroy()
+    {
+        if (m_ruinCell != null)
+        {
+            m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
+        }
+        
+        ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
+    }
 }

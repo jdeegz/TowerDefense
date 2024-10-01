@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "RuinData", menuName = "ScriptableObjects/RuinData")]
 public class RuinData : ScriptableObject
 {
     [Header("Info")]
@@ -15,3 +14,7 @@ public class RuinData : ScriptableObject
     public AudioClip m_unclaimedAudioClip;
     public AudioClip m_chargeConsumedAudioClip;
 }
+
+
+
+

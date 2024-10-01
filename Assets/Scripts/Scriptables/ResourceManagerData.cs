@@ -19,6 +19,7 @@ public class ResourceManagerData : ScriptableObject
 
     [Header("Ruin Objects")]
     public GameObject m_ruinIndicatorObj;
-    public GameObject m_ruinWellObj;
     public GameObject m_ruinShrineObj;
+    public GameObject m_ruinWellObj;
+    public int m_ruinWellFactor = 3; // Every Nth discovered ruin will be a well.
 }

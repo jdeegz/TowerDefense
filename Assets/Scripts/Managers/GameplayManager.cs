@@ -199,7 +199,7 @@ public class GameplayManager : MonoBehaviour
                 if (!string.IsNullOrEmpty(cutsceneName))
                 {
                     Debug.Log($"Cutscene named: {cutsceneName} found for this wave.");
-                    
+
                     UpdateGameplayState(GameplayState.CutScene);
                     OnCutSceneEnd += ResumeSpawnWave;
                     GameManager.Instance.RequestAdditiveSceneLoad(cutsceneName);
@@ -338,6 +338,14 @@ public class GameplayManager : MonoBehaviour
                 OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                 m_hoveredSelectable = null;
             }
+        }
+    }
+
+    public void DeselectObject(Selectable selectedObj)
+    {
+        if (m_curSelectable == selectedObj)
+        {
+            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
         }
     }
 

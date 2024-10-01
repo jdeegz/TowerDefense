@@ -417,6 +417,7 @@ public class Cell
     public bool m_isOccupied;
     public bool m_isTempOccupied;
     public bool m_isBuildRestricted;
+    public ResourceNode m_cellResourceNode;
     public int m_actorCount;
     public List<string> m_actorsList;
     public int m_cellIndex;

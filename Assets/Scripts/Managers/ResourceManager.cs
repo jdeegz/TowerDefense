@@ -32,6 +32,7 @@ public class ResourceManager : MonoBehaviour
     public List<RuinController> m_ruinsInMission;
     public List<RuinController> m_validRuinsInMission;
     public int m_ruinDiscoveredCount;
+    public static event Action OnAllRuinsDiscovered;
 
     [Header("Tree Resource Node Prefabs")]
     public List<GameObject> m_treePrefabs;
@@ -49,6 +50,7 @@ public class ResourceManager : MonoBehaviour
     private float m_depositTimer;
     private List<WoodDeposit> m_woodDeposits;
     private float m_woodPerMinute;
+    private int m_ruinIndicatedCount;
 
 
     private void Awake()
@@ -213,19 +215,18 @@ public class ResourceManager : MonoBehaviour
         }
 
         // Ask the ResourceManager if there are enough ruins indicated already.
-        int indicated = 0;
         foreach (RuinController ruin in m_ruinsInMission)
         {
             if (ruin.m_ruinState == RuinController.RuinState.Indicated)
             {
-                ++indicated;
-                if (indicated >= m_resourceManagerData.m_maxIndicators)
+                ++m_ruinIndicatedCount;
+                if (m_ruinIndicatedCount >= m_resourceManagerData.m_maxIndicators)
                 {
                     Debug.Log($"We're currently indicating the max number of desired ruins: {m_resourceManagerData.m_maxIndicators}.");
                     return; // We should't indicate any more ruins.
                 }
 
-                Debug.Log($"We're ready to indicate another ruin. Current indicated: {indicated}.");
+                Debug.Log($"We're ready to indicate another ruin. Current indicated: {m_ruinIndicatedCount}.");
             }
         }
 
@@ -276,6 +277,26 @@ public class ResourceManager : MonoBehaviour
     public void StartDepositTimer()
     {
         m_depositTimer = 0f;
+    }
+
+    public GameObject RuinDiscovered()
+    {
+        ++m_ruinDiscoveredCount;
+        --m_ruinIndicatedCount;
+
+        // If this is the last allowed Ruins to be discovered, remove all other indicators present.
+        if (m_ruinDiscoveredCount == m_resourceManagerData.m_maxRuinDiscovered)
+        {
+            OnAllRuinsDiscovered?.Invoke();
+        }
+
+        // Calculate what type of ruin we discovered and send it to the controller.
+        if (m_ruinDiscoveredCount % m_resourceManagerData.m_ruinWellFactor == 0)
+        {
+            return m_resourceManagerData.m_ruinWellObj;
+        }
+        
+        return m_resourceManagerData.m_ruinShrineObj;
     }
 }
 
