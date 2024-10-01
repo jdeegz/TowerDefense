@@ -131,32 +131,6 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     {
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1);
         Debug.Log($"{gameObject.name} has been Depleted.");
-        //If we were harvested, check for Ruins.
-
-        //If we're within the charge range of an obelisk, do not allow a ruin to be placed here.
-        var nodePosition = Util.GetCellFrom3DPos(transform.position).m_cellPos;
-        bool isInObeliskRange = false;
-        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
-        {
-            var obeliskPosition = Util.GetCellFrom3DPos(obelisk.transform.position).m_cellPos;
-            float distance = Vector2.Distance(nodePosition, obeliskPosition);
-
-            if (distance <= obelisk.m_obeliskData.m_obeliskRange)
-            {
-                isInObeliskRange = true;
-                break;
-            }
-        }
-
-        if (!isInObeliskRange)
-        {
-            if (ResourceManager.Instance.RequestRuin())
-            {
-                //We found a ruin!
-                Instantiate(ResourceManager.Instance.m_resourceManagerData.m_ruinObj, transform.position, quaternion.identity, transform.parent);
-            }
-        }
-
 
         //Setting this to 0 so it wont show up in Nearby Nodes check. (When dragon destroys node, the node was appearing in the FindNearbyNodes check)
         m_resourcesRemaining = 0;

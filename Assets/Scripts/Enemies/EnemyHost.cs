@@ -19,7 +19,7 @@ public class EnemyHost : EnemyController
         m_livingThralls = new List<EnemyThrall>();
         foreach (UnitSpawner spawner in spawners)
         {
-            GameObject thrallObj = ObjectPoolManager.SpawnObject(m_enemyThrall.gameObject, spawner.m_spawnPoint.position, quaternion.identity, ObjectPoolManager.PoolType.Enemy);
+            GameObject thrallObj = ObjectPoolManager.SpawnObject(m_enemyThrall.gameObject, spawner.m_spawnPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
             EnemyThrall thrall = thrallObj.GetComponent<EnemyThrall>();
             thrall.SetEnemyData(m_enemyData);
             thrall.SetHost(this);

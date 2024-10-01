@@ -76,7 +76,7 @@ public class TowerBlast : Tower
     private void Fire()
     {
         //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
-        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, ObjectPoolManager.PoolType.Projectile);
+        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.Projectile);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
         if (m_statusEffectData)
         {

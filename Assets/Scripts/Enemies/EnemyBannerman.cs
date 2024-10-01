@@ -53,7 +53,7 @@ public class EnemyBannerman : MonoBehaviour
                 
                 SendEffect();
                 
-                ObjectPoolManager.SpawnObject(m_thresholdEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+                ObjectPoolManager.SpawnObject(m_thresholdEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
                 
                 //Debug.Log($"{threshold} threshold passed. Sending Effect.");
             }
@@ -86,7 +86,7 @@ public class EnemyBannerman : MonoBehaviour
             enemyController.OnHealed(m_healPower, true);
         }
 
-        ObjectPoolManager.SpawnObject(m_healEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_healEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
     private void SendEffect()

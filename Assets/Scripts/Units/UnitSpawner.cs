@@ -247,7 +247,7 @@ public class CreepSpawner
             spawnPoint.x += xOffset;
             spawnPoint.z += zOffset;
 
-            GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_enemy.m_enemyPrefab, spawnPoint, spawnRotation, ObjectPoolManager.PoolType.Enemy);
+            GameObject enemyOjb = ObjectPoolManager.SpawnObject(m_enemy.m_enemyPrefab, spawnPoint, spawnRotation, null, ObjectPoolManager.PoolType.Enemy);
             EnemyController enemyController = enemyOjb.GetComponent<EnemyController>();
             enemyController.SetEnemyData(m_enemy);
             if (m_spawnStatusEffect != null) enemyController.ApplyEffect(m_spawnStatusEffect);

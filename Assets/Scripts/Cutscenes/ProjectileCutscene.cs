@@ -38,7 +38,7 @@ public class ProjectileCutscene : Projectile
         {
             Debug.Log($"Collided with a shield.");
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
             CutsceneRemoveProjectile();
         }
 

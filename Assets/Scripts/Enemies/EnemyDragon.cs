@@ -282,7 +282,7 @@ public class EnemyDragon : EnemyController
 
     private void HandleAttack()
     {
-        ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation);
+        ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation, null);
     }
 
     public void Update()

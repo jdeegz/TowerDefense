@@ -57,7 +57,7 @@ public class BossSequenceController : MonoBehaviour
     {
         GameplayManager.OnCutSceneEnd -= SpawnBoss;
         GameplayManager.Instance.m_activeBossSequenceController = this;
-        GameObject bossObj = ObjectPoolManager.SpawnObject(m_bossEnemyController.gameObject, Vector3.zero, quaternion.identity, ObjectPoolManager.PoolType.Enemy);
+        GameObject bossObj = ObjectPoolManager.SpawnObject(m_bossEnemyController.gameObject, Vector3.zero, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
         EnemyController bossController = bossObj.GetComponent<EnemyController>();
         bossController.SetEnemyData(m_bossEnemyController.m_enemyData);
     }

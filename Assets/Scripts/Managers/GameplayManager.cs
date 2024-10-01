@@ -972,7 +972,7 @@ public class GameplayManager : MonoBehaviour
         // Calculate the rotation angle to make the new object face away from the target.
         float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
 
-        GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, ObjectPoolManager.PoolType.Tower);
+        GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, null, ObjectPoolManager.PoolType.Tower);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
@@ -1098,7 +1098,7 @@ public class GameplayManager : MonoBehaviour
         oldTower.RemoveTower();
 
         //Place new tower
-        GameObject newTowerObj = ObjectPoolManager.SpawnObject(newTowerData.m_prefab, pos, Quaternion.identity, ObjectPoolManager.PoolType.Tower);
+        GameObject newTowerObj = ObjectPoolManager.SpawnObject(newTowerData.m_prefab, pos, Quaternion.identity, null, ObjectPoolManager.PoolType.Tower);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.SetUpgradeData(towerUpgradeData);
         newTower.SetupTower();

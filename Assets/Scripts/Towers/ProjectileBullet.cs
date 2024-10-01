@@ -77,7 +77,7 @@ public class ProjectileBullet : Projectile
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
             RemoveProjectile();
         }
 

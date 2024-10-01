@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu (fileName = "ResourceManagerData", menuName = "ScriptableObjects/ResourceManagerData")]
 public class ResourceManagerData : ScriptableObject
@@ -11,8 +12,13 @@ public class ResourceManagerData : ScriptableObject
     public int m_startingWood;
     
     [Header("Ruin Data")]
-    public GameObject m_ruinObj;
-    public int m_totalRuinsPossible = 4; //Total number of ruins possible in this mission.
-    public int m_ruinsChance = 1; //1 in Chance of discovering a ruin on depletion.
-    public int m_minDepletions = 0; //Number of depletions needed before ruins can be found.
+    public int m_maxRuinDiscovered = 4; //Total number of ruins possible in this mission.
+    public int m_minWaves = 9; // The wave that needs to be met before we start displaying indicators for ruins.
+    public int m_indicatorFrequency = 6; // The wave that needs to be met before we start displaying indicators for ruins.
+    public int m_maxIndicators = 3; // The wave that needs to be met before we start displaying indicators for ruins.
+
+    [Header("Ruin Objects")]
+    public GameObject m_ruinIndicatorObj;
+    public GameObject m_ruinWellObj;
+    public GameObject m_ruinShrineObj;
 }

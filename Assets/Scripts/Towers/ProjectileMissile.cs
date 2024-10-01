@@ -76,7 +76,7 @@ public class ProjectileMissile : Projectile
     void DealDamage()
     {
         //Spawn VFX
-        ObjectPoolManager.SpawnObject(m_impactEffect, transform.position, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_impactEffect, transform.position, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), null, ObjectPoolManager.PoolType.ParticleSystem);
 
         //Find affected enemies
         Collider[] hits = Physics.OverlapSphere(m_targetPos, m_impactRadius, m_areaLayerMask.value);
@@ -113,7 +113,7 @@ public class ProjectileMissile : Projectile
 
             EnemyController enemyHit = col.GetComponent<EnemyController>();
             enemyHit.OnTakeDamage(m_projectileDamage);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, ObjectPoolManager.PoolType.ParticleSystem);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
 
             //Apply Status Effect
             if (m_statusEffect != null)
@@ -133,7 +133,7 @@ public class ProjectileMissile : Projectile
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, ObjectPoolManager.PoolType.ParticleSystem);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
             DealDamage();
             RemoveProjectile();
         }

@@ -77,7 +77,7 @@ public class TowerArc : Tower
             m_timeUntilSecondaryFire = 0f;
 
             //Spawn VFX
-            ObjectPoolManager.SpawnObject(m_towerData.m_secondaryProjectilePrefab, transform.position, Quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+            ObjectPoolManager.SpawnObject(m_towerData.m_secondaryProjectilePrefab, transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
             Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_secondaryfireRange, m_layerMask.value);
 
             //Find enemies and deal damage

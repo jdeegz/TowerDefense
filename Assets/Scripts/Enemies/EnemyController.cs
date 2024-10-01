@@ -337,7 +337,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         {
             if (m_deathVFX)
             {
-                ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+                ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
             }
 
             m_animator.SetTrigger("IsDead");
@@ -435,7 +435,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 //Instantiate a soul, and set its properties.
                 m_obeliskData = m_closestObelisk.m_obeliskData;
                 //GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_swarmMemberTarget.position, quaternion.identity);
-                GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+                GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
                 obeliskSoul.SetupSoul(m_closestObelisk.m_targetPoint.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
             }
@@ -602,8 +602,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
             case StatusEffectData.EffectType.DecreaseMoveSpeed:
                 if (!m_decreaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
-                    m_decreaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                    m_decreaseMoveSpeedVFXOjb.transform.SetParent(transform);
+                    m_decreaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                    
                     statusEffectSource = m_decreaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
@@ -615,8 +615,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
             case StatusEffectData.EffectType.IncreaseMoveSpeed:
                 if (!m_increaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
-                    m_increaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                    m_increaseMoveSpeedVFXOjb.transform.SetParent(transform);
+                    m_increaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                    
                     statusEffectSource = m_increaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
@@ -628,8 +628,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
             case StatusEffectData.EffectType.DecreaseHealth:
                 if (!m_decreaseHealthVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
-                    m_decreaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                    m_decreaseHealthVFXOjb.transform.SetParent(transform);
+                    m_decreaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                    
                     statusEffectSource = m_decreaseHealthVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
@@ -641,8 +641,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
             case StatusEffectData.EffectType.IncreaseHealth:
                 if (!m_increaseHealthVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
-                    m_increaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity);
-                    m_increaseHealthVFXOjb.transform.SetParent(transform);
+                    m_increaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
+                    
                     statusEffectSource = m_increaseHealthVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {

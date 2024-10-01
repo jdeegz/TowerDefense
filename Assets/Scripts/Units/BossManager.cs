@@ -23,7 +23,7 @@ public class BossManager : MonoBehaviour
         if (newState == GameplayManager.GameplayState.BossWave)
         {
             //Spawn the boss.  
-            ObjectPoolManager.SpawnObject(m_bossSequenceControllers[m_bossIndex].gameObject, Vector3.zero, quaternion.identity, ObjectPoolManager.PoolType.Enemy);
+            ObjectPoolManager.SpawnObject(m_bossSequenceControllers[m_bossIndex].gameObject, Vector3.zero, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
             ++m_bossIndex;
 
             if (m_bossIndex == m_bossSequenceControllers.Count)

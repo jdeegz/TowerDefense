@@ -183,7 +183,7 @@ public abstract class Tower : MonoBehaviour
         m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
 
         //VFX
-        ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
     //Fired via a keyframe in Animation.
@@ -191,7 +191,7 @@ public abstract class Tower : MonoBehaviour
     {
         if (!m_towerData.m_muzzleFlashPrefab) return;
 
-        ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
     
     public void OnDestroy()

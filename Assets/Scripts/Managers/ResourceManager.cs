@@ -26,25 +26,30 @@ public class ResourceManager : MonoBehaviour
     public static event Action<float> UpdateWoodRate;
     public static event Action<int, int> UpdateStoneBank;
 
-    [Header("Ruins Data")]
+    [Header("RequestRuinIndicator Data")]
     public ResourceManagerData m_resourceManagerData;
+
+    public List<RuinController> m_ruinsInMission;
+    public List<RuinController> m_validRuinsInMission;
+    public int m_ruinDiscoveredCount;
 
     [Header("Tree Resource Node Prefabs")]
     public List<GameObject> m_treePrefabs;
+
     private List<ResourceNode> m_treesInScene;
-    
+
     private int m_badLuckChargeCounter;
     private int m_foundRuinCounter;
     private int m_depletionCounter;
 
     //each time wood is deposited, add quantity and timestamp to a list.
-    
+
     //When a request to update the gpm display, collect all of the items in the list, within the last 60 seconds.
     //Sum the quantities in the list and divide by 60.
     private float m_depositTimer;
     private List<WoodDeposit> m_woodDeposits;
     private float m_woodPerMinute;
-    
+
 
     private void Awake()
     {
@@ -54,6 +59,15 @@ public class ResourceManager : MonoBehaviour
         m_woodBank = 0;
         m_stoneGathererCount = 0;
         m_woodGathererCount = 0;
+        GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+    }
+
+    private void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
+    {
+        if (newState == GameplayManager.GameplayState.Build)
+        {
+            RequestRuinIndicator();
+        }
     }
 
     void Start()
@@ -62,6 +76,7 @@ public class ResourceManager : MonoBehaviour
         UpdateWoodAmount(m_resourceManagerData.m_startingWood);
         UpdateStoneAmount(m_resourceManagerData.m_startingStone);
         m_woodDeposits = new List<WoodDeposit>();
+        m_validRuinsInMission = new List<RuinController>(m_ruinsInMission);
     }
 
     void Update()
@@ -73,7 +88,7 @@ public class ResourceManager : MonoBehaviour
             CalculateWoodRate();
         }
     }
-    
+
     public void UpdateWoodAmount(int amount, GathererController gatherer = null)
     {
         m_woodBank += amount;
@@ -97,8 +112,8 @@ public class ResourceManager : MonoBehaviour
         float factor;
         float firstDepositThisMinute = 0;
         bool minimumTimeMet = false;
-            
-        for (int i = m_woodDeposits.Count -1 ; i >= 0; --i)
+
+        for (int i = m_woodDeposits.Count - 1; i >= 0; --i)
         {
             if (m_woodDeposits[i].m_timeStamp >= currentTime - 60)
             {
@@ -124,10 +139,10 @@ public class ResourceManager : MonoBehaviour
             factor = 60 / currentTime;
             m_woodPerMinute = woodSum * factor;
         }
-        
+
         UpdateWoodRate?.Invoke(m_woodPerMinute);
     }
-    
+
     public void UpdateStoneAmount(int amount)
     {
         m_stoneBank += amount;
@@ -167,30 +182,95 @@ public class ResourceManager : MonoBehaviour
         return m_woodGathererCount;
     }
 
-    public bool RequestRuin()
+    public void RequestRuinIndicator()
     {
-        bool canSpawnRuin = false;
-
-        ++m_depletionCounter;
-        
-        int randomNumber = Random.Range(0, m_resourceManagerData.m_ruinsChance + 1);
-
-        if (m_depletionCounter >= m_resourceManagerData.m_minDepletions && m_foundRuinCounter < m_resourceManagerData.m_totalRuinsPossible)
+        //When a gatherer harvests a resource Node, and when the wave counter increments. Wave should be a target, and reset after indicating a ruin.
+        if (GameplayManager.Instance.m_wave < m_resourceManagerData.m_minWaves)
         {
-            ++m_badLuckChargeCounter;
+            Debug.Log($"Minimum number of waves not yet passed.");
+            return; // Too soon to show a ruin indicator.
+        }
 
-            if (randomNumber == m_resourceManagerData.m_ruinsChance || m_badLuckChargeCounter == m_resourceManagerData.m_ruinsChance)
+        if (GameplayManager.Instance.m_wave != m_resourceManagerData.m_minWaves) // If we're not the min valid wave, check if we're a factor
+        {
+            if (GameplayManager.Instance.m_wave % m_resourceManagerData.m_indicatorFrequency != 0)
             {
-                //We found a ruin!
-                Debug.Log($"We Found a ruin!");
-                m_badLuckChargeCounter = 0;
-                ++m_foundRuinCounter;
+                Debug.Log($"Current wave is not a factor of {m_resourceManagerData.m_indicatorFrequency}.");
+                return; // Need to wait a little longer.
+            }
 
-                canSpawnRuin = true;
+            Debug.Log($"Current wave is a factor of {m_resourceManagerData.m_indicatorFrequency}.");
+        }
+        else
+        {
+            Debug.Log($"Current wave is the Minimum wave.");
+        }
+
+        if (m_validRuinsInMission.Count == 0)
+        {
+            Debug.Log($"We're out of valid Ruins to indicate.");
+            return;
+        }
+
+        // Ask the ResourceManager if there are enough ruins indicated already.
+        int indicated = 0;
+        foreach (RuinController ruin in m_ruinsInMission)
+        {
+            if (ruin.m_ruinState == RuinController.RuinState.Indicated)
+            {
+                ++indicated;
+                if (indicated >= m_resourceManagerData.m_maxIndicators)
+                {
+                    Debug.Log($"We're currently indicating the max number of desired ruins: {m_resourceManagerData.m_maxIndicators}.");
+                    return; // We should't indicate any more ruins.
+                }
+
+                Debug.Log($"We're ready to indicate another ruin. Current indicated: {indicated}.");
             }
         }
-        
-        return canSpawnRuin;
+
+        // Validate the list of ruins. Has the tree on their cell been harvested? Does the ruin have 3 neighbor trees?
+        List<RuinController> invalidRuins = new List<RuinController>();
+        int weightSum = 0;
+
+        Debug.Log($"Checking the Valid Ruins list for Invalid Ruins.");
+        for (int i = 0; i < m_validRuinsInMission.Count; ++i) // Loop through ruins, identifying if they have at least one good corner, else add to invalid list and remove.
+        {
+            List<Vector3> validPositionsForIndicators = m_validRuinsInMission[i].CheckValidRuinCorners();
+
+            if (validPositionsForIndicators.Count == 0)
+            {
+                invalidRuins.Add(m_validRuinsInMission[i]);
+            }
+            else
+            {
+                weightSum += m_validRuinsInMission[i].m_ruinWeight;
+            }
+        }
+
+        foreach (RuinController ruinController in invalidRuins) // Trim the invalid ruins from our list so we dont keep operating on it.
+        {
+            Debug.Log($"{ruinController.gameObject.name} at {ruinController.transform.position} removed from Valid RequestRuinIndicator list.");
+            m_validRuinsInMission.Remove(ruinController);
+        }
+
+        int chosenWeight = Random.Range(0, weightSum);
+        Debug.Log($"Weighting info( Sum: {weightSum}, Chosen: {chosenWeight}, Valid Ruin Count: {m_validRuinsInMission.Count}");
+
+        int lastTotalWeight = 0;
+        for (int i = 0; i < m_validRuinsInMission.Count; ++i)
+        {
+            if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
+            {
+                // This is the node we have chosen.
+                Debug.Log($"{m_validRuinsInMission[i]} at {m_validRuinsInMission[i].transform.position} Chosen.");
+                m_validRuinsInMission[i].IndicateThisRuin();
+                m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
+                break;
+            }
+
+            lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
+        }
     }
 
     public void StartDepositTimer()

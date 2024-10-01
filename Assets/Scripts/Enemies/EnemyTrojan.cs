@@ -23,6 +23,6 @@ public class EnemyTrojan : EnemyController
     {
         Vector3 spawnPos = new Vector3(transform.position.x, 0, transform.position.z);
         Quaternion spawnRot = Quaternion.LookRotation(transform.forward);
-        ObjectPoolManager.SpawnObject(m_enemyData.m_trojanSpawner, spawnPos, spawnRot, ObjectPoolManager.PoolType.Enemy);
+        ObjectPoolManager.SpawnObject(m_enemyData.m_trojanSpawner, spawnPos, spawnRot, null, ObjectPoolManager.PoolType.Enemy);
     }
 }

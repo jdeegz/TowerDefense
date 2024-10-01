@@ -84,7 +84,7 @@ public class ObjectPoolManager : MonoBehaviour
         m_expiredOrphanList.Clear();
     }
 
-    public static GameObject SpawnObject(GameObject objectToSpawn, Vector3 spawnPosition, Quaternion spawnRotation, PoolType poolType = PoolType.None)
+    public static GameObject SpawnObject(GameObject objectToSpawn, Vector3 spawnPosition, Quaternion spawnRotation, Transform parent, PoolType poolType = PoolType.None)
     {
         if (Instance == null) return null;
 
@@ -104,7 +104,8 @@ public class ObjectPoolManager : MonoBehaviour
 
         if (spawnableObj == null)
         {
-            GameObject parentObject = SetParentObject(poolType);
+            GameObject parentObject = parent == null ? SetParentObject(poolType) : parent.gameObject;
+            
             spawnableObj = Instantiate(objectToSpawn, spawnPosition, spawnRotation);
 
             if (parentObject != null)

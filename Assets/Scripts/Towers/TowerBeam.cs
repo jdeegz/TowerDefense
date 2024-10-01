@@ -94,7 +94,7 @@ public class TowerBeam : Tower
     void StartBeam()
     {
         StopBeam(); //Will stop any active beams.
-        m_activeBeam = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, Quaternion.identity, ObjectPoolManager.PoolType.Projectile).GetComponent<ProjectileBeam>();
+        m_activeBeam = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.Projectile).GetComponent<ProjectileBeam>();
         m_activeBeam.StartBeam(m_curTarget.m_targetPoint, m_muzzlePoint);
     }
 
