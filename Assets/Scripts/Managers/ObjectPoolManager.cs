@@ -101,17 +101,11 @@ public class ObjectPoolManager : MonoBehaviour
 
         //check for inactive obj in pool
         GameObject spawnableObj = pool.m_inactiveObjects.FirstOrDefault();
+        GameObject parentObject = parent == null ? SetParentObject(poolType) : parent.gameObject;
 
         if (spawnableObj == null)
         {
-            GameObject parentObject = parent == null ? SetParentObject(poolType) : parent.gameObject;
-            
             spawnableObj = Instantiate(objectToSpawn, spawnPosition, spawnRotation);
-
-            if (parentObject != null)
-            {
-                spawnableObj.transform.SetParent(parentObject.transform);
-            }
         }
         else
         {
@@ -120,6 +114,8 @@ public class ObjectPoolManager : MonoBehaviour
             spawnableObj.transform.rotation = spawnRotation;
             spawnableObj.SetActive(true);
         }
+        
+        spawnableObj.transform.SetParent(parentObject.transform);
 
         return spawnableObj;
     }

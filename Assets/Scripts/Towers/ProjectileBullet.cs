@@ -9,6 +9,7 @@ public class ProjectileBullet : Projectile
     {
         if (!m_isComplete && IsTargetInStoppingDistance())
         {
+            DealDamage();
             RemoveProjectile();
         }
 
@@ -64,18 +65,11 @@ public class ProjectileBullet : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
-        if (/*collision.collider == null && */ m_enemy == null) return;
-        
         if (m_isComplete) return;
         
-        // Also do damage if we hit our target.
-        if (collision.gameObject == m_enemy.gameObject)
+        if (collision.collider.gameObject.layer == m_shieldLayer)
         {
-            DealDamage();
-        }
-        
-        if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
-        {
+            
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
             ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
             RemoveProjectile();

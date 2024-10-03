@@ -15,10 +15,10 @@ public class GathererController : MonoBehaviour
     [SerializeField] private GameObject m_idleVFXParent;
     public GathererTask m_gathererTask;
     public Animator m_animator;
-    [SerializeField] private Vector2Int m_curPos;
-    [SerializeField] private Cell m_curCell;
 
-    [Header("Audio")] [SerializeField] private List<AudioClip> m_woodChopClips;
+    [Header("Audio")]
+    [SerializeField] private List<AudioClip> m_woodChopClips;
+
     private AudioSource m_audioSource;
 
     public enum GathererTask
@@ -33,6 +33,8 @@ public class GathererController : MonoBehaviour
         TravelingToRuin,
     }
 
+    private Vector2Int m_curPos;
+    private Cell m_curCell;
     private bool m_isSelected;
     private bool m_isMoving;
     private int m_resourceCarried;
@@ -149,6 +151,8 @@ public class GathererController : MonoBehaviour
     void Update()
     {
         CheckHarvestPointAccessible();
+
+        UpdateStatusEffects();
     }
 
     void FixedUpdate()
@@ -275,7 +279,7 @@ public class GathererController : MonoBehaviour
                 ++m_gathererPathProgress;
             }
         }
-        
+
         //Get the position of the next cell.
         if (m_gathererPathProgress < m_gathererPath.Count && m_gathererPathProgress >= 0) //Getting index out of bounds, so wrapping this position in a check.
         {
@@ -296,7 +300,7 @@ public class GathererController : MonoBehaviour
 
 
         //Move forward.
-        float cumulativeMoveSpeed = 1f * Time.deltaTime;
+        float cumulativeMoveSpeed = 1f * m_totalSpeedBoost * Time.deltaTime;
 
         // Calculate the decelerated move speed based on the rotation
         float deceleratedMoveSpeed = Mathf.Lerp(cumulativeMoveSpeed * .2f, cumulativeMoveSpeed, rotationAmount);
@@ -589,11 +593,20 @@ public class GathererController : MonoBehaviour
                     //If we dont have a node, find a nearby node.
                     //Get Neighbor Cells.
                     Debug.Log($"{m_debugIndex += 1}. Finding NEW nearby {m_curHarvestNodePos}.");
-                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 3f));
+
+                    // Look for adjacent nodes. We prioritize nodes next to expired node.
+                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 1f));
                     if (vars.Item1 == null)
                     {
-                        UpdateTask(GathererTask.Idling);
-                        break;
+                        Debug.Log($"{m_debugIndex += 1}. Searching for node further away from. {m_curHarvestNodePos}.");
+                        // Look for nodes an extra cell away.
+                        vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 3f));
+                        if (vars.Item1 == null)
+                        {
+                            Debug.Log($"{m_debugIndex += 1}. Found no nodes within 1.5 units of {m_curHarvestNodePos}.");
+                            UpdateTask(GathererTask.Idling);
+                            break;
+                        }
                     }
 
                     SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
@@ -898,13 +911,13 @@ public class GathererController : MonoBehaviour
     private IEnumerator Harvesting()
     {
         StartHarvesting();
-        yield return new WaitForSeconds(m_harvestDuration);
+        yield return new WaitForSeconds(m_harvestDuration * m_totalDurationBoost);
         CompletedHarvest();
     }
 
     private IEnumerator Storing()
     {
-        yield return new WaitForSeconds(m_storingDuration);
+        yield return new WaitForSeconds(m_storingDuration * m_totalDurationBoost);
 
         int storageAmount;
         int random = Random.Range(0, 2);
@@ -995,6 +1008,74 @@ public class GathererController : MonoBehaviour
         return closestGameObject;
     }
 
+    protected List<ShrineRuinEffect> m_shrineRuinEffects = new List<ShrineRuinEffect>();
+    protected List<ShrineRuinEffect> m_newshrineRuinEffects = new List<ShrineRuinEffect>();
+    protected List<ShrineRuinEffect> m_expiredshrineRuinEffects = new List<ShrineRuinEffect>();
+    private int m_activeSpeedBoostCount;
+    private float m_boostValue;
+    private float m_totalDurationBoost = 1;
+    private float m_totalSpeedBoost = 1;
+
+    //Apply the Effect
+    public virtual void ApplyEffect(ShrineRuinEffect ruinEffect)
+    {
+        m_newshrineRuinEffects.Add(ruinEffect);
+    }
+
+    //Update the Effect
+    public void UpdateStatusEffects()
+    {
+        //Remove Expired Effects
+        if (m_expiredshrineRuinEffects.Count > 0)
+        {
+            foreach (ShrineRuinEffect expiredshrineRuinEffect in m_expiredshrineRuinEffects)
+            {
+                --m_activeSpeedBoostCount;
+                m_shrineRuinEffects.Remove(expiredshrineRuinEffect);
+            }
+
+            m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, m_activeSpeedBoostCount));
+            m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, m_activeSpeedBoostCount));
+            m_expiredshrineRuinEffects.Clear();
+        }
+
+        //Update each Effect.
+        foreach (ShrineRuinEffect activeShrineRuinEffect in m_shrineRuinEffects)
+        {
+            HandleEffect(activeShrineRuinEffect);
+        }
+
+        //Add New Effects if the sender is unique (Does not already have this effect)
+        if (m_newshrineRuinEffects.Count > 0)
+        {
+            foreach (ShrineRuinEffect newshrineRuinEffect in m_newshrineRuinEffects)
+            {
+                m_shrineRuinEffects.Add(newshrineRuinEffect);
+                ++m_activeSpeedBoostCount;
+                m_boostValue = newshrineRuinEffect.m_effectSpeedBoost;
+            }
+
+            m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, m_activeSpeedBoostCount));
+            m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, m_activeSpeedBoostCount));
+            m_newshrineRuinEffects.Clear();
+        }
+    }
+
+    //Handle the Effect
+    public void HandleEffect(ShrineRuinEffect ruinEffect)
+    {
+        ruinEffect.m_elapsedTime += Time.deltaTime;
+        if (ruinEffect.m_elapsedTime > ruinEffect.m_lifeTime)
+        {
+            RemoveEffect(ruinEffect);
+        }
+    }
+
+    public void RemoveEffect(ShrineRuinEffect ruinEffect)
+    {
+        m_expiredshrineRuinEffects.Add(ruinEffect);
+    }
+
     public GathererTooltipData GetTooltipData()
     {
         GathererTooltipData data = new GathererTooltipData();
@@ -1018,4 +1099,12 @@ public class GathererTooltipData
     public float m_storingDuration;
     public int m_carryCapacity;
     public int m_gathererLevel;
+}
+
+[Serializable]
+public class ShrineRuinEffect
+{
+    public float m_effectSpeedBoost = 0.1f;
+    public float m_elapsedTime;
+    public float m_lifeTime = 40f;
 }

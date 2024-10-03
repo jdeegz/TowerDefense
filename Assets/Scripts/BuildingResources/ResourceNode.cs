@@ -136,7 +136,6 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         m_resourcesRemaining = 0;
 
         OnResourceNodeDepletion?.Invoke(this);
-        GridManager.Instance.RefreshGrid();
         Destroy(gameObject);
     }
 

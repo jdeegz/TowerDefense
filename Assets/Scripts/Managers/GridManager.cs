@@ -45,9 +45,9 @@ public class GridManager : MonoBehaviour
         Instance = this;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
-        GameplayManager.OnTowerBuild += TowerBuilt;
+        //GameplayManager.OnTowerBuild += TowerBuilt;
         GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
-        GameplayManager.OnTowerSell += RefreshGrid;
+        //GameplayManager.OnTowerSell += RefreshGrid;
         m_gridVisualizerObj.SetActive(false);
     }
 
@@ -55,9 +55,9 @@ public class GridManager : MonoBehaviour
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
-        GameplayManager.OnTowerBuild -= TowerBuilt;
+        //GameplayManager.OnTowerBuild -= TowerBuilt;
         GameplayManager.OnPreconstructedTowerClear -= PreconstructedTowerClear;
-        GameplayManager.OnTowerSell -= RefreshGrid;
+        //GameplayManager.OnTowerSell -= RefreshGrid;
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)

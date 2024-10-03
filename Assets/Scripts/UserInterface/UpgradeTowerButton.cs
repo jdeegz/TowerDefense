@@ -14,6 +14,7 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     [SerializeField] private TextMeshProUGUI m_upgradeCostLabel;
     [SerializeField] private Image m_upgradeImage;
     [SerializeField] private Image m_backgroundImage;
+    [SerializeField] private Image m_iconFrameImage;
     [SerializeField] private Color m_backgroundBaseColor;
     [SerializeField] private Color m_backgroundCannotAffordColor;
     [SerializeField] private UITowerSelectHUD m_parentHUD;
@@ -50,11 +51,13 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         if (m_canAffordWood && m_canAffordStone)
         {
             m_backgroundImage.color = m_backgroundBaseColor;
+            m_iconFrameImage.color = m_backgroundBaseColor;
             m_upgradeCostLabel.color = Color.white;
         }
         else
         {
             m_backgroundImage.color = m_backgroundCannotAffordColor;
+            m_iconFrameImage.color = m_backgroundCannotAffordColor;
             m_upgradeCostLabel.color = Color.red;
         }
     }
@@ -81,7 +84,7 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         string sellText;
         if (m_upgradeStoneValue > 0)
         {
-            sellText = $"{m_upgradeStoneValue}<sprite name=\"ResourceStone\"><br>{m_upgradeStoneValue}<sprite name=\"ResourceWood\">";
+            sellText = $"{m_upgradeStoneValue}<sprite name=\"ResourceStone\"><br>{m_upgradeWoodValue}<sprite name=\"ResourceWood\">";
         }
         else
         {

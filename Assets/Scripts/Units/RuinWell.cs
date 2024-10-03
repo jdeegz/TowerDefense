@@ -18,15 +18,15 @@ public class RuinWell : Ruin
     private AudioSource m_audioSource;
     
     // Setup data
-    void Start()
+    void Awake()
     {
         SetVisuals();
         
-        //GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
         
         m_curCharges = m_data.startingCharge;
         m_maxCharges = m_data.m_maxCharges;
-        m_chargesPerInterval = m_data.m_chargePerInterval;
+        m_chargesPerInterval = m_data.m_chargesPerInterval;
         m_intervalLength = m_data.m_intervalLength;
 
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
@@ -35,9 +35,10 @@ public class RuinWell : Ruin
         m_audioSource = GetComponent<AudioSource>();
         RequestPlayAudio(m_data.m_discoveredAudioClip);
 
-        for (int i = 0; i < m_curCharges; i++)
+        m_lastChargeWave = GameplayManager.Instance.m_wave;
+        for (int i = 1; i <= m_curCharges; i++)
         {
-            m_chargeObjs[i - 1].SetActive(true);
+            m_chargeObjs[i].SetActive(true);
         }
     }
 
@@ -130,8 +131,6 @@ public class RuinWell : Ruin
         
         m_audioSource.PlayOneShot(clip);
     }
-    
-    // Activate full charge indicators
     
     public override RuinTooltipData GetTooltipData()
     {

@@ -94,6 +94,7 @@ public class TowerRay : Tower
 
         if (m_curTarget == null)
         {
+            if (m_beamActive) StopBeam();
             return;
         }
 

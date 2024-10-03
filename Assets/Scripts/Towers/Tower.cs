@@ -68,11 +68,19 @@ public abstract class Tower : MonoBehaviour
         List<EnemyController> targets = new List<EnemyController>();
         for (int i = 0; i < hits.Length; ++i)
         {
-            targets.Add(hits[i].GetComponent<EnemyController>());
+            EnemyController target = hits[i].GetComponent<EnemyController>();
+            if (target.GetCurrentHP() > 0)
+            {
+                targets.Add(target);
+            }
         }
 
         m_curTarget = GetPriorityTarget(targets);
-        m_targetCollider = m_curTarget.GetComponent<Collider>();
+        
+        if (m_curTarget != null)
+        {
+            m_targetCollider = m_curTarget.GetComponent<Collider>(); // Used for Void towers to check hit unit or shield.
+        }
     }
     
     public void RotateTowardsTarget()
@@ -265,9 +273,12 @@ public abstract class Tower : MonoBehaviour
         }
 
         // Don't change targets if the discovered priority target is of the same value as current target.
-        if (m_curTarget != null && priorityTarget.m_enemyData.m_targetPriority == m_curTarget.m_enemyData.m_targetPriority)
+        if (m_curTarget != null && priorityTarget != null)
         {
-            priorityTarget = m_curTarget;
+            if (priorityTarget.m_enemyData.m_targetPriority == m_curTarget.m_enemyData.m_targetPriority)
+            {
+                priorityTarget = m_curTarget;
+            }
         }
 
         return priorityTarget;

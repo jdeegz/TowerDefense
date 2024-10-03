@@ -38,14 +38,12 @@ public class EnemySprinter : EnemyController
                 m_curCell.UpdateActorCount(1, gameObject.name);
             }
             
-            float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-            Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
 
             //Convert saved cell pos from Vector2 to Vector3
             Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
             
             //Most common path
-            m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
+            m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x, 0, m_curCell.m_directionToNextCell.z);
             
             //Clamp saftey net.
             m_maxX = m_curCell.m_cellPos.x + .45f;

@@ -96,7 +96,7 @@ public class ProjectileMissile : Projectile
 
             if (raycastHits.Length == 0)
             {
-                Debug.Log($"Something broke.");
+                //Debug.Log($"No hits.");
                 return;
             }
 
@@ -126,11 +126,9 @@ public class ProjectileMissile : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
-        if (m_enemy == null) return;
-
         if (m_isComplete) return;
 
-        if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
+        if (collision.collider.gameObject.layer == m_shieldLayer)
         {
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
             ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);

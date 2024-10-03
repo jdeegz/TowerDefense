@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using GameUtil;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
@@ -100,9 +101,9 @@ public class TowerCannon : Tower
     void Reload(int i)
     {
         //Make the projectile objects
-        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform);
-        projectileObj.transform.localRotation = Quaternion.identity;
-        projectileObj.transform.position = m_muzzlePoints[i].transform.position;
+        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation, m_muzzlePoints[i].transform, ObjectPoolManager.PoolType.Projectile);
+        /*projectileObj.transform.localRotation = Quaternion.identity;
+        projectileObj.transform.position = m_muzzlePoints[i].transform.position;*/
 
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
 

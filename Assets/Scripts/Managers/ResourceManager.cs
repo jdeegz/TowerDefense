@@ -83,12 +83,12 @@ public class ResourceManager : MonoBehaviour
 
     void Update()
     {
-        m_depositTimer += Time.deltaTime;
+        /*m_depositTimer += Time.deltaTime;
 
         if (m_depositTimer % 60 == 0)
         {
             CalculateWoodRate();
-        }
+        }*/
     }
 
     public void UpdateWoodAmount(int amount, GathererController gatherer = null)
@@ -195,9 +195,9 @@ public class ResourceManager : MonoBehaviour
 
         if (GameplayManager.Instance.m_wave != m_resourceManagerData.m_minWaves) // If we're not the min valid wave, check if we're a factor
         {
-            if (GameplayManager.Instance.m_wave % m_resourceManagerData.m_indicatorFrequency != 0)
+            if ((GameplayManager.Instance.m_wave - m_resourceManagerData.m_minWaves) % m_resourceManagerData.m_indicatorFrequency != 0)
             {
-                Debug.Log($"Current wave is not a factor of {m_resourceManagerData.m_indicatorFrequency}.");
+                Debug.Log($"Current wave ({GameplayManager.Instance.m_wave} - {m_resourceManagerData.m_minWaves}) is not a factor of {m_resourceManagerData.m_indicatorFrequency}.");
                 return; // Need to wait a little longer.
             }
 
@@ -219,7 +219,7 @@ public class ResourceManager : MonoBehaviour
         {
             if (ruin.m_ruinState == RuinController.RuinState.Indicated)
             {
-                ++m_ruinIndicatedCount;
+                //++m_ruinIndicatedCount;
                 if (m_ruinIndicatedCount >= m_resourceManagerData.m_maxIndicators)
                 {
                     Debug.Log($"We're currently indicating the max number of desired ruins: {m_resourceManagerData.m_maxIndicators}.");
@@ -267,6 +267,7 @@ public class ResourceManager : MonoBehaviour
                 Debug.Log($"{m_validRuinsInMission[i]} at {m_validRuinsInMission[i].transform.position} Chosen.");
                 m_validRuinsInMission[i].IndicateThisRuin();
                 m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
+                ++m_ruinIndicatedCount;
                 break;
             }
 
@@ -291,7 +292,7 @@ public class ResourceManager : MonoBehaviour
         }
 
         // Calculate what type of ruin we discovered and send it to the controller.
-        if (m_ruinDiscoveredCount % m_resourceManagerData.m_ruinWellFactor == 0)
+        if (m_ruinDiscoveredCount % m_resourceManagerData.m_ruinWellFactor == 1)
         {
             return m_resourceManagerData.m_ruinWellObj;
         }

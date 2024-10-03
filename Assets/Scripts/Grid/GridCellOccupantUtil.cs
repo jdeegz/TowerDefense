@@ -40,6 +40,11 @@ public class GridCellOccupantUtil
                 }
             }
         }
+
+        if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles)
+        {
+            GridManager.Instance.RefreshGrid();
+        }
     }
 
     public static void SetActor(GameObject obj, int i, int width, int height)

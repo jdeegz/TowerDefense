@@ -12,7 +12,7 @@ public class PlayerDataManager : MonoBehaviour
 
     //private string m_path;
     private string m_persistantPath;
-    private int m_buildNumber = 2; //Increment this to invalidate old save files. Updated June 24th 2024
+    private int m_buildNumber = 3; //Increment this to invalidate old save files. Updated Oct 3rd 2024
 
     //Constructor
     void Awake()

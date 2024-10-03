@@ -489,25 +489,20 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     private Obelisk FindObelisk()
     {
+        float closestDistance = Mathf.Infinity;
         Obelisk closestObelisk = null;
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_obeliskData.m_obeliskRange, m_obeliskData.m_layerMask.value);
-        float closestDistance = 999;
-        int closestIndex = -1;
-        if (hits.Length > 0)
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
         {
-            for (int i = 0; i < hits.Length; ++i)
+            float distance = Vector3.Distance(transform.position, obelisk.transform.position);
+            if (distance > obelisk.m_obeliskData.m_obeliskRange)
             {
-                //If the hit does not have the tag Obelisk, go next.
-                if (!hits[i].CompareTag("Obelisk")) continue;
-
-                //Check position and distance to Obelisk, store the smallest distances.
-                float distance = Vector3.Distance(transform.position, hits[i].transform.position);
-                if (distance <= closestDistance)
-                {
-                    closestIndex = i;
-                    closestDistance = distance;
-                    closestObelisk = hits[closestIndex].transform.GetComponent<Obelisk>();
-                }
+                continue; // Enemy is too far from this obelisk.
+            }
+            
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestObelisk = obelisk;
             }
         }
 
