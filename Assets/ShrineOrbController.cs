@@ -84,7 +84,7 @@ public class ShrineOrbController : MonoBehaviour
         m_ruinShrineParent.ChargeClicked();
         
         // Spawn VFX
-        
+        ObjectPoolManager.SpawnObject(m_claimVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         
         // Play Audio
         RequestPlayAudio(m_claimSounds[Random.Range(0, m_claimSounds.Count)]);

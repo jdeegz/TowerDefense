@@ -513,13 +513,13 @@ public class GathererController : MonoBehaviour
         }
 
         ClearHarvestVars();
-        if (m_curCoroutine != null) //Assumption; if there is an active coroutine, it is Harvesting.
+        if (m_curCoroutine != null) // Assumption; if there is an active coroutine, it is Harvesting.
         {
             StopCoroutine(m_curCoroutine);
             m_curCoroutine = null;
         }
 
-        //Find harvest nodes around the requested resource.
+        // Find harvest nodes around the requested resource.
         for (var i = 0; i < node.m_harvestPoints.Count; i++)
         {
             var harvestPoint = node.m_harvestPoints[i];
@@ -535,10 +535,10 @@ public class GathererController : MonoBehaviour
             }
         }
 
-        //We're not next to the node, we need to find a path to it.
-        //Find and set variables for this script.
+        // We're not next to the node, we need to find a path to it.
+        // Find and set variables for this script.
         ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPointFromObj(requestObj);
-
+        
         //Do we have a path to the node, and is there a valid point to harvest from?
         if (vars.Item1 && vars.Item3 >= 0)
         {
@@ -547,6 +547,11 @@ public class GathererController : MonoBehaviour
             UpdateTask(GathererTask.TravelingToHarvest);
 
             m_curHarvestNode.WasSelected();
+        }
+        else
+        {
+            m_curHarvestNodePos = vars.Item1.transform.position;
+            UpdateTask(GathererTask.FindingHarvestablePoint);
         }
     }
 
@@ -571,7 +576,7 @@ public class GathererController : MonoBehaviour
                     Debug.Log($"{m_debugIndex += 1}. HarvestNode still active. Finding point to harvest from.");
                     ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPointFromObj(m_curHarvestNode.gameObject);
 
-                    //If we're given an index greater equal to or greater than 0, we can harvest this node.
+                    // If we're given an index greater equal to or greater than 0, we can harvest this node.
                     if (vars.Item3 >= 0)
                     {
                         Debug.Log($"{m_debugIndex += 1}. Setting HarvestNode variables (FindingHarvestablePoint)");
@@ -581,17 +586,18 @@ public class GathererController : MonoBehaviour
                         m_curHarvestPointIndex = vars.Item3;
                         //SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                     }
-                    //Else we cannot harvest this node because no points are pathable, so we go to idle.
-                    else
+                    // Else we cannot harvest this node because no points are pathable, so we go to idle.
+                    // Disabling this Oct 4th 2024 because I would like for the gatherer to find a nearby node.
+                    /*else
                     {
                         UpdateTask(GathererTask.Idling);
                         break;
-                    }
+                    }*/
                 }
                 else
                 {
-                    //If we dont have a node, find a nearby node.
-                    //Get Neighbor Cells.
+                    // If we dont have a node, find a nearby node.
+                    // Get Neighbor Cells.
                     Debug.Log($"{m_debugIndex += 1}. Finding NEW nearby {m_curHarvestNodePos}.");
 
                     // Look for adjacent nodes. We prioritize nodes next to expired node.

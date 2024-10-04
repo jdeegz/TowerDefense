@@ -127,7 +127,7 @@ public class UnitSpawner : MonoBehaviour
         //LOOPING WAVE OR CHALLENGING WAVE
         //Boss waves occur every 5 gameplay Waves.
         int challengingWave = gameplayWave % 5;
-        if (challengingWave == 0)
+        if (challengingWave == 0 && m_spawnerWaves.m_challengingWaves.Count > 0)
         {
             int wave = (gameplayWave) % m_spawnerWaves.m_challengingWaves.Count;
             creepWave = m_spawnerWaves.m_challengingWaves[wave];

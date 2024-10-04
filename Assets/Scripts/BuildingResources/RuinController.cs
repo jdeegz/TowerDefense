@@ -76,6 +76,7 @@ public class RuinController : MonoBehaviour
         Debug.Log($"Choosing the corner of {m_validPositionsForIndicators[i]} to place Indicator.");
         GameObject indicatorObj = ResourceManager.Instance.m_resourceManagerData.m_ruinIndicatorObj;
         Vector3 indicatorPos = m_validPositionsForIndicators[i];
+        indicatorPos.y += 1.8f;
         m_indicatorObj = ObjectPoolManager.SpawnObject(indicatorObj, indicatorPos, Quaternion.identity, m_ruinIndicatorRoot.transform, ObjectPoolManager.PoolType.GameObject);
         
         // Get the cell the ruin is on. Subscribe to the OnDepleted event of the resource node on the cell.

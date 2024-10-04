@@ -9,6 +9,7 @@ public class RuinWell : Ruin
     [Header("Temporary Display Objects")]
     public List<GameObject> m_chargeObjs;
     public GameObject m_maxChargePersistantObj;
+    public GameObject m_claimVFX;
     
     private int m_curCharges;
     private int m_maxCharges;
@@ -36,7 +37,7 @@ public class RuinWell : Ruin
         RequestPlayAudio(m_data.m_discoveredAudioClip);
 
         m_lastChargeWave = GameplayManager.Instance.m_wave;
-        for (int i = 1; i <= m_curCharges; i++)
+        for (int i = 0; i < m_curCharges; i++)
         {
             m_chargeObjs[i].SetActive(true);
         }
@@ -115,6 +116,12 @@ public class RuinWell : Ruin
         
         IngameUIController.Instance.SpawnCurrencyAlert(0, m_curCharges, true, transform.position);
         
+        // Spawn VFX
+        foreach (GameObject obj in m_chargeObjs)
+        {
+            ObjectPoolManager.SpawnObject(m_claimVFX, obj.transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        }
+
         // AUDIO
         RequestPlayAudio(m_data.m_chargeConsumedAudioClip);
         
