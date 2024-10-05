@@ -41,7 +41,7 @@ public class GathererController : MonoBehaviour
     private int m_curHarvestPointIndex;
     private Vector3 m_curHarvestNodePos;
     private ResourceNode m_curHarvestNode;
-    private RuinController m_curRuin;
+    private Ruin m_curRuin;
     private Vector2Int m_curHarvestPointPos;
     private List<Vector2Int> m_depositLocations;
     private Coroutine m_curCoroutine;
@@ -113,23 +113,22 @@ public class GathererController : MonoBehaviour
             }
 
             m_depositLocations.AddRange(Util.GetBoxAround3x3Grid(Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_castleController.transform.position)));
-
-            /*foreach (GameObject castleEntrance in GameplayManager.Instance.m_castleController.m_castleEntrancePoints)
-            {
-                m_depositLocations.Add(Util.GetVector2IntFrom3DPos(castleEntrance.transform.position));
-            }*/
         }
     }
 
-    /*public void RequestIncrementGathererLevel(int i)
+    public void RequestIncrementGathererLevel(int i)
     {
         //If the ruin has no power up to give, get outta here.
-        if (!m_curRuin.RequestPowerUp()) return;
+        if (m_curRuin.GetType() != typeof(RuinArtifact)) return;
 
-        IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
-        m_gathererLevel += i;
-        RequestPlayAudio(m_gathererData.m_levelUpClip, m_audioSource);
-    }*/
+        RuinArtifact artifact = m_curRuin as RuinArtifact;
+        if (artifact.CheckForCharge())
+        {
+            IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
+            m_gathererLevel += i;
+            RequestPlayAudio(m_gathererData.m_levelUpClip, m_audioSource);
+        }
+    }
 
     void Start()
     {
@@ -242,7 +241,7 @@ public class GathererController : MonoBehaviour
                 }
 
                 // Request the level up.
-                //RequestIncrementGathererLevel(1);
+                RequestIncrementGathererLevel(1);
             }
 
             return;
@@ -438,7 +437,7 @@ public class GathererController : MonoBehaviour
             m_curCoroutine = null;
         }
 
-        m_curRuin = requestObj.GetComponent<RuinController>();
+        m_curRuin = requestObj.GetComponent<Ruin>();
         //Get a path to the ruin.
         //If the path returned is of length 0, we can activate the ruin, else we travel to it.
         m_gathererPath = GetShortestPathToObj(requestObj);
@@ -458,14 +457,14 @@ public class GathererController : MonoBehaviour
             }
 
             //Request the level up.
-            //RequestIncrementGathererLevel(1);
+            RequestIncrementGathererLevel(1);
         }
         else
         {
             UpdateTask(GathererTask.TravelingToRuin);
         }
 
-        /*//If the current position is within stopping distance of the ruin...
+        //If the current position is within stopping distance of the ruin...
         float stoppingDistance = 1.41f;
         Vector2Int requestObjPos = Util.GetVector2IntFrom3DPos(requestObj.transform.position);
         float currentDistance = Vector2Int.Distance(m_curCell.m_cellPos, requestObjPos);
@@ -497,7 +496,7 @@ public class GathererController : MonoBehaviour
 
             //Request the level up.
             RequestIncrementGathererLevel(1);
-        }*/
+        }
     }
 
     private void RequestedHarvest(GameObject requestObj)
@@ -538,7 +537,7 @@ public class GathererController : MonoBehaviour
         // We're not next to the node, we need to find a path to it.
         // Find and set variables for this script.
         ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPointFromObj(requestObj);
-        
+
         //Do we have a path to the node, and is there a valid point to harvest from?
         if (vars.Item1 && vars.Item3 >= 0)
         {
@@ -925,9 +924,11 @@ public class GathererController : MonoBehaviour
     {
         yield return new WaitForSeconds(m_storingDuration * m_totalDurationBoost);
 
+        // When storing, the gatherer has 33% per additional level to store 1 extra wood.
         int storageAmount;
-        int random = Random.Range(0, 2);
-        storageAmount = m_carryCapacity + ((m_gathererLevel - 1) * random); //Calculate storage based on level. Lvl 1 = 1, Lvl 2 = 1 + 50% * 2
+        int random = Random.Range(0, 100);
+        int bonusAmount = random < (m_gathererLevel - 1) * 33 ? 1 : 0; //Change 33 if we want different percentage change per level.
+        storageAmount = m_carryCapacity + bonusAmount;
         switch (m_gathererData.m_type)
         {
             case ResourceManager.ResourceType.Wood:
@@ -1022,13 +1023,13 @@ public class GathererController : MonoBehaviour
     private float m_totalDurationBoost = 1;
     private float m_totalSpeedBoost = 1;
 
-    //Apply the Effect
+//Apply the Effect
     public virtual void ApplyEffect(ShrineRuinEffect ruinEffect)
     {
         m_newshrineRuinEffects.Add(ruinEffect);
     }
 
-    //Update the Effect
+//Update the Effect
     public void UpdateStatusEffects()
     {
         //Remove Expired Effects
@@ -1067,7 +1068,7 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    //Handle the Effect
+//Handle the Effect
     public void HandleEffect(ShrineRuinEffect ruinEffect)
     {
         ruinEffect.m_elapsedTime += Time.deltaTime;
@@ -1084,14 +1085,16 @@ public class GathererController : MonoBehaviour
 
     public GathererTooltipData GetTooltipData()
     {
-        GathererTooltipData data = new GathererTooltipData();
-        data.m_gathererType = m_gathererData.m_type;
-        data.m_gathererName = gameObject.name;
-        data.m_gathererDescription = m_gathererData.m_gathererDescription;
-        data.m_harvestDuration = m_harvestDuration;
-        data.m_storingDuration = m_storingDuration;
-        data.m_carryCapacity = m_carryCapacity;
-        data.m_gathererLevel = m_gathererLevel;
+        GathererTooltipData data = new GathererTooltipData
+        {
+            m_gathererType = m_gathererData.m_type,
+            m_gathererName = gameObject.name,
+            m_gathererDescription = m_gathererData.m_gathererDescription,
+            m_harvestDuration = m_harvestDuration,
+            m_storingDuration = m_storingDuration,
+            m_carryCapacity = m_carryCapacity,
+            m_gathererLevel = m_gathererLevel
+        };
         return data;
     }
 }

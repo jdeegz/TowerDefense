@@ -6,7 +6,7 @@ public class RuinWell : Ruin
 {
     public WellRuinData m_data;
 
-    [Header("Temporary Display Objects")]
+    [Header("Visual Objects")]
     public List<GameObject> m_chargeObjs;
     public GameObject m_maxChargePersistantObj;
     public GameObject m_claimVFX;
@@ -16,16 +16,14 @@ public class RuinWell : Ruin
     private int m_chargesPerInterval;
     private int m_lastChargeWave;
     private int m_intervalLength;
-    private AudioSource m_audioSource;
     
     // Setup data
-    void Awake()
+    public override void Awake()
     {
+        base.Awake();
         SetVisuals();
         
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-        
-        m_curCharges = m_data.startingCharge;
+        m_curCharges = m_data.m_startingCharge;
         m_maxCharges = m_data.m_maxCharges;
         m_chargesPerInterval = m_data.m_chargesPerInterval;
         m_intervalLength = m_data.m_intervalLength;
@@ -33,7 +31,6 @@ public class RuinWell : Ruin
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
 
-        m_audioSource = GetComponent<AudioSource>();
         RequestPlayAudio(m_data.m_discoveredAudioClip);
 
         m_lastChargeWave = GameplayManager.Instance.m_wave;
@@ -130,13 +127,6 @@ public class RuinWell : Ruin
         m_curCharges = 0;
 
         GameplayManager.Instance.DeselectObject(gameObject.GetComponent<Selectable>());
-    }
-
-    void RequestPlayAudio(AudioClip clip)
-    {
-        if (m_audioSource == null) return;
-        
-        m_audioSource.PlayOneShot(clip);
     }
     
     public override RuinTooltipData GetTooltipData()

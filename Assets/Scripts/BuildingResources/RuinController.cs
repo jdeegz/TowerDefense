@@ -14,19 +14,19 @@ public class RuinController : MonoBehaviour
     public enum RuinState
     {
         Idle,
-        Hidden, // On Awake
-        Indicated, // By Resource Manager
-        Discovered, // By Harvesting
-        Activated, // Differs per type
+        Hidden,         // On Awake
+        Indicated,      // By Resource Manager
+        Discovered,     // By Harvesting
+        Activated,      // Differs per type
     }
     
     private List<Vector3> m_validPositionsForIndicators;
     private List<Vector3> m_cornerPositions = new List<Vector3>
     {
-        new Vector3(0.5f, 0, 0.5f), //NE
-        new Vector3(-0.5f, 0, 0.5f), //SE
-        new Vector3(-0.5f, 0, -0.5f), //SW
-        new Vector3(0.5f, 0, -0.5f) //NW
+        new Vector3(0.5f, 0, 0.5f),     // NE
+        new Vector3(-0.5f, 0, 0.5f),    // SE
+        new Vector3(-0.5f, 0, -0.5f),   // SW
+        new Vector3(0.5f, 0, -0.5f)     // NW
     };
 
     private Cell m_ruinCell;

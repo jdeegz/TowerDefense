@@ -16,7 +16,6 @@ public class ShrineOrbController : MonoBehaviour
     private Vector3 m_spawnPoint;               // Where we spawned. Referenced to get new destination.
     private Vector3 m_curDestination;           // Where we're currently heading.
     private float m_stoppingDistance = 1f;
-    private AudioSource m_audioSource;
     private RuinShrine m_ruinShrineParent;
     
     void Start()
@@ -32,7 +31,6 @@ public class ShrineOrbController : MonoBehaviour
     public void SetShrine(RuinShrine ruinShrine)
     {
         m_ruinShrineParent = ruinShrine;
-        m_audioSource = ruinShrine.m_audioSource;
     }
     
     private void GameObjectSelected(GameObject obj)
@@ -64,13 +62,6 @@ public class ShrineOrbController : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, m_turnSpeed * Time.fixedDeltaTime);
     }
-    
-    void RequestPlayAudio(AudioClip clip)
-    {
-        if (m_audioSource == null) return;
-
-        m_audioSource.PlayOneShot(clip);
-    }
 
     void OnMouseDown()
     {
@@ -87,7 +78,7 @@ public class ShrineOrbController : MonoBehaviour
         ObjectPoolManager.SpawnObject(m_claimVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         
         // Play Audio
-        RequestPlayAudio(m_claimSounds[Random.Range(0, m_claimSounds.Count)]);
+        m_ruinShrineParent.RequestPlayAudio(m_claimSounds[Random.Range(0, m_claimSounds.Count)]);
         
         // Remove Object
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.GameObject);

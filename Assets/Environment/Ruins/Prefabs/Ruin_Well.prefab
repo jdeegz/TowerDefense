@@ -453,6 +453,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6548713493881459061}
+  - {fileID: 1139768080925198594}
   m_Father: {fileID: 414387793901939610}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7705966036368897366
@@ -860,7 +861,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 414387793901939610}
+    m_TransformParent: {fileID: 8511373576592261976}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 4a0668435b3f6c8429a49c0667e08e47, type: 3}
       propertyPath: m_LocalScale.x
@@ -1923,9 +1924,6 @@ PrefabInstance:
       addedObject: {fileID: 7288705908440979193}
     - targetCorrespondingSourceObject: {fileID: 5311171404805745742, guid: 3f1c890ac90db6140abe3df2bab1c4aa, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1139768080925198594}
-    - targetCorrespondingSourceObject: {fileID: 5311171404805745742, guid: 3f1c890ac90db6140abe3df2bab1c4aa, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 2393188837666437529}
     - targetCorrespondingSourceObject: {fileID: 5311171404805745742, guid: 3f1c890ac90db6140abe3df2bab1c4aa, type: 3}
       insertIndex: -1
@@ -1941,6 +1939,11 @@ PrefabInstance:
 --- !u!4 &414387793901939610 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5311171404805745742, guid: 3f1c890ac90db6140abe3df2bab1c4aa, type: 3}
+  m_PrefabInstance: {fileID: 5509346829728270292}
+  m_PrefabAsset: {fileID: 0}
+--- !u!82 &5740357156022674056 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 278371790009050460, guid: 3f1c890ac90db6140abe3df2bab1c4aa, type: 3}
   m_PrefabInstance: {fileID: 5509346829728270292}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &9083405243373639185 stripped
@@ -1960,6 +1963,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b5f88fc26663874f94ce9a8917864c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_audioSource: {fileID: 5740357156022674056}
+  m_isBuilt: 0
   m_data: {fileID: 11400000, guid: cb047000bd88d0745be2577eeb687910, type: 2}
   m_chargeObjs:
   - {fileID: 8304358738672060875}
@@ -2110,6 +2115,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 9e909004378226f43854f81338f96a07, type: 2}
+    - target: {fileID: -7511558181221131132, guid: d8d4441a2ef45a649bc444729916791a, type: 3}
+      propertyPath: 'm_Materials.Array.data[2]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2b72daa79b87c9c47b7ee92e55fb3868, type: 2}
     - target: {fileID: 919132149155446097, guid: d8d4441a2ef45a649bc444729916791a, type: 3}
       propertyPath: m_Name
       value: fountainRound

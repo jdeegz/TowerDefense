@@ -132,23 +132,6 @@ MonoBehaviour:
   m_idleVFXParent: {fileID: 7620580472380297537}
   m_gathererTask: 0
   m_animator: {fileID: 7208153485627962473}
-  m_curPos: {x: 0, y: 0}
-  m_curCell:
-    m_isGoal: 0
-    m_isOccupied: 0
-    m_isTempOccupied: 0
-    m_isBuildRestricted: 0
-    m_actorCount: 0
-    m_actorsList: []
-    m_cellIndex: 0
-    m_cellPos: {x: 0, y: 0}
-    m_canPathNorth: 1
-    m_canPathEast: 1
-    m_canPathSouth: 1
-    m_canPathWest: 1
-    m_gridCellObj: {fileID: 0}
-    m_directionToNextCell: {x: 0, y: 0, z: 0}
-    m_tempDirectionToNextCell: {x: 0, y: 0, z: 0}
   m_woodChopClips:
   - {fileID: 8300000, guid: c56e26ab06e861f40a6fdd45798e7a0a, type: 3}
   - {fileID: 8300000, guid: 5bf2ccd251a245743987fb6563fa0682, type: 3}
@@ -296,7 +279,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2376137031451144703}
-  - {fileID: 9185871925137831038}
   m_Father: {fileID: 4210381068918428856}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7834868719727665822
@@ -402,92 +384,6 @@ MeshRenderer:
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: cabc45d9b40edb744a8a18b7fc58bd92, type: 3}
   m_PrefabInstance: {fileID: 1399995885944903236}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &3836129150867780813
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1929763406148944282}
-    m_Modifications:
-    - target: {fileID: 1825661470217118326, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1825661470217118326, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_CastShadows
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1825661470217118326, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_SortingLayer
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1825661470217118326, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_RenderingLayerMask
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4577545865914827774, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_Asset
-      value: 
-      objectReference: {fileID: 8926484042661614526, guid: 4a08cf57dbb52ac41bcc2b45d63f07bf, type: 3}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.0000029653306
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5587175497442080486, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_Name
-      value: VFX_Gatherer_Idle_Beam
-      objectReference: {fileID: 0}
-    - target: {fileID: 5587175497442080486, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
---- !u!4 &9185871925137831038 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5352087233906884787, guid: ae5edcabb306b35488849a3204e3eba2, type: 3}
-  m_PrefabInstance: {fileID: 3836129150867780813}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4845315756327811119
 PrefabInstance:

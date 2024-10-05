@@ -189,11 +189,11 @@ public class UITooltipController : MonoBehaviour
                         throw new ArgumentOutOfRangeException();
                 }
 
-                m_objectNameString = $"{gathererIconString} {gathererData.m_gathererName} LeveL: {gathererData.m_gathererLevel}";
+                m_objectNameString = $"{gathererIconString} {gathererData.m_gathererName} Level: {gathererData.m_gathererLevel}";
                 m_objectDescriptionString = gathererData.m_gathererDescription;
                 string efficiency = gathererData.m_gathererLevel == 1
                     ? $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString}<br>"
-                    : $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString} +{gathererData.m_gathererLevel - 1}{resourceIconString} (50% Chance)<br>";
+                    : $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString} and {(gathererData.m_gathererLevel - 1) * 33}% chance for +1{resourceIconString}<br>";
                 m_objectDetailsString = efficiency +
                                         $"Harvest Speed: {gathererData.m_harvestDuration}{m_timeIconString}<br>" +
                                         $"Storage Speed: {gathererData.m_storingDuration}{m_timeIconString}";
@@ -250,7 +250,7 @@ public class UITooltipController : MonoBehaviour
             m_curTween = m_canvasGroup.DOFade(1, 0.1f).SetDelay(0.25f).OnComplete(() =>
             {
                 // After the first fade completes, add a 4.5-second delay
-                m_curTween = m_canvasGroup.DOFade(0f, 0.1f).SetDelay(4.5f);
+                m_curTween = m_canvasGroup.DOFade(0f, 0.1f).SetDelay(6f);
             });
             m_curTween.Play().SetUpdate(true);
         }

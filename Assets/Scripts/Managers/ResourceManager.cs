@@ -291,13 +291,7 @@ public class ResourceManager : MonoBehaviour
             OnAllRuinsDiscovered?.Invoke();
         }
 
-        // Calculate what type of ruin we discovered and send it to the controller.
-        if (m_ruinDiscoveredCount % m_resourceManagerData.m_ruinWellFactor == 1)
-        {
-            return m_resourceManagerData.m_ruinWellObj;
-        }
-        
-        return m_resourceManagerData.m_ruinShrineObj;
+        return m_resourceManagerData.m_ruinTypes[m_ruinDiscoveredCount % m_resourceManagerData.m_ruinTypes.Count].gameObject;
     }
 }
 

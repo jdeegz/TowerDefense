@@ -22,18 +22,16 @@ public class RuinShrine : Ruin
     private int m_curChargeCount;
 
     private List<GathererController> m_gatherers;
-    public AudioSource m_audioSource;
 
     void Awake()
     {
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        base.Awake();
         
         m_maxCharges = m_data.m_maxCharges;
         m_chargesPerInterval = m_data.m_chargesPerInterval;
         m_intervalLength = m_data.m_intervalLength;
         m_burstIntervalLength = m_data.m_burstIntervalLength;
 
-        m_audioSource = GetComponent<AudioSource>();
         RequestPlayAudio(m_data.m_discoveredAudioClip);
 
         m_intervalElapsedTime = m_intervalLength - 1.5f;
@@ -93,13 +91,6 @@ public class RuinShrine : Ruin
             gatherer.ApplyEffect(effect);
         }
 
-    }
-
-    void RequestPlayAudio(AudioClip clip)
-    {
-        if (m_audioSource == null) return;
-
-        m_audioSource.PlayOneShot(clip);
     }
 
     public override RuinTooltipData GetTooltipData()
