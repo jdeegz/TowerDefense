@@ -39,29 +39,34 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
+
     public int m_wave;
     [HideInInspector] public float m_timeToNextWave;
-    
+
     [Header("Castle")]
     public CastleController m_castleController;
+
     public Transform m_enemyGoal;
     [HideInInspector] public Vector2Int m_goalPointPos;
-    
+
     [Header("Obelisks")]
     [FormerlySerializedAs("m_activeObelisks")]
     public List<Obelisk> m_obelisksInMission;
 
     [Header("Unit Spawners")]
     public List<UnitSpawner> m_unitSpawners;
+
     private int m_activeSpawners;
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
+
     public List<EnemyController> m_enemyBossList;
     public BossSequenceController m_activeBossSequenceController;
 
     [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
+
     public List<GathererController> m_stoneGathererList;
     public List<Tower> m_towerList;
 
@@ -76,15 +81,15 @@ public class GameplayManager : MonoBehaviour
     // CAN WE HIDE THESE?
     [Header("Preconstructed Tower Info")]
     public GameObject m_preconstructedTowerObj;
+
     public Tower m_preconstructedTower;
     public Vector2Int m_preconstructedTowerPos;
     public LayerMask m_buildSurface;
     public bool m_canAfford;
     public bool m_canPlace;
     public bool m_canBuild;
-    private int m_preconstructedTowerIndex;
+    private TowerData m_preconstructedTowerData;
     private bool m_watchingCutScene;
-    private List<Tower> m_builtBlueprintTowers;
 
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
@@ -405,8 +410,6 @@ public class GameplayManager : MonoBehaviour
             m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
         }
 
-        m_gameplayData.m_equippedTowers.Add(m_gameplayData.m_blueprintTower);
-
         OnGameplayStateChanged += GameplayManagerStateChanged;
         OnGamePlaybackChanged += GameplayPlaybackChanged;
         OnGameObjectSelected += GameObjectSelected;
@@ -697,16 +700,14 @@ public class GameplayManager : MonoBehaviour
         OnGathererRemoved?.Invoke(gatherer);
     }
 
-    public void PreconstructTower(int i)
+    public void PreconstructTower(TowerData towerData)
     {
-        if (i >= m_gameplayData.m_equippedTowers.Count) return;
-
         ClearPreconstructedTower();
 
         //Set up the objects
-        m_preconstructedTowerObj = Instantiate(m_gameplayData.m_equippedTowers[i].m_prefab, m_castleController.transform.position + Vector3.up, Quaternion.identity);
+        m_preconstructedTowerData = towerData;
+        m_preconstructedTowerObj = Instantiate(towerData.m_prefab, m_castleController.transform.position + Vector3.up, Quaternion.identity);
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
-        m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
 
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -951,6 +952,7 @@ public class GameplayManager : MonoBehaviour
             Destroy(m_preconstructedTowerObj);
         }
 
+        m_preconstructedTowerData = null;
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
         OnPreconstructedTowerClear?.Invoke();
@@ -967,24 +969,28 @@ public class GameplayManager : MonoBehaviour
         // Calculate the rotation angle to make the new object face away from the target.
         float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
 
-        GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_gameplayData.m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, null, ObjectPoolManager.PoolType.Tower);
+        GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_preconstructedTowerData.m_prefab, gridPos, Quaternion.identity, null, ObjectPoolManager.PoolType.Tower);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
 
         //Update banks
         ValueTuple<int, int> cost = newTower.GetTowercost();
-        if (cost.Item1 > 0)
+        if (cost.Item1 > 0 || cost.Item2 > 0)
         {
-            ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
+            if (cost.Item1 > 0)
+            {
+                ResourceManager.Instance.UpdateStoneAmount(-cost.Item1);
+            }
+
+            if (cost.Item2 > 0)
+            {
+                ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
+            }
+
+            IngameUIController.Instance.SpawnCurrencyAlert(cost.Item2, cost.Item1, false, newTowerObj.transform.position);
         }
 
-        if (cost.Item2 > 0)
-        {
-            ResourceManager.Instance.UpdateWoodAmount(-cost.Item2);
-        }
-
-        IngameUIController.Instance.SpawnCurrencyAlert(cost.Item2, cost.Item1, false, newTowerObj.transform.position);
         OnTowerBuild?.Invoke();
     }
 
@@ -1001,7 +1007,7 @@ public class GameplayManager : MonoBehaviour
             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
         }
 
-        if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTowerIndex == m_gameplayData.m_equippedTowers.Count + 1)
+        if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTowerData.m_isBlueprint)
         {
             Debug.Log($"Currently in preconstruction with a blueprint Tower, removing precon.");
             //Reset outline color. 
@@ -1059,7 +1065,11 @@ public class GameplayManager : MonoBehaviour
         //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(woodValue);
-        IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, true, tower.transform.position);
+
+        if (woodValue > 0 || stoneValue > 0)
+        {
+            IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, true, tower.transform.position);
+        }
 
         //Remove the tower
         tower.RemoveTower();

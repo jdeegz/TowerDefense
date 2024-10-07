@@ -10,6 +10,7 @@ public class TowerData : ScriptableObject
     public string m_towerName;
     [TextArea(5, 5)]
     public string m_towerDescription;
+    public bool m_isBlueprint;
     
     [Header("Basic Data")]
     public float m_baseDamage;

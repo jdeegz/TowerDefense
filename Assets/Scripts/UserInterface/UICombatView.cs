@@ -36,6 +36,7 @@ public class UICombatView : MonoBehaviour
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
+    [SerializeField] private GameObject m_blueprintTowerTrayButtonPrefab;
 
     [SerializeField] private GameObject m_gathererTrayButtonPrefab;
     [SerializeField] private GameObject m_alertRootObj;
@@ -75,6 +76,7 @@ public class UICombatView : MonoBehaviour
     private CastleController m_castleController;
     private Dictionary<KeyCode, int> m_gathererKeyMap;
     private Dictionary<KeyCode, int> m_towerKeyMap;
+    private int m_blueprintTowerKey;
     private int m_wave;
 
     void Awake()
@@ -372,6 +374,7 @@ public class UICombatView : MonoBehaviour
 
     private void BuildTowerTrayDisplay()
     {
+        // TOWERS
         int i;
         for (i = 0; i < GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count; ++i)
         {
@@ -380,7 +383,7 @@ public class UICombatView : MonoBehaviour
 
             if (towerTrayButtonScript)
             {
-                towerTrayButtonScript.SetupData(GameplayManager.Instance.m_gameplayData.m_equippedTowers[i], i);
+                towerTrayButtonScript.SetupTowerData(GameplayManager.Instance.m_gameplayData.m_equippedTowers[i], i);
             }
 
             Button buttonScript = buttonPrefab.GetComponent<Button>();
@@ -389,13 +392,26 @@ public class UICombatView : MonoBehaviour
             {
                 m_buttons.Add(buttonScript);
             }
-
-            if (i == GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count - 1) // If this is the last tower we add, it's the blueprint tower.
-            {
-                m_blueprintButtonObj = buttonPrefab;
-                ToggleBlueprintButton(false);
-            }
         }
+        
+        // BLUEPRINT TOWER
+        m_blueprintButtonObj = Instantiate(m_blueprintTowerTrayButtonPrefab, m_towerTrayLayoutObj);
+        TowerTrayButton blueprintTowerTrayButtonScript = m_blueprintButtonObj.GetComponent<TowerTrayButton>();
+
+        if (blueprintTowerTrayButtonScript)
+        {
+            blueprintTowerTrayButtonScript.SetupTowerData(GameplayManager.Instance.m_gameplayData.m_blueprintTower, i);
+            m_blueprintTowerKey = i;
+        }
+
+        Button blueprintButtonScript = m_blueprintButtonObj.GetComponent<Button>();
+
+        if (blueprintButtonScript)
+        {
+            m_buttons.Add(blueprintButtonScript);
+        }
+        
+        ToggleBlueprintButton(false);
     }
 
     private void ToggleBlueprintButton(bool value)
@@ -459,12 +475,18 @@ public class UICombatView : MonoBehaviour
             if (Input.GetKeyDown(kvp.Key) && !m_menusOpen)
             {
                 //Only allow for precon of Blueprint towers while paused.
-                if (kvp.Value == GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count - 1 && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
+                if (kvp.Value == m_blueprintTowerKey && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
                 {
                     return;
                 }
 
-                GameplayManager.Instance.PreconstructTower(kvp.Value);
+                if (kvp.Value == m_blueprintTowerKey)
+                {
+                    GameplayManager.Instance.PreconstructTower(GameplayManager.Instance.m_gameplayData.m_blueprintTower);
+                    return;
+                }
+                
+                GameplayManager.Instance.PreconstructTower(GameplayManager.Instance.m_gameplayData.m_equippedTowers[kvp.Value]);
             }
         }
 

@@ -111,6 +111,7 @@ public class IngameUIController : MonoBehaviour
         }
         
         string alertString = "Something Broke.";
+        
         if (woodValue > 0 && stoneValue > 0)
         {
             alertString = $"{woodMagnitude}{woodValue}{m_woodIcon}  {stoneMagnitude}{stoneValue}{m_stoneIcon}";

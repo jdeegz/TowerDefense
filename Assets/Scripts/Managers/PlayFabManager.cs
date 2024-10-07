@@ -46,7 +46,7 @@ public class PlayFabManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        //Instance = this;
 
         //Dynamically build the list of leaderboard names so i dont have to update code when we make new or remove leaderboards.
         m_leaderboardNames = new List<string>();

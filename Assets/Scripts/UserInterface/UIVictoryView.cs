@@ -114,7 +114,10 @@ public class UIVictoryView : MonoBehaviour
         }
 
         tallyScoreSequence.Play().SetUpdate(true);
-        SendScore(currentScoreTotal);
+        if (PlayFabManager.Instance)
+        {
+            SendScore(currentScoreTotal);
+        }
     }
 
     void SendScore(int score)

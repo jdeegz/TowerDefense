@@ -22,6 +22,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private bool m_canAffordStone;
     private Button m_button;
     private int m_equippedTowerIndex;
+    private int m_blueprintTowerIndex;
     
     // Start is called before the first frame update
     void Start()
@@ -63,10 +64,9 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    public void SetupData(TowerData towerData, int i)
+    public void SetupTowerData(TowerData towerData, int i)
     {
         m_towerData = towerData;
-        m_equippedTowerIndex = i;
 
         //Tower Cost
         string woodSprite = "<sprite name=ResourceWood>";
@@ -81,7 +81,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     
     public void SelectTowerButton()
     {
-        GameplayManager.Instance.PreconstructTower(m_equippedTowerIndex);
+        GameplayManager.Instance.PreconstructTower(m_towerData);
     }
 
     void OnDestroy()
