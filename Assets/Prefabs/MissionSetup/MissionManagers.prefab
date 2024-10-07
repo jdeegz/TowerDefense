@@ -473,6 +473,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_resourceManagerData: {fileID: 11400000, guid: d746554499e3a874aa960f86ad141857, type: 2}
+  m_ruinsInMission: []
+  m_validRuinsInMission: []
+  m_ruinDiscoveredCount: 0
   m_treePrefabs:
   - {fileID: 5495023557100828210, guid: 7fd92bb02afe15f4db7a925440dd0a9d, type: 3}
   - {fileID: 5495023557100828210, guid: b180f642c799b1f4d81cfb01e35a2d1a, type: 3}
@@ -482,7 +485,6 @@ MonoBehaviour:
   - {fileID: 5495023557100828210, guid: b1dd2d3d5395e354087f10877b6cee55, type: 3}
   - {fileID: 5495023557100828210, guid: 3a06b7905abf58a4db0a55bf099d2823, type: 3}
   - {fileID: 5495023557100828210, guid: fe6d3e73c3db97f43997cffd3e558f08, type: 3}
-  m_treesInScene: []
 --- !u!1 &6892224833705152105
 GameObject:
   m_ObjectHideFlags: 0
@@ -573,15 +575,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_gameplayState: 0
   m_gameSpeed: 1
-  m_totalWaves: 9999
+  m_gameplayData: {fileID: 11400000, guid: 79bf179af36a5a6498cf1da85b17d7fa, type: 2}
   m_wave: -1
+  m_timeToNextWave: 0
+  m_totalWaves: 9999
+  m_healthMultiplier: 0
   m_bossWaveFactor: 10
   m_delayForQuest: 0
   m_firstBuildDuraction: 15
   m_buildDuration: 6
-  m_timeToNextWave: 0
-  m_castleController: {fileID: 0}
-  m_enemyGoal: {fileID: 0}
   m_equippedTowers:
   - {fileID: 11400000, guid: 2eb2b0ef5dee4fb4593956182ff1e62a, type: 2}
   - {fileID: 11400000, guid: b57c11a925317294b8ba1d466ddf2608, type: 2}
@@ -589,17 +591,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a194405bff7d1454a95172e801659bff, type: 2}
   - {fileID: 11400000, guid: 86a39f62503116942b0a2f6cbcc243ad, type: 2}
   m_blueprintTower: {fileID: 11400000, guid: 2475bb710833bce4296b08a4ce35f79f, type: 2}
+  m_castleController: {fileID: 0}
+  m_enemyGoal: {fileID: 0}
+  m_goalPointPos: {x: 0, y: 0}
+  m_obelisksInMission: []
   m_unitSpawners: []
   m_enemyList: []
   m_enemyBossList: []
   m_activeBossSequenceController: {fileID: 0}
-  m_goalPointPos: {x: 0, y: 0}
   m_woodGathererList: []
   m_stoneGathererList: []
   m_towerList: []
   m_selectionColors: {fileID: 11400000, guid: d2377ba05ed6af145b9bdd20509598dc, type: 2}
   m_hoveredSelectable: {fileID: 0}
-  m_obelisksInMission: []
   m_preconstructedTowerObj: {fileID: 0}
   m_preconstructedTower: {fileID: 0}
   m_preconstructedTowerPos: {x: 0, y: 0}

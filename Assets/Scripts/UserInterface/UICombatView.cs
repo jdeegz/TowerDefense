@@ -263,7 +263,7 @@ public class UICombatView : MonoBehaviour
         }
 
         //gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
-        m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_delayForQuest);
+        m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_gameplayData.m_delayForQuest);
         m_castleRepairDisplayObj.SetActive(state == GameplayManager.GameplayState.Build && m_curCastleHealth < m_maxCastleHealth);
     }
 
@@ -373,14 +373,14 @@ public class UICombatView : MonoBehaviour
     private void BuildTowerTrayDisplay()
     {
         int i;
-        for (i = 0; i < GameplayManager.Instance.m_equippedTowers.Count; ++i)
+        for (i = 0; i < GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count; ++i)
         {
             GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_towerTrayLayoutObj);
             TowerTrayButton towerTrayButtonScript = buttonPrefab.GetComponent<TowerTrayButton>();
 
             if (towerTrayButtonScript)
             {
-                towerTrayButtonScript.SetupData(GameplayManager.Instance.m_equippedTowers[i], i);
+                towerTrayButtonScript.SetupData(GameplayManager.Instance.m_gameplayData.m_equippedTowers[i], i);
             }
 
             Button buttonScript = buttonPrefab.GetComponent<Button>();
@@ -390,7 +390,7 @@ public class UICombatView : MonoBehaviour
                 m_buttons.Add(buttonScript);
             }
 
-            if (i == GameplayManager.Instance.m_equippedTowers.Count - 1) // If this is the last tower we add, it's the blueprint tower.
+            if (i == GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count - 1) // If this is the last tower we add, it's the blueprint tower.
             {
                 m_blueprintButtonObj = buttonPrefab;
                 ToggleBlueprintButton(false);
@@ -459,7 +459,7 @@ public class UICombatView : MonoBehaviour
             if (Input.GetKeyDown(kvp.Key) && !m_menusOpen)
             {
                 //Only allow for precon of Blueprint towers while paused.
-                if (kvp.Value == GameplayManager.Instance.m_equippedTowers.Count - 1 && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
+                if (kvp.Value == GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count - 1 && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
                 {
                     return;
                 }
@@ -481,7 +481,7 @@ public class UICombatView : MonoBehaviour
     {
         if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
         {
-            m_nextWaveButton.gameObject.SetActive(!GameplayManager.Instance.m_delayForQuest);
+            m_nextWaveButton.gameObject.SetActive(!GameplayManager.Instance.m_gameplayData.m_delayForQuest);
 
 
             m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;

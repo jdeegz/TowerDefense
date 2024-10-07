@@ -38,41 +38,30 @@ public class GameplayManager : MonoBehaviour
     public static event Action OnCutSceneEnd;
 
     [Header("Wave Settings")]
-    public int m_totalWaves = 10;
-
+    public MissionGameplayData m_gameplayData;
     public int m_wave;
-    public int m_bossWaveFactor = 20; //Spawn a boss every N waves. -1 means No Bosses.
-    public bool m_delayForQuest;
-    public float m_firstBuildDuraction = 15;
-    public float m_buildDuration = 6;
     [HideInInspector] public float m_timeToNextWave;
-
+    
     [Header("Castle")]
     public CastleController m_castleController;
-
     public Transform m_enemyGoal;
-
-    [Header("Equipped Towers")]
-    public List<TowerData> m_equippedTowers;
-
-    public TowerData m_blueprintTower;
+    [HideInInspector] public Vector2Int m_goalPointPos;
+    
+    [Header("Obelisks")]
+    [FormerlySerializedAs("m_activeObelisks")]
+    public List<Obelisk> m_obelisksInMission;
 
     [Header("Unit Spawners")]
     public List<UnitSpawner> m_unitSpawners;
+    private int m_activeSpawners;
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
-
     public List<EnemyController> m_enemyBossList;
     public BossSequenceController m_activeBossSequenceController;
 
-    private int m_activeSpawners;
-    private Vector2Int m_curCellPos;
-    [HideInInspector] public Vector2Int m_goalPointPos;
-
     [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
-
     public List<GathererController> m_stoneGathererList;
     public List<Tower> m_towerList;
 
@@ -83,12 +72,10 @@ public class GameplayManager : MonoBehaviour
     private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
 
-    [FormerlySerializedAs("m_activeObelisks")]
-    public List<Obelisk> m_obelisksInMission;
 
+    // CAN WE HIDE THESE?
     [Header("Preconstructed Tower Info")]
     public GameObject m_preconstructedTowerObj;
-
     public Tower m_preconstructedTower;
     public Vector2Int m_preconstructedTowerPos;
     public LayerMask m_buildSurface;
@@ -170,7 +157,7 @@ public class GameplayManager : MonoBehaviour
             DrawPreconstructedTower();
         }
 
-        if (m_delayForQuest == false)
+        if (m_gameplayData.m_delayForQuest == false)
         {
             m_timeToNextWave -= Time.deltaTime;
         }
@@ -178,9 +165,9 @@ public class GameplayManager : MonoBehaviour
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             ++m_wave;
-            if (m_wave != 0 && m_wave % m_bossWaveFactor == 0 && m_bossWaveFactor > 0)
+            if (m_wave != 0 && m_wave % m_gameplayData.m_bossWaveFactor == 0 && m_gameplayData.m_bossWaveFactor > 0)
             {
-                Debug.Log($"{m_wave}, {m_bossWaveFactor} spawning boss.");
+                Debug.Log($"{m_wave}, {m_gameplayData.m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.BossWave);
             }
             else
@@ -418,7 +405,7 @@ public class GameplayManager : MonoBehaviour
             m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
         }
 
-        m_equippedTowers.Add(m_blueprintTower);
+        m_gameplayData.m_equippedTowers.Add(m_gameplayData.m_blueprintTower);
 
         OnGameplayStateChanged += GameplayManagerStateChanged;
         OnGamePlaybackChanged += GameplayPlaybackChanged;
@@ -553,11 +540,11 @@ public class GameplayManager : MonoBehaviour
                 //If this is the first wave, give a bit longer to build.
                 if (m_wave < 0)
                 {
-                    m_timeToNextWave = m_firstBuildDuraction;
+                    m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
                 }
                 else
                 {
-                    m_timeToNextWave = m_buildDuration;
+                    m_timeToNextWave = m_gameplayData.m_buildDuration;
                 }
 
                 break;
@@ -712,12 +699,12 @@ public class GameplayManager : MonoBehaviour
 
     public void PreconstructTower(int i)
     {
-        if (i >= m_equippedTowers.Count) return;
+        if (i >= m_gameplayData.m_equippedTowers.Count) return;
 
         ClearPreconstructedTower();
 
         //Set up the objects
-        m_preconstructedTowerObj = Instantiate(m_equippedTowers[i].m_prefab, m_castleController.transform.position + Vector3.up, Quaternion.identity);
+        m_preconstructedTowerObj = Instantiate(m_gameplayData.m_equippedTowers[i].m_prefab, m_castleController.transform.position + Vector3.up, Quaternion.identity);
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
         m_preconstructedTowerIndex = i;
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
@@ -980,7 +967,7 @@ public class GameplayManager : MonoBehaviour
         // Calculate the rotation angle to make the new object face away from the target.
         float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
 
-        GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, null, ObjectPoolManager.PoolType.Tower);
+        GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_gameplayData.m_equippedTowers[m_preconstructedTowerIndex].m_prefab, gridPos, Quaternion.identity, null, ObjectPoolManager.PoolType.Tower);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
@@ -1014,7 +1001,7 @@ public class GameplayManager : MonoBehaviour
             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
         }
 
-        if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTowerIndex == m_equippedTowers.Count + 1)
+        if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTowerIndex == m_gameplayData.m_equippedTowers.Count + 1)
         {
             Debug.Log($"Currently in preconstruction with a blueprint Tower, removing precon.");
             //Reset outline color. 
@@ -1237,12 +1224,12 @@ public class GameplayManager : MonoBehaviour
             return;
         }
 
-        //Total Waves Win Condition.
-        if (m_wave >= m_totalWaves - 1)
+        //Total Waves Win Condition. OLD, removed the total Waves field 10/7/2024
+        /*if (m_wave >= m_totalWaves - 1)
         {
             UpdateGameplayState(GameplayState.Victory);
             return;
-        }
+        }*/
 
         UpdateGameplayState(GameplayState.Build);
     }

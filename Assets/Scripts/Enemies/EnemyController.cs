@@ -79,12 +79,9 @@ public abstract class EnemyController : Dissolvable, IEffectable
     {
         m_isComplete = false;
 
-        int wave = 1;
-
         if (GameplayManager.Instance)
         {
             m_goal = GameplayManager.Instance.m_enemyGoal;
-            wave = GameplayManager.Instance.m_wave;
             AddToGameplayList();
         }
 
@@ -101,7 +98,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         //Setup Data
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         m_baseLookSpeed = m_enemyData.m_lookSpeed;
-        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.075f, wave));
+        m_curMaxHealth = GameplayManager.Instance.m_gameplayData.CalculateHealth(m_enemyData.m_health);
         m_curHealth = m_curMaxHealth;
         m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
 
