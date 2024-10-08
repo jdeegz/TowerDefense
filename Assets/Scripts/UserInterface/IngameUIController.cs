@@ -151,6 +151,17 @@ public class IngameUIController : MonoBehaviour
         string alertString = $"-{healthValue}<sprite name=\"ResourceHealth\">";
         uiAlert.SetLabelText($"{alertString}", m_currencyBadcolor);
     }
+    
+    public void SpawnMaxHealthAlert(int healthValue, Vector3 worldPos)
+    {
+        UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
+        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
+        
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
+        string alertString = $"-{healthValue}<sprite name=\"ResourceHealth\"> CRITICAL DAMAGE!";
+        uiAlert.SetLabelText($"{alertString}", m_currencyBadcolor);
+    }
 
     private Vector2 GetScreenPosition(Vector3 pos)
     {

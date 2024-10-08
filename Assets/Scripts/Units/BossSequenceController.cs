@@ -64,7 +64,7 @@ public class BossSequenceController : MonoBehaviour
 
     public void BossHasDied() // If the boss' hit points reached 0.
     {
-        if (m_bossDeathCutScene != null)
+        if (GameManager.Instance != null && m_bossDeathCutScene != null)
         {
             GameplayManager.OnCutSceneEnd += BossDeathCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossDeathCutScene);
@@ -78,7 +78,7 @@ public class BossSequenceController : MonoBehaviour
 
     public void BossHasEscaped() // If the boss reached the castle, but the castle still stands.
     {
-        if (m_bossOutroCutScene != null)
+        if (GameManager.Instance != null && m_bossOutroCutScene != null)
         {
             GameplayManager.OnCutSceneEnd += BossOutroCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossOutroCutScene);

@@ -20,6 +20,7 @@ public class CastleController : MonoBehaviour
     private float m_repairElapsedTime;
 
     public event Action<int> UpdateHealth;
+    public event Action<int> UpdateMaxHealth;
     public event Action DestroyCastle;
 
     // Start is called before the first frame update
@@ -33,6 +34,7 @@ public class CastleController : MonoBehaviour
         m_repairHealthInterval = m_castleData.m_repairHealthInterval;
 
         UpdateHealth += OnUpdateHealth;
+        UpdateMaxHealth += OnUpdateMaxHealth;
         DestroyCastle += OnCastleDestroyed;
 
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
@@ -61,6 +63,7 @@ public class CastleController : MonoBehaviour
     void OnDestroy()
     {
         UpdateHealth -= OnUpdateHealth;
+        UpdateMaxHealth -= OnUpdateMaxHealth;
         DestroyCastle -= OnCastleDestroyed;
 
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
@@ -166,9 +169,43 @@ public class CastleController : MonoBehaviour
         IngameUIController.Instance.SpawnHealthAlert(1, transform.position);
         UpdateHealth?.Invoke(-dmg);
     }
+    
+    public void TakeBossDamage(int dmg)
+    {
+        if (m_hitFlashCoroutine != null)
+        {
+            StopCoroutine(m_hitFlashCoroutine);
+        }
+
+        m_hitFlashCoroutine = StartCoroutine(HitFlash());
+        IngameUIController.Instance.SpawnMaxHealthAlert(1, transform.position);
+        
+        UpdateMaxHealth?.Invoke(-dmg);
+    }
 
     void OnUpdateHealth(int i)
     {
+        m_curHealth += i;
+
+        if (i > 0)
+        {
+            PlayAudio(m_castleData.m_audioHealthGained);
+        }
+        else
+        {
+            PlayAudio(m_castleData.m_audioHealthLost);
+        }
+
+        if (m_curHealth <= 0)
+        {
+            DestroyCastle?.Invoke();
+        }
+    }
+    
+    void OnUpdateMaxHealth(int i)
+    {
+        m_maxHealth += i;
+        
         m_curHealth += i;
 
         if (i > 0)

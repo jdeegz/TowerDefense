@@ -23,10 +23,9 @@ public class EnemyThrall : EnemyController
         //VFX
     }
     
-    public override void ReachedCastle()
+    public override void DamageCastle()
     {
-        base.ReachedCastle();
-        
+        GameplayManager.Instance.m_castleController.TakeBossDamage(1);
         m_enemyHost.ThrallReachedCastle(this);
     }
     

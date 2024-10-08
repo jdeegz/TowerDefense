@@ -146,6 +146,21 @@ public class UICombatView : MonoBehaviour
         m_healthShake = m_healthDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_healthShake.Play();
     }
+    
+    private void UpdateCastleMaxHealthDisplay(int i)
+    {
+        if (m_healthShake.IsActive())
+        {
+            m_healthShake.Kill();
+            m_healthDisplay.localScale = Vector3.one;
+        }
+
+        m_curCastleHealth += i;
+        m_maxCastleHealth = GameplayManager.Instance.m_castleController.GetCastleMaxHealth();
+        m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
+        m_healthShake = m_healthDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_healthShake.Play();
+    }
 
     private void UpdateWoodGathererDisplay(int i)
     {
@@ -216,6 +231,9 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodRate -= UpdateWoodRateDisplay;
         ResourceManager.UpdateStoneGathererCount -= UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount -= UpdateWoodGathererDisplay;
+        
+        m_castleController.UpdateHealth -= UpdateCastleHealthDisplay;
+        m_castleController.UpdateMaxHealth -= UpdateCastleMaxHealthDisplay;
     }
 
     private void UpdateObeliskDisplay(int x, int y)
@@ -314,6 +332,7 @@ public class UICombatView : MonoBehaviour
     {
         m_castleController = GameplayManager.Instance.m_castleController;
         m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
+        m_castleController.UpdateMaxHealth += UpdateCastleMaxHealthDisplay;
         m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_castleData.m_maxHealth;
         m_curCastleHealth = m_maxCastleHealth;
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");

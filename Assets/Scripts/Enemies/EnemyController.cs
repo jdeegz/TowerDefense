@@ -165,11 +165,16 @@ public abstract class EnemyController : Dissolvable, IEffectable
         }
     }
 
-    public virtual void ReachedCastle()
+    public void ReachedCastle()
     {
-        GameplayManager.Instance.m_castleController.TakeDamage(1);
+        DamageCastle();
         OnEnemyDestroyed(transform.position);
         DestroyEnemy?.Invoke(transform.position);
+    }
+
+    public virtual void DamageCastle()
+    {
+        GameplayManager.Instance.m_castleController.TakeDamage(1);
     }
 
     void FixedUpdate()

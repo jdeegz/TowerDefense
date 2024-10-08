@@ -89,8 +89,7 @@ public class GameplayManager : MonoBehaviour
 
     //Boss Testing Ground
     [Header("Boss Wave Info")]
-    public int m_bossWave; // What wave does this mission spawn a boss
-
+    public List<int> m_bossWaves; // What wave does this mission spawn a boss
     public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
     private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
 
@@ -175,7 +174,7 @@ public class GameplayManager : MonoBehaviour
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             ++m_wave;
-            if (m_wave == m_bossWave && m_bossSequenceController)
+            if (m_bossWaves.Contains(m_wave) && m_bossSequenceController)
             {
                 UpdateGameplayState(GameplayState.BossWave);
             }
