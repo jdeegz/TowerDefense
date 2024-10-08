@@ -189,7 +189,7 @@ public class ResourceManager : MonoBehaviour
         //When a gatherer harvests a resource Node, and when the wave counter increments. Wave should be a target, and reset after indicating a ruin.
         if (GameplayManager.Instance.m_wave < m_resourceManagerData.m_minWaves)
         {
-            Debug.Log($"Minimum number of waves not yet passed.");
+            //Debug.Log($"Minimum number of waves not yet passed.");
             return; // Too soon to show a ruin indicator.
         }
 
@@ -197,20 +197,20 @@ public class ResourceManager : MonoBehaviour
         {
             if ((GameplayManager.Instance.m_wave - m_resourceManagerData.m_minWaves) % m_resourceManagerData.m_indicatorFrequency != 0)
             {
-                Debug.Log($"Current wave ({GameplayManager.Instance.m_wave} - {m_resourceManagerData.m_minWaves}) is not a factor of {m_resourceManagerData.m_indicatorFrequency}.");
+                //Debug.Log($"Current wave ({GameplayManager.Instance.m_wave} - {m_resourceManagerData.m_minWaves}) is not a factor of {m_resourceManagerData.m_indicatorFrequency}.");
                 return; // Need to wait a little longer.
             }
 
-            Debug.Log($"Current wave is a factor of {m_resourceManagerData.m_indicatorFrequency}.");
+            //Debug.Log($"Current wave is a factor of {m_resourceManagerData.m_indicatorFrequency}.");
         }
         else
         {
-            Debug.Log($"Current wave is the Minimum wave.");
+            //Debug.Log($"Current wave is the Minimum wave.");
         }
 
         if (m_validRuinsInMission.Count == 0)
         {
-            Debug.Log($"We're out of valid Ruins to indicate.");
+            //Debug.Log($"We're out of valid Ruins to indicate.");
             return;
         }
 
@@ -222,11 +222,11 @@ public class ResourceManager : MonoBehaviour
                 //++m_ruinIndicatedCount;
                 if (m_ruinIndicatedCount >= m_resourceManagerData.m_maxIndicators)
                 {
-                    Debug.Log($"We're currently indicating the max number of desired ruins: {m_resourceManagerData.m_maxIndicators}.");
+                    //Debug.Log($"We're currently indicating the max number of desired ruins: {m_resourceManagerData.m_maxIndicators}.");
                     return; // We should't indicate any more ruins.
                 }
 
-                Debug.Log($"We're ready to indicate another ruin. Current indicated: {m_ruinIndicatedCount}.");
+                //Debug.Log($"We're ready to indicate another ruin. Current indicated: {m_ruinIndicatedCount}.");
             }
         }
 
@@ -234,7 +234,7 @@ public class ResourceManager : MonoBehaviour
         List<RuinController> invalidRuins = new List<RuinController>();
         int weightSum = 0;
 
-        Debug.Log($"Checking the Valid Ruins list for Invalid Ruins.");
+        //Debug.Log($"Checking the Valid Ruins list for Invalid Ruins.");
         for (int i = 0; i < m_validRuinsInMission.Count; ++i) // Loop through ruins, identifying if they have at least one good corner, else add to invalid list and remove.
         {
             List<Vector3> validPositionsForIndicators = m_validRuinsInMission[i].CheckValidRuinCorners();
@@ -251,12 +251,12 @@ public class ResourceManager : MonoBehaviour
 
         foreach (RuinController ruinController in invalidRuins) // Trim the invalid ruins from our list so we dont keep operating on it.
         {
-            Debug.Log($"{ruinController.gameObject.name} at {ruinController.transform.position} removed from Valid RequestRuinIndicator list.");
+            //Debug.Log($"{ruinController.gameObject.name} at {ruinController.transform.position} removed from Valid RequestRuinIndicator list.");
             m_validRuinsInMission.Remove(ruinController);
         }
 
         int chosenWeight = Random.Range(0, weightSum);
-        Debug.Log($"Weighting info( Sum: {weightSum}, Chosen: {chosenWeight}, Valid Ruin Count: {m_validRuinsInMission.Count}");
+        //Debug.Log($"Weighting info( Sum: {weightSum}, Chosen: {chosenWeight}, Valid Ruin Count: {m_validRuinsInMission.Count}");
 
         int lastTotalWeight = 0;
         for (int i = 0; i < m_validRuinsInMission.Count; ++i)
@@ -264,7 +264,7 @@ public class ResourceManager : MonoBehaviour
             if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
             {
                 // This is the node we have chosen.
-                Debug.Log($"{m_validRuinsInMission[i]} at {m_validRuinsInMission[i].transform.position} Chosen.");
+                //Debug.Log($"{m_validRuinsInMission[i]} at {m_validRuinsInMission[i].transform.position} Chosen.");
                 m_validRuinsInMission[i].IndicateThisRuin();
                 m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
                 ++m_ruinIndicatedCount;

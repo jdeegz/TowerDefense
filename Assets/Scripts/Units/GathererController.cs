@@ -556,7 +556,7 @@ public class GathererController : MonoBehaviour
 
     private void UpdateTask(GathererTask newTask)
     {
-        Debug.Log($"{m_debugIndex += 1}. {gameObject.name}'s current task: {m_gathererTask} & new task: {newTask}.");
+        //Debug.Log($"{m_debugIndex += 1}. {gameObject.name}'s current task: {m_gathererTask} & new task: {newTask}.");
         m_gathererTask = newTask;
 
         ToggleDisplayIdleVFX();

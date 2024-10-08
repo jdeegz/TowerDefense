@@ -101,7 +101,7 @@ public class UnitSpawner : MonoBehaviour
     public CreepWave GetNextCreepWave()
     {
         int gameplayWave = GameplayManager.Instance.m_wave + 1;
-        Debug.Log($"Spawner fetching wave data. Index: {gameplayWave}.");
+        //Debug.Log($"Spawner fetching wave data. Index: {gameplayWave}.");
         CreepWave creepWave = new CreepWave();
 
         //INTRO WAVES

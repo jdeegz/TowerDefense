@@ -42,6 +42,7 @@ public class GameplayManager : MonoBehaviour
 
     public int m_wave;
     [HideInInspector] public float m_timeToNextWave;
+    private bool m_delayForQuest;
 
     [Header("Castle")]
     public CastleController m_castleController;
@@ -62,7 +63,6 @@ public class GameplayManager : MonoBehaviour
     public List<EnemyController> m_enemyList;
 
     public List<EnemyController> m_enemyBossList;
-    public BossSequenceController m_activeBossSequenceController;
 
     [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
@@ -77,18 +77,23 @@ public class GameplayManager : MonoBehaviour
     private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
 
-
-    // CAN WE HIDE THESE?
-    [Header("Preconstructed Tower Info")]
-    public GameObject m_preconstructedTowerObj;
-
-    public Tower m_preconstructedTower;
-    public Vector2Int m_preconstructedTowerPos;
+    // Precon Tower Info
     public LayerMask m_buildSurface;
-    public bool m_canAfford;
-    public bool m_canPlace;
-    public bool m_canBuild;
+    public Vector2Int m_preconstructedTowerPos;
+    [HideInInspector] public bool m_canAfford;
+    [HideInInspector] public bool m_canPlace;
+    [HideInInspector] public bool m_canBuild;
+    private GameObject m_preconstructedTowerObj;
+    private Tower m_preconstructedTower;
     private TowerData m_preconstructedTowerData;
+
+    //Boss Testing Ground
+    [Header("Boss Wave Info")]
+    public int m_bossWave; // What wave does this mission spawn a boss
+
+    public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
+    private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
+
     private bool m_watchingCutScene;
 
     [Header("Strings")]
@@ -162,7 +167,7 @@ public class GameplayManager : MonoBehaviour
             DrawPreconstructedTower();
         }
 
-        if (m_gameplayData.m_delayForQuest == false)
+        if (m_delayForQuest == false)
         {
             m_timeToNextWave -= Time.deltaTime;
         }
@@ -170,9 +175,8 @@ public class GameplayManager : MonoBehaviour
         if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
         {
             ++m_wave;
-            if (m_wave != 0 && m_wave % m_gameplayData.m_bossWaveFactor == 0 && m_gameplayData.m_bossWaveFactor > 0)
+            if (m_wave == m_bossWave && m_bossSequenceController)
             {
-                Debug.Log($"{m_wave}, {m_gameplayData.m_bossWaveFactor} spawning boss.");
                 UpdateGameplayState(GameplayState.BossWave);
             }
             else
@@ -414,6 +418,8 @@ public class GameplayManager : MonoBehaviour
         OnGamePlaybackChanged += GameplayPlaybackChanged;
         OnGameObjectSelected += GameObjectSelected;
         OnGameObjectDeselected += GameObjectDeselected;
+
+        m_delayForQuest = m_gameplayData.m_delayForQuest;
     }
 
     void OnDestroy()
@@ -515,7 +521,7 @@ public class GameplayManager : MonoBehaviour
     public void UpdateGameplayState(GameplayState newState)
     {
         m_gameplayState = newState;
-        //Debug.Log($"Game state is now: {m_gameplayState}");
+        Debug.Log($"Game state is now: {m_gameplayState}");
 
         switch (m_gameplayState)
         {
@@ -535,6 +541,7 @@ public class GameplayManager : MonoBehaviour
                 //m_wave++;
                 break;
             case GameplayState.BossWave:
+                ObjectPoolManager.SpawnObject(m_bossSequenceController.gameObject, Vector3.zero, Quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
                 //m_wave++;
                 break;
             case GameplayState.Combat:
@@ -1138,6 +1145,7 @@ public class GameplayManager : MonoBehaviour
 
         if (m_activeSpawners == 0 && m_enemyList.Count == 0 && m_gameplayState != GameplayState.Defeat)
         {
+            Debug.Log($"Check for win.");
             CheckForWin();
         }
     }
@@ -1158,17 +1166,17 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        if (m_activeSpawners == 0 && m_enemyBossList.Count == 0 && m_gameplayState == GameplayState.BossWave)
+        /*if (m_activeSpawners == 0 && m_enemyBossList.Count == 0 && m_gameplayState == GameplayState.BossWave)
         {
             //Tell sequence that we've killed the boss.
             m_activeBossSequenceController.BossHasDied();
-        }
+        }*/
     }
 
     public void AddSpawnerToList(UnitSpawner unitSpawner)
     {
         m_unitSpawners.Add(unitSpawner);
-        Debug.Log($"Added creep spawner: {m_unitSpawners.Count}");
+        //Debug.Log($"Added creep spawner: {m_unitSpawners.Count}");
     }
 
     public void ActivateSpawner()
@@ -1320,14 +1328,22 @@ public class GameplayManager : MonoBehaviour
 
     public void CastleControllerDestroyed()
     {
-        if (m_activeBossSequenceController) //If there's a boss alive, play the bosses Castle Destruction cut scene
-        {
-            m_activeBossSequenceController.BossHasWon();
-        }
-        else
-        {
-            //To replace this with playing a cutscene then triggering defeat, or they're the same?
-            UpdateGameplayState(GameplayState.Defeat);
-        }
+        //To replace this with playing a cutscene then triggering defeat, or they're the same?
+        UpdateGameplayState(GameplayState.Defeat);
+    }
+
+    public void QuestCompleted()
+    {
+        m_delayForQuest = false;
+    }
+
+    public void SetActiveBossController(BossSequenceController bossSequenceController)
+    {
+        m_activeBossSequenceController = bossSequenceController;
+    }
+
+    public BossSequenceController GetActiveBossController()
+    {
+        return m_activeBossSequenceController;
     }
 }

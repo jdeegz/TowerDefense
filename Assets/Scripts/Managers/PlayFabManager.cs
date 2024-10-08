@@ -68,7 +68,7 @@ public class PlayFabManager : MonoBehaviour
         //Debug.Log($"Remember Me Key: {PlayerPrefs.GetString(_PlayFabRememberMeIdKey)}");
 
         //Try to log in.
-        if (m_rememberMe && !string.IsNullOrEmpty(m_rememberMeId))
+        /*if (m_rememberMe && !string.IsNullOrEmpty(m_rememberMeId))
         {
             Debug.Log($"Attempting to Auto-log in.");
             PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest()
@@ -85,7 +85,7 @@ public class PlayFabManager : MonoBehaviour
         else
         {
             OnLoginRequired?.Invoke();
-        }
+        }*/
     }
 
     private void RememberMeLoginSuccess(LoginResult result)

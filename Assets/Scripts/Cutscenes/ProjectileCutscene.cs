@@ -29,14 +29,14 @@ public class ProjectileCutscene : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
-        Debug.Log($"Collision detected.");
+        // Debug.Log($"Collision detected.");
         if (collision.collider == null && m_enemy == null) return;
         
         if (m_isComplete) return;
         
         if (collision.collider.gameObject.layer == m_shieldLayer || collision.gameObject == m_enemy.gameObject)
         {
-            Debug.Log($"Collided with a shield.");
+            // Debug.Log($"Collided with a shield.");
             Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
             ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
             CutsceneRemoveProjectile();
@@ -47,7 +47,7 @@ public class ProjectileCutscene : Projectile
     
     public void CutsceneRemoveProjectile()
     {
-        Debug.Log($"Removing cutscene projectile.");
+        //Debug.Log($"Removing cutscene projectile.");
         
         Quaternion spawnVFXdirection = Quaternion.LookRotation(m_enemy.transform.position - m_startPos);
         Instantiate(m_hitVFXPrefab, transform.position, spawnVFXdirection);

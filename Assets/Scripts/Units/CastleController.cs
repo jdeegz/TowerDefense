@@ -137,6 +137,11 @@ public class CastleController : MonoBehaviour
     {
         return m_maxHealth;
     }
+    
+    public int GetCastleCurHealth()
+    {
+        return m_curHealth;
+    }
 
     public void CheatCastleHealth()
     {

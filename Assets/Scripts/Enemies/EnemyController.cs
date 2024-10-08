@@ -69,7 +69,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected Vector3 m_moveDirection;
 
 
-    public virtual void SetEnemyData(EnemyData data, bool active = true)
+    public void SetEnemyData(EnemyData data, bool active = true)
     {
         m_enemyData = data;
         SetupEnemy(active);
@@ -332,15 +332,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         //If we're dead, destroy.
         if (m_curHealth <= 0)
         {
-            if (m_deathVFX)
-            {
-                ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-            }
-
-            m_animator.SetTrigger("IsDead");
-
             OnEnemyDestroyed(transform.position);
-            DestroyEnemy?.Invoke(transform.position);
             return;
         }
         
@@ -422,6 +414,15 @@ public abstract class EnemyController : Dissolvable, IEffectable
             m_curCell = null;
             m_nextCellPosition = Vector3.zero;
         }
+        
+        if (m_deathVFX)
+        {
+            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        }
+
+        m_animator.SetTrigger("IsDead");
+
+        DestroyEnemy?.Invoke(transform.position);
 
         //If dead, look for obelisks nearby. If there is one, spawn a soul and have it move to the obelisk.
         if (m_curHealth <= 0 && m_obeliskData != null)

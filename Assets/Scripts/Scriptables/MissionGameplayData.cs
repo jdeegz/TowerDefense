@@ -26,7 +26,6 @@ public class MissionGameplayData : ScriptableObject
     
     [Header("Wave Settings")]
     public float m_healthMultiplier = 0;           // Global health modifier. Possibly used for difficulty settings?
-    public int m_bossWaveFactor = 0;               // Spawn a boss every N waves. -1 means No Bosses.
     public bool m_delayForQuest = false;           // Does this mission contain quests we need to wait for?
     public float m_firstBuildDuraction = 15;       // The first build phase length in seconds.
     public float m_buildDuration = 6;              // Subsequent build phase lengths in seconds.
@@ -48,7 +47,7 @@ public class MissionGameplayData : ScriptableObject
         int earlyWaveNumber = Math.Min(i, m_midGameWave);
         earlyGameHealth = health * (1 + (m_earlyGameFactor * earlyWaveNumber));
 
-        int numberOfEarlyGameCycles = earlyWaveNumber / 10;
+        int numberOfEarlyGameCycles = earlyWaveNumber / m_cycleLength;
         float earlyGameBonusHealth = health * (1 + (numberOfEarlyGameCycles * m_earlyGameCycleFactor)) - health;
         //.Log($"Early Base Health: {earlyGameHealth}, Early Bonus Health {earlyGameBonusHealth}, Early Cycles: {numberOfEarlyGameCycles}");
 
@@ -62,7 +61,7 @@ public class MissionGameplayData : ScriptableObject
             int midWaveNumber = Math.Min(i - m_midGameWave, m_lateGameWave - m_midGameWave);
             midGameHealth = health * (1 + (m_midGameFactor * midWaveNumber)) - health;
 
-            numberOfMidGameCycles = midWaveNumber / 10;
+            numberOfMidGameCycles = midWaveNumber / m_cycleLength;
             midGameBonusHealth = health * (1 + (numberOfMidGameCycles * m_midGameCycleFactor)) - health;
             //Debug.Log($"Mid Base Health: {midGameHealth}, Mid Bonus Health {midGameBonusHealth}, Mid Cycles: {numberOfMidGameCycles}");
 
@@ -77,7 +76,7 @@ public class MissionGameplayData : ScriptableObject
             int lateWaveNumber = i - m_lateGameWave;
             lateGameHealth = health * (1 + (m_lateGameFactor * lateWaveNumber)) - health;
 
-            numberOfLateGameCycles = lateWaveNumber / 10;
+            numberOfLateGameCycles = lateWaveNumber / m_cycleLength;
             lateGameBonusHealth = health * (1 + (numberOfLateGameCycles * m_lateGameCycleFactor)) - health;
             //Debug.Log($"Late Base Health: {lateGameHealth}, Late Bonus Health {lateGameBonusHealth}, Late Cycles: {numberOfLateGameCycles}");
 

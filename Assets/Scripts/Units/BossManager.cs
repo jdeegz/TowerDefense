@@ -5,7 +5,9 @@ using UnityEngine.Serialization;
 
 public class BossManager : MonoBehaviour
 {
-    [SerializeField] private List<BossSequenceController> m_bossSequenceControllers;
+    // Removing 10 / 7 / 2024
+    
+    /*[SerializeField] private List<BossSequenceController> m_bossSequenceControllers;
     private int m_bossIndex = 0;
 
     void Start()
@@ -31,5 +33,5 @@ public class BossManager : MonoBehaviour
                 m_bossIndex = 0;
             }
         }
-    }
+    }*/
 }

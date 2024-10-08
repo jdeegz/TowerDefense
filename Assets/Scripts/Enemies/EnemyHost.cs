@@ -6,11 +6,13 @@ public class EnemyHost : EnemyController
 {
     [SerializeField] private EnemyThrall m_enemyThrall; //objects spawned as duplicates of the host
     private List<EnemyThrall> m_livingThralls;
+    private BossSequenceController m_bossSequenceController;
     
     //HOST SETUP FUNCTIONS
     void OnEnable()
     {
         SetHostPosition();
+        SetSequenceController(GameplayManager.Instance.GetActiveBossController());
         
         //Get the spawners in the scene.
         var spawners = GameplayManager.Instance.m_unitSpawners;
@@ -25,6 +27,22 @@ public class EnemyHost : EnemyController
             thrall.SetHost(this);
             m_livingThralls.Add(thrall);
         }
+    }
+
+    public void ThrallReachedCastle(EnemyThrall thrall)
+    {
+        m_livingThralls.Remove(thrall);
+
+        // If all the thralls are destroyed and we still have health, run away!
+        if (m_livingThralls.Count == 0)
+        {
+            OnEnemyDestroyed(transform.position);
+        }
+    }
+
+    public void SetSequenceController(BossSequenceController controller)
+    {
+        m_bossSequenceController = controller;
     }
 
     void SetHostPosition()
@@ -89,6 +107,8 @@ public class EnemyHost : EnemyController
         {
             thrall.OnEnemyDestroyed(thrall.transform.position);
         }
+        
+        m_bossSequenceController.BossRemoved(m_curHealth);
         
         //Destroy the host
         base.OnEnemyDestroyed(pos);

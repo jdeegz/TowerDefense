@@ -23,6 +23,13 @@ public class EnemyThrall : EnemyController
         //VFX
     }
     
+    public override void ReachedCastle()
+    {
+        base.ReachedCastle();
+        
+        m_enemyHost.ThrallReachedCastle(this);
+    }
+    
     public override void OnHealed(float heal, bool percentage)
     {
         m_enemyHost.OnHealed(heal, percentage);

@@ -24,9 +24,13 @@ public class MenuManager : MonoBehaviour
     void Start()
     {
         UpdateMenuState(MenuState.Idle);
-        
+
         //If we have no PlayFabManager (running edit mode stuff)
-        if (!PlayFabManager.Instance) UpdateMenuState(MenuState.StartMenu);
+        if (!PlayFabManager.Instance)
+        {
+            UpdateMenuState(MenuState.StartMenu);
+            return;
+        }
 
         //If we have a connection.
         if (PlayFabClientAPI.IsClientLoggedIn())
@@ -58,7 +62,7 @@ public class MenuManager : MonoBehaviour
         }
 
         OnMenuStateChanged?.Invoke(newState);
-        Debug.Log("Menu State:" + newState);
+        //Debug.Log("Menu State:" + newState);
     }
 
     private void MenuManagerOnMenuStateChanged(MenuState state)
@@ -91,7 +95,7 @@ public class MenuManager : MonoBehaviour
     {
         UpdateMenuState(MenuState.StartMenu);
     }
-    
+
     private void NamingRequired()
     {
         UpdateMenuState(MenuState.Login);

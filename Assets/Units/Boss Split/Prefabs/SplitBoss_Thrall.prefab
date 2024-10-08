@@ -99,6 +99,7 @@ GameObject:
   - component: {fileID: 5365608717402805123}
   - component: {fileID: 3253523154629125126}
   - component: {fileID: 5037048379322115940}
+  - component: {fileID: 7992946619069446930}
   m_Layer: 10
   m_Name: SplitBoss_Thrall
   m_TagString: Enemy
@@ -280,9 +281,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed6071a07581ff143bbe7304dd93ce2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_deathVFX: {fileID: 0}
   m_enemyData: {fileID: 11400000, guid: 820d1c96094b2654aba908ed2b5965e3, type: 2}
   m_targetPoint: {fileID: 4116745452977638444}
   m_enemyModelRoot: {fileID: 6845048733821058307}
+  m_animator: {fileID: 7992946619069446930}
+--- !u!95 &7992946619069446930
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5716519707519015969}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6845048733821058307
 GameObject:
   m_ObjectHideFlags: 0
