@@ -1164,18 +1164,11 @@ public class GameplayManager : MonoBehaviour
                 break;
             }
         }
-
-        /*if (m_activeSpawners == 0 && m_enemyBossList.Count == 0 && m_gameplayState == GameplayState.BossWave)
-        {
-            //Tell sequence that we've killed the boss.
-            m_activeBossSequenceController.BossHasDied();
-        }*/
     }
 
     public void AddSpawnerToList(UnitSpawner unitSpawner)
     {
         m_unitSpawners.Add(unitSpawner);
-        //Debug.Log($"Added creep spawner: {m_unitSpawners.Count}");
     }
 
     public void ActivateSpawner()

@@ -9,8 +9,10 @@ public class EnemyHost : EnemyController
     private BossSequenceController m_bossSequenceController;
     
     //HOST SETUP FUNCTIONS
-    void OnEnable()
+    public override void SetupEnemy(bool active)
     {
+        base.SetupEnemy(active);
+        
         SetHostPosition();
         SetSequenceController(GameplayManager.Instance.GetActiveBossController());
         

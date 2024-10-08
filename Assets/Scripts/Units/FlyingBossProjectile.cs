@@ -20,7 +20,7 @@ public class FlyingBossProjectile : MonoBehaviour
         //If this is the exit cell, we've made it! Deal some damage to the player.
         if (Vector3.Distance(transform.position, m_goal) <= 1.5f)
         {
-            GameplayManager.Instance.m_castleController.TakeDamage(1);
+            GameplayManager.Instance.m_castleController.TakeBossDamage(1);
             ObjectPoolManager.ReturnObjectToPool(gameObject);
         }
     }

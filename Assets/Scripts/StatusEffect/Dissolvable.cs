@@ -20,8 +20,10 @@ public class Dissolvable : MonoBehaviour
         //Reset the properties when the object is pulled from the pool.
         if (m_materials != null)
         {
+            Debug.Log($"Material count: {m_materials.Count}");
             foreach (Material material in m_materials)
             {
+                Debug.Log($"Resetting {material.name} to be visible.");
                 material.SetFloat("_AlphaClipThreshold", 0);
             }
         }
@@ -64,7 +66,7 @@ public class Dissolvable : MonoBehaviour
             }
 
             onDissolveComplete?.Invoke();
-            //Debug.Log($"dissolve complete.");
+            Debug.Log($"dissolve complete.");
         }
     }
     

@@ -9,8 +9,10 @@ public class EnemyDragon : EnemyController
     public GameObject m_muzzleObj;
     public int m_castlePathingRadius = 8;
     
+    private BossSequenceController m_bossSequenceController;
+    
     private int m_startGoalIndex;
-    private int m_curGoal;
+    private int m_curGoalIndex;
     private List<Vector2Int> m_curPositionList;
     private Vector3 m_curGoalPos;
     private Vector3 m_castlePos;
@@ -37,24 +39,33 @@ public class EnemyDragon : EnemyController
         Death,
     }
 
-    public void OnEnable()
+    public override void SetupEnemy(bool active)
     {
+        base.SetupEnemy(active);
+        
         SetBossPathPoints();
         
         SetSpawnPosition();
 
         InitiateBossMovement();
+        
+        SetSequenceController(GameplayManager.Instance.GetActiveBossController());
+    }
+    
+    public void SetSequenceController(BossSequenceController controller)
+    {
+        m_bossSequenceController = controller;
     }
 
     void SetBossPathPoints()
     {
         //Build the grid.
         Vector2Int centerPoint = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_castleController.transform.position);
-        m_bossGridCellPositions = HexagonGenerator(centerPoint, m_castlePathingRadius);
+        m_bossGridCellPositions = DiamondGenerator(centerPoint, m_castlePathingRadius);
         
-        m_curPositionList = m_bossGridCellPositions; //We start rotating around the bass first.
+        m_curPositionList = m_bossGridCellPositions; // We start rotating around the bass first.
 
-        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission) // Get the points around obelisks we want to move towards. Then sort them by obelisk completion %.
         {
             BossObeliskObj newObeliskObj = new BossObeliskObj();
             newObeliskObj.m_obeliskProgressPercent = obelisk.GetObeliskProgress();
@@ -131,8 +142,8 @@ public class EnemyDragon : EnemyController
     void InitiateBossMovement()
     {
         //If we just spawned, travel towards N units away from the castle.
-        (m_curGoal, m_curGoalPos) = GetStartingGoalPosition();
-        m_startGoalIndex = m_curGoal;
+        (m_curGoalIndex, m_curGoalPos) = GetStartingGoalPosition();
+        m_startGoalIndex = m_curGoalIndex;
         m_castlePos = GameplayManager.Instance.m_castleController.transform.position;
         transform.rotation = Quaternion.LookRotation(m_curGoalPos - transform.position);
         UpdateBossState(BossState.MoveToDestination);
@@ -167,7 +178,6 @@ public class EnemyDragon : EnemyController
             if (distance <= shortestDistance)
             {
                 shortestDistance = distance;
-                closestGoalPos = pointPos;
                 pathingStartIndex = i;
             }
         }
@@ -190,7 +200,7 @@ public class EnemyDragon : EnemyController
         float y = Random.Range(-offset, offset);
 
         goalPos = new Vector3(cellPos.x + x, 0, cellPos.y + y);
-        Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos}");
+        Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos} which is index {i} of {curPositionList.Count}.");
         return goalPos;
     }
 
@@ -282,7 +292,7 @@ public class EnemyDragon : EnemyController
 
     private void HandleAttack()
     {
-        ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation, null);
+        ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation, null, ObjectPoolManager.PoolType.Projectile);
     }
 
     public void Update()
@@ -321,17 +331,6 @@ public class EnemyDragon : EnemyController
                     //Get the next destination, even if we're attacking right now.
                     UpdateMoveDestination();
                     SetConeDistances();
-
-
-                    //Do we need to Rotate to a new Destination, or Rotate to attack the castle?
-                    if (m_moveCounter % ((BossEnemyData)m_enemyData).m_castleAttackRate == 0)
-                    {
-                        UpdateBossState(BossState.RotateToTarget);
-                    }
-                    else
-                    {
-                        UpdateBossState(BossState.RotateToDestination);
-                    }
                 }
 
                 break;
@@ -360,26 +359,39 @@ public class EnemyDragon : EnemyController
     void UpdateMoveDestination()
     {
         m_isStrafing = true;
-        ++m_curGoal;
-        if (m_curGoal == m_curPositionList.Count)
+        
+        ++m_curGoalIndex;
+        
+        if (m_curGoalIndex == m_curPositionList.Count)
         {
-            m_curGoal = 0;
+            m_curGoalIndex = 0;
         }
 
         ++m_moveCounter;
 
         //Check to see if we've completed a cycle around the current list.
-        if (m_curGoal == m_startGoalIndex)
+        if (m_curGoalIndex == m_startGoalIndex)
         {
             //If we have, we need to pick a new list to operate on.
             (m_curPositionList, m_curGoalPos, m_startGoalIndex) = GetNextGoalList(transform.position);
+            m_curGoalIndex = m_startGoalIndex;
         }
         else
         {
-            m_curGoalPos = GetNextGoalPosition(m_curPositionList, m_curGoal);
+            m_curGoalPos = GetNextGoalPosition(m_curPositionList, m_curGoalIndex);
         }
 
         m_moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
+        
+        //Do we need to Rotate to a new Destination, or Rotate to attack the castle?
+        if (m_moveCounter % ((BossEnemyData)m_enemyData).m_castleAttackRate == 0)
+        {
+            UpdateBossState(BossState.RotateToTarget);
+        }
+        else
+        {
+            UpdateBossState(BossState.RotateToDestination);
+        }
     }
 
 
@@ -465,6 +477,7 @@ public class EnemyDragon : EnemyController
     
     public override void RemoveFromGameplayList()
     {
+        m_bossSequenceController.BossRemoved(m_curHealth);
         GameplayManager.Instance.RemoveBossFromList(this);
     }
     

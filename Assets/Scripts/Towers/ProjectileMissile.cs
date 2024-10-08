@@ -89,14 +89,11 @@ public class ProjectileMissile : Projectile
         {
             //Shoot a ray to each hit. If we hit a shield we stop and go to the next Sphere Overlap hit.
             Vector3 rayDirection = (col.bounds.center - transform.position).normalized;
-            //float rayLength = Vector3.Distance(transform.position, col.transform.position);
-
             Ray ray = new Ray(transform.position, rayDirection);
             RaycastHit[] raycastHits = Physics.RaycastAll(ray, Mathf.Infinity, m_raycastLayerMask.value);
 
             if (raycastHits.Length == 0)
             {
-                //Debug.Log($"No hits.");
                 return;
             }
 

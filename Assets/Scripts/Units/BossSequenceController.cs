@@ -69,6 +69,10 @@ public class BossSequenceController : MonoBehaviour
             GameplayManager.OnCutSceneEnd += BossDeathCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossDeathCutScene);
         }
+        else
+        {
+            BossDeathCutSceneEnded();
+        }
     }
 
     public void BossHasWon() // If the boss brought the castle controller to 0 hit points.
@@ -82,6 +86,10 @@ public class BossSequenceController : MonoBehaviour
         {
             GameplayManager.OnCutSceneEnd += BossOutroCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossOutroCutScene);
+        }
+        else
+        {
+            BossOutroCutSceneEnded();
         }
     }
 

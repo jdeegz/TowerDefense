@@ -21,20 +21,18 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BossBreath
-  m_Shader: {fileID: -6465566751694194690, guid: 0c20ca6f980033345ab787cdbb533362, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 66310f25ed11ea34ab651530bf83b204, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - _SURFACE_TYPE_TRANSPARENT
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 2000
   stringTagMap:
-    RenderType: Transparent
+    RenderType: Opaque
   disabledShaderPasses:
-  - DepthOnly
   - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
@@ -50,6 +48,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 2800000, guid: e1d3334519c40f34ab5b7f55da54b5f0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseSecondayTexture:
+        m_Texture: {fileID: 2800000, guid: b7a0eb3b1c328cb40823006a600851e5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseTexture:
+        m_Texture: {fileID: 2800000, guid: b7a0eb3b1c328cb40823006a600851e5, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -72,6 +78,18 @@ Material:
         m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DissolveMap:
+        m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DissolveSecondaryTexture:
+        m_Texture: {fileID: 2800000, guid: be48d0ddd0ea89c4c8758409699c0ee4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DissolveTexture:
+        m_Texture: {fileID: 2800000, guid: aae58304bc0c5874d934353cffa062c8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _EMISSION_COLOR_MAP:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -92,7 +110,15 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NORMAL_MAP:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -116,6 +142,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SkinMask:
+        m_Texture: {fileID: 2800000, guid: ea22b17fc07e53340a1113330cb38be8, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -135,6 +165,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
+    - _AlphaClipThreshold: 0
     - _AlphaToMask: 0
     - _Blend: 2
     - _BlendModePreserveSpecular: 1
@@ -144,9 +175,12 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
+    - _DIssolveFade: 0.257
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _DstBlend: 1
+    - _DissolveOutlineThickness: 0
+    - _DissolveValue: 0.476
+    - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
@@ -154,6 +188,7 @@ Material:
     - _GlossyReflections: 0
     - _METALNESS: 0
     - _Metallic: 0
+    - _NormalStrength: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueControl: 0
@@ -164,28 +199,46 @@ Material:
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Surface: 1
-    - _WorkflowMode: 1
+    - _Surface: 0
+    - _WobbleAmount: 0.5
+    - _WobbleDistance: 0.5
+    - _WobbleFrequency: 0.5
+    - _WobbleSpeed: 0.5
+    - _WorkflowMode: 0
     - _ZTest: 4
-    - _ZWrite: 0
+    - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
+    - _Alpha_Multiplier: {r: 1, g: 1, b: 1, a: 1}
     - _Alpha_Texture_Scroll_Speed: {r: 0.1, g: -0.1, b: 0, a: 0}
     - _Alpha_Tiling: {r: 1, g: 1, b: 0, a: 0}
     - _BASE_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseScrollSpeed: {r: 0, g: 0.5, b: 0, a: 0}
+    - _BaseSecondaryScrollSpeed: {r: 0, g: 3, b: 0, a: 0}
+    - _BaseSecondaryTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _BaseTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _BaseTint: {r: 5.656854, g: 1.414214, b: 0, a: 1}
+    - _Bottom_Color: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Diffuse_Color: {r: 0.54626465, g: 0.22813724, b: 3.2243402, a: 0}
     - _Diffuse_Scroll_Speed: {r: 0, g: 1, b: 0, a: 0}
     - _Diffuse_Tiling: {r: 1, g: 1, b: 0, a: 0}
+    - _DissolveOutlineColor: {r: 5.656854, g: 1.414214, b: 0, a: 1}
+    - _DissolveScrollSpeed: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _DissolveTiling: {r: 1, g: 1, b: 0, a: 0}
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColor: {r: 0, g: 0, b: 0, a: 0}
     - _SPECULAR_COLOR: {r: 1, g: 1, b: 1, a: 0}
+    - _SkinTint: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _SpecularColor: {r: 0.005, g: 0.005, b: 0.005, a: 0}
     - _Tiling: {r: 1, g: 1, b: 0, a: 0}
+    - _Top_Color: {r: 5.656854, g: 1.414214, b: 0, a: 1}
+    - _UVOffset: {r: 0, g: 0, b: 0, a: 0}
     - m_scrollSpeed: {r: 1, g: 10, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -18,6 +18,7 @@ public class CheatManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.O))
         {
             GiveWood();
+            GiveStone();
         }
         
         //Set Max Life & Give life
@@ -76,7 +77,12 @@ public class CheatManager : MonoBehaviour
 
     void GiveWood()
     {
-        ResourceManager.Instance.UpdateWoodAmount(100);
+        ResourceManager.Instance.UpdateWoodAmount(500);
+    }
+    
+    void GiveStone()
+    {
+        ResourceManager.Instance.UpdateStoneAmount(500);
     }
 
     void GiveMaxHealth()
