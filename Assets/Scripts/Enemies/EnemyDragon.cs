@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -8,6 +9,9 @@ public class EnemyDragon : EnemyController
 {
     public GameObject m_muzzleObj;
     public int m_castlePathingRadius = 8;
+    public List<GameObject> m_dragonBoneObjs;
+    public List<GameObject> m_dragonBones;
+    public float m_dragonBoneSpacing = .5f;
     
     private BossSequenceController m_bossSequenceController;
     
@@ -28,6 +32,7 @@ public class EnemyDragon : EnemyController
     private List<Vector2Int> m_bossGridCellPositions = new List<Vector2Int>();
     private List<BossObeliskObj> m_bossObeliskPathPoints = new List<BossObeliskObj>();
     private int m_bossObeliskPathIndex = 0;
+    private List<BoneTransform> m_previousBoneTransforms = new List<BoneTransform>();
 
     private enum BossState
     {
@@ -50,6 +55,16 @@ public class EnemyDragon : EnemyController
         InitiateBossMovement();
         
         SetSequenceController(GameplayManager.Instance.GetActiveBossController());
+
+        foreach (GameObject obj in m_dragonBoneObjs)
+        {
+            m_dragonBones.Add(ObjectPoolManager.SpawnObject(obj, m_enemyModelRoot.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy));
+        }
+        
+        for (int i = 0; i < m_dragonBones.Count; i++)
+        {
+            m_previousBoneTransforms.Add(new BoneTransform(m_dragonBones[i].transform.position, m_dragonBones[i].transform.rotation, m_dragonBones[i].transform.localScale));
+        }
     }
     
     public void SetSequenceController(BossSequenceController controller)
@@ -354,6 +369,25 @@ public class EnemyDragon : EnemyController
             default:
                 throw new ArgumentOutOfRangeException();
         }
+        
+        for (int i = 1; i < m_dragonBones.Count; i++)
+        {
+            float distance = Vector3.Distance(m_dragonBones[i].transform.position, m_previousBoneTransforms[i - 1].position);
+
+            if (distance > m_dragonBoneSpacing)
+            {
+                BoneTransform targetTransform = m_previousBoneTransforms[i - 1];
+                m_dragonBones[i].transform.position = Vector3.Lerp(m_dragonBones[i].transform.position, targetTransform.position, m_baseMoveSpeed * Time.deltaTime / m_dragonBoneSpacing);
+                m_dragonBones[i].transform.rotation = Quaternion.Lerp(m_dragonBones[i].transform.rotation, targetTransform.rotation, m_baseMoveSpeed * Time.deltaTime / m_dragonBoneSpacing);
+                m_dragonBones[i].transform.localScale = Vector3.Lerp(m_dragonBones[i].transform.localScale, targetTransform.scale, m_baseMoveSpeed * Time.deltaTime / m_dragonBoneSpacing);
+            }
+        }
+
+        // Update the previousTransforms list after moving all bones
+        for (int i = 0; i < m_dragonBones.Count; i++)
+        {
+            m_previousBoneTransforms[i] = new BoneTransform(m_dragonBones[i].transform.position, m_dragonBones[i].transform.rotation, m_dragonBones[i].transform.localScale);
+        }
     }
 
     void UpdateMoveDestination()
@@ -494,6 +528,21 @@ public class BossObeliskObj
 {
     public List<Vector2Int> m_obeliskPointPositions;
     public float m_obeliskProgressPercent;
+}
+
+[System.Serializable]
+public struct BoneTransform
+{
+    public Vector3 position;
+    public Quaternion rotation;
+    public Vector3 scale;
+
+    public BoneTransform(Vector3 pos, Quaternion rot, Vector3 scl)
+    {
+        position = pos;
+        rotation = rot;
+        scale = scl;
+    }
 }
 
 public class BossObeliskObjComparer : IComparer<BossObeliskObj>
