@@ -231,12 +231,12 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
             m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
 
-            //Clamp saftey net.
-            m_maxX = m_curCell.m_cellPos.x + .45f;
-            m_minX = m_curCell.m_cellPos.x - .45f;
+            //Clamp saftey net. This was .45, but changed to .49 when I saw units hitch forward after new cell subscriptions combined with low velocity.
+            m_maxX = m_curCell.m_cellPos.x + .49f;
+            m_minX = m_curCell.m_cellPos.x - .49f;
 
-            m_maxZ = m_curCell.m_cellPos.y + .45f;
-            m_minZ = m_curCell.m_cellPos.y - .45f;
+            m_maxZ = m_curCell.m_cellPos.y + .49f;
+            m_minZ = m_curCell.m_cellPos.y - .49f;
 
             if (m_curCell.m_directionToNextCell.x < 0)
             {

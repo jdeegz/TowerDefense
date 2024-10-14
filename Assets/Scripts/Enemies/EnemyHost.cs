@@ -25,7 +25,6 @@ public class EnemyHost : EnemyController
         {
             GameObject thrallObj = ObjectPoolManager.SpawnObject(m_enemyThrall.gameObject, spawner.m_spawnPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
             EnemyThrall thrall = thrallObj.GetComponent<EnemyThrall>();
-            thrall.SetEnemyData(m_enemyData);
             thrall.SetHost(this);
             m_livingThralls.Add(thrall);
         }

@@ -7,6 +7,7 @@ public class EnemyThrall : EnemyController
     public void SetHost(EnemyHost enemyHost)
     {
         m_enemyHost = enemyHost;
+        SetEnemyData(m_enemyData);
     }
     
     //HANDLING DAMAGE
