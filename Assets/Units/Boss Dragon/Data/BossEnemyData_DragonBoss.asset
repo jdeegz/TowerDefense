@@ -15,15 +15,20 @@ MonoBehaviour:
   m_enemyName: Abhorration
   m_enemyPrefab: {fileID: 3938504367584226854, guid: 47141d4db25e1354d9374283ffec6d1c, type: 3}
   m_moveSpeed: 1.5
-  m_lookSpeed: 2
+  m_movementWiggleValue: 0
+  m_lookSpeed: 45
   m_damageMultiplier: 1
   m_health: 150
+  m_targetPriority: 0
+  m_challengeRating: 0
   m_healthMeterOffset: 200
   m_healthMeterScale: 2
   m_spawnVFXPrefab: {fileID: 0}
   m_deathVFXPrefab: {fileID: 0}
+  m_trojanSpawner: {fileID: 0}
   m_audioSpawnClip: {fileID: 8300000, guid: 3938abe0a0bcd194287ed713031d9926, type: 3}
   m_audioDeathClip: {fileID: 8300000, guid: 3938abe0a0bcd194287ed713031d9926, type: 3}
+  m_audioHealedClip: {fileID: 0}
   m_audioDamagedClips:
   - {fileID: 8300000, guid: 7d48afe6997b38740aa3421ec96a36ec, type: 3}
   - {fileID: 8300000, guid: c981d0f24b3b3564297acadaf82df58e, type: 3}
@@ -34,7 +39,7 @@ MonoBehaviour:
     m_data: {fileID: 11400000, guid: 3057444390a35184b8d097865a4eb69f, type: 2}
     m_elapsedTime: 593.2762
     m_nextTickTime: 67
-    m_towerSender: {fileID: 0}
+    m_sender: {fileID: 0}
   m_spawnStatusEffectWaveDuration: 1
   m_castleAttackRate: 5
   m_strafeAttackRate: 4

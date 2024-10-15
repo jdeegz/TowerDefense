@@ -1,17 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
 public class EnemyDragon : EnemyController
 {
     public GameObject m_muzzleObj;
+    public GameObject m_colliderObj;
     public int m_castlePathingRadius = 8;
     public List<GameObject> m_dragonBoneObjs;
     public List<GameObject> m_dragonBones;
     public float m_dragonBoneSpacing = .5f;
+    public VisualEffect m_dragonBreathVFX;
     
     private BossSequenceController m_bossSequenceController;
     
@@ -65,6 +69,9 @@ public class EnemyDragon : EnemyController
         {
             m_previousBoneTransforms.Add(new BoneTransform(m_dragonBones[i].transform.position, m_dragonBones[i].transform.rotation, m_dragonBones[i].transform.localScale));
         }
+        
+        m_colliderObj.SetActive(false);
+        m_dragonBreathVFX.Stop();
     }
     
     public void SetSequenceController(BossSequenceController controller)
@@ -227,16 +234,16 @@ public class EnemyDragon : EnemyController
         switch (m_spawnDirection)
         {
             case SpawnDirection.North:
-                goalIndex = 0;
-                break;
-            case SpawnDirection.East:
-                goalIndex = 1;
-                break;
-            case SpawnDirection.South:
                 goalIndex = 3;
                 break;
+            case SpawnDirection.East:
+                goalIndex = 2;
+                break;
+            case SpawnDirection.South:
+                goalIndex = 1;
+                break;
             case SpawnDirection.West:
-                goalIndex = 4;
+                goalIndex = 0;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -282,9 +289,6 @@ public class EnemyDragon : EnemyController
                 break;
             case BossState.Death:
                 if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
-                //Do boss death stuff.
-                //Spawn 4 seekers.
-                //Have to keep gameplay state from switching due to not having alive enemies.
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -296,7 +300,8 @@ public class EnemyDragon : EnemyController
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackDelay);
         HandleAttack();
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackCooldown);
-        UpdateBossState(BossState.RotateToDestination);
+        UpdateMoveDestination();
+        UpdateBossState(BossState.MoveToDestination);
     }
 
     private IEnumerator UpdateStateAfterDelay(float i, BossState newState)
@@ -317,50 +322,51 @@ public class EnemyDragon : EnemyController
             case BossState.Idle:
                 break;
             case BossState.RotateToDestination:
-                // Calculate the rotation to face the target
-                Quaternion rotationToDestination = Quaternion.LookRotation(m_curGoalPos - transform.position);
-                float rotationToDestinationDotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToDestination));
-
-                transform.rotation = Quaternion.Slerp(transform.rotation, rotationToDestination, m_baseLookSpeed * Time.deltaTime);
-
-                if (rotationToDestinationDotProduct >= m_rotationThreadhold)
-                {
-                    m_curCoroutine = StartCoroutine(UpdateStateAfterDelay(1, BossState.MoveToDestination));
-                }
-
                 break;
             case BossState.MoveToDestination:
                 if (m_moveCounter % ((BossEnemyData)m_enemyData).m_strafeAttackRate != 0) HandleCone();
-
-                //Movement
+                
+                // Move forward
                 float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-                Vector3 direction = (m_curGoalPos - transform.position).normalized;
-                transform.Translate(speed * Time.deltaTime * direction, Space.World);
-
-                //Set the distance travelled
+                float cumulativeMoveSpeed = speed * Time.deltaTime;
+                transform.position += transform.forward * cumulativeMoveSpeed;
+                
+                // Set the distance travelled
                 m_distanceTravelled = m_moveDistance - Vector3.Distance(transform.position, m_curGoalPos);
 
-                //Check if we're at our destination.
+                // Rotation
+                float cumulativeLookSpeed = m_baseLookSpeed * speed * Time.deltaTime;
+                Quaternion targetRotation = Quaternion.LookRotation((m_curGoalPos - transform.position).normalized);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
+                
+                // Check if we're at our destination
                 if (Vector3.Distance(transform.position, m_curGoalPos) <= 0.05f)
                 {
                     //Get the next destination, even if we're attacking right now.
                     UpdateMoveDestination();
                     SetConeDistances();
                 }
-
                 break;
             case BossState.RotateToTarget:
+                // Move forward
+                speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+                cumulativeMoveSpeed = speed * Time.deltaTime;
+                transform.position += transform.forward * cumulativeMoveSpeed;
+                
+                // Rotation
+                cumulativeLookSpeed = m_baseLookSpeed * speed * Time.deltaTime;
+                targetRotation = Quaternion.LookRotation((m_curGoalPos - transform.position).normalized);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
+                
                 // Calculate the rotation to face the target
                 Quaternion rotationToCastle = Quaternion.LookRotation(m_castlePos - transform.position);
                 float rotationToCastledotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToCastle));
 
-                transform.rotation = Quaternion.Slerp(transform.rotation, rotationToCastle, m_baseLookSpeed * Time.deltaTime);
-
+                // Check if we're at our destination
                 if (rotationToCastledotProduct >= m_rotationThreadhold)
                 {
                     UpdateBossState(BossState.AttackTarget);
                 }
-
                 break;
             case BossState.AttackTarget:
                 break;
@@ -424,7 +430,7 @@ public class EnemyDragon : EnemyController
         }
         else
         {
-            UpdateBossState(BossState.RotateToDestination);
+            UpdateBossState(BossState.MoveToDestination);
         }
     }
 
@@ -440,16 +446,23 @@ public class EnemyDragon : EnemyController
         m_distanceTravelled = 0f;
     }
 
+    private float m_curDissolve = 1;
     void HandleCone()
     {
         //If the cone is disabled, and we're after start, before end, turn on cone.
-        if (!m_muzzleObj.activeSelf && m_distanceTravelled > m_coneStartDelay && m_distanceTravelled < m_coneEndBuffer)
+        if (!m_colliderObj.activeSelf && m_distanceTravelled > m_coneStartDelay && m_distanceTravelled < m_coneEndBuffer)
         {
-            m_muzzleObj.SetActive(true);
+            m_colliderObj.SetActive(true);
+            m_dragonBreathVFX.Play();
+            DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 0f, 1f)
+                .OnUpdate(() => m_dragonBreathVFX.SetFloat("Dissolve", m_curDissolve));
         }
-        else if (m_muzzleObj.activeSelf && (m_distanceTravelled < m_coneStartDelay || m_distanceTravelled > m_coneEndBuffer))
+        else if (m_colliderObj.activeSelf && (m_distanceTravelled < m_coneStartDelay || m_distanceTravelled > m_coneEndBuffer))
         {
-            m_muzzleObj.SetActive(false);
+            m_colliderObj.SetActive(false);
+            m_dragonBreathVFX.Stop();
+            DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 1f, 1f)
+                .OnUpdate(() => m_dragonBreathVFX.SetFloat("Dissolve", m_curDissolve));
         }
     }
     

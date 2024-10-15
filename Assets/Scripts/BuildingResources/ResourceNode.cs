@@ -12,6 +12,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     public ResourceNodeData m_nodeData;
     [SerializeField] private Animator m_animator;
     [SerializeField] private GameObject m_modelRoot;
+    [SerializeField] private GameObject m_treeBurnedVFX;
     [SerializeField] private List<GameObject> m_objectsToToggle;
 
     private int m_resourcesRemaining;
@@ -156,6 +157,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (col.gameObject.CompareTag("ForestRemover"))
         {
             OnDepletion(false);
+            ObjectPoolManager.SpawnObject(m_treeBurnedVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
     }
 }
