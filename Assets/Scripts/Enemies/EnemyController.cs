@@ -422,7 +422,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         
         if (m_deathVFX)
         {
-            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
 
         m_animator.SetTrigger("IsDead");

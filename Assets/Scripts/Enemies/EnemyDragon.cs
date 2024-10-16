@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using DG.Tweening;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.VFX;
+using UnityEngine.VFX.Utility;
 using Random = UnityEngine.Random;
 
 public class EnemyDragon : EnemyController
@@ -13,12 +15,14 @@ public class EnemyDragon : EnemyController
     public GameObject m_colliderObj;
     public int m_castlePathingRadius = 8;
     public List<GameObject> m_dragonBoneObjs;
+    public List<GameObject> m_dragonBoneVFXTransforms;
     public List<GameObject> m_dragonBones;
     public float m_dragonBoneSpacing = .5f;
     public VisualEffect m_dragonBreathVFX;
-    
+    public VisualEffect m_dragonSpineVFX;
+
     private BossSequenceController m_bossSequenceController;
-    
+
     private int m_startGoalIndex;
     private int m_curGoalIndex;
     private List<Vector2Int> m_curPositionList;
@@ -36,7 +40,7 @@ public class EnemyDragon : EnemyController
     private List<Vector2Int> m_bossGridCellPositions = new List<Vector2Int>();
     private List<BossObeliskObj> m_bossObeliskPathPoints = new List<BossObeliskObj>();
     private int m_bossObeliskPathIndex = 0;
-    private List<BoneTransform> m_previousBoneTransforms = new List<BoneTransform>();
+    private Queue<BoneTransform> m_headTransformHistory = new Queue<BoneTransform>();
 
     private enum BossState
     {
@@ -51,29 +55,32 @@ public class EnemyDragon : EnemyController
     public override void SetupEnemy(bool active)
     {
         base.SetupEnemy(active);
-        
+
         SetBossPathPoints();
-        
+
         SetSpawnPosition();
 
         InitiateBossMovement();
-        
+
         SetSequenceController(GameplayManager.Instance.GetActiveBossController());
 
-        foreach (GameObject obj in m_dragonBoneObjs)
+        for (var i = 0; i < m_dragonBoneObjs.Count; i++)
         {
-            m_dragonBones.Add(ObjectPoolManager.SpawnObject(obj, m_enemyModelRoot.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy));
+            var obj = m_dragonBoneObjs[i];
+            GameObject newBone = ObjectPoolManager.SpawnObject(obj, m_enemyModelRoot.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
+            m_dragonBones.Add(newBone);
+            EnemySwarmMember swarmMemberController = newBone.GetComponent<EnemySwarmMember>();
+            swarmMemberController.SetEnemyData(m_enemyData);
+            swarmMemberController.SetMother(this);
+            m_dragonBoneVFXTransforms[i + 1].transform.SetParent(newBone.transform);
+            m_dragonBoneVFXTransforms[i + 1].transform.localPosition = Vector3.zero;
         }
-        
-        for (int i = 0; i < m_dragonBones.Count; i++)
-        {
-            m_previousBoneTransforms.Add(new BoneTransform(m_dragonBones[i].transform.position, m_dragonBones[i].transform.rotation, m_dragonBones[i].transform.localScale));
-        }
-        
+
+
         m_colliderObj.SetActive(false);
         m_dragonBreathVFX.Stop();
     }
-    
+
     public void SetSequenceController(BossSequenceController controller)
     {
         m_bossSequenceController = controller;
@@ -84,7 +91,7 @@ public class EnemyDragon : EnemyController
         //Build the grid.
         Vector2Int centerPoint = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_castleController.transform.position);
         m_bossGridCellPositions = DiamondGenerator(centerPoint, m_castlePathingRadius);
-        
+
         m_curPositionList = m_bossGridCellPositions; // We start rotating around the bass first.
 
         foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission) // Get the points around obelisks we want to move towards. Then sort them by obelisk completion %.
@@ -99,14 +106,14 @@ public class EnemyDragon : EnemyController
 
         m_bossObeliskPathPoints.Sort(new BossObeliskObjComparer());
     }
-    
+
     void SetSpawnPosition()
     {
         //Find the position we want to spawn the boss.
         //Spawn it horizontally centered to the castle, and just off the height of the grid (off screen).
-        
+
         float spawnOffset = 5f;
-        
+
         Vector3 castlePosition = GameplayManager.Instance.m_castleController.transform.position;
         float castleXPosition = castlePosition.x;
         float castleZPosition = castlePosition.z;
@@ -118,12 +125,11 @@ public class EnemyDragon : EnemyController
         float zDelta = castleZPosition; //Default to distance from bottom edge.
         float xMultiplier = -1;
         float zMultiplier = -1;
-        
+
         if (castleXPosition < gridXWidth / 2) //If true, we're closer to the left edge.
         {
             xDelta = gridXWidth - castleXPosition; //Furthest horizontal edge is the right.
             xMultiplier = 1; //We are moving right from the castle position.
-
         }
 
         if (castleZPosition < gridZHeight / 2) //If true, we're closer to the bottom edge.
@@ -157,10 +163,10 @@ public class EnemyDragon : EnemyController
             }
         }
 
-        Vector3 spawnPos = new Vector3(castleXPosition + ((xDelta +spawnOffset) * xMultiplier), 0, castleZPosition + ((zDelta + spawnOffset) * zMultiplier));
+        Vector3 spawnPos = new Vector3(castleXPosition + ((xDelta + spawnOffset) * xMultiplier), 0, castleZPosition + ((zDelta + spawnOffset) * zMultiplier));
         transform.position = spawnPos;
     }
-    
+
     void InitiateBossMovement()
     {
         //If we just spawned, travel towards N units away from the castle.
@@ -170,7 +176,7 @@ public class EnemyDragon : EnemyController
         transform.rotation = Quaternion.LookRotation(m_curGoalPos - transform.position);
         UpdateBossState(BossState.MoveToDestination);
     }
-    
+
     public (List<Vector2Int>, Vector3, int) GetNextGoalList(Vector3 curPos)
     {
         //Our obelisks lists are sorted from Closest to completetion to lowest.
@@ -188,8 +194,8 @@ public class EnemyDragon : EnemyController
             newList = m_bossObeliskPathPoints[m_bossObeliskPathIndex].m_obeliskPointPositions; //List to send 
             ++m_bossObeliskPathIndex; //Increment for next loop
         }
-        
-        //We now need to find the closts point in the list to move to.
+
+        /*//We now need to find the closts point in the list to move to.
         Vector3 closestGoalPos = new Vector3();
         int pathingStartIndex = 0;
         float shortestDistance = 9999f;
@@ -202,11 +208,27 @@ public class EnemyDragon : EnemyController
                 shortestDistance = distance;
                 pathingStartIndex = i;
             }
+        }*/
+
+        //We now need to find the closts point in the list to move to.
+        Vector3 nextGoalPos = new Vector3();
+        int pathingStartIndex = 0;
+        float savedDistance = -1;
+
+        for (int i = 0; i < newList.Count; ++i)
+        {
+            Vector3 pointPos = new Vector3(newList[i].x, 0, newList[i].y);
+            float distance = Vector3.Distance(curPos, pointPos);
+            if (distance >= savedDistance)
+            {
+                savedDistance = distance;
+                pathingStartIndex = i;
+            }
         }
 
-        closestGoalPos = GetNextGoalPosition(newList, pathingStartIndex);
-        
-        return (newList, closestGoalPos, pathingStartIndex);
+        nextGoalPos = GetNextGoalPosition(newList, pathingStartIndex);
+
+        return (newList, nextGoalPos, pathingStartIndex);
     }
 
     public Vector3 GetNextGoalPosition(List<Vector2Int> curPositionList, int i)
@@ -255,7 +277,7 @@ public class EnemyDragon : EnemyController
         return (goalIndex, goalPos);
     }
 
-    
+
     public enum SpawnDirection
     {
         North,
@@ -268,7 +290,7 @@ public class EnemyDragon : EnemyController
 
     public override void HandleMovement()
     {
-        
+        //
     }
 
     void UpdateBossState(BossState newState)
@@ -325,12 +347,12 @@ public class EnemyDragon : EnemyController
                 break;
             case BossState.MoveToDestination:
                 if (m_moveCounter % ((BossEnemyData)m_enemyData).m_strafeAttackRate != 0) HandleCone();
-                
+
                 // Move forward
                 float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
                 float cumulativeMoveSpeed = speed * Time.deltaTime;
                 transform.position += transform.forward * cumulativeMoveSpeed;
-                
+
                 // Set the distance travelled
                 m_distanceTravelled = m_moveDistance - Vector3.Distance(transform.position, m_curGoalPos);
 
@@ -338,7 +360,7 @@ public class EnemyDragon : EnemyController
                 float cumulativeLookSpeed = m_baseLookSpeed * speed * Time.deltaTime;
                 Quaternion targetRotation = Quaternion.LookRotation((m_curGoalPos - transform.position).normalized);
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
-                
+
                 // Check if we're at our destination
                 if (Vector3.Distance(transform.position, m_curGoalPos) <= 0.05f)
                 {
@@ -346,18 +368,19 @@ public class EnemyDragon : EnemyController
                     UpdateMoveDestination();
                     SetConeDistances();
                 }
+
                 break;
             case BossState.RotateToTarget:
                 // Move forward
                 speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
                 cumulativeMoveSpeed = speed * Time.deltaTime;
                 transform.position += transform.forward * cumulativeMoveSpeed;
-                
+
                 // Rotation
                 cumulativeLookSpeed = m_baseLookSpeed * speed * Time.deltaTime;
                 targetRotation = Quaternion.LookRotation((m_curGoalPos - transform.position).normalized);
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
-                
+
                 // Calculate the rotation to face the target
                 Quaternion rotationToCastle = Quaternion.LookRotation(m_castlePos - transform.position);
                 float rotationToCastledotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToCastle));
@@ -367,6 +390,7 @@ public class EnemyDragon : EnemyController
                 {
                     UpdateBossState(BossState.AttackTarget);
                 }
+
                 break;
             case BossState.AttackTarget:
                 break;
@@ -375,33 +399,73 @@ public class EnemyDragon : EnemyController
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+    }
+
+    void FixedUpdate()
+    {
+        HandleBonePositioning();
+    }
+
+    private Vector3 m_previousHeadPosition;
+    private float m_movementThreshold = 0.01f;
+
+    void HandleBonePositioning()
+    {
+        Vector3 currentHeadPosition = m_dragonBones[0].transform.position;
+
+        // Check if the head has moved more than the threshold distance from the previous frame
+        if (Vector3.Distance(currentHeadPosition, m_previousHeadPosition) > m_movementThreshold)
+        {
+            // Add our position this frame
+            BoneTransform m_curBoneTransform = new BoneTransform(m_dragonBones[0].transform.position, m_dragonBones[0].transform.rotation, m_dragonBones[0].transform.localScale);
+            m_headTransformHistory.Enqueue(m_curBoneTransform);
+
+            // Keep length a certain length (Defined by move speed, spacing, and number of bones)
+            int maxHistoryLength = Mathf.CeilToInt(m_dragonBoneSpacing / (m_baseMoveSpeed * Time.deltaTime)) * m_dragonBones.Count;
+
+            // Remove the oldest item if the queue is too long.
+            if (m_headTransformHistory.Count > maxHistoryLength)
+            {
+                m_headTransformHistory.Dequeue();
+            }
+
+            // Update the previous head position for the next frame
+            m_previousHeadPosition = currentHeadPosition;
+        }
+
+        // Assign the position of each bone based on spacing
         for (int i = 1; i < m_dragonBones.Count; i++)
         {
-            float distance = Vector3.Distance(m_dragonBones[i].transform.position, m_previousBoneTransforms[i - 1].position);
+            Vector3 previousBonePosition = m_dragonBones[i - 1].transform.position;
+            float distance = Vector3.Distance(m_dragonBones[i].transform.position, previousBonePosition);
 
             if (distance > m_dragonBoneSpacing)
             {
-                BoneTransform targetTransform = m_previousBoneTransforms[i - 1];
-                m_dragonBones[i].transform.position = Vector3.Lerp(m_dragonBones[i].transform.position, targetTransform.position, m_baseMoveSpeed * Time.deltaTime / m_dragonBoneSpacing);
-                m_dragonBones[i].transform.rotation = Quaternion.Lerp(m_dragonBones[i].transform.rotation, targetTransform.rotation, m_baseMoveSpeed * Time.deltaTime / m_dragonBoneSpacing);
-                m_dragonBones[i].transform.localScale = Vector3.Lerp(m_dragonBones[i].transform.localScale, targetTransform.scale, m_baseMoveSpeed * Time.deltaTime / m_dragonBoneSpacing);
-            }
-        }
+                float fractionalIndex = m_headTransformHistory.Count - i * (m_dragonBoneSpacing / (m_baseMoveSpeed * Time.deltaTime));
+                fractionalIndex = Mathf.Clamp(fractionalIndex, 0, m_headTransformHistory.Count - 1);
 
-        // Update the previousTransforms list after moving all bones
-        for (int i = 0; i < m_dragonBones.Count; i++)
-        {
-            m_previousBoneTransforms[i] = new BoneTransform(m_dragonBones[i].transform.position, m_dragonBones[i].transform.rotation, m_dragonBones[i].transform.localScale);
+                // Get the integer part and the remainder (fractional part) of the index
+                int lowerIndex = Mathf.FloorToInt(fractionalIndex);
+                int upperIndex = Mathf.Min(lowerIndex + 1, m_headTransformHistory.Count - 1);
+                float lerpFactor = fractionalIndex - lowerIndex;
+
+                BoneTransform lowerTransform = m_headTransformHistory.ElementAt(lowerIndex);
+                BoneTransform upperTransform = m_headTransformHistory.ElementAt(upperIndex);
+
+                // Set transform of bone
+                m_dragonBones[i].transform.position = Vector3.Lerp(lowerTransform.position, upperTransform.position, lerpFactor);
+                m_dragonBones[i].transform.rotation = Quaternion.Lerp(lowerTransform.rotation, upperTransform.rotation, lerpFactor);
+                m_dragonBones[i].transform.localScale = Vector3.Lerp(lowerTransform.scale, upperTransform.scale, lerpFactor);
+            }
         }
     }
 
     void UpdateMoveDestination()
     {
         m_isStrafing = true;
-        
+
         ++m_curGoalIndex;
-        
+
         if (m_curGoalIndex == m_curPositionList.Count)
         {
             m_curGoalIndex = 0;
@@ -422,7 +486,7 @@ public class EnemyDragon : EnemyController
         }
 
         m_moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
-        
+
         //Do we need to Rotate to a new Destination, or Rotate to attack the castle?
         if (m_moveCounter % ((BossEnemyData)m_enemyData).m_castleAttackRate == 0)
         {
@@ -447,6 +511,7 @@ public class EnemyDragon : EnemyController
     }
 
     private float m_curDissolve = 1;
+
     void HandleCone()
     {
         //If the cone is disabled, and we're after start, before end, turn on cone.
@@ -465,7 +530,7 @@ public class EnemyDragon : EnemyController
                 .OnUpdate(() => m_dragonBreathVFX.SetFloat("Dissolve", m_curDissolve));
         }
     }
-    
+
 
     public override void RemoveObject()
     {
@@ -477,10 +542,10 @@ public class EnemyDragon : EnemyController
             bossShardObj.GetComponent<BossShard>().SetupBossShard(spawner.transform.position);
             spawner.SetSpawnerStatusEffect(((BossEnemyData)m_enemyData).m_spawnStatusEffect, ((BossEnemyData)m_enemyData).m_spawnStatusEffectWaveDuration);
         }*/
-        
+
         base.RemoveObject();
     }
-    
+
     private List<Vector2Int> HexagonGenerator(Vector2Int centerPoint, int radius)
     {
         List<Vector2Int> points = new List<Vector2Int>();
@@ -498,7 +563,7 @@ public class EnemyDragon : EnemyController
 
         return points;
     }
-    
+
     private List<Vector2Int> DiamondGenerator(Vector2Int centerPoint, int radius)
     {
         List<Vector2Int> points = new List<Vector2Int>();
@@ -516,18 +581,18 @@ public class EnemyDragon : EnemyController
 
         return points;
     }
-    
+
     public override void AddToGameplayList()
     {
         GameplayManager.Instance.AddBossToList(this);
     }
-    
+
     public override void RemoveFromGameplayList()
     {
         m_bossSequenceController.BossRemoved(m_curHealth);
         GameplayManager.Instance.RemoveBossFromList(this);
     }
-    
+
     public override void SetupUI()
     {
         //Setup the Boss health meter.

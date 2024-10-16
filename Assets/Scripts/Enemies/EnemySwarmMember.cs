@@ -115,6 +115,11 @@ public class EnemySwarmMember : EnemyController
         
         m_curHealth = 0;
         
+        if (m_deathVFX)
+        {
+            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        }
+        
         //Return effects to pool.
         foreach (StatusEffect activeEffect in m_statusEffects)
         {
