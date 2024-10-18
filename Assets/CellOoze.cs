@@ -25,7 +25,8 @@ public class CellOoze : MonoBehaviour
     void OnEnable()
     {
         m_curDissolve = 1f;
-        
+        m_cellOozeVFX.SetFloat("Dissolve", m_curDissolve);
+        m_towerDisableVFX.SetFloat("Dissolve", m_curDissolve);
     }
 
     public void SetOozeCell(Cell cell)

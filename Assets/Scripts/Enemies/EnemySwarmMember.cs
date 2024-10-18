@@ -147,8 +147,12 @@ public class EnemySwarmMember : EnemyController
         //m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
         if (m_returnToPool)
         {
-            ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
+            m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
+            m_motherEnemyController.UpdateHealth -= MotherTakeDamage;
+            StartDissolve(RemoveObject);
+            return;
         }
+        
         StartDissolve(null);
     }
     

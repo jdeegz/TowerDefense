@@ -1347,7 +1347,7 @@ public class OozeManager
 {
     public List<Cell> m_currentOozedCells = new List<Cell>();
 
-    void Awake()
+    public OozeManager()
     {
         GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
     }

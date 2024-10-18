@@ -79,6 +79,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void SetupEnemy(bool active)
     {
         m_isComplete = false;
+        
+        m_cellsTravelled = -1;
 
         if (GameplayManager.Instance)
         {

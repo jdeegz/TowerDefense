@@ -13,6 +13,7 @@ public class EnemyThrall : EnemyController
     public StatusEffectData m_vulnerabilityEffectData;          // The effect applied while oozing.
     private List<Cell> m_newOozeCells;
     private float m_storedSpeedModifier;
+    private Coroutine m_oozeCoroutine;
     
     public void SetHost(EnemyHost enemyHost)
     {
@@ -25,7 +26,8 @@ public class EnemyThrall : EnemyController
     {
         
         //Send damage to enemyHost
-        m_enemyHost.OnTakeDamage(dmg);
+        float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
+        m_enemyHost.OnTakeDamage(cumDamage);
 
         //Audio
         int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
@@ -66,7 +68,7 @@ public class EnemyThrall : EnemyController
         
         m_newOozeCells = GetOozeCells(m_oozeCount);
 
-        StartCoroutine(SpawnOozeWithDelay());
+        m_oozeCoroutine = StartCoroutine(SpawnOozeWithDelay());
     }
     
     IEnumerator SpawnOozeWithDelay()
@@ -89,6 +91,7 @@ public class EnemyThrall : EnemyController
         m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
         m_lastSpeedModifierSlower = m_storedSpeedModifier;
         m_animator.SetTrigger("IsWalking");
+        m_oozeCoroutine = null;
     }
 
     List<Cell> GetOozeCells(int oozeCount)
@@ -143,17 +146,18 @@ public class EnemyThrall : EnemyController
         }
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
     }
-    //
-    
-    //REDIRECT EFFECTS TO HOST.
-    public override void RequestRemoveEffect(GameObject sender)
+
+    public override void OnEnemyDestroyed(Vector3 pos)
     {
-        m_enemyHost.RequestRemoveEffect(sender);
-    }
-    
-    public override void ApplyEffect(StatusEffect statusEffect)
-    {
-        m_enemyHost.ApplyEffect(statusEffect);
+        if (m_oozeCoroutine != null)
+        {
+            StopCoroutine(m_oozeCoroutine);
+            m_lastSpeedModifierSlower = m_storedSpeedModifier;
+            m_animator.SetTrigger("IsWalking");
+            m_oozeCoroutine = null;
+        }
+        
+        base.OnEnemyDestroyed(pos);
     }
     //
     

@@ -46,7 +46,7 @@ public class EnemyDragon : EnemyController
     private float m_moveSpeed;
     private float m_attackingSpeedModifier = 1;
     private float m_rampingLookSpeed = 0;
-    
+
     private enum BossState
     {
         Idle,
@@ -61,6 +61,16 @@ public class EnemyDragon : EnemyController
     {
         base.SetupEnemy(active);
 
+        if (m_dragonBones.Count > 1) // Reset the list of bones to just the head bone (head bone is pre-assigned in the prefab)
+        {
+            m_dragonBones.RemoveRange(1, m_dragonBones.Count - 1);
+        }
+
+        m_headTransformHistory = new Queue<BoneTransform>();
+
+
+        UpdateBossState(BossState.Idle);
+
         SetBossPathPoints();
 
         SetSpawnPosition();
@@ -68,7 +78,6 @@ public class EnemyDragon : EnemyController
         InitiateBossMovement();
 
         SetSequenceController(GameplayManager.Instance.GetActiveBossController());
-
         for (var i = 0; i < m_dragonBoneObjs.Count; i++)
         {
             var obj = m_dragonBoneObjs[i];
@@ -78,13 +87,34 @@ public class EnemyDragon : EnemyController
             swarmMemberController.SetEnemyData(m_enemyData);
             swarmMemberController.SetMother(this);
             swarmMemberController.m_returnToPool = true;
-            m_dragonBoneVFXTransforms[i + 1].transform.SetParent(newBone.transform);
-            m_dragonBoneVFXTransforms[i + 1].transform.localPosition = Vector3.zero;
+        }
+
+        for (int x = 0; x < m_dragonBones.Count; x++)
+        {
+            m_dragonBoneVFXTransforms[x].transform.SetParent(m_dragonBones[x].transform);
+            m_dragonBoneVFXTransforms[x].transform.localPosition = Vector3.zero;
         }
 
 
         m_colliderObj.SetActive(false);
         m_dragonBreathVFX.Stop();
+    }
+
+    public override void OnEnemyDestroyed(Vector3 pos)
+    {
+        if (m_curCoroutine != null)
+        {
+            StopCoroutine(m_curCoroutine);
+            m_curCoroutine = null;
+        }
+
+        foreach (GameObject obj in m_dragonBoneVFXTransforms)
+        {
+            obj.transform.SetParent(gameObject.transform);
+            obj.transform.position = Vector3.zero;
+        }
+
+        base.OnEnemyDestroyed(pos);
     }
 
     public void SetSequenceController(BossSequenceController controller)
@@ -315,7 +345,6 @@ public class EnemyDragon : EnemyController
             case BossState.AttackTarget:
                 break;
             case BossState.Death:
-                if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -329,8 +358,9 @@ public class EnemyDragon : EnemyController
             m_attackingSpeedModifier -= 1 * Time.deltaTime;
             yield return null;
         }
+
         m_attackingSpeedModifier = 0;
-        
+
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackDelay);
         HandleAttack();
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackCooldown);
@@ -339,11 +369,12 @@ public class EnemyDragon : EnemyController
             m_attackingSpeedModifier += 1 * Time.deltaTime;
             yield return null;
         }
+
         m_attackingSpeedModifier = 1;
-        
+
         UpdateMoveDestination();
         UpdateBossState(BossState.MoveToDestination);
-        
+
         m_curCoroutine = null;
     }
 
@@ -359,6 +390,7 @@ public class EnemyDragon : EnemyController
     }
 
     private float m_previousAngleToTarget;
+
     public void Update()
     {
         if (!m_isActive) return;
@@ -368,7 +400,7 @@ public class EnemyDragon : EnemyController
         m_moveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * Mathf.Sqrt(m_lastSpeedModifierSlower) * m_attackingSpeedModifier;
         m_cumulativeMoveSpeed = m_moveSpeed * Time.deltaTime;
         m_cumulativeLookSpeed = m_baseLookSpeed * m_attackingSpeedModifier * Time.deltaTime;
-        
+
         switch (m_bossState)
         {
             case BossState.Idle:
@@ -438,11 +470,12 @@ public class EnemyDragon : EnemyController
 
     private Vector3 m_previousHeadPosition;
     private float m_movementThreshold = 0.001f;
+
     void HandleBonePositioning()
     {
         // Check if the head has moved more than the threshold distance from the previous frame
         Vector3 currentHeadPosition = m_dragonBones[0].transform.position;
-        
+
         if (Vector3.Distance(currentHeadPosition, m_previousHeadPosition) > m_movementThreshold)
         {
             // Add our position this frame
@@ -463,14 +496,14 @@ public class EnemyDragon : EnemyController
             {
                 float transformHistoryFloat = Mathf.Clamp(m_headTransformHistory.Count - i * m_dragonBoneSpacing / (m_baseMoveSpeed * Time.fixedDeltaTime), 0, m_headTransformHistory.Count - 1);
                 int transformHistoryIndex = Mathf.FloorToInt(transformHistoryFloat);
-               
+
                 BoneTransform targetTransform = m_headTransformHistory.ElementAt(transformHistoryIndex);
 
                 // Set transform of bone
                 m_dragonBones[i].transform.position = targetTransform.position;
                 m_dragonBones[i].transform.rotation = targetTransform.rotation;
                 m_dragonBones[i].transform.localScale = targetTransform.scale;
-                
+
                 //If this ends up needing polish, try removing the assignment of p/r/s, and replacing it with a lerp-to-transform and use m_moveSpeed as the lerp factor.
             }
         }
@@ -502,9 +535,9 @@ public class EnemyDragon : EnemyController
         }
 
         m_moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
-        
+
         SetConeDistances();
-        
+
         //Do we need to Rotate to a new Destination, or Rotate to attack the castle?
         if (m_moveCounter % ((BossEnemyData)m_enemyData).m_castleAttackRate == 0)
         {
