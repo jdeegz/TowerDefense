@@ -94,6 +94,9 @@ public class GameplayManager : MonoBehaviour
     private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
 
     private bool m_watchingCutScene;
+    
+    //Ooze Cell Info
+    public OozeManager m_oozeManager;
 
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
@@ -1337,5 +1340,45 @@ public class GameplayManager : MonoBehaviour
     public BossSequenceController GetActiveBossController()
     {
         return m_activeBossSequenceController;
+    }
+}
+
+public class OozeManager
+{
+    public List<Cell> m_currentOozedCells = new List<Cell>();
+
+    void Awake()
+    {
+        GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
+    }
+
+    private void GameplayStateChanged(GameplayManager.GameplayState newState)
+    {
+        if (m_currentOozedCells.Count <= 0) return;
+        
+        if (newState == GameplayManager.GameplayState.Build)
+        {
+            m_currentOozedCells.Clear();
+            Debug.Log($"List of Ooze cleared.");
+        }
+    }
+
+
+    public bool IsCellOozed(Cell cell)
+    {
+        return m_currentOozedCells.Contains(cell);
+    }
+
+    public void AddCell(Cell cell)
+    {
+        m_currentOozedCells.Add(cell);
+    }
+    
+    public void RemoveCell(Cell cell)
+    {
+        if (m_currentOozedCells.Contains(cell))
+        {
+            m_currentOozedCells.Remove(cell);
+        }
     }
 }

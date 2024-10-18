@@ -6,11 +6,13 @@ using Random = UnityEngine.Random;
 public class EnemySwarmMember : EnemyController
 {
     private EnemyController m_motherEnemyController;
+    public bool m_returnToPool;
     
     public void SetMother(EnemyController mother)
     {
         m_motherEnemyController = mother;
         m_motherEnemyController.DestroyEnemy += OnEnemyDestroyed;
+        m_motherEnemyController.UpdateHealth += MotherTakeDamage;
         SetupEnemy(true);
     }
     
@@ -88,9 +90,10 @@ public class EnemySwarmMember : EnemyController
     public override void OnTakeDamage(float dmg)
     {
         m_motherEnemyController.OnTakeDamage(dmg);
-     
-        if (m_motherEnemyController.GetCurrentHP() <= 0) return;
-        
+    }
+
+    private void MotherTakeDamage(float dmg)
+    {
         if (m_allRenderers == null) return;
         if (m_hitFlashCoroutine != null)
         {
@@ -142,7 +145,10 @@ public class EnemySwarmMember : EnemyController
         }
         
         //m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
-        
+        if (m_returnToPool)
+        {
+            ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
+        }
         StartDissolve(null);
     }
     

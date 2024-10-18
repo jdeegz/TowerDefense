@@ -155,6 +155,15 @@ public class TowerChargeUp : Tower
         m_muzzleChargeVFX.SetFloat("_Speed", m_curStacks / 8);
         m_muzzleChargeVFX.SetFloat("_Rate", m_curStacks);
     }
+    
+    public override void RequestTowerDisable()
+    {
+        StopBeam();
+        m_muzzleChargeVFX.Stop();
+        m_curStacks = 0;
+
+        base.RequestTowerDisable();
+    }
 
     private void HandlePanelColor()
     {

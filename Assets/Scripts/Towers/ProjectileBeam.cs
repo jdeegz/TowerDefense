@@ -67,7 +67,7 @@ public class ProjectileBeam : MonoBehaviour
         m_visualEffect.Stop();
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 1f, 1f)
             .OnUpdate(() => m_visualEffect.SetFloat("Dissolve", m_curDissolve))
-            .OnComplete(() => ObjectPoolManager.OrphanObject(gameObject, 3f, ObjectPoolManager.PoolType.Projectile));
+            .OnComplete(() => ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Projectile));
     }
 
     private void UpdateBeamPositions()

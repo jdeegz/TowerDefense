@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
 using UnityEngine.VFX.Utility;
@@ -19,7 +20,6 @@ public class EnemyDragon : EnemyController
     public List<GameObject> m_dragonBones;
     public float m_dragonBoneSpacing = .5f;
     public VisualEffect m_dragonBreathVFX;
-    public VisualEffect m_dragonSpineVFX;
 
     private BossSequenceController m_bossSequenceController;
 
@@ -41,7 +41,12 @@ public class EnemyDragon : EnemyController
     private List<BossObeliskObj> m_bossObeliskPathPoints = new List<BossObeliskObj>();
     private int m_bossObeliskPathIndex = 0;
     private Queue<BoneTransform> m_headTransformHistory = new Queue<BoneTransform>();
-
+    private float m_cumulativeMoveSpeed;
+    private float m_cumulativeLookSpeed;
+    private float m_moveSpeed;
+    private float m_attackingSpeedModifier = 1;
+    private float m_rampingLookSpeed = 0;
+    
     private enum BossState
     {
         Idle,
@@ -72,6 +77,7 @@ public class EnemyDragon : EnemyController
             EnemySwarmMember swarmMemberController = newBone.GetComponent<EnemySwarmMember>();
             swarmMemberController.SetEnemyData(m_enemyData);
             swarmMemberController.SetMother(this);
+            swarmMemberController.m_returnToPool = true;
             m_dragonBoneVFXTransforms[i + 1].transform.SetParent(newBone.transform);
             m_dragonBoneVFXTransforms[i + 1].transform.localPosition = Vector3.zero;
         }
@@ -307,7 +313,6 @@ public class EnemyDragon : EnemyController
             case BossState.RotateToTarget:
                 break;
             case BossState.AttackTarget:
-                m_curCoroutine = StartCoroutine(Attack());
                 break;
             case BossState.Death:
                 if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
@@ -319,11 +324,27 @@ public class EnemyDragon : EnemyController
 
     private IEnumerator Attack()
     {
+        while (m_attackingSpeedModifier > 0)
+        {
+            m_attackingSpeedModifier -= 1 * Time.deltaTime;
+            yield return null;
+        }
+        m_attackingSpeedModifier = 0;
+        
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackDelay);
         HandleAttack();
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackCooldown);
+        while (m_attackingSpeedModifier < 1)
+        {
+            m_attackingSpeedModifier += 1 * Time.deltaTime;
+            yield return null;
+        }
+        m_attackingSpeedModifier = 1;
+        
         UpdateMoveDestination();
         UpdateBossState(BossState.MoveToDestination);
+        
+        m_curCoroutine = null;
     }
 
     private IEnumerator UpdateStateAfterDelay(float i, BossState newState)
@@ -337,8 +358,17 @@ public class EnemyDragon : EnemyController
         ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation, null, ObjectPoolManager.PoolType.Projectile);
     }
 
+    private float m_previousAngleToTarget;
     public void Update()
     {
+        if (!m_isActive) return;
+
+        if (m_curHealth > 0) UpdateStatusEffects();
+
+        m_moveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * Mathf.Sqrt(m_lastSpeedModifierSlower) * m_attackingSpeedModifier;
+        m_cumulativeMoveSpeed = m_moveSpeed * Time.deltaTime;
+        m_cumulativeLookSpeed = m_baseLookSpeed * m_attackingSpeedModifier * Time.deltaTime;
+        
         switch (m_bossState)
         {
             case BossState.Idle:
@@ -349,46 +379,46 @@ public class EnemyDragon : EnemyController
                 if (m_moveCounter % ((BossEnemyData)m_enemyData).m_strafeAttackRate != 0) HandleCone();
 
                 // Move forward
-                float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-                float cumulativeMoveSpeed = speed * Time.deltaTime;
-                transform.position += transform.forward * cumulativeMoveSpeed;
+                transform.position += transform.forward * m_cumulativeMoveSpeed;
 
                 // Set the distance travelled
                 m_distanceTravelled = m_moveDistance - Vector3.Distance(transform.position, m_curGoalPos);
 
                 // Rotation
-                float cumulativeLookSpeed = m_baseLookSpeed * speed * Time.deltaTime;
                 Quaternion targetRotation = Quaternion.LookRotation((m_curGoalPos - transform.position).normalized);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
+                float lookSpeed = m_cumulativeLookSpeed + m_rampingLookSpeed; // Adding a ramping look speed to avoid circling target.
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, lookSpeed);
+
+                if (transform.rotation != targetRotation)
+                {
+                    m_rampingLookSpeed += Time.deltaTime;
+                }
 
                 // Check if we're at our destination
                 if (Vector3.Distance(transform.position, m_curGoalPos) <= 0.05f)
                 {
                     //Get the next destination, even if we're attacking right now.
+                    m_rampingLookSpeed = 0;
                     UpdateMoveDestination();
-                    SetConeDistances();
                 }
 
                 break;
             case BossState.RotateToTarget:
                 // Move forward
-                speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-                cumulativeMoveSpeed = speed * Time.deltaTime;
-                transform.position += transform.forward * cumulativeMoveSpeed;
+                transform.position += transform.forward * m_cumulativeMoveSpeed;
 
                 // Rotation
-                cumulativeLookSpeed = m_baseLookSpeed * speed * Time.deltaTime;
                 targetRotation = Quaternion.LookRotation((m_curGoalPos - transform.position).normalized);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, m_cumulativeLookSpeed);
 
                 // Calculate the rotation to face the target
                 Quaternion rotationToCastle = Quaternion.LookRotation(m_castlePos - transform.position);
                 float rotationToCastledotProduct = Mathf.Abs(Quaternion.Dot(transform.rotation, rotationToCastle));
 
                 // Check if we're at our destination
-                if (rotationToCastledotProduct >= m_rotationThreadhold)
+                if (rotationToCastledotProduct >= m_rotationThreadhold && m_curCoroutine == null)
                 {
-                    UpdateBossState(BossState.AttackTarget);
+                    m_curCoroutine = StartCoroutine(Attack());
                 }
 
                 break;
@@ -407,55 +437,41 @@ public class EnemyDragon : EnemyController
     }
 
     private Vector3 m_previousHeadPosition;
-    private float m_movementThreshold = 0.01f;
-
+    private float m_movementThreshold = 0.001f;
     void HandleBonePositioning()
     {
-        Vector3 currentHeadPosition = m_dragonBones[0].transform.position;
-
         // Check if the head has moved more than the threshold distance from the previous frame
+        Vector3 currentHeadPosition = m_dragonBones[0].transform.position;
+        
         if (Vector3.Distance(currentHeadPosition, m_previousHeadPosition) > m_movementThreshold)
         {
             // Add our position this frame
             BoneTransform m_curBoneTransform = new BoneTransform(m_dragonBones[0].transform.position, m_dragonBones[0].transform.rotation, m_dragonBones[0].transform.localScale);
             m_headTransformHistory.Enqueue(m_curBoneTransform);
 
-            // Keep length a certain length (Defined by move speed, spacing, and number of bones)
-            int maxHistoryLength = Mathf.CeilToInt(m_dragonBoneSpacing / (m_baseMoveSpeed * Time.deltaTime)) * m_dragonBones.Count;
-
             // Remove the oldest item if the queue is too long.
-            if (m_headTransformHistory.Count > maxHistoryLength)
+            if (m_headTransformHistory.Count > m_dragonBones.Count * 80)
             {
                 m_headTransformHistory.Dequeue();
             }
 
             // Update the previous head position for the next frame
             m_previousHeadPosition = currentHeadPosition;
-        }
 
-        // Assign the position of each bone based on spacing
-        for (int i = 1; i < m_dragonBones.Count; i++)
-        {
-            Vector3 previousBonePosition = m_dragonBones[i - 1].transform.position;
-            float distance = Vector3.Distance(m_dragonBones[i].transform.position, previousBonePosition);
-
-            if (distance > m_dragonBoneSpacing)
+            // Assign the position of each bone based on spacing
+            for (int i = 1; i < m_dragonBones.Count; i++)
             {
-                float fractionalIndex = m_headTransformHistory.Count - i * (m_dragonBoneSpacing / (m_baseMoveSpeed * Time.deltaTime));
-                fractionalIndex = Mathf.Clamp(fractionalIndex, 0, m_headTransformHistory.Count - 1);
-
-                // Get the integer part and the remainder (fractional part) of the index
-                int lowerIndex = Mathf.FloorToInt(fractionalIndex);
-                int upperIndex = Mathf.Min(lowerIndex + 1, m_headTransformHistory.Count - 1);
-                float lerpFactor = fractionalIndex - lowerIndex;
-
-                BoneTransform lowerTransform = m_headTransformHistory.ElementAt(lowerIndex);
-                BoneTransform upperTransform = m_headTransformHistory.ElementAt(upperIndex);
+                float transformHistoryFloat = Mathf.Clamp(m_headTransformHistory.Count - i * m_dragonBoneSpacing / (m_baseMoveSpeed * Time.fixedDeltaTime), 0, m_headTransformHistory.Count - 1);
+                int transformHistoryIndex = Mathf.FloorToInt(transformHistoryFloat);
+               
+                BoneTransform targetTransform = m_headTransformHistory.ElementAt(transformHistoryIndex);
 
                 // Set transform of bone
-                m_dragonBones[i].transform.position = Vector3.Lerp(lowerTransform.position, upperTransform.position, lerpFactor);
-                m_dragonBones[i].transform.rotation = Quaternion.Lerp(lowerTransform.rotation, upperTransform.rotation, lerpFactor);
-                m_dragonBones[i].transform.localScale = Vector3.Lerp(lowerTransform.scale, upperTransform.scale, lerpFactor);
+                m_dragonBones[i].transform.position = targetTransform.position;
+                m_dragonBones[i].transform.rotation = targetTransform.rotation;
+                m_dragonBones[i].transform.localScale = targetTransform.scale;
+                
+                //If this ends up needing polish, try removing the assignment of p/r/s, and replacing it with a lerp-to-transform and use m_moveSpeed as the lerp factor.
             }
         }
     }
@@ -486,7 +502,9 @@ public class EnemyDragon : EnemyController
         }
 
         m_moveDistance = Vector3.Distance(transform.position, m_curGoalPos);
-
+        
+        SetConeDistances();
+        
         //Do we need to Rotate to a new Destination, or Rotate to attack the castle?
         if (m_moveCounter % ((BossEnemyData)m_enemyData).m_castleAttackRate == 0)
         {

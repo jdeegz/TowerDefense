@@ -151,6 +151,14 @@ public class TowerRay : Tower
         }
     }
 
+    public override void RequestTowerDisable()
+    {
+        StopBeam();
+        m_curStacks = 0;
+
+        base.RequestTowerDisable();
+    }
+    
     void StopBeam()
     {
         m_curTween.Kill();

@@ -198,7 +198,12 @@ MonoBehaviour:
   m_enemyData: {fileID: 11400000, guid: 820d1c96094b2654aba908ed2b5965e3, type: 2}
   m_targetPoint: {fileID: 4116745452977638444}
   m_enemyModelRoot: {fileID: 6845048733821058307}
-  m_animator: {fileID: 7920871163657439280}
+  m_animator: {fileID: 4898868573024446820}
+  m_cellsPerOoze: 3
+  m_oozeCount: 3
+  m_oozeRange: 1
+  m_oozeObj: {fileID: 2883283987095476597, guid: 95baef151f7c0cf448c0d4fbcf46e5ab, type: 3}
+  m_vulnerabilityEffectData: {fileID: 11400000, guid: e852b525c6840bc4e95f98d83416f195, type: 2}
 --- !u!1 &6845048733821058307
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,7 +233,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4254980874792211018}
+  - {fileID: 1521209347673142046}
   m_Father: {fileID: 1418423707145560828}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7204439019160517106
@@ -262,7 +267,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1418423707145560828}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &4361177630002607521
+--- !u!1001 &1339489570864157941
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -288,15 +293,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -327,13 +332,13 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
---- !u!4 &4254980874792211018 stripped
+--- !u!4 &1521209347673142046 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
-  m_PrefabInstance: {fileID: 4361177630002607521}
+  m_PrefabInstance: {fileID: 1339489570864157941}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &7920871163657439280 stripped
+--- !u!95 &4898868573024446820 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
-  m_PrefabInstance: {fileID: 4361177630002607521}
+  m_PrefabInstance: {fileID: 1339489570864157941}
   m_PrefabAsset: {fileID: 0}

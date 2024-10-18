@@ -65,6 +65,13 @@ public class TowerArc : Tower
         }
     }
 
+    public override void RequestTowerDisable()
+    {
+        m_flameTowerProjectile.Stop();
+
+        base.RequestTowerDisable();
+    }
+
     private float m_timeUntilSecondaryFire;
 
     private void HandleSecondaryAttack()

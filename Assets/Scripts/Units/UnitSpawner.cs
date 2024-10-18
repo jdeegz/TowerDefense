@@ -240,7 +240,8 @@ public class CreepSpawner
         if (m_delayElapsed && m_unitsSpawned < m_unitsToSpawn && m_elapsedTime >= m_nextSpawnInterval)
         {
             Vector3 spawnPoint = m_creepSpawnPoint.position;
-            Quaternion spawnRotation = Quaternion.LookRotation(Util.GetCellFrom3DPos(m_creepSpawnPoint.position).m_directionToNextCell);
+            Cell cell = Util.GetCellFrom3DPos(m_creepSpawnPoint.position);
+            Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
             float xOffset = Random.Range(-0.4f, 0.4f);
             float zOffset = Random.Range(-0.4f, 0.4f);
 

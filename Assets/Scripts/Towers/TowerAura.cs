@@ -35,6 +35,26 @@ public class TowerAura : Tower
         Reload();
     }
     
+    public override void RequestTowerDisable()
+    {
+        DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 1f, .2f)
+            .OnUpdate(() => m_auraVFX.SetFloat("Dissolve", m_curDissolve))
+            .OnComplete(() =>
+            {
+                m_auraVFX.Stop();
+                ObjectPoolManager.ReturnObjectToPool(m_auraVFX.gameObject, ObjectPoolManager.PoolType.ParticleSystem);
+                m_auraVFX = null;
+                base.RequestTowerDisable();
+            });
+    }
+    
+    public override void RequestTowerEnable()
+    {
+        base.RequestTowerEnable();
+
+        StartDome();
+    }
+    
     private void SetTargets()
     {
         //Restart Reload Timer
@@ -110,9 +130,12 @@ public class TowerAura : Tower
     {
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 1f, 1f)
             .OnUpdate(() => m_auraVFX.SetFloat("Dissolve", m_curDissolve))
-            .OnComplete(() => m_auraVFX.Stop())
-            .OnComplete(() => ObjectPoolManager.ReturnObjectToPool(m_auraVFX.gameObject, ObjectPoolManager.PoolType.ParticleSystem));
-        m_auraVFX = null;
+            .OnComplete(() =>
+            {
+                m_auraVFX.Stop();
+                ObjectPoolManager.ReturnObjectToPool(m_auraVFX.gameObject, ObjectPoolManager.PoolType.ParticleSystem);
+                m_auraVFX = null;
+            });
     }
     
     public override void RemoveTower()
@@ -130,7 +153,7 @@ public class TowerAura : Tower
         }
         m_targetsTracked.Clear();
         
-        //Resume virual function
+        //Resume virtual function
         base.RemoveTower();
     }
 

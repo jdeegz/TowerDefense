@@ -128,13 +128,18 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         Debug.Log($"{gameObject.name} harvester count updated from {m_harvesters - i} to {m_harvesters}");
     }
 
-    private void OnDepletion(bool harvested)
+    public void OnDepletion(bool harvested)
     {
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1, this);
         //Debug.Log($"{gameObject.name} has been Depleted.");
 
         //Setting this to 0 so it wont show up in Nearby Nodes check. (When dragon destroys node, the node was appearing in the FindNearbyNodes check)
         m_resourcesRemaining = 0;
+
+        if (!harvested)
+        {
+            ObjectPoolManager.SpawnObject(m_treeBurnedVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        }
 
         OnResourceNodeDepletion?.Invoke(this);
         Destroy(gameObject);
@@ -157,7 +162,6 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (col.gameObject.CompareTag("ForestRemover"))
         {
             OnDepletion(false);
-            ObjectPoolManager.SpawnObject(m_treeBurnedVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
     }
 }

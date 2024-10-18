@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class EnemyHost : EnemyController
 {
@@ -23,7 +24,16 @@ public class EnemyHost : EnemyController
         m_livingThralls = new List<EnemyThrall>();
         foreach (UnitSpawner spawner in spawners)
         {
-            GameObject thrallObj = ObjectPoolManager.SpawnObject(m_enemyThrall.gameObject, spawner.m_spawnPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
+            Vector3 spawnPoint = spawner.m_spawnPoint.position;
+            Cell cell = Util.GetCellFrom3DPos(spawner.transform.position);
+            Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
+            float xOffset = Random.Range(-0.4f, 0.4f);
+            float zOffset = Random.Range(-0.4f, 0.4f);
+
+            spawnPoint.x += xOffset;
+            spawnPoint.z += zOffset;
+
+            GameObject thrallObj = ObjectPoolManager.SpawnObject(m_enemyThrall.gameObject, spawnPoint, spawnRotation, null, ObjectPoolManager.PoolType.Enemy);
             EnemyThrall thrall = thrallObj.GetComponent<EnemyThrall>();
             thrall.SetHost(this);
             m_livingThralls.Add(thrall);
@@ -73,31 +83,12 @@ public class EnemyHost : EnemyController
     public override void OnTakeDamage(float dmg)
     {
         if (m_curHealth <= 0) return;
-        
         base.OnTakeDamage(dmg);
         
         //Flash all thralls
         foreach (EnemyThrall thrall in m_livingThralls)
         {
             thrall.HostHit();
-        }
-    }
-
-    public override void RequestRemoveEffect(GameObject sender)
-    {
-        //Remove effect from host
-        foreach (EnemyThrall thrall in m_livingThralls)
-        {
-            thrall.HostRemoveEffect(sender);
-        }
-    }
-    
-    public override void ApplyEffect(StatusEffect statusEffect)
-    {
-        //Apply effect to host
-        foreach (EnemyThrall thrall in m_livingThralls)
-        {
-            thrall.HostApplyEffect(statusEffect);
         }
     }
     

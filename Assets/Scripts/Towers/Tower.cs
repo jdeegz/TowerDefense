@@ -8,21 +8,25 @@ public abstract class Tower : MonoBehaviour
 {
     [Header("Tower Data")]
     [SerializeField] protected TowerData m_towerData;
+
     [SerializeField] protected StatusEffectData m_statusEffectData;
     [SerializeField] protected LayerMask m_layerMask;
     [SerializeField] protected LayerMask m_raycastLayerMask;
     protected int m_shieldLayer;
-    
+
     [Header("Attachment Points")]
     [SerializeField] protected Transform m_turretPivot;
+
     [SerializeField] protected Transform m_muzzlePoint;
-    
+
     [Header("Range Circle")]
     [SerializeField] protected LineRenderer m_towerRangeCircle;
+
     [SerializeField] protected int m_towerRangeCircleSegments;
-    
+
     [Space(15)]
     [SerializeField] protected bool m_isBuilt;
+
     protected bool m_hasTargets;
     protected Animator m_animator;
     protected AudioSource m_audioSource;
@@ -49,13 +53,28 @@ public abstract class Tower : MonoBehaviour
     {
     }
 
+    public virtual void RequestTowerDisable()
+    {
+        m_curTarget = null;
+        enabled = false;
+    }
+    
+    public virtual void RequestTowerEnable()
+    {
+        enabled = true;
+    }
+
     public abstract TowerTooltipData GetTooltipData();
     public abstract TowerUpgradeData GetUpgradeData();
     public abstract void SetUpgradeData(TowerUpgradeData data);
 
     public void FindTarget()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_fireRange, m_layerMask.value);
+        // Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_fireRange, m_layerMask.value);
+        // Trying a Capsule for player-friendly flying unit target acquisition.
+        Vector3 point1 = transform.position + Vector3.up * 10; // Top of the capsule
+        Vector3 point2 = transform.position - Vector3.up * 1; // Bottom of the capsule
+        Collider[] hits = Physics.OverlapCapsule(point1, point2, m_towerData.m_fireRange, m_layerMask.value);
         if (hits.Length <= 0)
         {
             m_curTarget = null;
@@ -64,7 +83,7 @@ public abstract class Tower : MonoBehaviour
         }
 
         //Maybe escape early if hits.Length is only 1?
-        
+
         List<EnemyController> targets = new List<EnemyController>();
         for (int i = 0; i < hits.Length; ++i)
         {
@@ -76,13 +95,13 @@ public abstract class Tower : MonoBehaviour
         }
 
         m_curTarget = GetPriorityTarget(targets);
-        
+
         if (m_curTarget != null)
         {
             m_targetCollider = m_curTarget.GetComponent<Collider>(); // Used for Void towers to check hit unit or shield.
         }
     }
-    
+
     public void RotateTowardsTarget()
     {
         Quaternion targetRotation = new Quaternion();
@@ -120,16 +139,19 @@ public abstract class Tower : MonoBehaviour
         Vector3 directionOfTarget = targetPos - muzzlePos;
         return Vector3.Angle(m_muzzlePoint.transform.forward, directionOfTarget) <= m_towerData.m_facingThreshold;
     }
-    
+
     protected bool IsTargetInFireRange(Vector3 targetPos)
     {
-        return Vector3.Distance(transform.position, targetPos) <= m_towerData.m_fireRange;
+        // Trying 2d range calculations to be more player friendly with the flying unit(s).
+        Vector2 pos = new Vector2(transform.position.x, transform.position.z);
+        Vector2 tarPos = new Vector2(targetPos.x, targetPos.z);
+        return Vector3.Distance(pos, tarPos) <= m_towerData.m_fireRange;
     }
-    
+
     protected bool IsTargetInTargetRange(Vector3 targetPos)
     {
         float distance = Vector3.Distance(transform.position, targetPos);
-        bool isTargetInTargetRange =  distance <= m_towerData.m_targetRange;
+        bool isTargetInTargetRange = distance <= m_towerData.m_targetRange;
         return isTargetInTargetRange;
     }
 
@@ -181,12 +203,12 @@ public abstract class Tower : MonoBehaviour
         GameplayManager.Instance.AddTowerToList(this);
 
         //Operational
-        gameObject.GetComponent<Collider>().enabled = true;        
+        gameObject.GetComponent<Collider>().enabled = true;
         m_isBuilt = true;
 
         //Animation
         m_animator.SetTrigger("Construct");
-        
+
         //Audio
         m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
 
@@ -201,7 +223,7 @@ public abstract class Tower : MonoBehaviour
 
         ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
-    
+
     public void OnDestroy()
     {
         //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
@@ -246,7 +268,7 @@ public abstract class Tower : MonoBehaviour
     {
         //Dont stop firing at targets in range with lower priority
         //Fire Range is shorter than Target Range.
-        
+
         float closestTargetDistance = float.PositiveInfinity;
         int highestPriority = int.MinValue;
         EnemyController priorityTarget = null;
@@ -263,7 +285,7 @@ public abstract class Tower : MonoBehaviour
                     continue;
                 }
             }
-            
+
             if (enemy.m_enemyData.m_targetPriority > highestPriority)
             {
                 highestPriority = enemy.m_enemyData.m_targetPriority;
@@ -306,17 +328,17 @@ public abstract class Tower : MonoBehaviour
 
         // Setup a Ray
         Ray ray = new Ray(start, direction);
-        
+
         // Calculate the maximum possible distance the ray could travel
         float rayLength = Vector3.Distance(start, target);
-        
+
         RaycastHit[] raycastHits = Physics.RaycastAll(ray, rayLength, m_raycastLayerMask);
 
         if (raycastHits.Length == 0)
         {
             //Debug.Log($"Something broke with the void tower Get Point on Collider Surface function.");
         }
-        
+
         raycastHits = raycastHits.OrderBy(raycastHits => raycastHits.distance).ToArray();
         //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
         for (int i = 0; i < raycastHits.Length; i++)
@@ -330,7 +352,7 @@ public abstract class Tower : MonoBehaviour
                 return;
             }
         }
-        
+
         // If no intersection, return the target point and identity rotation as fallback
         point = target;
         rotation = Quaternion.identity;
@@ -346,7 +368,7 @@ public class TowerTooltipData
 
     public string m_timeIconString = "<sprite name=\"Time\">";
     public string m_damageIconString = "<sprite name=\"Damage\">";
-    
+
     public string BuildStatusEffectString(StatusEffectData m_statusEffectData)
     {
         string statusEffect = null;
@@ -380,14 +402,12 @@ public class TowerTooltipData
 
         return statusEffect;
     }
-
-    
 }
 
 public class TowerUpgradeData
 {
     public Quaternion m_turretRotation;
     public int m_stacks;
-        
+
     //Add more data her as needed.
 }

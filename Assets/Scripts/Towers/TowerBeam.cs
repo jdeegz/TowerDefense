@@ -63,6 +63,13 @@ public class TowerBeam : Tower
             Fire();
         }
     }
+    
+    public override void RequestTowerDisable()
+    {
+        StopBeam();
+
+        base.RequestTowerDisable();
+    }
 
     private bool IsReadyToFire()
     {

@@ -25,6 +25,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected float m_minX;
     protected float m_maxZ;
     protected float m_minZ;
+    protected int m_cellsTravelled = -1;
 
     //Enemy Stats
     protected float m_curMaxHealth;
@@ -217,6 +218,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
                 //Assign self to cell.
                 m_curCell.UpdateActorCount(1, gameObject.name);
+
+                ++m_cellsTravelled;
             }
             
             float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
@@ -333,7 +336,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
         m_curHealth -= cumDamage;
         UpdateHealth?.Invoke(-cumDamage);
-
+        
         //If we're dead, destroy.
         if (m_curHealth <= 0)
         {
@@ -585,8 +588,10 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public void HandleEffect(StatusEffect statusEffect)
     {
         statusEffect.m_elapsedTime += Time.deltaTime;
+        
         if (statusEffect.m_elapsedTime > statusEffect.m_data.m_lifeTime)
         {
+            Debug.Log($"Removing effect from {statusEffect.m_sender}. Elapsed time {statusEffect.m_elapsedTime} is greater than Life Time {statusEffect.m_data.m_lifeTime}.");
             RemoveEffect(statusEffect);
             return;
         }
@@ -693,13 +698,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
             if (statusEffect.m_data.m_damageModifier < 1 && statusEffect.m_data.m_damageModifier < m_lastDamageModifierLower)
             {
                 m_lastDamageModifierLower = statusEffect.m_data.m_damageModifier;
-                //Debug.Log($"Set modifier to: {m_lastDamageModifierLower}");
+                Debug.Log($"Set Lower Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
             }
 
             if (statusEffect.m_data.m_damageModifier > 1 && statusEffect.m_data.m_damageModifier > m_lastDamageModifierHigher)
             {
                 m_lastDamageModifierHigher = statusEffect.m_data.m_damageModifier;
-                //Debug.Log($"Set modifier to: {m_lastDamageModifierHigher}");
+                Debug.Log($"Set Higher Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
             }
         }
     }
@@ -776,10 +781,12 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
                 break;
             case StatusEffectData.EffectType.DecreaseArmor:
-                m_lastDamageModifierLower = 1;
+                m_lastDamageModifierHigher = 1;
+                Debug.Log($"Set Higher Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
                 break;
             case StatusEffectData.EffectType.IncreaseArmor:
-                m_lastDamageModifierHigher = 1;
+                m_lastDamageModifierLower = 1;
+                Debug.Log($"Set Lower Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
