@@ -29,6 +29,7 @@ public class MissionGameplayData : ScriptableObject
     public bool m_delayForQuest = false;           // Does this mission contain quests we need to wait for?
     public float m_firstBuildDuraction = 15;       // The first build phase length in seconds.
     public float m_buildDuration = 6;              // Subsequent build phase lengths in seconds.
+    public float m_afterBossBuildDuration = 30;              // Subsequent build phase lengths in seconds.
     
     [Header("Equipped Towers")]
     public List<TowerData> m_equippedTowers;        // The towers available to the player in this mission.

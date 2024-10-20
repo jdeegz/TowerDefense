@@ -55,8 +55,7 @@ public class EnemyThrall : EnemyController
     void SpawnOoze()
     {
         // Stop moving
-        m_storedSpeedModifier = m_lastSpeedModifierSlower;
-        m_lastSpeedModifierSlower = 0f;
+        m_baseMoveSpeed = 0f;
         
         if (m_vulnerabilityEffectData)
         {
@@ -66,7 +65,7 @@ public class EnemyThrall : EnemyController
             ApplyEffect(statusEffect);
         }
         
-        m_newOozeCells = GetOozeCells(m_oozeCount);
+        m_newOozeCells = new List<Cell>(GetOozeCells(m_oozeCount));
 
         m_oozeCoroutine = StartCoroutine(SpawnOozeWithDelay());
     }
@@ -83,13 +82,15 @@ public class EnemyThrall : EnemyController
             // Wait for 0.3 seconds before spawning the next ooze
             yield return new WaitForSeconds(m_vulnerabilityEffectData.m_lifeTime / m_newOozeCells.Count);
         }
+        
         // Resume moving -- Refresh where we want to move to, in case the player has adjusted the path during the spawning of ooze.
         // This chunk of code is copied from the base HandleMovement function.
         float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
         Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
         Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
         m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
-        m_lastSpeedModifierSlower = m_storedSpeedModifier;
+        
+        m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         m_animator.SetTrigger("IsWalking");
         m_oozeCoroutine = null;
     }
@@ -113,7 +114,7 @@ public class EnemyThrall : EnemyController
             Cell randomCell = Util.GetCellFromPos(randomPos);
 
             // Check if the cell is not already oozed
-            if (!GameplayManager.Instance.m_oozeManager.IsCellOozed(randomCell))
+            if (randomCell != null && !GameplayManager.Instance.m_oozeManager.IsCellOozed(randomCell))
             {
                 cells.Add(randomCell);
                 GameplayManager.Instance.m_oozeManager.AddCell(randomCell);

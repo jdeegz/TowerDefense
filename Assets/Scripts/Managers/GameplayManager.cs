@@ -169,7 +169,7 @@ public class GameplayManager : MonoBehaviour
             DrawPreconstructedTower();
         }
 
-        if (m_delayForQuest == false)
+        if (m_delayForQuest == false && m_gameplayState == GameplayState.Build)
         {
             m_timeToNextWave -= Time.deltaTime;
         }
@@ -445,6 +445,7 @@ public class GameplayManager : MonoBehaviour
     void Start()
     {
         UpdateGameplayState(GameplayState.BuildGrid);
+        m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
     }
 
     public enum GameSpeed
@@ -540,9 +541,11 @@ public class GameplayManager : MonoBehaviour
                 UpdateGamePlayback(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
+                m_timeToNextWave = m_gameplayData.m_buildDuration;
                 //m_wave++;
                 break;
             case GameplayState.BossWave:
+                m_timeToNextWave = m_gameplayData.m_afterBossBuildDuration;
                 ObjectPoolManager.SpawnObject(m_bossSequenceController.gameObject, Vector3.zero, Quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
                 //m_wave++;
                 break;
@@ -550,16 +553,8 @@ public class GameplayManager : MonoBehaviour
                 break;
             case GameplayState.Build:
                 //If this is the first wave, give a bit longer to build.
-                if (m_wave < 0)
-                {
-                    m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
-                }
-                else
-                {
-                    m_timeToNextWave = m_gameplayData.m_buildDuration;
-                }
-
                 break;
+                
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
