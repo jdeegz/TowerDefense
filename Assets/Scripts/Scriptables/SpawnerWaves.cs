@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "SpawnerWavesData", menuName = "ScriptableObjects/SpawnerWavesData")]
@@ -81,3 +82,4 @@ public class Creep
     public float m_spawnDelay;
     public float m_spawnInterval;
 }
+

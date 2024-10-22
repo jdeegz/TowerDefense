@@ -614,6 +614,7 @@ public class UnitPath
             //Debug.Log($"Setting Line Renderer to {m_lineRendererColorOn}");
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOn;
             m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOn;
+            //lineRenderer.sortingOrder = 1;
             m_lineRenderer.SetLineRendererColors();
         }
         else

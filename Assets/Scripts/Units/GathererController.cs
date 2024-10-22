@@ -54,13 +54,12 @@ public class GathererController : MonoBehaviour
     private Vector3 m_moveDirection;
     private Quaternion m_previousRotation;
     private List<Vector2Int> GathererPath;
-    private int GathererPathProgress;
+    private int m_gathererPathProgress;
     private int level;
     private int m_debugIndex;
     private Vector3 m_nextCellPosition;
     
     public event Action<List<Vector2Int>> OnGathererPathChanged;
-    public event Action<int> OnGathererPathProgressChanged;
 
     public int m_gathererLevel
     {
@@ -84,22 +83,6 @@ public class GathererController : MonoBehaviour
             OnGathererPathChanged?.Invoke(GathererPath);
         }
     }
-    
-    public int m_gathererPathProgress
-    {
-        get { return GathererPathProgress; }
-        set
-        {
-            if (GathererPathProgress != value)
-            {
-                GathererPathProgress = value;
-                OnGathererPathProgressChanged?.Invoke(GathererPathProgress);
-                Debug.Log($"Gatherer Path Progress Updated.");
-            }
-        }
-    }
-    
-    
 
     public event Action<int> GathererLevelChange;
 
@@ -687,6 +670,7 @@ public class GathererController : MonoBehaviour
                 {
                     if (pos == m_curCell.m_cellPos)
                     {
+                        m_targetObjPosition = GetDepositSiteFromPosition(transform.position); 
                         m_gathererPath = new List<Vector2Int>();
                         Debug.Log($"{m_debugIndex += 1}. At storage already.");
                         UpdateTask(GathererTask.Storing);
@@ -882,7 +866,7 @@ public class GathererController : MonoBehaviour
             }
         }
 
-        m_targetObjPosition = closestNode.transform.position;
+        if(closestNode) m_targetObjPosition = closestNode.transform.position;
         m_gathererPath = shortestPath;
         return (closestNode, closestNodePointPos, harvestPointIndex);
     }

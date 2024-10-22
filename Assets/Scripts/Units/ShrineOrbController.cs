@@ -97,6 +97,6 @@ public class ShrineOrbController : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameplayManager.OnGameObjectSelected += GameObjectSelected;
+        // GameplayManager.OnGameObjectSelected -= GameObjectSelected;
     }
 }
