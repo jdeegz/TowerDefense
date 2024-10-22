@@ -190,8 +190,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bf5c2f2514131c4a83594900d127b4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_bossSequenceControllers:
-  - {fileID: 5334096369018270628, guid: 94f7667fff2644d488f4f803270d3878, type: 3}
 --- !u!1 &5577998438273750881
 GameObject:
   m_ObjectHideFlags: 0
@@ -472,6 +470,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 604af02cc88423640bdeb4d731ac6c1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_gathererPathMaterial: {fileID: 2100000, guid: c8febfc011e6f7f4b8c205301ef33bdd, type: 2}
   m_resourceManagerData: {fileID: 11400000, guid: d746554499e3a874aa960f86ad141857, type: 2}
   m_ruinsInMission: []
   m_validRuinsInMission: []
@@ -578,19 +577,6 @@ MonoBehaviour:
   m_gameplayData: {fileID: 11400000, guid: 79bf179af36a5a6498cf1da85b17d7fa, type: 2}
   m_wave: -1
   m_timeToNextWave: 0
-  m_totalWaves: 9999
-  m_healthMultiplier: 0
-  m_bossWaveFactor: 10
-  m_delayForQuest: 0
-  m_firstBuildDuraction: 15
-  m_buildDuration: 6
-  m_equippedTowers:
-  - {fileID: 11400000, guid: 2eb2b0ef5dee4fb4593956182ff1e62a, type: 2}
-  - {fileID: 11400000, guid: b57c11a925317294b8ba1d466ddf2608, type: 2}
-  - {fileID: 11400000, guid: e5bd7c829d0abbf4ea2a104d9b87b635, type: 2}
-  - {fileID: 11400000, guid: a194405bff7d1454a95172e801659bff, type: 2}
-  - {fileID: 11400000, guid: 86a39f62503116942b0a2f6cbcc243ad, type: 2}
-  m_blueprintTower: {fileID: 11400000, guid: 2475bb710833bce4296b08a4ce35f79f, type: 2}
   m_castleController: {fileID: 0}
   m_enemyGoal: {fileID: 0}
   m_goalPointPos: {x: 0, y: 0}
@@ -598,21 +584,20 @@ MonoBehaviour:
   m_unitSpawners: []
   m_enemyList: []
   m_enemyBossList: []
-  m_activeBossSequenceController: {fileID: 0}
   m_woodGathererList: []
   m_stoneGathererList: []
   m_towerList: []
   m_selectionColors: {fileID: 11400000, guid: d2377ba05ed6af145b9bdd20509598dc, type: 2}
   m_hoveredSelectable: {fileID: 0}
-  m_preconstructedTowerObj: {fileID: 0}
-  m_preconstructedTower: {fileID: 0}
-  m_preconstructedTowerPos: {x: 0, y: 0}
   m_buildSurface:
     serializedVersion: 2
     m_Bits: 64
+  m_preconstructedTowerPos: {x: 0, y: 0}
   m_canAfford: 0
   m_canPlace: 0
   m_canBuild: 1
+  m_bossWaves: 
+  m_bossSequenceController: {fileID: 0}
   m_UIStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
   m_interactionState: 0
   m_playbackSpeed: 1

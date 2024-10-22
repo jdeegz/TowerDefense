@@ -589,6 +589,7 @@ public class UnitPath
             ColorUtility.TryParseHtmlString("#6D767E", out Color colorOff);
             m_lineRendererColorOff = colorOff;
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
+            m_lineRenderer.lineRendererProperties.roundedCorners = true;
             m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOff;
             m_lineRenderer.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
 

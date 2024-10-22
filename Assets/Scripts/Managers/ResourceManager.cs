@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
+using TechnoBabelGames;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -25,6 +27,10 @@ public class ResourceManager : MonoBehaviour
     public static event Action<int, int> UpdateWoodBank;
     public static event Action<float> UpdateWoodRate;
     public static event Action<int, int> UpdateStoneBank;
+
+    public List<GathererLineRendererObject> m_gathererLineRendererObjs;
+    public Material m_gathererPathMaterial;
+    public GameObject m_gathererTargetObj;
 
     [Header("RequestRuinIndicator Data")]
     public ResourceManagerData m_resourceManagerData;
@@ -81,14 +87,31 @@ public class ResourceManager : MonoBehaviour
         m_validRuinsInMission = new List<RuinController>(m_ruinsInMission);
     }
 
+    public void AddGathererLineRenderer(GathererController gatherer)
+    {
+        if (m_gathererLineRendererObjs == null)
+        {
+            m_gathererLineRendererObjs = new List<GathererLineRendererObject>();
+        }
+
+        m_gathererLineRendererObjs.Add(new GathererLineRendererObject(gatherer));
+    }
+
     void Update()
     {
-        /*m_depositTimer += Time.deltaTime;
-
-        if (m_depositTimer % 60 == 0)
+        foreach (GathererLineRendererObject line in m_gathererLineRendererObjs)
         {
-            CalculateWoodRate();
-        }*/
+            if (line.m_lineRenderer.positionCount > 1)
+            {
+                line.m_lineRenderer.SetPosition(0, line.m_gatherer.transform.position);
+
+                if (Vector3.Distance(line.m_gatherer.transform.position, line.m_lineRenderer.GetPosition(1)) <= 0.5f)
+                {
+                    // If we're next to the next index, update the list by removing that position.
+                    line.UpdateLineRendererProgress();
+                }
+            }
+        }
     }
 
     public void UpdateWoodAmount(int amount, GathererController gatherer = null)
@@ -282,16 +305,18 @@ public class ResourceManager : MonoBehaviour
 
     public GameObject RuinDiscovered()
     {
-        ++m_ruinDiscoveredCount;
-        --m_ruinIndicatedCount;
-
         // If this is the last allowed Ruins to be discovered, remove all other indicators present.
         if (m_ruinDiscoveredCount == m_resourceManagerData.m_maxRuinDiscovered)
         {
             OnAllRuinsDiscovered?.Invoke();
         }
 
-        return m_resourceManagerData.m_ruinTypes[m_ruinDiscoveredCount % m_resourceManagerData.m_ruinTypes.Count].gameObject;
+        GameObject discoveredRuin = m_resourceManagerData.m_ruinTypes[m_ruinDiscoveredCount % m_resourceManagerData.m_ruinTypes.Count].gameObject;
+
+        ++m_ruinDiscoveredCount;
+        --m_ruinIndicatedCount;
+
+        return discoveredRuin;
     }
 }
 
@@ -300,4 +325,90 @@ public class WoodDeposit
 {
     public int m_quantity;
     public float m_timeStamp;
+}
+
+public class GathererLineRendererObject
+{
+    public GathererController m_gatherer;
+    public GameObject m_targetObj;
+    public LineRenderer m_lineRenderer;
+
+    public GathererLineRendererObject(GathererController gatherer)
+    {
+        m_gatherer = gatherer;
+        GameObject gathererLineRendererGameObject = new GameObject($"{gatherer.m_gathererData.m_gathererName}'s Path");
+        gathererLineRendererGameObject.transform.SetParent(ResourceManager.Instance.transform);
+        gathererLineRendererGameObject.transform.position = Vector3.zero;
+        gathererLineRendererGameObject.transform.rotation = Quaternion.identity;
+
+        m_lineRenderer = gathererLineRendererGameObject.AddComponent<LineRenderer>();
+        m_lineRenderer.enabled = false;
+        m_lineRenderer.startWidth = 0.075f;
+        m_lineRenderer.endWidth = 0.075f;
+        m_lineRenderer.material = ResourceManager.Instance.m_gathererPathMaterial;
+        m_lineRenderer.numCornerVertices = 5;
+
+        m_gatherer.OnGathererPathChanged += UpdateLineRendererPositions;
+
+        m_targetObj = ObjectPoolManager.SpawnObject(ResourceManager.Instance.m_gathererTargetObj, ResourceManager.Instance.transform);
+        m_targetObj.SetActive(false);
+    }
+
+    public void UpdateLineRendererProgress()
+    {
+        if (m_lineRenderer.positionCount <= 2)
+        {
+            m_targetObj.SetActive(false);
+            m_lineRenderer.positionCount = 0;
+            m_lineRenderer.enabled = false;
+            return;
+        }
+
+        Vector3[] oldPositions = new Vector3[m_lineRenderer.positionCount];
+        Vector3[] newPositions = new Vector3[m_lineRenderer.positionCount - 1];
+        m_lineRenderer.GetPositions(oldPositions);
+
+        for (int i = 0, j = 0; i < oldPositions.Length; i++)
+        {
+            if (i == 1) continue; // Skip the element at index 1
+            newPositions[j] = oldPositions[i];
+            j++;
+        }
+
+        m_lineRenderer.positionCount = newPositions.Length;
+        m_lineRenderer.SetPositions(newPositions);
+    }
+
+    void UpdateLineRendererPositions(List<Vector2Int> path)
+    {
+        MoveTargetObj();
+        m_lineRenderer.enabled = true;
+        m_lineRenderer.positionCount = path.Count + 2;
+
+        // Add Gatherer Position as index 0.
+        m_lineRenderer.SetPosition(0, m_gatherer.transform.position);
+
+        //Add their Path to the array.
+        if (path.Count > 0)
+        {
+            for (var i = 0; i < path.Count; i++)
+            {
+                var pos = path[i];
+                m_lineRenderer.SetPosition(i + 1, new Vector3(pos.x, 0.1f, pos.y));
+            }
+        }
+
+        // Add the resource node position.
+        Vector3 endPos = Vector3.Lerp(m_lineRenderer.GetPosition(m_lineRenderer.positionCount - 2), m_gatherer.m_targetObjPosition, .6f);
+        m_lineRenderer.SetPosition(m_lineRenderer.positionCount - 1, endPos);
+    }
+
+    void MoveTargetObj()
+    {
+        if (m_targetObj.transform.position == m_gatherer.m_targetObjPosition) return; // We're in the right spot, no need to move.
+        m_targetObj.transform.position = m_gatherer.m_targetObjPosition;
+        m_targetObj.transform.localScale = Vector3.one;
+        m_targetObj.SetActive(true);
+        m_targetObj.transform.DOScale(2f, .3f).From().SetEase(Ease.OutQuint);
+    }
 }

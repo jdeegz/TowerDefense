@@ -6,10 +6,11 @@ using Vector2Int = UnityEngine.Vector2Int;
 
 public class AStar
 {
-    public static List<Vector2Int> FindShortestPath(Vector2Int start, List<Vector2Int> endPositions)
+    public static (List<Vector2Int>, Vector3 endPosition) FindShortestPath(Vector2Int start, List<Vector2Int> endPositions)
     {
         List<Vector2Int> path = new List<Vector2Int>();
         List<Vector2Int> shortestPath = null;
+        Vector3 endPosition = new Vector3();
 
         foreach (Vector2Int end in endPositions)
         {
@@ -24,14 +25,16 @@ public class AStar
             if (shortestPath == null)
             {
                 shortestPath = path;
+                endPosition = new Vector3(end.x, 0, end.y);
             }
             else if (path.Count < shortestPath.Count)
             {
                 shortestPath = path;
+                endPosition = new Vector3(end.x, 0, end.y);
             }
         }
 
-        return shortestPath;
+        return (shortestPath, endPosition);
     }
 
 

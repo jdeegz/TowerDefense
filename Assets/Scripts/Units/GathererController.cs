@@ -12,6 +12,7 @@ public class GathererController : MonoBehaviour
 {
     public GathererData m_gathererData;
     public GameObject m_resourceAnchor;
+    public Vector3 m_targetObjPosition;
     [SerializeField] private GameObject m_idleVFXParent;
     public GathererTask m_gathererTask;
     public Animator m_animator;
@@ -50,13 +51,16 @@ public class GathererController : MonoBehaviour
     private float m_storingDuration;
     private static int m_isHarvestingHash = Animator.StringToHash("isHarvesting");
     private Vector3 m_idlePos;
-    private List<Vector2Int> m_gathererPath;
-    private int m_gathererPathProgress;
     private Vector3 m_moveDirection;
     private Quaternion m_previousRotation;
+    private List<Vector2Int> GathererPath;
+    private int GathererPathProgress;
     private int level;
     private int m_debugIndex;
     private Vector3 m_nextCellPosition;
+    
+    public event Action<List<Vector2Int>> OnGathererPathChanged;
+    public event Action<int> OnGathererPathProgressChanged;
 
     public int m_gathererLevel
     {
@@ -71,6 +75,32 @@ public class GathererController : MonoBehaviour
         }
     }
 
+    public List<Vector2Int> m_gathererPath
+    {
+        get { return GathererPath; }
+        set
+        {
+            GathererPath = value;
+            OnGathererPathChanged?.Invoke(GathererPath);
+        }
+    }
+    
+    public int m_gathererPathProgress
+    {
+        get { return GathererPathProgress; }
+        set
+        {
+            if (GathererPathProgress != value)
+            {
+                GathererPathProgress = value;
+                OnGathererPathProgressChanged?.Invoke(GathererPathProgress);
+                Debug.Log($"Gatherer Path Progress Updated.");
+            }
+        }
+    }
+    
+    
+
     public event Action<int> GathererLevelChange;
 
     private void Awake()
@@ -83,6 +113,7 @@ public class GathererController : MonoBehaviour
         m_harvestDuration = m_gathererData.m_harvestDuration;
         m_carryCapacity = m_gathererData.m_carryCapacity;
         m_storingDuration = m_gathererData.m_storingDuration;
+        m_gathererPath = new List<Vector2Int>();
     }
 
     private void OnDestroy()
@@ -145,6 +176,8 @@ public class GathererController : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        ResourceManager.Instance.AddGathererLineRenderer(this);
     }
 
     void Update()
@@ -163,7 +196,7 @@ public class GathererController : MonoBehaviour
     private void HandleLookRotation()
     {
         //Only take over rotation if the unit is not pathing somewhere.
-        if (m_gathererPath != null) return;
+        if (GathererPath != null) return;
         Vector3 directionToTarget;
         Quaternion targetRotation;
         float cumulativeLookSpeed = 10f * Time.deltaTime;
@@ -188,7 +221,7 @@ public class GathererController : MonoBehaviour
     private void HandleMovement()
     {
         //If we have no path, no need to move.
-        if (m_gathererPath == null) return;
+        if (m_gathererPath.Count == 0) return;
 
         float remainingDistance = Vector3.Distance(transform.position, new Vector3(m_gathererPath.Last().x, 0, m_gathererPath.Last().y));
         float stoppingDistance = .05f;
@@ -201,7 +234,7 @@ public class GathererController : MonoBehaviour
         if (remainingDistance <= stoppingDistance)
         {
             Debug.Log($"{m_debugIndex += 1}. Destination Reached.");
-            m_gathererPath = null;
+            m_gathererPath = new List<Vector2Int>();
             m_gathererPathProgress = 0;
 
             // If we are/were traveling to a harvest point, transition to harvesting.
@@ -421,6 +454,7 @@ public class GathererController : MonoBehaviour
         {
             Vector2Int startPos = Util.GetVector2IntFrom3DPos(transform.position);
             Vector2Int endPos = Util.GetVector2IntFrom3DPos(m_idlePos);
+            m_targetObjPosition = m_idlePos;
             m_gathererPath = AStar.FindPath(startPos, endPos);
         }
 
@@ -440,11 +474,12 @@ public class GathererController : MonoBehaviour
         m_curRuin = requestObj.GetComponent<Ruin>();
         //Get a path to the ruin.
         //If the path returned is of length 0, we can activate the ruin, else we travel to it.
+        m_targetObjPosition = m_curRuin.transform.position;
         m_gathererPath = GetShortestPathToObj(requestObj);
         Debug.Log($"Gatherer Path to ruin is {m_gathererPath.Count} cells long.");
         if (m_gathererPath.Count == 0)
         {
-            m_gathererPath = null;
+            m_gathererPath = new List<Vector2Int>();
 
             //Resume returning to castle if carrying resources, else await further instruction.
             if (m_resourceCarried > 1)
@@ -482,7 +517,7 @@ public class GathererController : MonoBehaviour
         }
         else
         {
-            m_gathererPath = null;
+            m_gathererPath = new List<Vector2Int>();
 
             //Resume returning to castle if carrying resources, else await further instruction.
             if (m_resourceCarried > 1)
@@ -526,7 +561,8 @@ public class GathererController : MonoBehaviour
             {
                 //We're in a harvest point cell.
                 SetHarvestVars(node, harvestPoint.m_harvestPointPos, i);
-                m_gathererPath = null;
+                m_targetObjPosition = m_curHarvestNode.transform.position;
+                m_gathererPath = new List<Vector2Int>();
                 UpdateTask(GathererTask.Harvesting);
 
                 m_curHarvestNode.WasSelected();
@@ -625,7 +661,8 @@ public class GathererController : MonoBehaviour
                 }
                 else
                 {
-                    m_gathererPath = null;
+                    m_targetObjPosition = m_curHarvestNode.transform.position;
+                    m_gathererPath = new List<Vector2Int>();
                     UpdateTask(GathererTask.Harvesting);
                 }
 
@@ -650,7 +687,7 @@ public class GathererController : MonoBehaviour
                 {
                     if (pos == m_curCell.m_cellPos)
                     {
-                        m_gathererPath = null;
+                        m_gathererPath = new List<Vector2Int>();
                         Debug.Log($"{m_debugIndex += 1}. At storage already.");
                         UpdateTask(GathererTask.Storing);
                         return;
@@ -659,7 +696,10 @@ public class GathererController : MonoBehaviour
 
                 Debug.Log($"{m_debugIndex += 1}. Finding point to store from.");
                 startPos = Util.GetVector2IntFrom3DPos(transform.position);
-                m_gathererPath = AStar.FindShortestPath(startPos, m_depositLocations);
+                ValueTuple<List<Vector2Int>, Vector3> shortestPath = AStar.FindShortestPath(startPos, m_depositLocations);
+                List<Vector2Int> path = shortestPath.Item1;
+                m_targetObjPosition = GetDepositSiteFromPosition(shortestPath.Item2);
+                m_gathererPath = path;
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());
@@ -669,6 +709,19 @@ public class GathererController : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    Vector3 GetDepositSiteFromPosition(Vector3 adjacentPosition)
+    {
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
+        {
+            if (Vector3.Distance(adjacentPosition, obelisk.transform.position) <= 2)
+            {
+                return obelisk.transform.position;
+            }
+        }
+        // If none of the above hit, we're travelling to the castle to depost.
+        return GameplayManager.Instance.m_castleController.transform.position;
     }
 
     private void ToggleDisplayIdleVFX()
@@ -788,6 +841,7 @@ public class GathererController : MonoBehaviour
     {
         ResourceNode closestNode = null;
         Vector2Int closestNodePointPos = new Vector2Int();
+        List<Vector2Int> shortestPath = new List<Vector2Int>();
         int harvestPointIndex = -1;
 
         Vector2Int curPos = Util.GetVector2IntFrom3DPos(transform.position);
@@ -823,11 +877,13 @@ public class GathererController : MonoBehaviour
                     shortestDistance = path.Count;
                     closestNodePointPos = node.m_harvestPoints[x].m_harvestPointPos;
                     harvestPointIndex = x;
-                    m_gathererPath = path;
+                    shortestPath = path;
                 }
             }
         }
 
+        m_targetObjPosition = closestNode.transform.position;
+        m_gathererPath = shortestPath;
         return (closestNode, closestNodePointPos, harvestPointIndex);
     }
 
@@ -835,6 +891,7 @@ public class GathererController : MonoBehaviour
     {
         ResourceNode node = obj.GetComponent<ResourceNode>();
         Vector2Int closestNodePointPos = new Vector2Int();
+        List<Vector2Int> shortestPath = new List<Vector2Int>();
         int harvestPointIndex = -1;
 
         Vector2Int curPos = Util.GetVector2IntFrom3DPos(transform.position);
@@ -853,7 +910,7 @@ public class GathererController : MonoBehaviour
             if (m_curCell.m_cellPos == node.m_harvestPoints[i].m_harvestPointCell.m_cellPos)
             {
                 Debug.Log($"{m_debugIndex += 1}. We're already on the HarvestPoint.");
-                m_gathererPath = null;
+                m_gathererPath = new List<Vector2Int>();
                 return (node, node.m_harvestPoints[i].m_harvestPointPos, i);
             }
 
@@ -871,10 +928,11 @@ public class GathererController : MonoBehaviour
                 shortestDistance = path.Count;
                 closestNodePointPos = node.m_harvestPoints[i].m_harvestPointPos;
                 harvestPointIndex = i;
-                m_gathererPath = path;
+                shortestPath = path;
             }
         }
-
+        m_targetObjPosition = obj.transform.position;
+        m_gathererPath = shortestPath;
         return (node, closestNodePointPos, harvestPointIndex);
     }
 

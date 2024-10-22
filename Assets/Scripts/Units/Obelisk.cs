@@ -153,7 +153,7 @@ public class Obelisk : MonoBehaviour
             float x = xScaled * radius;
             float y = yScaled * radius;
 
-            Vector3 currentPosition = new Vector3(x, 0.05f, y);
+            Vector3 currentPosition = new Vector3(x, 0.1f, y);
 
             m_obeliskRangeCircle.SetPosition(i, currentPosition);
         }
