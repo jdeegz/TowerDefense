@@ -8,6 +8,8 @@ public class ShrineOrbController : MonoBehaviour
 {
     public GameObject m_claimVFX;
     public List<AudioClip> m_claimSounds;
+
+    public GameObject m_orbProjectile;
     
     public float m_moveSpeed = 1f;
     public float m_turnSpeed = 1f;
@@ -66,7 +68,19 @@ public class ShrineOrbController : MonoBehaviour
     void OnMouseDown()
     {
         Debug.Log($"Orb clicked.");
+        LaunchProjectiles();
         RemoveCharge();
+    }
+
+    private void LaunchProjectiles()
+    {
+        // Get targets (Gatherers)
+        foreach (GathererController gatherer in GameplayManager.Instance.m_woodGathererList)
+        {
+            GameObject projectileObj = ObjectPoolManager.SpawnObject(m_orbProjectile, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.Projectile);
+            ShrineOrbProjectile projectile = projectileObj.GetComponent<ShrineOrbProjectile>();
+            projectile.Setup(gatherer);
+        }
     }
 
     void RemoveCharge()

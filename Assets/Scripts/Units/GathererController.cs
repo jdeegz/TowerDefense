@@ -16,6 +16,9 @@ public class GathererController : MonoBehaviour
     [SerializeField] private GameObject m_idleVFXParent;
     public GathererTask m_gathererTask;
     public Animator m_animator;
+    public Color m_gathererModelColor = Color.blue;
+    public Color m_gathererPathColor = Color.blue;
+    public Renderer m_gathererRenderer;
 
     [Header("Audio")]
     [SerializeField] private List<AudioClip> m_woodChopClips;
@@ -97,6 +100,7 @@ public class GathererController : MonoBehaviour
         m_carryCapacity = m_gathererData.m_carryCapacity;
         m_storingDuration = m_gathererData.m_storingDuration;
         m_gathererPath = new List<Vector2Int>();
+        m_gathererRenderer.material.color = m_gathererModelColor;
     }
 
     private void OnDestroy()

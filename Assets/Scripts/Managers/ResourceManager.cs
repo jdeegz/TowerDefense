@@ -342,15 +342,26 @@ public class GathererLineRendererObject
         gathererLineRendererGameObject.transform.rotation = Quaternion.identity;
 
         m_lineRenderer = gathererLineRendererGameObject.AddComponent<LineRenderer>();
+        
         m_lineRenderer.enabled = false;
         m_lineRenderer.startWidth = 0.075f;
         m_lineRenderer.endWidth = 0.075f;
         m_lineRenderer.material = ResourceManager.Instance.m_gathererPathMaterial;
+        foreach (Material mat in m_lineRenderer.materials)
+        {
+            mat.color = gatherer.m_gathererPathColor;
+        }
         m_lineRenderer.numCornerVertices = 5;
 
         m_gatherer.OnGathererPathChanged += UpdateLineRendererPositions;
 
         m_targetObj = ObjectPoolManager.SpawnObject(ResourceManager.Instance.m_gathererTargetObj, ResourceManager.Instance.transform);
+        Renderer[] targetRenderer = m_targetObj.GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in targetRenderer) // Needless foreach given there's only one mesh in the target, but OK for now! TODO
+        {
+            renderer.material.color = gatherer.m_gathererPathColor;
+        }
+
         m_targetObj.SetActive(false);
     }
 
