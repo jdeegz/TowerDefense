@@ -13,6 +13,7 @@ public class UIOptionsMenu : MonoBehaviour
     [SerializeField] private GameObject m_menuRoot;
     [SerializeField] private AudioClip m_volumeSliderAudioClip;
     [SerializeField] private AudioMixer m_audioMixer;
+    [SerializeField] private GameObject m_cheatsGroup;
 
     [Header("Volume - Master")]
     [SerializeField] private Slider m_volumeMasterSlider;
@@ -39,17 +40,17 @@ public class UIOptionsMenu : MonoBehaviour
     [SerializeField] private Button m_logoutButton;
     [SerializeField] private TMP_Dropdown m_screenModeDropdown;
     [SerializeField] private UIStringData m_uiStrings;
-    
+
     //private int m_windowModeWidth = 1920;
     //private int m_windowModeHeight = 1080;
     private int m_dropdownIndex;
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
     private float m_elapsedTime;
-    
+
     public event Action<bool> OnMenuToggle;
-    
-    
+
+
     void Awake()
     {
         m_audioSource = GetComponent<AudioSource>();
@@ -57,6 +58,10 @@ public class UIOptionsMenu : MonoBehaviour
         m_canvasGroup.alpha = 0;
         m_canvasGroup.blocksRaycasts = false;
         m_elapsedTime = 0;
+        m_cheatsGroup.SetActive(false);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        m_cheatsGroup.SetActive(GameManager.Instance.m_gameState != GameManager.GameState.Menus);
+#endif
     }
 
     void OnDestroy()
@@ -111,16 +116,6 @@ public class UIOptionsMenu : MonoBehaviour
         }
 
         m_screenModeDropdown.value = m_dropdownIndex;
-        
-#if UNITY_WEBGL
-        //Disable buttons for web build.
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            // Disable the feature for web platform
-            m_screenModeDropdown.gameObject.SetActive(false);
-            m_exitApplicationButton.gameObject.SetActive(false);
-        }
-#endif
     }
 
     void TryChangeMasterVolume(float value)

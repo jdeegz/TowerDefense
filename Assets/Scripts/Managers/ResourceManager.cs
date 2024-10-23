@@ -349,7 +349,7 @@ public class GathererLineRendererObject
         m_lineRenderer.material = ResourceManager.Instance.m_gathererPathMaterial;
         foreach (Material mat in m_lineRenderer.materials)
         {
-            mat.color = gatherer.m_gathererPathColor;
+            mat.color = gatherer.m_gathererData.m_gathererPathColor;
         }
         m_lineRenderer.numCornerVertices = 5;
 
@@ -359,7 +359,7 @@ public class GathererLineRendererObject
         Renderer[] targetRenderer = m_targetObj.GetComponentsInChildren<Renderer>();
         foreach (Renderer renderer in targetRenderer) // Needless foreach given there's only one mesh in the target, but OK for now! TODO
         {
-            renderer.material.color = gatherer.m_gathererPathColor;
+            renderer.material.color = gatherer.m_gathererData.m_gathererPathColor;
         }
 
         m_targetObj.SetActive(false);

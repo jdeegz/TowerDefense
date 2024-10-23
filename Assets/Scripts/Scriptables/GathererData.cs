@@ -17,6 +17,8 @@ public class GathererData : ScriptableObject
     public int m_carryCapacity;
     public Sprite m_gathererIconSprite;
     public Sprite m_gathererTypeSprite;
+    public Color m_gathererModelColor = Color.blue;
+    public Color m_gathererPathColor = Color.blue;
 
     [Header("Audio")]
     public List<AudioClip> m_commandRequestClips;

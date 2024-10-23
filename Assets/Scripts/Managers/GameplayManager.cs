@@ -42,7 +42,7 @@ public class GameplayManager : MonoBehaviour
 
     public int m_wave;
     [HideInInspector] public float m_timeToNextWave;
-    private bool m_delayForQuest;
+    [HideInInspector] public bool m_delayForQuest;
 
     [Header("Castle")]
     public CastleController m_castleController;

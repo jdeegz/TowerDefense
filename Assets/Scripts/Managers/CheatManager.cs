@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-#if CHEATS_ENABLED
 public class CheatManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
-
-    // Update is called once per frame
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    
     void Update()
     {
         //Give Wood
@@ -109,5 +104,5 @@ public class CheatManager : MonoBehaviour
             obelisk.IncreaseObeliskCharge(Random.Range(249, 251));
         }
     }
-}
 #endif
+}

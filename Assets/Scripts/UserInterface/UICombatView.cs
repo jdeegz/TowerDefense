@@ -522,9 +522,7 @@ public class UICombatView : MonoBehaviour
     {
         if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
         {
-            m_nextWaveButton.gameObject.SetActive(!GameplayManager.Instance.m_gameplayData.m_delayForQuest);
-
-
+            m_nextWaveButton.gameObject.SetActive(!GameplayManager.Instance.m_delayForQuest);
             m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
             TimeSpan timeSpan = TimeSpan.FromSeconds(m_timeToNextWave);
 
