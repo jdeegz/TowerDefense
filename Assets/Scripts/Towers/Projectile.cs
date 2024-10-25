@@ -23,7 +23,11 @@ public abstract class Projectile : MonoBehaviour
     protected float m_projectileLifetime;
     protected Vector3 m_startPos;
     protected Vector3 m_directPos;
+    
     protected StatusEffect m_statusEffect;
+    protected StatusEffectData m_statusEffectData;
+    protected GameObject m_statusSender;
+    
     public Renderer m_renderer;
     public BulletTrailData m_bulletTrailData;
     protected TrailRenderer m_trail;
@@ -44,11 +48,13 @@ public abstract class Projectile : MonoBehaviour
         }
     }
     
-    public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos)
+    public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos,  GameObject sender, StatusEffectData statusEffectData = null)
     {
         //if(m_isFired) Debug.Log($"We are Setting data for a fired missile.");
         m_startPos = pos;
         m_enemy = enemy;
+        m_statusSender = sender;
+        m_statusEffectData = statusEffectData;
         m_targetPos = target.position;
         m_projectileDamage = dmg;
         m_isFired = true;

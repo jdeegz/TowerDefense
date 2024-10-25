@@ -59,9 +59,6 @@ public class UIOptionsMenu : MonoBehaviour
         m_canvasGroup.blocksRaycasts = false;
         m_elapsedTime = 0;
         m_cheatsGroup.SetActive(false);
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        m_cheatsGroup.SetActive(GameManager.Instance.m_gameState != GameManager.GameState.Menus);
-#endif
     }
 
     void OnDestroy()
@@ -116,6 +113,13 @@ public class UIOptionsMenu : MonoBehaviour
         }
 
         m_screenModeDropdown.value = m_dropdownIndex;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+if(GameManager.Instance)
+{
+        m_cheatsGroup.SetActive(GameManager.Instance.m_gameState != GameManager.GameState.Menus);
+}
+#endif
     }
 
     void TryChangeMasterVolume(float value)

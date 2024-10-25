@@ -113,9 +113,10 @@ public class ProjectileMissile : Projectile
             ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
 
             //Apply Status Effect
-            if (m_statusEffect != null)
+            if (m_statusEffectData != null)
             {
-                enemyHit.ApplyEffect(m_statusEffect);
+                StatusEffect statusEffect = new StatusEffect(m_statusSender, m_statusEffectData);
+                enemyHit.ApplyEffect(statusEffect);
             }
         }
     }

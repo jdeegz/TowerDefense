@@ -242,8 +242,8 @@ public class CreepSpawner
             Vector3 spawnPoint = m_creepSpawnPoint.position;
             Cell cell = Util.GetCellFrom3DPos(m_creepSpawnPoint.position);
             Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
-            float xOffset = Random.Range(-0.4f, 0.4f);
-            float zOffset = Random.Range(-0.4f, 0.4f);
+            float xOffset = Random.Range(-0.2f, 0.2f);
+            float zOffset = Random.Range(-0.2f, 0.2f);
 
             spawnPoint.x += xOffset;
             spawnPoint.z += zOffset;

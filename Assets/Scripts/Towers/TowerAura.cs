@@ -96,11 +96,8 @@ public class TowerAura : Tower
 
     private void SendEffect(EnemyController enemyController)
     {
-        StatusEffect statusEffect = new StatusEffect();
-        statusEffect.SetSender(gameObject);
-        statusEffect.m_data = m_statusEffectData;
+        StatusEffect statusEffect = new StatusEffect(gameObject, m_statusEffectData);
         enemyController.ApplyEffect(statusEffect);
-        //Debug.Log($"Sent effect: {statusEffect.m_data.name}");
     }
     
     private void Reload()

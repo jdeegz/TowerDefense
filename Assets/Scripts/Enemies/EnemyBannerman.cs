@@ -101,9 +101,7 @@ public class EnemyBannerman : MonoBehaviour
             
             if (m_statusEffectData)
             {
-                StatusEffect statusEffect = new StatusEffect();
-                statusEffect.SetSender(gameObject);
-                statusEffect.m_data = m_statusEffectData;
+                StatusEffect statusEffect = new StatusEffect(gameObject, m_statusEffectData);
                 enemyController.ApplyEffect(statusEffect);
             }
         }

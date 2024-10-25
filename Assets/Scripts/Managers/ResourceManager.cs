@@ -99,6 +99,7 @@ public class ResourceManager : MonoBehaviour
 
     void Update()
     {
+        if (m_gathererLineRendererObjs == null) return; // Dont do this in the TEST WORLD.
         foreach (GathererLineRendererObject line in m_gathererLineRendererObjs)
         {
             if (line.m_lineRenderer.positionCount > 1)

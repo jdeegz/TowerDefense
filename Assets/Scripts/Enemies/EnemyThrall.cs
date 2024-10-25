@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -10,15 +11,27 @@ public class EnemyThrall : EnemyController
     public int m_oozeCount = 10;                        // Number of oozes to spawn.
     public int m_oozeRange = 6;                         // How far away an ooze may travel.
     public GameObject m_oozeObj;                        // Obj to spawn.
-    public StatusEffectData m_vulnerabilityEffectData;          // The effect applied while oozing.
+    public StatusEffectData m_vulnerabilityEffectData;  // The effect applied while oozing.
+    public Renderer m_renderer;
+    public Vector2 m_dissolveRange;
+    public float m_dissolveShieldDuration = 0.3f;
+    
     private List<Cell> m_newOozeCells;
     private float m_storedSpeedModifier;
     private Coroutine m_oozeCoroutine;
+    private Material m_shieldMaterial;
+    private float m_curDissolve;
     
     public void SetHost(EnemyHost enemyHost)
     {
         m_enemyHost = enemyHost;
         SetEnemyData(m_enemyData);
+
+        if (m_shieldMaterial == null)
+        {
+            m_shieldMaterial = m_renderer.materials[1];
+        }
+        m_shieldMaterial.SetFloat("_DissolveValue", m_dissolveRange.x);
     }
     
     // HANDLING DAMAGE
@@ -57,11 +70,11 @@ public class EnemyThrall : EnemyController
         // Stop moving
         m_baseMoveSpeed = 0f;
         
+        m_shieldMaterial.DOFloat(m_dissolveRange.y, "_DissolveValue", m_dissolveShieldDuration);
+        
         if (m_vulnerabilityEffectData)
         {
-            StatusEffect statusEffect = new StatusEffect();
-            statusEffect.SetSender(gameObject);
-            statusEffect.m_data = m_vulnerabilityEffectData;
+            StatusEffect statusEffect = new StatusEffect(gameObject, m_vulnerabilityEffectData);
             ApplyEffect(statusEffect);
         }
         
@@ -82,6 +95,14 @@ public class EnemyThrall : EnemyController
             // Wait for 0.3 seconds before spawning the next ooze
             yield return new WaitForSeconds(m_vulnerabilityEffectData.m_lifeTime / m_newOozeCells.Count);
         }
+
+        ResumeMoving();
+        m_oozeCoroutine = null;
+    }
+
+    void ResumeMoving()
+    {
+        m_shieldMaterial.DOFloat(m_dissolveRange.x, "_DissolveValue", m_dissolveShieldDuration / 2);
         
         // Resume moving -- Refresh where we want to move to, in case the player has adjusted the path during the spawning of ooze.
         // This chunk of code is copied from the base HandleMovement function.
@@ -119,7 +140,6 @@ public class EnemyThrall : EnemyController
         }
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         m_animator.SetTrigger("IsWalking");
-        m_oozeCoroutine = null;
     }
 
     List<Cell> GetOozeCells(int oozeCount)

@@ -204,6 +204,9 @@ MonoBehaviour:
   m_oozeRange: 5
   m_oozeObj: {fileID: 2883283987095476597, guid: 95baef151f7c0cf448c0d4fbcf46e5ab, type: 3}
   m_vulnerabilityEffectData: {fileID: 11400000, guid: e852b525c6840bc4e95f98d83416f195, type: 2}
+  m_renderer: {fileID: 4896660811173158083}
+  m_dissolveRange: {x: 0.15, y: 1}
+  m_dissolveDuration: 0.66
 --- !u!1 &6845048733821058307
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,14 +318,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4277787903526522872, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: -4277787903526522872, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.776
+      objectReference: {fileID: 0}
+    - target: {fileID: -4277787903526522872, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.22
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
       propertyPath: m_Name
       value: Thrall
       objectReference: {fileID: 0}
     - target: {fileID: 5864458273905674294, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5864458273905674294, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1523948fb4a4ae141923bf1382f3e58b, type: 2}
+    - target: {fileID: 5864458273905674294, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 918aedf86b158da4ab165b753f23d204, type: 2}
     - target: {fileID: 5866666021909216657, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
       propertyPath: m_Controller
       value: 
@@ -335,6 +358,11 @@ PrefabInstance:
 --- !u!4 &1521209347673142046 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
+  m_PrefabInstance: {fileID: 1339489570864157941}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &4896660811173158083 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 5864458273905674294, guid: 798c5345a163d644a92ac16ffa724f7f, type: 3}
   m_PrefabInstance: {fileID: 1339489570864157941}
   m_PrefabAsset: {fileID: 0}
 --- !u!95 &4898868573024446820 stripped

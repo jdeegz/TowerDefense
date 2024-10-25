@@ -10,6 +10,9 @@ public class UIStringData : ScriptableObject
     public string m_cannotPlace;
     public string m_gathererLevelUp;
     public string m_gathererIdle;
+    public string m_waveComplete;
+    public string m_bossWaveComplete;
+    public string m_bossDamageType;
     
     [Header("End of Game Strings")]
     public string m_victory;

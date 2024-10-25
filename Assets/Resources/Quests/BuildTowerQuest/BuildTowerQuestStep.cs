@@ -23,7 +23,7 @@ public class BuildTowerQuestStep : QuestStep
         if (m_progressValue >= m_progressRequired)
         {
             FinishedQuestStep();
-            GameplayManager.Instance.QuestCompleted();
+            GameplayManager.Instance.BuildTowerQuestCompleted();
         }
     }
 

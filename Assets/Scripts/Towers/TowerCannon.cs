@@ -107,6 +107,7 @@ public class TowerCannon : Tower
 
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
 
+        /*
         //Assign any necessary effects to the projectile.
         if (m_statusEffectData)
         {
@@ -114,7 +115,7 @@ public class TowerCannon : Tower
             statusEffect.SetSender(gameObject);
             statusEffect.m_data = m_statusEffectData;
             projectileScript.SetProjectileStatusEffect(statusEffect);
-        }
+        }*/
 
         //Store the projectiles in a list to pull from later.
         m_loadedProjectiles[i] = projectileScript;
@@ -131,7 +132,7 @@ public class TowerCannon : Tower
         m_loadedProjectiles[fireIndex] = null;
 
         //Give the projectile purpose.
-        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, projectileScript.transform.position);
+        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, projectileScript.transform.position, gameObject, m_statusEffectData);
 
         //Play fire Sound
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);

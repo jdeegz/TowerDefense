@@ -784,11 +784,11 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 break;
             case StatusEffectData.EffectType.DecreaseArmor:
                 m_lastDamageModifierHigher = 1;
-                Debug.Log($"Set Higher Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
+                //Debug.Log($"Set Higher Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
                 break;
             case StatusEffectData.EffectType.IncreaseArmor:
                 m_lastDamageModifierLower = 1;
-                Debug.Log($"Set Lower Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
+                //Debug.Log($"Set Lower Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -813,13 +813,19 @@ public abstract class EnemyController : Dissolvable, IEffectable
 [Serializable]
 public class StatusEffect
 {
+    public GameObject m_sender;
     public StatusEffectData m_data;
     public float m_elapsedTime;
     public float m_nextTickTime;
-    public GameObject m_sender;
 
-    public void SetSender(GameObject obj)
+    public StatusEffect(GameObject sender, StatusEffectData data)
+    {
+        m_sender = sender;
+        m_data = data;
+    }
+    
+    /*public void SetSender(GameObject obj)
     {
         m_sender = obj;
-    }
+    }*/
 }

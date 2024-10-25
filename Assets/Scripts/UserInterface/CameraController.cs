@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
@@ -149,22 +150,22 @@ public class CameraController : MonoBehaviour
         Vector3 cameraMovement = Vector3.zero;
 
         //GetKey is used for doing a function while holding.
-        if (Input.GetKey(KeyCode.W) && transform.position.z < m_maxZBounds)
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) && transform.position.z < m_maxZBounds)
         {
             cameraMovement.z += m_scrollSpeed;
         }
 
-        if (Input.GetKey(KeyCode.A) && transform.position.x > m_minXBounds)
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow) && transform.position.x > m_minXBounds)
         {
             cameraMovement.x -= m_scrollSpeed;
         }
 
-        if (Input.GetKey(KeyCode.S) && transform.position.z > m_minZBounds)
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) && transform.position.z > m_minZBounds)
         {
             cameraMovement.z -= m_scrollSpeed;
         }
 
-        if (Input.GetKey(KeyCode.D) && transform.position.x < m_maxXBounds)
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow) && transform.position.x < m_maxXBounds)
         {
             cameraMovement.x += m_scrollSpeed;
         }
@@ -235,10 +236,22 @@ public class CameraController : MonoBehaviour
 
     void HandleScreenEdgePan()
     {
+        Ray ray = m_camera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            //If we hit a UI Game Object.
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+        }
+
         if (GameplayManager.Instance != null && GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
             m_isDragging = false;
         }
+
 
         if (m_isDragging || !IsCursorInGameWindow()) return;
 
@@ -262,7 +275,7 @@ public class CameraController : MonoBehaviour
 
         transform.Translate(cameraMovement * Time.unscaledDeltaTime, Space.World);
     }
-    
+
     private bool IsCursorInGameWindow()
     {
         Vector2 mousePosition = Input.mousePosition;

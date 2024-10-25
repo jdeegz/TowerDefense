@@ -78,15 +78,15 @@ public class TowerBlast : Tower
         //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.Projectile);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-        if (m_statusEffectData)
+        /*if (m_statusEffectData)
         {
             StatusEffect statusEffect = new StatusEffect();
             statusEffect.SetSender(gameObject);
             statusEffect.m_data = m_statusEffectData;
             projectileScript.SetProjectileStatusEffect(statusEffect);
-        }
+        }*/
 
-        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position);
+        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position, gameObject, m_statusEffectData);
 
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);

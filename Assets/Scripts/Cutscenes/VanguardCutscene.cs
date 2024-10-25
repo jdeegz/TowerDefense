@@ -61,7 +61,7 @@ public class VanguardCutscene : MonoBehaviour
     {
         GameObject projectileObj = Instantiate(m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, m_projectilesRoot);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position);
+        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position, gameObject);
 
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);

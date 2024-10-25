@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using DG.Tweening;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -36,11 +37,13 @@ public class UICombatView : MonoBehaviour
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
+
     [SerializeField] private GameObject m_blueprintTowerTrayButtonPrefab;
 
     [SerializeField] private GameObject m_gathererTrayButtonPrefab;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
+    [SerializeField] private GameObject m_waveCompleteAlertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
     [SerializeField] private GameObject m_castleRepairDisplayObj;
     [SerializeField] private GameObject m_ffwActiveDisplayObj;
@@ -91,6 +94,8 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
         GameplayManager.OnGathererAdded += BuildGathererTrayButton;
         GameplayManager.OnGathererRemoved += RemoveGathererTrayButton;
+        GameplayManager.OnDelayForQuestChanged += DelayForQuestChanged;
+        GameplayManager.OnWaveCompleted += AlertWaveComplete;
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateWoodRate += UpdateWoodRateDisplay;
@@ -127,6 +132,14 @@ public class UICombatView : MonoBehaviour
         };
     }
 
+    private void DelayForQuestChanged(bool value)
+    {
+        // Use inverted values. Delay for Quest will return false when it's unset, and we want to display true.
+        if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.Build) return;
+
+        m_nextWaveButton.gameObject.SetActive(!value);
+    }
+
     private void UpdateWoodRateDisplay(float rate)
     {
         m_woodRateLabel.SetText($"{rate:F1}<sprite name=\"ResourceWood\">/Min");
@@ -146,7 +159,7 @@ public class UICombatView : MonoBehaviour
         m_healthShake = m_healthDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_healthShake.Play();
     }
-    
+
     private void UpdateCastleMaxHealthDisplay(int i)
     {
         if (m_healthShake.IsActive())
@@ -225,13 +238,15 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnObelisksCharged -= UpdateObeliskDisplay;
         GameplayManager.OnGathererAdded -= BuildGathererTrayButton;
         GameplayManager.OnGathererRemoved -= RemoveGathererTrayButton;
+        GameplayManager.OnDelayForQuestChanged -= DelayForQuestChanged;
+        GameplayManager.OnWaveCompleted -= AlertWaveComplete;
 
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
         ResourceManager.UpdateWoodRate -= UpdateWoodRateDisplay;
         ResourceManager.UpdateStoneGathererCount -= UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount -= UpdateWoodGathererDisplay;
-        
+
         m_castleController.UpdateHealth -= UpdateCastleHealthDisplay;
         m_castleController.UpdateMaxHealth -= UpdateCastleMaxHealthDisplay;
     }
@@ -283,8 +298,8 @@ public class UICombatView : MonoBehaviour
         }
 
         //gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
-        m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_gameplayData.m_delayForQuest);
         m_castleRepairDisplayObj.SetActive(state == GameplayManager.GameplayState.Build && m_curCastleHealth < m_maxCastleHealth);
+        m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_delayForQuest);
     }
 
     private void GameplayPlaybackChanged(GameplayManager.GameSpeed newSpeed)
@@ -412,7 +427,7 @@ public class UICombatView : MonoBehaviour
                 m_buttons.Add(buttonScript);
             }
         }
-        
+
         // BLUEPRINT TOWER
         m_blueprintButtonObj = Instantiate(m_blueprintTowerTrayButtonPrefab, m_towerTrayLayoutObj);
         TowerTrayButton blueprintTowerTrayButtonScript = m_blueprintButtonObj.GetComponent<TowerTrayButton>();
@@ -429,7 +444,7 @@ public class UICombatView : MonoBehaviour
         {
             m_buttons.Add(blueprintButtonScript);
         }
-        
+
         ToggleBlueprintButton(false);
     }
 
@@ -442,8 +457,16 @@ public class UICombatView : MonoBehaviour
 
     private void Alert(string text)
     {
-        GameObject curAlert = Instantiate(m_alertPrefab, m_alertRootObj.transform);
-        curAlert.GetComponent<UIAlert>().SetLabelText(text, Color.white);
+        UIAlert alert = ObjectPoolManager.SpawnObject(m_alertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
+        alert.SetLabelText(text, Color.white);
+        alert.SetupAlert(Vector2.zero);
+    }
+
+    private void AlertWaveComplete(string text)
+    {
+        UIAlert alert = ObjectPoolManager.SpawnObject(m_waveCompleteAlertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
+        alert.SetLabelText(text, Color.white);
+        alert.SetupAlert(Vector2.zero);
     }
 
     private void OnPlayButtonClicked()
@@ -504,7 +527,7 @@ public class UICombatView : MonoBehaviour
                     GameplayManager.Instance.PreconstructTower(GameplayManager.Instance.m_gameplayData.m_blueprintTower);
                     return;
                 }
-                
+
                 GameplayManager.Instance.PreconstructTower(GameplayManager.Instance.m_gameplayData.m_equippedTowers[kvp.Value]);
             }
         }
@@ -520,9 +543,8 @@ public class UICombatView : MonoBehaviour
 
     void HandleSpawnClock()
     {
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
+        if (m_nextWaveButton.enabled)
         {
-            m_nextWaveButton.gameObject.SetActive(!GameplayManager.Instance.m_delayForQuest);
             m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
             TimeSpan timeSpan = TimeSpan.FromSeconds(m_timeToNextWave);
 

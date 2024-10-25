@@ -146,7 +146,7 @@ public class UITooltipController : MonoBehaviour
     {
         m_curWorldSelectable = selectable;
     }
-
+    
     public void SetTooltipData(Selectable.SelectedObjectType type, GameObject hoveredObj)
     {
         switch (type)
@@ -222,6 +222,12 @@ public class UITooltipController : MonoBehaviour
                 m_objectNameString = ruinData.m_ruinName;
                 m_objectDescriptionString = ruinData.m_ruinDescription;
                 m_objectDetailsString = ruinData.m_ruinDetails;
+                break;
+            case Selectable.SelectedObjectType.UIElement:
+                UITooltip tooltip = m_curUISelectable as UITooltip;
+                m_objectNameString = tooltip.m_nameString;
+                m_objectDescriptionString = tooltip.m_descriptionString;
+                m_objectDetailsString = tooltip.m_detailsString;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);

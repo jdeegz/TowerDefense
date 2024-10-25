@@ -23,7 +23,8 @@ public class Selectable : MonoBehaviour
         Gatherer,
         Castle,
         Obelisk,
-        Ruin
+        Ruin,
+        UIElement
     }
 
     void Awake()

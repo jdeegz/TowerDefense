@@ -83,8 +83,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -350, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -350, y: -10}
+  m_SizeDelta: {x: 200, y: 40}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &255085128324141167
 GameObject:
@@ -1227,6 +1227,81 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_questStepUIDisplay: {fileID: 8200218734291393918, guid: faa104a3d08203148b2885949b359818, type: 3}
   m_questsInProgress: []
+--- !u!1 &1682612534006061874
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4899561832626009532}
+  - component: {fileID: 5009543940117446306}
+  - component: {fileID: 5462222093076757277}
+  m_Layer: 0
+  m_Name: BG
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4899561832626009532
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1682612534006061874}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0000033414672}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3030264557356620798}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &5009543940117446306
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1682612534006061874}
+  m_CullTransparentMesh: 1
+--- !u!114 &5462222093076757277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1682612534006061874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: 27fc64666f608844888b414a156d9492, type: 2}
+  m_Color: {r: 0.8627451, g: 0.58538264, b: 0.13333331, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 0
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1699083783395073629
 GameObject:
   m_ObjectHideFlags: 0
@@ -1261,7 +1336,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 5}
   m_SizeDelta: {x: 231.3411, y: 18}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7385154394114387311
@@ -1397,7 +1472,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &365472325288320287
@@ -1533,7 +1608,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7514363895956037560
@@ -1809,6 +1884,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4437853072421838833}
+  - component: {fileID: 3941612467650581524}
+  - component: {fileID: 4850166179806209285}
+  - component: {fileID: 6176079888591030713}
   m_Layer: 0
   m_Name: StoneBankDisplay
   m_TagString: Untagged
@@ -1833,9 +1911,65 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 100, y: -8}
-  m_SizeDelta: {x: 100, y: 34}
+  m_AnchoredPosition: {x: 100, y: -10}
+  m_SizeDelta: {x: 100, y: 40}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &3941612467650581524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2575761312662371707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ae1e71bc2d347459b0bd61d12f96b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_selectedObjectType: 7
+  m_meshRenderers: []
+  m_nameString: Manasteel
+  m_descriptionString: Manasteel is an element found in the Earth that is the result
+    of many cycles of Grain compression and relaxation.
+  m_detailsString: 
+--- !u!222 &4850166179806209285
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2575761312662371707}
+  m_CullTransparentMesh: 1
+--- !u!114 &6176079888591030713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2575761312662371707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d5e918a6712c46c4c894506de08d05d4, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &2674843369782191709
 GameObject:
   m_ObjectHideFlags: 0
@@ -1947,7 +2081,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -43.5}
-  m_SizeDelta: {x: 280, y: 30.607}
+  m_SizeDelta: {x: 400, y: 30.607}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2784916707227330263
 GameObject:
@@ -2135,16 +2269,16 @@ RectTransform:
   - {fileID: 6759613400392206098}
   - {fileID: 952654687747197165}
   - {fileID: 1900941737911405737}
+  - {fileID: 1809411156894274066}
+  - {fileID: 5876194687918785849}
   - {fileID: 9116292513957194190}
-  - {fileID: 3128575704157400984}
   - {fileID: 4437853072421838833}
+  - {fileID: 2537339552714008774}
+  - {fileID: 3128575704157400984}
   - {fileID: 3384670302890231853}
   - {fileID: 5589811314100889900}
   - {fileID: 4409330211841857527}
   - {fileID: 3030264557356620798}
-  - {fileID: 1809411156894274066}
-  - {fileID: 2537339552714008774}
-  - {fileID: 5876194687918785849}
   - {fileID: 5141187975717208174}
   - {fileID: 2521101949069335486}
   - {fileID: 1864467747522245572}
@@ -2191,6 +2325,7 @@ MonoBehaviour:
   m_gathererTrayButtonPrefab: {fileID: 3163133753687127214, guid: 27f87889f5c8f284b9425a09535f335e, type: 3}
   m_alertRootObj: {fileID: 5146570696094432079}
   m_alertPrefab: {fileID: 3818641833424345620, guid: 8d1aef97a1be9e343a4d10f92d1ea0e0, type: 3}
+  m_waveCompleteAlertPrefab: {fileID: 3990759595418614954, guid: 5bcb0740e1ba1874aa24b54a9da2e4bb, type: 3}
   m_pausedDisplayObj: {fileID: 175418564362473737}
   m_castleRepairDisplayObj: {fileID: 2693121432743460687}
   m_ffwActiveDisplayObj: {fileID: 4124089094858521236}
@@ -2603,6 +2738,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2537339552714008774}
+  - component: {fileID: 9063277534350196331}
+  - component: {fileID: 6595629396967014729}
+  - component: {fileID: 455793092095812091}
   m_Layer: 0
   m_Name: ObeliskDisplayGroup
   m_TagString: Untagged
@@ -2627,9 +2765,65 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 370, y: 0}
-  m_SizeDelta: {x: 260, y: 50}
+  m_AnchoredPosition: {x: 370, y: -10}
+  m_SizeDelta: {x: 260, y: 40}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &9063277534350196331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3858189073781741354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ae1e71bc2d347459b0bd61d12f96b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_selectedObjectType: 7
+  m_meshRenderers: []
+  m_nameString: Obelisk Status
+  m_descriptionString: Displays the number of Obelisks needed to power the Gossamer
+    in this region. Once all charged, all Tears will close.
+  m_detailsString: 
+--- !u!222 &6595629396967014729
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3858189073781741354}
+  m_CullTransparentMesh: 1
+--- !u!114 &455793092095812091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3858189073781741354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d5e918a6712c46c4c894506de08d05d4, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &4124089094858521236
 GameObject:
   m_ObjectHideFlags: 0
@@ -2789,6 +2983,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9116292513957194190}
+  - component: {fileID: 7574773843379703495}
+  - component: {fileID: 2571232999535661870}
+  - component: {fileID: 6883633470878138981}
   m_Layer: 0
   m_Name: WoodBankDisplay
   m_TagString: Untagged
@@ -2813,9 +3010,64 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 50}
+  m_AnchoredPosition: {x: 0, y: -10}
+  m_SizeDelta: {x: 100, y: 40}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &7574773843379703495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4824324777634541966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ae1e71bc2d347459b0bd61d12f96b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_selectedObjectType: 7
+  m_meshRenderers: []
+  m_nameString: Wood
+  m_descriptionString: Wood is harvested from the Forests by Gatherers.
+  m_detailsString: 
+--- !u!222 &2571232999535661870
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4824324777634541966}
+  m_CullTransparentMesh: 1
+--- !u!114 &6883633470878138981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4824324777634541966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d5e918a6712c46c4c894506de08d05d4, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &4834895502406652516
 GameObject:
   m_ObjectHideFlags: 0
@@ -5005,7 +5257,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5645049720006364650
@@ -5214,14 +5466,15 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4899561832626009532}
   - {fileID: 1901892414050506628}
   - {fileID: 6691789255491964349}
   m_Father: {fileID: 3032980542750083679}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -103.90692}
-  m_SizeDelta: {x: 280, y: 45}
+  m_AnchoredPosition: {x: 0, y: -100}
+  m_SizeDelta: {x: 399.99927, y: 44.99997}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &7214661408721092824
 CanvasRenderer:
@@ -5244,7 +5497,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.050980397, g: 0.050980397, b: 0.08627451, a: 1}
+  m_Color: {r: 0.8645078, g: 0.45660117, b: 0.13456962, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5252,7 +5505,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: e3efc1ee1dad36a4caf7fa819433aa6d, type: 3}
-  m_Type: 1
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -5355,6 +5608,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5876194687918785849}
+  - component: {fileID: 1708118919146454486}
+  - component: {fileID: 2175109229010139402}
+  - component: {fileID: 1897341076162150764}
   m_Layer: 0
   m_Name: CastleHealthDisplayGroup
   m_TagString: Untagged
@@ -5380,9 +5636,66 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -100, y: 0}
-  m_SizeDelta: {x: 150, y: 50}
+  m_AnchoredPosition: {x: -100, y: -10}
+  m_SizeDelta: {x: 100, y: 40}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &1708118919146454486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8729925221471884440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41ae1e71bc2d347459b0bd61d12f96b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_selectedObjectType: 7
+  m_meshRenderers: []
+  m_nameString: Spire Health
+  m_descriptionString: Up to 2 non-critical damage dealt to the Spires of Morosith
+    will be repaired between each wave of enemies. Critical Damage is dealt by bosses
+    and is permanent. Critical damage reduces the maximum health of the Sprite.
+  m_detailsString: 
+--- !u!222 &2175109229010139402
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8729925221471884440}
+  m_CullTransparentMesh: 1
+--- !u!114 &1897341076162150764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8729925221471884440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d5e918a6712c46c4c894506de08d05d4, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &8930729351871137585
 GameObject:
   m_ObjectHideFlags: 0
@@ -5417,7 +5730,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 5}
   m_SizeDelta: {x: 200, y: 18}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6531122538465388466

@@ -69,13 +69,10 @@ public class IngameUIController : MonoBehaviour
         var values = SetCurrencyAlertValues(woodValue, stoneValue, isGood);
         
         //Build the alert.
-        //GameObject uiAlertObj = ObjectPoolManager.SpawnObject(m_currencyAlert.gameObject, transform);
-        UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
-        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
-        
+        UIAlert alert = ObjectPoolManager.SpawnObject(m_currencyAlert.gameObject, transform).GetComponent<UIAlert>();
         Vector2 screenPos = GetScreenPosition(worldPos);
-        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
-        uiAlert.SetLabelText($"{values.Item1}", values.Item2);
+        alert.SetupAlert(screenPos);
+        alert.SetLabelText($"{values.Item1}", values.Item2);
     }
     
     public void SpawnCritCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)
@@ -83,13 +80,10 @@ public class IngameUIController : MonoBehaviour
         var values = SetCurrencyAlertValues(woodValue, stoneValue, isGood);
         
         //Build the alert.
-        //GameObject uiAlertObj = ObjectPoolManager.SpawnObject(m_currencyAlert.gameObject, transform);
-        UIAlert uiAlert = Instantiate(m_critCurrencyAlert, transform);
-        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
-        
+        UIAlert alert = ObjectPoolManager.SpawnObject(m_critCurrencyAlert.gameObject, transform).GetComponent<UIAlert>();
         Vector2 screenPos = GetScreenPosition(worldPos);
-        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
-        uiAlert.SetLabelText($"{values.Item1}", values.Item2);
+        alert.SetupAlert(screenPos);
+        alert.SetLabelText($"{values.Item1}", values.Item2);
     }
     
     public (string, Color) SetCurrencyAlertValues(int woodValue, int stoneValue, bool isGood)
@@ -132,35 +126,35 @@ public class IngameUIController : MonoBehaviour
 
     public void SpawnLevelUpAlert(GameObject obj, Vector3 worldPos)
     {
-        UIAlert uiAlert = Instantiate(m_levelUpAlert, transform);
-        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
-        
-        Vector2 screenPos = GetScreenPosition(worldPos);
-        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
         string alertString = string.Format(m_uiStringData.m_gathererLevelUp, obj.name);
-        uiAlert.SetLabelText($"{alertString}", m_levelUpColor);
+        
+        UIAlert alert = Instantiate(m_levelUpAlert, transform);
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetupAlert(screenPos);
+        
+        alert.SetLabelText($"{alertString}", m_levelUpColor);
     }
 
     public void SpawnHealthAlert(int healthValue, Vector3 worldPos)
     {
-        UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
-        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
-        
-        Vector2 screenPos = GetScreenPosition(worldPos);
-        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
         string alertString = $"-{healthValue}<sprite name=\"ResourceHealth\">";
-        uiAlert.SetLabelText($"{alertString}", m_currencyBadcolor);
+        
+        UIAlert alert = Instantiate(m_currencyAlert, transform);
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetupAlert(screenPos);
+        
+        alert.SetLabelText($"{alertString}", m_currencyBadcolor);
     }
     
     public void SpawnMaxHealthAlert(int healthValue, Vector3 worldPos)
     {
-        UIAlert uiAlert = Instantiate(m_currencyAlert, transform);
-        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
+        string alertString = $"-{healthValue}<sprite name=\"ResourceHealth\"> {m_uiStringData.m_bossDamageType}";
         
+        UIAlert alert = Instantiate(m_currencyAlert, transform);
         Vector2 screenPos = GetScreenPosition(worldPos);
-        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
-        string alertString = $"-{healthValue}<sprite name=\"ResourceHealth\"> CRITICAL DAMAGE!";
-        uiAlert.SetLabelText($"{alertString}", m_currencyBadcolor);
+        alert.SetupAlert(screenPos);
+        
+        alert.SetLabelText($"{alertString}", m_currencyBadcolor);
     }
 
     private Vector2 GetScreenPosition(Vector3 pos)

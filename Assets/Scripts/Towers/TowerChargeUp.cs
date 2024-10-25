@@ -130,7 +130,7 @@ public class TowerChargeUp : Tower
         if (m_curStackDropDelay >= m_stackDropDelayTime && m_curStacks > 0)
         {
             m_curStacks -= (m_towerData.m_fireRate * m_maxStacks) * Time.deltaTime;
-            Debug.Log($"Charging Down: {m_curStacks} / {m_maxStacks}");
+            //Debug.Log($"Charging Down: {m_curStacks} / {m_maxStacks}");
         }
     }
 
@@ -193,9 +193,7 @@ public class TowerChargeUp : Tower
             //Apply Shred
             if (m_statusEffectData)
             {
-                StatusEffect statusEffect = new StatusEffect();
-                statusEffect.SetSender(gameObject);
-                statusEffect.m_data = m_statusEffectData;
+                StatusEffect statusEffect = new StatusEffect(gameObject, m_statusEffectData);
                 m_curTarget.ApplyEffect(statusEffect);
             }
         }

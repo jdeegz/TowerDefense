@@ -67,7 +67,7 @@ public class TowerBeam : Tower
     public override void RequestTowerDisable()
     {
         StopBeam();
-
+        
         base.RequestTowerDisable();
     }
 
@@ -122,9 +122,7 @@ public class TowerBeam : Tower
     {
         if (m_statusEffectData == null) return;
 
-        StatusEffect statusEffect = new StatusEffect();
-        statusEffect.SetSender(gameObject);
-        statusEffect.m_data = m_statusEffectData;
+        StatusEffect statusEffect = new StatusEffect(gameObject, m_statusEffectData);
         m_curTarget.ApplyEffect(statusEffect);
     }
 

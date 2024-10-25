@@ -32,7 +32,7 @@ public class BossSequenceController : MonoBehaviour
             return;
         }
 
-        if (m_bossIntroCutScene != null)
+        if (!string.IsNullOrEmpty(m_bossIntroCutScene))
         {
             GameplayManager.OnCutSceneEnd += SpawnBoss;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossIntroCutScene);
@@ -64,7 +64,7 @@ public class BossSequenceController : MonoBehaviour
 
     public void BossHasDied() // If the boss' hit points reached 0.
     {
-        if (GameManager.Instance != null && m_bossDeathCutScene != null)
+        if (GameManager.Instance != null && !string.IsNullOrEmpty(m_bossDeathCutScene))
         {
             GameplayManager.OnCutSceneEnd += BossDeathCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossDeathCutScene);
@@ -82,7 +82,7 @@ public class BossSequenceController : MonoBehaviour
 
     public void BossHasEscaped() // If the boss reached the castle, but the castle still stands.
     {
-        if (GameManager.Instance != null && m_bossOutroCutScene != null)
+        if (GameManager.Instance != null && !string.IsNullOrEmpty(m_bossOutroCutScene))
         {
             GameplayManager.OnCutSceneEnd += BossOutroCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossOutroCutScene);

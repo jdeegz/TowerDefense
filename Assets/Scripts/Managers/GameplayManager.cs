@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -27,6 +28,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameObject, Selectable.SelectedObjectType> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
+    public static event Action<String> OnWaveCompleted;
     public static event Action<Vector2Int> OnPreconTowerMoved;
     public static event Action OnPreconstructedTowerClear;
     public static event Action OnTowerBuild;
@@ -36,19 +38,36 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GathererController> OnGathererAdded;
     public static event Action<GathererController> OnGathererRemoved;
     public static event Action OnCutSceneEnd;
+    public static event Action<bool> OnDelayForQuestChanged;
 
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
 
     public int m_wave;
     [HideInInspector] public float m_timeToNextWave;
-    [HideInInspector] public bool m_delayForQuest;
+    [HideInInspector] public bool delayForQuest;
+
+    public bool m_delayForQuest
+    {
+        get { return delayForQuest; }
+
+        set
+        {
+            if (delayForQuest != value)
+            {
+                delayForQuest = value;
+                OnDelayForQuestChanged?.Invoke(delayForQuest);
+            }
+        }
+    }
 
     [Header("Castle")]
     public CastleController m_castleController;
 
     public Transform m_enemyGoal;
-    [HideInInspector] public Vector2Int m_goalPointPos;
+
+    [HideInInspector]
+    public Vector2Int m_goalPointPos;
 
     [Header("Obelisks")]
     [FormerlySerializedAs("m_activeObelisks")]
@@ -71,35 +90,46 @@ public class GameplayManager : MonoBehaviour
     public List<Tower> m_towerList;
 
     [Header("Selected Object Info")]
-    [SerializeField] private SelectionColors m_selectionColors;
+    [SerializeField]
+    private SelectionColors m_selectionColors;
 
     private Material m_selectedOutlineMaterial; //Assigned on awake
     private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
 
-    // Precon Tower Info
+// Precon Tower Info
+    public GameObject m_invalidCellObj;
     public LayerMask m_buildSurface;
     public Vector2Int m_preconstructedTowerPos;
-    [HideInInspector] public bool m_canAfford;
-    [HideInInspector] public bool m_canPlace;
-    [HideInInspector] public bool m_canBuild;
+
+    [HideInInspector]
+    public bool m_canAfford;
+
+    [HideInInspector]
+    public bool m_canPlace;
+
+    [HideInInspector]
+    public bool m_canBuild;
+
     private GameObject m_preconstructedTowerObj;
     private Tower m_preconstructedTower;
     private TowerData m_preconstructedTowerData;
 
-    //Boss Testing Ground
+//Boss Testing Ground
     [Header("Boss Wave Info")]
     public List<int> m_bossWaves; // What wave does this mission spawn a boss
+
     public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
     private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
 
     private bool m_watchingCutScene;
-    
-    //Ooze Cell Info
+
+//Ooze Cell Info
     public OozeManager m_oozeManager;
 
     [Header("Strings")]
-    [SerializeField] private UIStringData m_UIStringData;
+    [SerializeField]
+    private UIStringData m_UIStringData;
 
     private Camera m_mainCamera;
 
@@ -446,6 +476,8 @@ public class GameplayManager : MonoBehaviour
     {
         UpdateGameplayState(GameplayState.BuildGrid);
         m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
+        m_invalidCellObj = ObjectPoolManager.SpawnObject(m_invalidCellObj, Vector3.zero, quaternion.identity, transform);
+        m_invalidCellObj.SetActive(false);
     }
 
     public enum GameSpeed
@@ -554,7 +586,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Build:
                 //If this is the first wave, give a bit longer to build.
                 break;
-                
+
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
@@ -784,6 +816,32 @@ public class GameplayManager : MonoBehaviour
             //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
             //Debug.Log("Can Afford : " + m_canAfford + " Can Place: " + m_canPlace);
         }
+
+        DrawPreconCellObj();
+    }
+
+    private Material m_drawCellMaterial;
+
+    private void DrawPreconCellObj()
+    {
+        // We want to draw this cell under the precon tower.
+        // What turns in on / off?
+        /*if (m_drawCellMaterial == null)
+        {
+            m_drawCellMaterial = m_invalidCellObj.GetComponent<Renderer>().material;
+        }
+
+        Color color = m_canPlace ? m_selectionColors.m_outlineRestrictedColor : m_selectionColors.m_outlineBaseColor;
+        m_drawCellMaterial.color = color;*/
+        //m_selectedOutlineMaterial.SetColor("_Outline_Color", color);
+        if (m_invalidCellObj.activeSelf != !m_canPlace)
+        {
+            m_invalidCellObj.SetActive(!m_canPlace);
+        }
+
+        Vector3 pos = m_preconstructedTowerObj.transform.position;
+        pos.y = 0;
+        m_invalidCellObj.transform.position = pos;
     }
 
     bool CheckAffordability()
@@ -956,6 +1014,7 @@ public class GameplayManager : MonoBehaviour
             Destroy(m_preconstructedTowerObj);
         }
 
+        m_invalidCellObj.SetActive(false);
         m_preconstructedTowerData = null;
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
@@ -1195,7 +1254,9 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    [HideInInspector] public int m_obeliskCount;
+    [HideInInspector]
+    public int m_obeliskCount;
+
     private int m_obelisksChargedCount;
 
     public void AddObeliskToList(Obelisk obelisk)
@@ -1238,6 +1299,15 @@ public class GameplayManager : MonoBehaviour
             UpdateGameplayState(GameplayState.Victory);
             return;
         }*/
+
+        if (m_gameplayState == GameplayState.BossWave)
+        {
+            OnWaveCompleted?.Invoke(m_UIStringData.m_bossWaveComplete);
+        }
+        else
+        {
+            OnWaveCompleted?.Invoke(m_UIStringData.m_waveComplete);
+        }
 
         UpdateGameplayState(GameplayState.Build);
     }
@@ -1322,7 +1392,7 @@ public class GameplayManager : MonoBehaviour
         UpdateGameplayState(GameplayState.Defeat);
     }
 
-    public void QuestCompleted()
+    public void BuildTowerQuestCompleted()
     {
         m_delayForQuest = false;
     }
@@ -1350,7 +1420,7 @@ public class OozeManager
     private void GameplayStateChanged(GameplayManager.GameplayState newState)
     {
         if (m_currentOozedCells.Count <= 0) return;
-        
+
         if (newState == GameplayManager.GameplayState.Build)
         {
             m_currentOozedCells.Clear();
@@ -1368,7 +1438,7 @@ public class OozeManager
     {
         m_currentOozedCells.Add(cell);
     }
-    
+
     public void RemoveCell(Cell cell)
     {
         if (m_currentOozedCells.Contains(cell))

@@ -14,6 +14,7 @@ public class GathererController : MonoBehaviour
     public GameObject m_resourceAnchor;
     public Vector3 m_targetObjPosition;
     [SerializeField] private GameObject m_idleVFXParent;
+    [SerializeField] private GameObject m_boostedVFX;
     public GathererTask m_gathererTask;
     public Animator m_animator;
     public Renderer m_gathererRenderer;
@@ -170,6 +171,22 @@ public class GathererController : MonoBehaviour
         CheckHarvestPointAccessible();
 
         UpdateStatusEffects();
+
+        HandleBoostedEffect();
+    }
+
+    private void HandleBoostedEffect()
+    {
+        if (m_activeSpeedBoostCount > 0) {
+            if (!m_boostedVFX.activeSelf) {
+                m_boostedVFX.SetActive(true);
+            }
+        }
+        else if (m_activeSpeedBoostCount == 0) {
+            if (m_boostedVFX.activeSelf) {
+                m_boostedVFX.SetActive(false);
+            }
+        }
     }
 
     void FixedUpdate()
