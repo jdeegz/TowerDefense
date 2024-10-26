@@ -7,6 +7,8 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.TextCore.Text;
@@ -17,6 +19,7 @@ public class GameplayManager : MonoBehaviour
     public static GameplayManager Instance;
     public GameplayState m_gameplayState;
     public GameSpeed m_gameSpeed;
+    public InteractionState m_interactionState;
 
     public static event Action<GameplayState> OnGameplayStateChanged;
     public static event Action<GameSpeed> OnGamePlaybackChanged;
@@ -35,6 +38,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action OnTowerSell;
     public static event Action OnTowerUpgrade;
     public static event Action<int, int> OnObelisksCharged;
+    public static event Action<int, int> OnObeliskAdded;
     public static event Action<GathererController> OnGathererAdded;
     public static event Action<GathererController> OnGathererRemoved;
     public static event Action OnCutSceneEnd;
@@ -130,8 +134,14 @@ public class GameplayManager : MonoBehaviour
     [Header("Strings")]
     [SerializeField]
     private UIStringData m_UIStringData;
-
+    
     private Camera m_mainCamera;
+
+//Full Screen Renderer Info
+    [Header("Fullscreen Effects")]
+    [SerializeField] private Material m_castleDamagedFullScreenMaterial;
+    private bool m_effectEnabled;
+    private float m_effectDissolve;
 
     public enum GameplayState
     {
@@ -148,9 +158,7 @@ public class GameplayManager : MonoBehaviour
         Victory,
         Defeat
     }
-
-    public InteractionState m_interactionState;
-
+    
     public enum InteractionState
     {
         Disabled,
@@ -478,6 +486,10 @@ public class GameplayManager : MonoBehaviour
         m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
         m_invalidCellObj = ObjectPoolManager.SpawnObject(m_invalidCellObj, Vector3.zero, quaternion.identity, transform);
         m_invalidCellObj.SetActive(false);
+
+        /*var pipeline = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+        m_scriptableRenderer = pipeline.scriptableRenderer;
+        m_scriptableRendererFeature = m_scriptableRenderer.supportedRenderingFeatures.Find(feature => feature is FullscreenEffect);*/
     }
 
     public enum GameSpeed
@@ -486,8 +498,7 @@ public class GameplayManager : MonoBehaviour
         Normal,
     }
 
-    public int m_playbackSpeed = 1;
-
+    private int m_playbackSpeed = 1;
     public void UpdateGameSpeed()
     {
         int minSpeed = 1;
@@ -1180,7 +1191,7 @@ public class GameplayManager : MonoBehaviour
 
         //Let rest of game know of new tower.
         OnTowerUpgrade?.Invoke();
-        Debug.Log("Tower upgraded.");
+        //Debug.Log("Tower upgraded.");
     }
 
     public void AddEnemyToList(EnemyController enemy)
@@ -1264,7 +1275,7 @@ public class GameplayManager : MonoBehaviour
         if (m_obelisksInMission == null) m_obelisksInMission = new List<Obelisk>();
         m_obelisksInMission.Add(obelisk);
         ++m_obeliskCount;
-        OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
+        OnObeliskAdded?.Invoke(m_obelisksChargedCount, m_obeliskCount);
     }
 
     public void CheckObeliskStatus()

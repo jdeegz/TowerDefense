@@ -81,6 +81,7 @@ Transform:
   - {fileID: 7413360052776275907}
   - {fileID: 1303812154147929662}
   - {fileID: 2309347593471065756}
+  - {fileID: 3207290163660673045}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4488722471651228511
@@ -190,6 +191,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bf5c2f2514131c4a83594900d127b4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &4857258253983964478
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3207290163660673045}
+  - component: {fileID: 3523206862302916470}
+  m_Layer: 0
+  m_Name: FullscreenEffectController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3207290163660673045
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4857258253983964478}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 30.001354, y: 0, z: 23}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8814645121660537196}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3523206862302916470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4857258253983964478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08a4a1eef57f4d342bbd97c930a039e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_rfCastleDamaged: {fileID: 3758359818619181503, guid: aa5f76fdc6f72ab469e67bc3b390d131, type: 2}
+  m_matCastleDamaged: {fileID: 2100000, guid: f08a24a2e961bc84786b2fbee99f7602, type: 2}
+  m_castleDamageAppearDuration: 0.3
+  m_castleDamageDissolveDuration: 0.8
+  m_rfCastleMaxDamaged: {fileID: 4932844208533599652, guid: aa5f76fdc6f72ab469e67bc3b390d131, type: 2}
+  m_matCastleMaxDamaged: {fileID: 2100000, guid: a6ed242e9e8ad4149ae4ba169a8755e2, type: 2}
+  m_castleMaxDamageAppearDuration: 0.3
+  m_castleMaxDamageDissolveDuration: 0.5
+  m_rfTowerUpgraded: {fileID: 7188610880002612785, guid: aa5f76fdc6f72ab469e67bc3b390d131, type: 2}
+  m_matTowerUpgraded: {fileID: 2100000, guid: c3e4df60d9d1b514695f48ee9b5636bd, type: 2}
+  m_towerUpgradedAppearDuration: 0.3
+  m_towerUpgradedDissolveDuration: 4
+  m_rfObeliskComplete: {fileID: -340310107598150191, guid: aa5f76fdc6f72ab469e67bc3b390d131, type: 2}
+  m_matObeliskComplete: {fileID: 2100000, guid: cd18131c645a0a14da84f8b57c36913d, type: 2}
+  m_obeliskCompleteAppearDuration: 0.3
+  m_obeliskCompleteDissolveDuration: 3
 --- !u!1 &5577998438273750881
 GameObject:
   m_ObjectHideFlags: 0
@@ -575,6 +636,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_gameplayState: 0
   m_gameSpeed: 1
+  m_interactionState: 0
   m_gameplayData: {fileID: 11400000, guid: 79bf179af36a5a6498cf1da85b17d7fa, type: 2}
   m_wave: -1
   m_timeToNextWave: 0
@@ -602,6 +664,5 @@ MonoBehaviour:
   m_bossWaves: 
   m_bossSequenceController: {fileID: 0}
   m_UIStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
-  m_interactionState: 0
-  m_playbackSpeed: 1
+  m_castleDamagedFullScreenMaterial: {fileID: 0}
   m_obeliskCount: 0
