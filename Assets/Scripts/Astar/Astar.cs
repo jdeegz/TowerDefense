@@ -181,6 +181,32 @@ public class AStar
             if (curCell.m_canPathWest) PerformDFS(new Vector2Int(currentCell.x - 1, currentCell.y), islandCells, visited, preconTowerCell); // Left neighbor
         }
     }
+    
+    public static int CalculateGridDistance(Vector2Int unitCellPosition, Vector2Int goalCellPos)
+    {
+        int cellCount = 0;
+        Vector2Int currentPosition = unitCellPosition;
+
+        // Continue moving along each cell's direction until we reach the goal
+        while (currentPosition != goalCellPos)
+        {
+            Vector3 directionToNextCell = Util.GetCellFromPos(currentPosition).m_directionToNextCell;
+            Vector2Int direction = new Vector2Int((int)directionToNextCell.x, (int)directionToNextCell.z);
+            
+            // Move to the next cell position
+            currentPosition += direction;
+            cellCount++;
+
+            // Safety check to avoid infinite loops (optional, adjust limit as needed)
+            if (cellCount > 1000)
+            {
+                Debug.LogWarning("Exceeded cell iteration limit.");
+                break;
+            }
+        }
+
+        return cellCount;
+    }
 
     public static List<Vector2Int> FindExitPath(Vector2Int start, Vector2Int end, Vector2Int precon, Vector2Int exit)
     {

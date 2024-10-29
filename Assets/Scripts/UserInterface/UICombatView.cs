@@ -488,7 +488,7 @@ public class UICombatView : MonoBehaviour
 
     private void OnNextWaveButtonClicked()
     {
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.SpawnEnemies);
+        GameplayManager.Instance.m_timeToNextWave = 0f;
     }
 
     // Update is called once per frame

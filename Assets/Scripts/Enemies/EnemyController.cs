@@ -20,12 +20,14 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected Vector2Int m_curPos;
     protected Cell m_curCell;
     protected Transform m_goal;
+    protected Cell m_goalCell;
     protected Vector3 m_nextCellPosition;
     protected float m_maxX;
     protected float m_minX;
     protected float m_maxZ;
     protected float m_minZ;
     protected int m_cellsTravelled = -1;
+    protected int m_cellsToGoal;
 
     //Enemy Stats
     protected float m_curMaxHealth;
@@ -85,6 +87,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         if (GameplayManager.Instance)
         {
             m_goal = GameplayManager.Instance.m_enemyGoal;
+            m_goalCell = Util.GetCellFrom3DPos(m_goal.position);
             AddToGameplayList();
         }
 
@@ -223,6 +226,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
                 ++m_cellsTravelled;
             }
+
+            m_cellsToGoal = AStar.CalculateGridDistance(m_curCell.m_cellPos, m_goalCell.m_cellPos);
             
             float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
             Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
@@ -424,11 +429,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
             m_curCell = null;
             m_nextCellPosition = Vector3.zero;
         }
-        
-        if (m_deathVFX)
-        {
-            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-        }
 
         m_animator.SetTrigger("IsDead");
 
@@ -446,6 +446,10 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
                 obeliskSoul.SetupSoul(m_closestObelisk.m_targetPoint.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
+            }
+            else if (m_deathVFX)
+            {
+                ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
             }
         }
 
@@ -480,14 +484,19 @@ public abstract class EnemyController : Dissolvable, IEffectable
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
     }
 
-    public float GetCurrentHP()
+    public virtual float GetCurrentHP()
     {
         return m_curHealth;
     }
 
-    public float GetMaxHP()
+    public virtual float GetMaxHP()
     {
         return m_curMaxHealth;
+    }
+    
+    public virtual int GetCellCountToGoal()
+    {
+        return m_cellsToGoal;
     }
 
     public (float, float) GetMoveSpeedModifiers()
@@ -593,7 +602,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         
         if (statusEffect.m_elapsedTime > statusEffect.m_data.m_lifeTime)
         {
-            Debug.Log($"Removing effect from {statusEffect.m_sender}. Elapsed time {statusEffect.m_elapsedTime} is greater than Life Time {statusEffect.m_data.m_lifeTime}.");
+            //Debug.Log($"Removing effect from {statusEffect.m_sender}. Elapsed time {statusEffect.m_elapsedTime} is greater than Life Time {statusEffect.m_data.m_lifeTime}.");
             RemoveEffect(statusEffect);
             return;
         }
@@ -700,13 +709,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
             if (statusEffect.m_data.m_damageModifier < 1 && statusEffect.m_data.m_damageModifier < m_lastDamageModifierLower)
             {
                 m_lastDamageModifierLower = statusEffect.m_data.m_damageModifier;
-                Debug.Log($"Set Lower Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
+                //Debug.Log($"Set Lower Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
             }
 
             if (statusEffect.m_data.m_damageModifier > 1 && statusEffect.m_data.m_damageModifier > m_lastDamageModifierHigher)
             {
                 m_lastDamageModifierHigher = statusEffect.m_data.m_damageModifier;
-                Debug.Log($"Set Higher Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
+                //Debug.Log($"Set Higher Damage Modifier to: {m_lastDamageModifierHigher} on {gameObject.name}");
             }
         }
     }

@@ -35,7 +35,7 @@ public class EnemySwarmMember : EnemyController
         //Setup Data
         //m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         //m_baseLookSpeed = m_enemyData.m_lookSpeed;
-        m_curMaxHealth = (int)MathF.Floor(m_enemyData.m_health * Mathf.Pow(1.075f, wave));
+        m_curMaxHealth = GameplayManager.Instance.m_gameplayData.CalculateHealth(m_enemyData.m_health);
         m_curHealth = m_curMaxHealth;
         m_baseDamageMultiplier = m_enemyData.m_damageMultiplier;
 
@@ -85,6 +85,21 @@ public class EnemySwarmMember : EnemyController
     public override void HandleMovement()
     {
         //
+    }
+    
+    public virtual float GetCurrentHP()
+    {
+        return m_motherEnemyController.GetCurrentHP();
+    }
+
+    public virtual float GetMaxHP()
+    {
+        return m_motherEnemyController.GetMaxHP();
+    }
+    
+    public virtual int GetCellCountToGoal()
+    {
+        return m_motherEnemyController.GetCellCountToGoal();
     }
     
     public override void OnTakeDamage(float dmg)

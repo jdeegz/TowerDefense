@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -42,11 +43,11 @@ public class ProjectileMissile : Projectile
         {
             TravelToTargetFixedUpdate();
         }
-        
+
         if (m_enemy)
         {
             m_targetPos = m_enemy.m_targetPoint.position;
-            
+
             if (m_enemy.GetCurrentHP() <= 0)
             {
                 m_enemy = null;
@@ -96,27 +97,33 @@ public class ProjectileMissile : Projectile
             {
                 return;
             }
-
+            
+            Array.Sort(raycastHits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+            
             //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
-            for (int i = 0; i < raycastHits.Length; i++)
+            foreach (var hit in raycastHits)
             {
-                if (raycastHits[i].collider.gameObject.layer == m_shieldLayer)
+                if (hit.collider.gameObject.layer == m_shieldLayer)
                 {
-                    //We hit the shield.
-                    //In the future we may want to tell the enemy we hit their shield so they can animate.
-                    return;
+                    // We hit a shield before reaching the target, so exit without dealing damage
+                    break;
                 }
-            }
 
-            EnemyController enemyHit = col.GetComponent<EnemyController>();
-            enemyHit.OnTakeDamage(m_projectileDamage);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
+                if (hit.collider == col)
+                {
+                    EnemyController enemyHit = col.GetComponent<EnemyController>();
+                    enemyHit.OnTakeDamage(m_projectileDamage);
+                    ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
 
-            //Apply Status Effect
-            if (m_statusEffectData != null)
-            {
-                StatusEffect statusEffect = new StatusEffect(m_statusSender, m_statusEffectData);
-                enemyHit.ApplyEffect(statusEffect);
+                    //Apply Status Effect
+                    if (m_statusEffectData != null)
+                    {
+                        StatusEffect statusEffect = new StatusEffect(m_statusSender, m_statusEffectData);
+                        enemyHit.ApplyEffect(statusEffect);
+                    }
+
+                    break;
+                }
             }
         }
     }

@@ -58,7 +58,7 @@ public abstract class Tower : MonoBehaviour
         m_curTarget = null;
         enabled = false;
     }
-    
+
     public virtual void RequestTowerEnable()
     {
         enabled = true;
@@ -83,7 +83,6 @@ public abstract class Tower : MonoBehaviour
         }
 
         //Maybe escape early if hits.Length is only 1?
-
         List<EnemyController> targets = new List<EnemyController>();
         for (int i = 0; i < hits.Length; ++i)
         {
@@ -94,6 +93,18 @@ public abstract class Tower : MonoBehaviour
             }
         }
 
+        if (targets.Count == 0)
+        {
+            m_curTarget = null;
+            return;
+        }
+        
+        if (targets.Count == 1)
+        {
+            m_curTarget = targets[0];
+            return;
+        }
+        
         m_curTarget = GetPriorityTarget(targets);
 
         if (m_curTarget != null)
@@ -264,46 +275,137 @@ public abstract class Tower : MonoBehaviour
         }
     }
 
+    public TargetingSystem m_targetSystem = TargetingSystem.ClosestToGoal;
+
+    public enum TargetingSystem
+    {
+        ClosestToGoal,
+        ClosestToTower,
+        HighestHealth,
+        LowestHealth,
+    }
+
     public EnemyController GetPriorityTarget(List<EnemyController> targets)
     {
-        //Dont stop firing at targets in range with lower priority
-        //Fire Range is shorter than Target Range.
-
-        float closestTargetDistance = float.PositiveInfinity;
         int highestPriority = int.MinValue;
-        EnemyController priorityTarget = null;
+        List<EnemyController> m_targetsOfThisPriorityValue = new List<EnemyController>();
 
+        // Create a list of enemies that share the highest Priority that we can then operate upon based on the assigned Target System.
         foreach (EnemyController enemy in targets)
         {
             if (enemy.m_enemyData.m_targetPriority == highestPriority)
             {
-                float distance = Vector3.Distance(transform.position, enemy.transform.position);
-                if (distance < closestTargetDistance)
-                {
-                    priorityTarget = enemy;
-                    closestTargetDistance = distance;
-                    continue;
-                }
+                m_targetsOfThisPriorityValue.Add(enemy);
             }
 
             if (enemy.m_enemyData.m_targetPriority > highestPriority)
             {
                 highestPriority = enemy.m_enemyData.m_targetPriority;
-                priorityTarget = enemy;
-                closestTargetDistance = Vector3.Distance(transform.position, enemy.transform.position);
+                m_targetsOfThisPriorityValue = new List<EnemyController> { enemy };
             }
         }
 
-        // Don't change targets if the discovered priority target is of the same value as current target.
-        if (m_curTarget != null && priorityTarget != null)
+        EnemyController priorityTarget = null;
+        int fewestCellsToGoal = int.MaxValue;
+        float closestTargetDistance = float.PositiveInfinity;
+        float lowestCurrentHP = float.PositiveInfinity;
+        float highestCurrentHP = 0;
+
+        foreach (EnemyController enemy in m_targetsOfThisPriorityValue)
         {
-            if (priorityTarget.m_enemyData.m_targetPriority == m_curTarget.m_enemyData.m_targetPriority)
+            switch (m_targetSystem)
             {
-                priorityTarget = m_curTarget;
+                case TargetingSystem.ClosestToGoal:
+                    int cellCount = enemy.GetCellCountToGoal();
+                    if (cellCount < fewestCellsToGoal)
+                    {
+                        priorityTarget = enemy;
+                        fewestCellsToGoal = cellCount;
+                    }
+
+                    break;
+                case TargetingSystem.ClosestToTower: // Find the target closest to the tower.
+                    float distance = Vector3.Distance(transform.position, enemy.transform.position);
+                    if (distance < closestTargetDistance)
+                    {
+                        priorityTarget = enemy;
+                        closestTargetDistance = distance;
+                    }
+
+                    break;
+                case TargetingSystem.HighestHealth: // Find the target with the highest current health.
+                    float highEnemyHealth = enemy.GetCurrentHP();
+                    if (highEnemyHealth > highestCurrentHP)
+                    {
+                        priorityTarget = enemy;
+                        highestCurrentHP = highEnemyHealth;
+                    }
+
+                    break;
+                case TargetingSystem.LowestHealth: // Find the target with the lowest current health.
+                    float lowEnemyHealth = enemy.GetCurrentHP();
+                    if (lowEnemyHealth < lowestCurrentHP)
+                    {
+                        priorityTarget = enemy;
+                        highestCurrentHP = lowEnemyHealth;
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
-        return priorityTarget;
+        if (m_curTarget == null) // Return early if the tower does not have a target.
+        {
+            return priorityTarget;
+        }
+
+        if (priorityTarget.m_enemyData.m_targetPriority > m_curTarget.m_enemyData.m_targetPriority)
+        {
+            return priorityTarget;
+        }
+
+        // Don't change targets if the priority target is within a threshold based on the Targeting System of the current target.
+        switch (m_targetSystem)
+        {
+            case TargetingSystem.ClosestToGoal:
+                int curCellCount = m_curTarget.GetCellCountToGoal();
+                if (fewestCellsToGoal < curCellCount)
+                {
+                    return priorityTarget;
+                }
+
+                break;
+            case TargetingSystem.ClosestToTower: // Only swap if the distance between current target and priority is past a threshold.
+                float curTargetdistance = Vector3.Distance(transform.position, m_curTarget.transform.position);
+                if (Mathf.Abs(curTargetdistance - closestTargetDistance) > .25f)
+                {
+                    return priorityTarget;
+                }
+
+                break;
+            case TargetingSystem.HighestHealth: // Only swap if the MaxHP is greater than the current targets + % threshold.
+                float curTargetMaxHP = priorityTarget.GetMaxHP();
+                if (curTargetMaxHP * 0.95 > m_curTarget.GetMaxHP())
+                {
+                    return priorityTarget;
+                }
+
+                break;
+            case TargetingSystem.LowestHealth: // Only swap if the target has less than current target - 1 tower shots worth of hp.
+                float adjustedHP = lowestCurrentHP + m_towerData.m_baseDamage;
+                if (adjustedHP < m_curTarget.GetCurrentHP())
+                {
+                    return priorityTarget;
+                }
+
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        return m_curTarget; // If we fail to meet the thresholds, return our current target.
     }
 
     public Quaternion GetTurretRotation()

@@ -9,7 +9,7 @@ public class UITooltip : Selectable, IPointerEnterHandler, IPointerExitHandler
     public string m_descriptionString;
     public string m_detailsString;
     
-    public void OnPointerEnter(PointerEventData eventData)
+    public virtual void OnPointerEnter(PointerEventData eventData)
     {
         //Get the selectable component related to this button.
         UITooltipController.Instance.SetUISelectable(this);

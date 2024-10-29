@@ -7,17 +7,19 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_AmbientEffect
-  m_Shader: {fileID: -6465566751694194690, guid: 66310f25ed11ea34ab651530bf83b204, type: 3}
+  m_Name: Mat_AmbientEffect2
+  m_Shader: {fileID: -6465566751694194690, guid: 9d7efe3e6381fd041954518bd2f0b5a1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALBEIDO_BLEND_MODE_OVERLAY
+  - _ALPHA_BLEND_MODE_OVERLAY
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap:
     RenderType: Transparent
   disabledShaderPasses:
@@ -73,7 +75,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DissolveTexture:
-        m_Texture: {fileID: 2800000, guid: d70991c409c9cbc4e91dd018936cfe0e, type: 3}
+        m_Texture: {fileID: 2800000, guid: fd391f8575a36364a84b89fc47f32b57, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -116,6 +118,22 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _b_Albeido_Texture:
+        m_Texture: {fileID: 2800000, guid: d70991c409c9cbc4e91dd018936cfe0e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _b_Alpha_Texture:
+        m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _s_Albeido_Texture:
+        m_Texture: {fileID: 2800000, guid: bcca05c2b55661f489154e4811286d2f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _s_Alpha_Texture:
+        m_Texture: {fileID: 2800000, guid: c0ef325a014baf24f806e70fe6e62055, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -130,6 +148,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ALBEIDO_BLEND_MODE: 0
+    - _ALPHA_BLEND_MODE: 0
     - _AlphaClip: 0
     - _AlphaClipThreshold: 0
     - _AlphaToMask: 0
@@ -142,11 +162,11 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DIssolveFade: 0.282
+    - _DIssolveFade: 0.394
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DissolveOutlineThickness: 0
-    - _DissolveValue: -0.13
+    - _DissolveValue: 0.6
     - _DstBlend: 1
     - _DstBlendAlpha: 1
     - _EnvironmentReflections: 1
@@ -172,8 +192,12 @@ Material:
     - _ZTest: 4
     - _ZWrite: 0
     - _ZWriteControl: 0
+    - _b_Albeido_Rotation: 0
+    - _b_Alpha_Rotation: 0
+    - _s_Albeido_Rotation: 0
+    - _s_Alpha_Rotation: 0
     m_Colors:
-    - _Alpha_Multiplier: {r: 1, g: 1, b: 1, a: 0.59607846}
+    - _Alpha_Multiplier: {r: 1, g: 1, b: 1, a: 0.6745098}
     - _Alpha_Texture_Scroll_Speed: {r: 0, g: 0, b: 0, a: 0}
     - _Alpha_Tiling: {r: 1, g: 1, b: 0, a: 0}
     - _BaseColor: {r: 0.9960785, g: 0.454902, b: 0.9960785, a: 1}
@@ -197,8 +221,14 @@ Material:
     - _SkinColorLow: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 0.005, g: 0.005, b: 0.005, a: 0}
-    - _Top_Color: {r: 0.493859, g: 0.493859, b: 0.5849056, a: 0}
+    - _Top_Color: {r: 1.1944166, g: 0.72668296, b: 0.025082711, a: 0}
     - _UVOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _b_Albeido_Scroll_Speed: {r: -0.05, g: -0.15, b: 0, a: 0}
+    - _b_Albeido_Tiling: {r: 5, g: 1, b: 0, a: 0}
+    - _b_Alpha_Scroll_Speed: {r: 0.02, g: 0.1, b: 0, a: 0}
+    - _b_Alpha_Tiling: {r: 1, g: 1, b: 0, a: 0}
+    - _s_Albeido_Scroll_Speed: {r: 0, g: 0, b: 0, a: 0}
+    - _s_Albeido_Tiling: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &7081015444112586615

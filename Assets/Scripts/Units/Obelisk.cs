@@ -87,7 +87,7 @@ public class Obelisk : MonoBehaviour
             m_meter = Instantiate(IngameUIController.Instance.m_ingameMeter, IngameUIController.Instance.transform);
             m_meter.SetupMeter(this.gameObject, m_meterOffset);
             
-            SetupRangeCircle(48, m_obeliskRadius);
+            //SetupRangeCircle(48, m_obeliskRadius);
             Vector3 scale = m_ambientEffectsRoot.transform.localScale;
             scale.x *= m_obeliskRadius * 2;
             scale.z *= m_obeliskRadius * 2;
@@ -130,6 +130,11 @@ public class Obelisk : MonoBehaviour
     public float GetObeliskProgress()
     {
         return (float)m_curChargeCount / m_maxChargeCount;
+    }
+    
+    public int GetObeliskChargeCount()
+    {
+        return m_curChargeCount;
     }
     
     private void ObeliskChargeChanged(int i)

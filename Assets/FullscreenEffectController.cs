@@ -59,6 +59,7 @@ public class FullscreenEffectController : MonoBehaviour
 
     private void CastleDamaged(int i)
     {
+        if (i > 0) return;
         if(m_curDamageCoroutine != null) StopCoroutine(m_curDamageCoroutine);
         
         m_curDamageCoroutine = StartCoroutine(CastleDamageEffect());
@@ -66,6 +67,7 @@ public class FullscreenEffectController : MonoBehaviour
 
     private void CastleMaxDamaged(int i)
     {
+        if (i > 0) return;
         if(m_curMaxDamageCoroutine != null) StopCoroutine(m_curMaxDamageCoroutine);
         
         m_curMaxDamageCoroutine = StartCoroutine(CastleMaxDamageEffect());

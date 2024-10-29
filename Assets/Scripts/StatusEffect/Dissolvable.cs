@@ -17,27 +17,25 @@ public class Dissolvable : MonoBehaviour
 
     void OnEnable()
     {
-        //Reset the properties when the object is pulled from the pool.
-        if (m_materials != null)
+        if (m_materials == null) return; // No list created yet. Must be a new unit.
+        
+        if (m_materials.Count == 0) return; // This unit has no materials.
+
+        foreach (Material material in m_materials)
         {
-            Debug.Log($"Material count: {m_materials.Count}");
-            foreach (Material material in m_materials)
-            {
-                Debug.Log($"Resetting {material.name} to be visible.");
-                material.SetFloat("_AlphaClipThreshold", 0);
-            }
+            material.SetFloat("_AlphaClipThreshold", 0);
         }
     }
 
-    protected void ResetDissolve()
+    protected void ResetDissolve() // Used for Swarm Members because they are not sent to and removed from the pool. (Never trigger On Enable)
     {
-        //Reset the properties when the object is pulled from the pool.
-        if (m_materials != null)
+        if (m_materials == null) return; // No list created yet. Must be a new unit.
+        
+        if (m_materials.Count == 0) return;
+
+        foreach (Material material in m_materials)
         {
-            foreach (Material material in m_materials)
-            {
-                material.SetFloat("_AlphaClipThreshold", 0);
-            }
+            material.SetFloat("_AlphaClipThreshold", 0);
         }
     }
 
@@ -45,18 +43,19 @@ public class Dissolvable : MonoBehaviour
     {
         StartCoroutine(DoDissolve(onDissolveComplete));
     }
-    
+
     protected IEnumerator DoDissolve(Action onDissolveComplete)
     {
         if (m_materials.Count > 0)
         {
             float counter = 0;
-            
-            while (m_materials[0].GetFloat("_AlphaClipThreshold") < 1)
+            float curValue = 0;
+
+            while (curValue < 1)
             {
                 counter += Time.deltaTime;
-                float curValue = Mathf.Lerp(0f, 1f, counter / m_dissolveDuration);
-                
+                curValue = Mathf.Lerp(0f, 1f, counter / m_dissolveDuration);
+
                 for (int i = 0; i < m_materials.Count; ++i)
                 {
                     m_materials[i].SetFloat("_AlphaClipThreshold", curValue);
@@ -64,12 +63,11 @@ public class Dissolvable : MonoBehaviour
 
                 yield return new WaitForEndOfFrame();
             }
-
-            onDissolveComplete?.Invoke();
-            //Debug.Log($"dissolve complete.");
         }
+
+        onDissolveComplete?.Invoke();
     }
-    
+
     public void CollectMaterials(Transform parent)
     {
         //Get Parent Mesh Renderer if there is one.
@@ -80,7 +78,7 @@ public class Dissolvable : MonoBehaviour
             {
                 m_materials = new List<Material>();
             }
-            
+
             foreach (Material material in Renderer.materials)
             {
                 m_materials.Add(material);

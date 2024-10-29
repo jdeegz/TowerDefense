@@ -501,10 +501,14 @@ public class GameplayManager : MonoBehaviour
     private int m_playbackSpeed = 1;
     public void UpdateGameSpeed()
     {
+        // If the game is paused, store m_playbackSpeed which will be set when unpaused.
+        // If the game is in play, update playback speed immediately.
+        
         int minSpeed = 1;
         int maxSpeed = 2;
         m_playbackSpeed = m_playbackSpeed == minSpeed ? maxSpeed : minSpeed;
-        Time.timeScale = m_playbackSpeed;
+        
+        if(m_gameSpeed == GameSpeed.Normal) Time.timeScale = m_playbackSpeed;
 
         OnGameSpeedChanged?.Invoke(m_playbackSpeed);
     }

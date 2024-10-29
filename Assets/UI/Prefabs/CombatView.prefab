@@ -2738,9 +2738,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2537339552714008774}
-  - component: {fileID: 9063277534350196331}
   - component: {fileID: 6595629396967014729}
   - component: {fileID: 455793092095812091}
+  - component: {fileID: 7018556561253519727}
   m_Layer: 0
   m_Name: ObeliskDisplayGroup
   m_TagString: Untagged
@@ -2768,24 +2768,6 @@ RectTransform:
   m_AnchoredPosition: {x: 370, y: -10}
   m_SizeDelta: {x: 260, y: 40}
   m_Pivot: {x: 0.5, y: 1}
---- !u!114 &9063277534350196331
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3858189073781741354}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41ae1e71bc2d347459b0bd61d12f96b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_selectedObjectType: 7
-  m_meshRenderers: []
-  m_nameString: Obelisk Status
-  m_descriptionString: Displays the number of Obelisks needed to power the Gossamer
-    in this region. Once all charged, all Tears will close.
-  m_detailsString: 
 --- !u!222 &6595629396967014729
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2824,6 +2806,24 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7018556561253519727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3858189073781741354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33ec7a0ddf3737a4e9cf1b3818216573, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_selectedObjectType: 7
+  m_meshRenderers: []
+  m_nameString: Obelisk Status
+  m_descriptionString: Displays the number of Obelisks needed to power the Gossamer
+    in this region. Once all charged, all Tears will close.
+  m_detailsString: 
 --- !u!1 &4124089094858521236
 GameObject:
   m_ObjectHideFlags: 0
@@ -3631,7 +3631,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0.46226418, g: 0.3737771, b: 0.23331259, a: 1}
   m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_RaycastPadding: {x: -10, y: -10, z: 0, w: -10}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -4129,7 +4129,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0.5176983, g: 0.8962264, b: 0.13105197, a: 1}
   m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_RaycastPadding: {x: -10, y: -10, z: 0, w: -10}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -4565,7 +4565,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0.4627451, g: 0.37254903, b: 0.23137255, a: 1}
   m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_RaycastPadding: {x: -10, y: -10, z: -10, w: -10}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:

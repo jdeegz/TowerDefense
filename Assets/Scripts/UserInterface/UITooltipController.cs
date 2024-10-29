@@ -40,6 +40,7 @@ public class UITooltipController : MonoBehaviour
     private Tween m_curTween;
     private Vector2 m_lastScreenSize;
     private CanvasScaler m_canvasScaler;
+    private bool m_supressToolTips;
 
     private string m_timeIconString = "<sprite name=\"Time\">";
     private string m_healthIconString = "<sprite name=\"ResourceHealth\">";
@@ -94,43 +95,52 @@ public class UITooltipController : MonoBehaviour
             m_lastScreenSize = new Vector2(Screen.width, Screen.height);
         }
 
+        // If I am holding alt, do not display tooltips. If a tooltip is active, hide it.
+        if (Input.GetKey(KeyCode.LeftAlt))
+        {
+            m_lastUISelectable = null; // Set these null so that when we release alt the tooltip reappears if there is one to show.
+            m_lastWorldSelectable = null;
+            if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
+            return;
+        }
+        
         HandleTooltipPlacement();
 
-        //Dont do any Tooltip display while in preconstruction.
+        // Dont do any Tooltip display while in preconstruction.
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
             if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
             return;
         }
 
-        //Copy the selectable from gameplay manager.
+        // Copy the selectable from gameplay manager.
         SetWorldSelectable(GameplayManager.Instance.m_hoveredSelectable);
 
-        //Dont show a tooltip for a currently selected tower that is being hovered.
+        // Dont show a tooltip for a currently selected tower that is being hovered.
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.SelectedTower && m_curSelected == m_curWorldSelectable)
         {
             if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
             return;
         }
 
-        //I want to show a tooltip if I am hovering over an object, and it's not the same object as last frame.
+        // I want to show a tooltip if I am hovering over an object, and it's not the same object as last frame.
         if (m_curUISelectable != m_lastUISelectable)
         {
-            //Show a tooltip
+            // Show a tooltip
             if (m_curUISelectable) SetTooltipData(m_curUISelectable.m_selectedObjectType, m_curUISelectable.gameObject);
             m_lastUISelectable = m_curUISelectable;
         }
 
         if (m_curWorldSelectable != m_lastWorldSelectable)
         {
-            //Show a tooltip
+            // Show a tooltip
             if (m_curWorldSelectable) SetTooltipData(m_curWorldSelectable.m_selectedObjectType, m_curWorldSelectable.gameObject);
             m_lastWorldSelectable = m_curWorldSelectable;
         }
 
         if (!m_curUISelectable && !m_curWorldSelectable)
         {
-            //Dont show a tooltip.
+            // Dont show a tooltip.
             m_lastUISelectable = null;
             m_lastWorldSelectable = null;
             RequestShowTooltip(false);
@@ -264,27 +274,48 @@ public class UITooltipController : MonoBehaviour
 
     void HandleTooltipPlacement()
     {
-        //Get the mouse position and convert it to screen coordinates.
-        m_mousePos = Input.mousePosition;
-        Vector2 rectSize = m_tooltipRect.rect.size;
-        Vector2 canvasSize = m_canvasScaler.referenceResolution;
-
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(m_canvas.transform as RectTransform, m_mousePos, m_canvas.worldCamera, out Vector2 localPoint);
-        Vector2 newTooltipPivot = m_defaultPivot;
-        Vector2 newOffset = new Vector2(m_offsetXPositive, m_offsetYPositive);
-        if (localPoint.x < 0 - canvasSize.x / 2 + rectSize.x + m_offsetXPositive)
+        if (GameSettings.DynamicToolTipsEnabled) // Dynamic Placement
         {
-            newOffset.x = -m_offsetXNegative;
-            newTooltipPivot.x = 0;
-        }
+            // Get the mouse position and convert it to screen coordinates.
+            m_mousePos = Input.mousePosition;
+            Vector2 rectSize = m_tooltipRect.rect.size;
+            Vector2 canvasSize = m_canvasScaler.referenceResolution;
 
-        if (localPoint.y > canvasSize.y / 2 - rectSize.y - m_offsetYPositive)
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(m_canvas.transform as RectTransform, m_mousePos, m_canvas.worldCamera, out Vector2 localPoint);
+            Vector2 newTooltipPivot = m_defaultPivot;
+            Vector2 newOffset = new Vector2(m_offsetXPositive, m_offsetYPositive);
+            if (localPoint.x < 0 - canvasSize.x / 2 + rectSize.x + m_offsetXPositive)
+            {
+                newOffset.x = -m_offsetXNegative;
+                newTooltipPivot.x = 0;
+            }
+
+            if (localPoint.y > canvasSize.y / 2 - rectSize.y - m_offsetYPositive)
+            {
+                newOffset.y = -m_offsetYNegative;
+                newTooltipPivot.y = 1;
+            }
+
+            m_tooltipRect.pivot = newTooltipPivot;
+            m_tooltipRect.anchoredPosition = localPoint - newOffset;
+        }
+        else // Static Placement
         {
-            newOffset.y = -m_offsetYNegative;
-            newTooltipPivot.y = 1;
-        }
+            // Set pivot to bottom-right
+            m_tooltipRect.pivot = new Vector2(1, 0);
 
-        m_tooltipRect.pivot = newTooltipPivot;
-        m_tooltipRect.anchoredPosition = localPoint - newOffset;
+            // Get the screen's bottom-right position in screen coordinates
+            Vector2 screenPosition = new Vector2(Screen.width, 0);
+
+            // Convert screen position to the canvas position
+            //RectTransform canvasRect = m_canvas.GetComponent<RectTransform>();
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(m_canvas.transform as RectTransform, screenPosition, m_canvas.worldCamera, out Vector2 localPoint);
+
+            // Set the anchored position to match the bottom-right of the screen
+            localPoint.x += -20;
+            localPoint.y += 20;
+            m_tooltipRect.anchoredPosition = localPoint;
+        }
+        
     }
 }

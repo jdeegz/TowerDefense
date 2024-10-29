@@ -188,7 +188,7 @@ public class TowerChargeUp : Tower
         if (m_colliderHit == m_targetCollider)
         {
             m_curTarget.OnTakeDamage(m_towerData.m_baseDamage);
-            Debug.Log($"{name} fired its beam for {m_towerData.m_baseDamage}.");
+            //Debug.Log($"{name} fired its beam for {m_towerData.m_baseDamage}.");
 
             //Apply Shred
             if (m_statusEffectData)

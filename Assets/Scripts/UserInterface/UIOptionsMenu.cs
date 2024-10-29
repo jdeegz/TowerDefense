@@ -10,30 +10,27 @@ using UnityEngine.UI;
 
 public class UIOptionsMenu : MonoBehaviour
 {
-    [SerializeField] private GameObject m_menuRoot;
     [SerializeField] private AudioClip m_volumeSliderAudioClip;
-    [SerializeField] private AudioMixer m_audioMixer;
     [SerializeField] private GameObject m_cheatsGroup;
+    [SerializeField] private AudioMixer m_audioMixer;
 
     [Header("Volume - Master")]
     [SerializeField] private Slider m_volumeMasterSlider;
-
     [SerializeField] private TextMeshProUGUI m_volumeMasterLabel;
-    [SerializeField] private string m_volumeMasterString; //Exposed Parameter in the Audio Mixer.
 
     [Header("Volume - Music")]
     [SerializeField] private Slider m_volumeMusicSlider;
-
     [SerializeField] private TextMeshProUGUI m_volumeMusicLabel;
-    [SerializeField] private string m_volumeMusicString; //Exposed Parameter in the Audio Mixer.
 
     [Header("Volume - Sound Effects")]
     [SerializeField] private Slider m_volumeSFXSlider;
-
     [SerializeField] private TextMeshProUGUI m_volumeSFXLabel;
-    [SerializeField] private string m_volumeSFXString; //Exposed Parameter in the Audio Mixer.
 
-    [Header("Buttons")] [SerializeField] private Button m_surrenderButton;
+    [Header("Tooltips")]
+    [SerializeField] private Toggle m_dynamicTooltipPlacement;
+
+    [Header("Buttons")]
+    [SerializeField] private Button m_surrenderButton;
     [SerializeField] private Button m_restartButton;
     [SerializeField] private Button m_exitApplicationButton;
     [SerializeField] private Button m_closeMenuButton;
@@ -41,18 +38,17 @@ public class UIOptionsMenu : MonoBehaviour
     [SerializeField] private TMP_Dropdown m_screenModeDropdown;
     [SerializeField] private UIStringData m_uiStrings;
 
-    //private int m_windowModeWidth = 1920;
-    //private int m_windowModeHeight = 1080;
     private int m_dropdownIndex;
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
     private float m_elapsedTime;
 
-    public event Action<bool> OnMenuToggle;
+    public event Action<bool> OnMenuToggle; // Used to let CombatView if it should disable hotkeys.
 
 
     void Awake()
     {
+        GameSettings.AudioMixer = m_audioMixer;
         m_audioSource = GetComponent<AudioSource>();
         m_canvasGroup = GetComponent<CanvasGroup>();
         m_canvasGroup.alpha = 0;
@@ -74,16 +70,21 @@ public class UIOptionsMenu : MonoBehaviour
         m_screenModeDropdown.onValueChanged.AddListener(OnDropdownValueChanged);
         m_logoutButton.onClick.AddListener(OnLogoutButtonClicked);
 
+        // Get tooltip setting
+        bool isTooltipEnabled = GameSettings.DynamicToolTipsEnabled;
+        m_dynamicTooltipPlacement.isOn = isTooltipEnabled;
+        m_dynamicTooltipPlacement.onValueChanged.AddListener(ToggleDynamicTooltip);
+
         //Get volumes
-        float masterVol = PlayerPrefs.GetFloat(m_volumeMasterString, 0.5f);
+        float masterVol = GameSettings.MasterVolumeValue;
         m_volumeMasterSlider.value = masterVol;
         TryChangeMasterVolume(masterVol);
 
-        float musicVol = PlayerPrefs.GetFloat(m_volumeMusicString, 0.3f);
+        float musicVol = GameSettings.MusicVolumeValue;
         m_volumeMusicSlider.value = musicVol;
         TryChangeMusicVolume(musicVol);
 
-        float sfxVol = PlayerPrefs.GetFloat(m_volumeSFXString, 0.5f);
+        float sfxVol = GameSettings.SFXVolumeValue;
         m_volumeSFXSlider.value = sfxVol;
         TryChangeSFXVolume(sfxVol);
 
@@ -115,33 +116,38 @@ public class UIOptionsMenu : MonoBehaviour
         m_screenModeDropdown.value = m_dropdownIndex;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-if(GameManager.Instance)
-{
-        m_cheatsGroup.SetActive(GameManager.Instance.m_gameState != GameManager.GameState.Menus);
-}
+        if (GameManager.Instance)
+        {
+            m_cheatsGroup.SetActive(GameManager.Instance.m_gameState != GameManager.GameState.Menus);
+        }
 #endif
+    }
+
+    void ToggleDynamicTooltip(bool value)
+    {
+        GameSettings.DynamicToolTipsEnabled = value;
     }
 
     void TryChangeMasterVolume(float value)
     {
-        ChangeVolume(m_volumeMasterString, value, m_volumeMasterLabel, m_uiStrings.m_volumeMasterText);
+        GameSettings.MasterVolumeValue = value;
+        ChangeVolume(value, m_volumeMasterLabel, m_uiStrings.m_volumeMasterText);
     }
 
     void TryChangeMusicVolume(float value)
     {
-        ChangeVolume(m_volumeMusicString, value, m_volumeMusicLabel, m_uiStrings.m_volumeMusicText);
+        GameSettings.MusicVolumeValue = value;
+        ChangeVolume(value, m_volumeMusicLabel, m_uiStrings.m_volumeMusicText);
     }
 
     void TryChangeSFXVolume(float value)
     {
-        ChangeVolume(m_volumeSFXString, value, m_volumeSFXLabel, m_uiStrings.m_volumeSFXText);
+        GameSettings.SFXVolumeValue = value;
+        ChangeVolume(value, m_volumeSFXLabel, m_uiStrings.m_volumeSFXText);
     }
 
-    void ChangeVolume(string key, float volume, TextMeshProUGUI label, string text)
+    void ChangeVolume(float volume, TextMeshProUGUI label, string text)
     {
-        // Store the current volume setting in PlayerPrefs with the dynamically generated key
-        PlayerPrefs.SetFloat(key, volume);
-        m_audioMixer.SetFloat(key, Mathf.Log10(volume) * 20);
         label.SetText(string.Format(text, (volume * 100).ToString("F0")));
         if (m_elapsedTime > 0.1f)
         {

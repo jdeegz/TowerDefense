@@ -13,8 +13,10 @@ public class EnemyBannerman : MonoBehaviour
     public GameObject m_thresholdEffect;
     public float m_healRadius = 3f;
     public float m_healPeriod = 2f;
+    public float m_abilityPeriod = 5f;
     public float m_healPower = .2f;
     public LayerMask m_healLayerMask;
+    private float m_timeUntilAbilityUseable = 0f;
     private float m_nextHealTime;
 
     // Status Effect Data
@@ -50,12 +52,15 @@ public class EnemyBannerman : MonoBehaviour
             if (curHP < curThreshold && !m_triggeredThresholds.Contains(threshold))
             {
                 m_triggeredThresholds.Add(threshold);
-                
-                SendEffect();
-                
-                ObjectPoolManager.SpawnObject(m_thresholdEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-                
-                //Debug.Log($"{threshold} threshold passed. Sending Effect.");
+
+                if (m_timeUntilAbilityUseable <= 0)
+                {
+                    m_timeUntilAbilityUseable = m_abilityPeriod;
+                    
+                    SendEffect();
+
+                    ObjectPoolManager.SpawnObject(m_thresholdEffect.gameObject, m_enemyController.m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+                }
             }
         }
     }
@@ -68,6 +73,8 @@ public class EnemyBannerman : MonoBehaviour
             //Debug.Log($"Healing. Next heal at {m_nextHealTime}.");
             Heal();
         }
+
+        m_timeUntilAbilityUseable -= Time.deltaTime;
     }
 
     private void Heal()
