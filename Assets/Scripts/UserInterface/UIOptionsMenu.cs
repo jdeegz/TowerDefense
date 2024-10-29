@@ -234,12 +234,14 @@ public class UIOptionsMenu : MonoBehaviour
             //Debug.Log($"Trying to pause game.");
             OnMenuToggle?.Invoke(true);
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
+            GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Disabled);
         }
         else
         {
             //Debug.Log($"Trying to resume game.");
             OnMenuToggle?.Invoke(false);
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Normal);
+            GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Idle);
         }
     }
 }

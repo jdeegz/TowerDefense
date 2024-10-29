@@ -84,7 +84,6 @@ public class UICombatView : MonoBehaviour
 
     void Awake()
     {
-        //Trying to remove the Enable/Disable gameobject to assure scripts run.
         m_canvasGroup.alpha = 0;
 
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;

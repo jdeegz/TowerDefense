@@ -67,7 +67,6 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Castle")]
     public CastleController m_castleController;
-
     public Transform m_enemyGoal;
 
     [HideInInspector]
@@ -79,24 +78,20 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Unit Spawners")]
     public List<UnitSpawner> m_unitSpawners;
-
     private int m_activeSpawners;
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
-
     public List<EnemyController> m_enemyBossList;
 
     [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
-
     public List<GathererController> m_stoneGathererList;
     public List<Tower> m_towerList;
 
     [Header("Selected Object Info")]
     [SerializeField]
     private SelectionColors m_selectionColors;
-
     private Material m_selectedOutlineMaterial; //Assigned on awake
     private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
@@ -122,8 +117,8 @@ public class GameplayManager : MonoBehaviour
 //Boss Testing Ground
     [Header("Boss Wave Info")]
     public List<int> m_bossWaves; // What wave does this mission spawn a boss
-
     public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
+
     private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
 
     private bool m_watchingCutScene;
@@ -134,7 +129,7 @@ public class GameplayManager : MonoBehaviour
     [Header("Strings")]
     [SerializeField]
     private UIStringData m_UIStringData;
-    
+
     private Camera m_mainCamera;
 
 //Full Screen Renderer Info
@@ -158,7 +153,7 @@ public class GameplayManager : MonoBehaviour
         Victory,
         Defeat
     }
-    
+
     public enum InteractionState
     {
         Disabled,
@@ -499,16 +494,17 @@ public class GameplayManager : MonoBehaviour
     }
 
     private int m_playbackSpeed = 1;
+
     public void UpdateGameSpeed()
     {
         // If the game is paused, store m_playbackSpeed which will be set when unpaused.
         // If the game is in play, update playback speed immediately.
-        
+
         int minSpeed = 1;
         int maxSpeed = 2;
         m_playbackSpeed = m_playbackSpeed == minSpeed ? maxSpeed : minSpeed;
-        
-        if(m_gameSpeed == GameSpeed.Normal) Time.timeScale = m_playbackSpeed;
+
+        if (m_gameSpeed == GameSpeed.Normal) Time.timeScale = m_playbackSpeed;
 
         OnGameSpeedChanged?.Invoke(m_playbackSpeed);
     }
@@ -589,30 +585,26 @@ public class GameplayManager : MonoBehaviour
                 break;
             case GameplayState.SpawnEnemies:
                 m_timeToNextWave = m_gameplayData.m_buildDuration;
-                //m_wave++;
                 break;
             case GameplayState.BossWave:
                 m_timeToNextWave = m_gameplayData.m_afterBossBuildDuration;
                 ObjectPoolManager.SpawnObject(m_bossSequenceController.gameObject, Vector3.zero, Quaternion.identity, null, ObjectPoolManager.PoolType.Enemy);
-                //m_wave++;
                 break;
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
-                //If this is the first wave, give a bit longer to build.
                 break;
-
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
                 UpdateGamePlayback(GameSpeed.Paused);
-                m_interactionState = InteractionState.Disabled;
+                UpdateInteractionState(InteractionState.Disabled);
                 break;
             case GameplayState.Defeat:
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
                 UpdateGamePlayback(GameSpeed.Paused);
-                m_interactionState = InteractionState.Disabled;
+                UpdateInteractionState(InteractionState.Disabled);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -623,12 +615,14 @@ public class GameplayManager : MonoBehaviour
 
     public void UpdateInteractionState(InteractionState newState)
     {
-        m_interactionState = newState;
-        Debug.Log($"Interaction state is now: {m_interactionState}");
-
-        switch (m_interactionState)
+        switch (newState)
         {
             case InteractionState.Disabled:
+                // Unhook selectables.
+                if(m_curSelectable) OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+
+                // Remove Precon tower.
+                ClearPreconstructedTower();
                 break;
             case InteractionState.Idle:
                 break;
@@ -645,6 +639,9 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        m_interactionState = newState;
+        //Debug.Log($"Interaction state is now: {m_interactionState}");
     }
 
     private void GameObjectSelected(GameObject obj)

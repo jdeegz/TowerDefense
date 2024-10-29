@@ -104,6 +104,15 @@ public class UITooltipController : MonoBehaviour
             return;
         }
         
+        // If I am holding alt, do not display tooltips. If a tooltip is active, hide it.
+        if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.Disabled)
+        {
+            m_lastUISelectable = null; // Set these null so that when we release alt the tooltip reappears if there is one to show.
+            m_lastWorldSelectable = null;
+            if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
+            return;
+        }
+        
         HandleTooltipPlacement();
 
         // Dont do any Tooltip display while in preconstruction.

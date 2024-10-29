@@ -101,9 +101,8 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        //Do nothing if we are paused.
-        //if (GameplayManager.Instance.m_gameSpeed == GameplayManager.GameSpeed.CutScene) return;
-
+        if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.Disabled) return;
+        
         //On rails movement will focus the camera on a destination. (Example: Selecting a gatherer from the UI)
         if (m_onRails)
         {
@@ -173,10 +172,25 @@ public class CameraController : MonoBehaviour
         transform.Translate(cameraMovement * Time.unscaledDeltaTime, Space.World);
     }
 
+    private bool m_startedOnUI = false;
     void HandleMouseInput()
     {
+        // Track if the drag started on a UI element
+        
+        
         if (Input.GetMouseButtonDown(0))
         {
+            // Check if the pointer is over a UI element
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                m_startedOnUI = true; // Set the flag if we started dragging over UI
+                return; // Exit the method if over UI
+            }
+            else
+            {
+                m_startedOnUI = false;
+            }
+            
             Plane plane = new Plane(Vector3.up, Vector3.zero);
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -193,6 +207,12 @@ public class CameraController : MonoBehaviour
 
         if (Input.GetMouseButton(0))
         {
+            // Prevent dragging if it started over UI
+            if (m_startedOnUI)
+            {
+                return; // Exit the method if drag started over UI
+            }
+            
             Plane plane = new Plane(Vector3.up, Vector3.zero);
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -231,6 +251,7 @@ public class CameraController : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             m_isDragging = false;
+            m_startedOnUI = false;
         }
     }
 
