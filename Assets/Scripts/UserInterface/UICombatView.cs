@@ -12,10 +12,10 @@ using UnityEngine.UI;
 public class UICombatView : MonoBehaviour
 {
     [SerializeField] private CanvasGroup m_canvasGroup;
+    [SerializeField] private UIStringData m_uiStringData;
 
     [Header("Buttons")]
     [SerializeField] private Button m_pauseButton;
-
     [SerializeField] private Button m_menuButton;
     [SerializeField] private Button m_playButton;
     [SerializeField] private Button m_ffwButton;
@@ -23,7 +23,6 @@ public class UICombatView : MonoBehaviour
 
     [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
-
     [SerializeField] private TextMeshProUGUI m_woodBankLabel;
     [SerializeField] private TextMeshProUGUI m_woodRateLabel;
     [SerializeField] private TextMeshProUGUI m_stoneGathererLabel;
@@ -37,12 +36,11 @@ public class UICombatView : MonoBehaviour
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
-
     [SerializeField] private GameObject m_blueprintTowerTrayButtonPrefab;
-
     [SerializeField] private GameObject m_gathererTrayButtonPrefab;
     [SerializeField] private GameObject m_alertRootObj;
     [SerializeField] private GameObject m_alertPrefab;
+    [SerializeField] private GameObject m_ruinIndicatedAlertPrefab;
     [SerializeField] private GameObject m_waveCompleteAlertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
     [SerializeField] private GameObject m_castleRepairDisplayObj;
@@ -101,6 +99,7 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodRate += UpdateWoodRateDisplay;
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
+        //ResourceManager.RuinIndicated += RuinIndicated;
         m_menuObj.OnMenuToggle += SetMenusOpen;
 
         if (m_buttons == null)
@@ -132,7 +131,7 @@ public class UICombatView : MonoBehaviour
         };
     }
 
-    private void DelayForQuestChanged(bool value)
+   private void DelayForQuestChanged(bool value)
     {
         // Use inverted values. Delay for Quest will return false when it's unset, and we want to display true.
         if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.Build) return;
@@ -247,6 +246,7 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodRate -= UpdateWoodRateDisplay;
         ResourceManager.UpdateStoneGathererCount -= UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount -= UpdateWoodGathererDisplay;
+        //ResourceManager.RuinIndicated -= RuinIndicated;
 
         m_castleController.UpdateHealth -= UpdateCastleHealthDisplay;
         m_castleController.UpdateMaxHealth -= UpdateCastleMaxHealthDisplay;
@@ -467,6 +467,13 @@ public class UICombatView : MonoBehaviour
     {
         UIAlert alert = ObjectPoolManager.SpawnObject(m_waveCompleteAlertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
         alert.SetLabelText(text, Color.white);
+        alert.SetupAlert(Vector2.zero);
+    }
+    
+    private void RuinIndicated()
+    {
+        UIAlert alert = ObjectPoolManager.SpawnObject(m_ruinIndicatedAlertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
+        alert.SetLabelText(m_uiStringData.m_ruinIndicatedString, Color.white);
         alert.SetupAlert(Vector2.zero);
     }
 

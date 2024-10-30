@@ -13,6 +13,7 @@ public class UIStringData : ScriptableObject
     public string m_waveComplete;
     public string m_bossWaveComplete;
     public string m_bossDamageType;
+    public string m_ruinIndicatedString;
 
     [Header("Building Restriction Reasons")]
     public string m_buildRestrictedDefault;

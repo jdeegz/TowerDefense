@@ -39,6 +39,7 @@ public class ResourceManager : MonoBehaviour
     public List<RuinController> m_validRuinsInMission;
     public int m_ruinDiscoveredCount;
     public static event Action OnAllRuinsDiscovered;
+    public static event Action RuinIndicated;
 
     [Header("Tree Resource Node Prefabs")]
     public List<GameObject> m_treePrefabs;
@@ -259,12 +260,11 @@ public class ResourceManager : MonoBehaviour
         int weightSum = 0;
 
         //Debug.Log($"Checking the Valid Ruins list for Invalid Ruins.");
-        for (int i = 0; i < m_validRuinsInMission.Count; ++i) // Loop through ruins, identifying if they have at least one good corner, else add to invalid list and remove.
+        for (int i = 0; i < m_validRuinsInMission.Count; ++i) // Loop through ruins, identifying if they are still covered by a forest, else add to invalid list and remove.
         {
-            List<Vector3> validPositionsForIndicators = m_validRuinsInMission[i].CheckValidRuinCorners();
-
-            if (validPositionsForIndicators.Count == 0)
+            if (!m_validRuinsInMission[i].IsRuinCoveredByForest())
             {
+                Debug.Log($"{m_validRuinsInMission[i].name} is not covered by a forest anymore, removing from Valid Ruins!");
                 invalidRuins.Add(m_validRuinsInMission[i]);
             }
             else
@@ -292,6 +292,7 @@ public class ResourceManager : MonoBehaviour
                 m_validRuinsInMission[i].IndicateThisRuin();
                 m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
                 ++m_ruinIndicatedCount;
+                RuinIndicated?.Invoke();
                 break;
             }
 
