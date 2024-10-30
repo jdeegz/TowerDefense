@@ -45,9 +45,10 @@ public class CastleController : MonoBehaviour
 
     void OnBankUpdated(int amount, int total)
     {
+        
         if (amount > 0)
         {
-            PlayAudio(m_castleData.m_audioResourceGained);
+            // PlayAudio(m_castleData.m_audioResourceGained);
         }
         else
         {

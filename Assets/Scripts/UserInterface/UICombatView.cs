@@ -20,6 +20,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private Button m_playButton;
     [SerializeField] private Button m_ffwButton;
     [SerializeField] private Button m_nextWaveButton;
+    [SerializeField] private Button m_clearBlueprintsButton;
 
     [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_stoneBankLabel;
@@ -49,7 +50,6 @@ public class UICombatView : MonoBehaviour
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
-
     [SerializeField] private RectTransform m_gathererTrayLayoutObj;
     [SerializeField] private RectTransform m_healthDisplay;
     [SerializeField] private RectTransform m_woodBankDisplay;
@@ -63,7 +63,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private UIOptionsMenu m_menuObj;
 
     private bool m_menusOpen;
-
     private float m_timeToNextWave;
     private int m_curCastleHealth;
     private int m_maxCastleHealth;
@@ -94,6 +93,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGathererRemoved += RemoveGathererTrayButton;
         GameplayManager.OnDelayForQuestChanged += DelayForQuestChanged;
         GameplayManager.OnWaveCompleted += AlertWaveComplete;
+        GameplayManager.OnBlueprintCountChanged += BlueprintCountChanged;
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
         ResourceManager.UpdateWoodRate += UpdateWoodRateDisplay;
@@ -131,7 +131,13 @@ public class UICombatView : MonoBehaviour
         };
     }
 
-   private void DelayForQuestChanged(bool value)
+    private void BlueprintCountChanged(int i)
+    {
+        Debug.Log($"CombatVIew: Msg from Gameplay Manager. Blueprint Count is {i}");
+        m_clearBlueprintsButton.gameObject.SetActive(i > 0);
+    }
+
+    private void DelayForQuestChanged(bool value)
     {
         // Use inverted values. Delay for Quest will return false when it's unset, and we want to display true.
         if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.Build) return;
@@ -323,6 +329,7 @@ public class UICombatView : MonoBehaviour
         m_playButton.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
         m_pauseButton.gameObject.SetActive(newSpeed != GameplayManager.GameSpeed.Paused);
         m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
+        m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
     }
 
     private void GameplaySpeedChanged(int speed)
@@ -357,10 +364,17 @@ public class UICombatView : MonoBehaviour
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
         m_ffwButton.onClick.AddListener(OnFFWButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
+        m_clearBlueprintsButton.onClick.AddListener(OnClearBlueprintsButtonClicked);
 
         m_buttons.Add(m_nextWaveButton);
 
         BuildTowerTrayDisplay();
+        m_clearBlueprintsButton.gameObject.SetActive(false);
+    }
+
+    private void OnClearBlueprintsButtonClicked()
+    {
+        GameplayManager.Instance.ClearBlueprintTowerModels();
     }
 
     private void OnMenuButtonClicked()

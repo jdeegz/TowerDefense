@@ -999,10 +999,12 @@ public class GathererController : MonoBehaviour
                 {
                     RequestPlayAudio(m_gathererData.m_critDepositClip, m_audioSource);
                     IngameUIController.Instance.SpawnCritCurrencyAlert(storageAmount, 0, true, transform.position);
+                    RequestPlayAudio(m_gathererData.m_critDepositClip, m_audioSource);
                 }
                 else
                 {
                     IngameUIController.Instance.SpawnCurrencyAlert(storageAmount, 0, true, transform.position);
+                    RequestPlayAudio(m_gathererData.m_depositClip, m_audioSource);
                 }
 
                 break;

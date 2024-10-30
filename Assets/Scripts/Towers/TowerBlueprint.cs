@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 public class TowerBlueprint : Tower
@@ -13,6 +14,27 @@ public class TowerBlueprint : Tower
     {
         
     }
+    
+    public override void SetupTower()
+    {
+        //Grid
+        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        GameplayManager.Instance.AddBlueprintToList(this);
+
+        //Operational
+        gameObject.GetComponent<Collider>().enabled = true;
+        m_isBuilt = false;
+
+        //Animation
+        m_animator.SetTrigger("Construct");
+
+        //Audio
+        m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
+
+        //VFX
+        ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+    }
+    
 
     public override TowerTooltipData GetTooltipData()
     {

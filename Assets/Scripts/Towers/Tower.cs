@@ -207,7 +207,7 @@ public abstract class Tower : MonoBehaviour
         return m_muzzlePoint.position;
     }
 
-    public void SetupTower()
+    public virtual void SetupTower()
     {
         //Grid
         GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);

@@ -415,6 +415,7 @@ public class Cell
     //Cell Data
     public bool m_isGoal;
     public bool m_isOccupied;
+    public GameObject m_occupant;
     public bool m_isTempOccupied;
     public bool m_isBuildRestricted;
     public ResourceNode m_cellResourceNode;

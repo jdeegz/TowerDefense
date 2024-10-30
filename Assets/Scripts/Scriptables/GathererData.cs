@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "Gatherer", menuName = "ScriptableObjects/Gatherer")]
 public class GathererData : ScriptableObject
@@ -26,5 +27,6 @@ public class GathererData : ScriptableObject
     public AudioClip m_levelUpClip;
     public AudioClip m_idleClip;
     public List<AudioClip> m_harvestingClips;
+    [FormerlySerializedAs("m_DepositClip")] public AudioClip m_depositClip;
     public AudioClip m_critDepositClip;
 }

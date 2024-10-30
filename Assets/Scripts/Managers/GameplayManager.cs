@@ -43,6 +43,8 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GathererController> OnGathererRemoved;
     public static event Action OnCutSceneEnd;
     public static event Action<bool> OnDelayForQuestChanged;
+    public static event Action<int> OnBlueprintCountChanged;
+
 
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
@@ -50,20 +52,6 @@ public class GameplayManager : MonoBehaviour
     public int m_wave;
     [HideInInspector] public float m_timeToNextWave;
     [HideInInspector] public bool delayForQuest;
-
-    public bool m_delayForQuest
-    {
-        get { return delayForQuest; }
-
-        set
-        {
-            if (delayForQuest != value)
-            {
-                delayForQuest = value;
-                OnDelayForQuestChanged?.Invoke(delayForQuest);
-            }
-        }
-    }
 
     [Header("Castle")]
     public CastleController m_castleController;
@@ -88,6 +76,7 @@ public class GameplayManager : MonoBehaviour
     public List<GathererController> m_woodGathererList;
     public List<GathererController> m_stoneGathererList;
     public List<Tower> m_towerList;
+    private List<TowerBlueprint> m_blueprintList;
 
     [Header("Selected Object Info")]
     [SerializeField]
@@ -101,14 +90,9 @@ public class GameplayManager : MonoBehaviour
     public LayerMask m_buildSurface;
     public Vector2Int m_preconstructedTowerPos;
 
-    [HideInInspector]
-    public bool m_canAfford;
-
-    [HideInInspector]
-    public bool m_canPlace;
-
-    [HideInInspector]
-    public bool m_canBuild;
+    [HideInInspector] public bool m_canAfford;
+    [HideInInspector] public bool m_canPlace;
+    [HideInInspector] public bool m_canBuild;
 
     private GameObject m_preconstructedTowerObj;
     private Tower m_preconstructedTower;
@@ -118,18 +102,14 @@ public class GameplayManager : MonoBehaviour
     [Header("Boss Wave Info")]
     public List<int> m_bossWaves; // What wave does this mission spawn a boss
     public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
-
     private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
-
     private bool m_watchingCutScene;
 
 //Ooze Cell Info
     public OozeManager m_oozeManager;
 
     [Header("Strings")]
-    [SerializeField]
-    private UIStringData m_UIStringData;
-
+    [SerializeField] private UIStringData m_UIStringData;
     private Camera m_mainCamera;
 
 //Full Screen Renderer Info
@@ -164,6 +144,20 @@ public class GameplayManager : MonoBehaviour
         SelectedCastle,
         SelecteObelisk,
         SelectRuin
+    }
+    
+    public bool m_delayForQuest
+    {
+        get { return delayForQuest; }
+
+        set
+        {
+            if (delayForQuest != value)
+            {
+                delayForQuest = value;
+                OnDelayForQuestChanged?.Invoke(delayForQuest);
+            }
+        }
     }
 
     void Update()
@@ -363,6 +357,16 @@ public class GameplayManager : MonoBehaviour
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+
+                // If we right click on a Blueprint, remove it.
+                if (m_hoveredSelectable != null && m_hoveredSelectable.m_selectedObjectType == Selectable.SelectedObjectType.Tower)
+                {
+                    Tower tower = m_hoveredSelectable.GetComponent<Tower>();
+                    if (tower is TowerBlueprint)
+                    {
+                        RemoveTower(tower);
+                    }
+                }
             }
             else if (m_curSelectable)
             {
@@ -455,6 +459,7 @@ public class GameplayManager : MonoBehaviour
         OnGameObjectDeselected += GameObjectDeselected;
 
         m_delayForQuest = m_gameplayData.m_delayForQuest;
+        m_blueprintList = new List<TowerBlueprint>();
     }
 
     void OnDestroy()
@@ -521,23 +526,17 @@ public class GameplayManager : MonoBehaviour
         switch (newSpeed)
         {
             case GameSpeed.Paused:
-                //Cancel tower preconstruction
-                /*if (m_interactionState == InteractionState.PreconstructionTower)
-                {
-                    OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                    ClearPreconstructedTower();
-                }*/
-
+                ToggleBlueprintPathDirections(true); // Re-enable path directions to include blueprint towers.
                 Time.timeScale = 0;
                 break;
             case GameSpeed.Normal:
                 if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTower is TowerBlueprint)
                 {
                     OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
-                    ClearPreconstructedTower();
+                    ClearPreconstructedTower(); // Clear precon tower if we're currently placing blueprints.
                 }
 
-                ClearBuiltBlueprintTowers();
+                ToggleBlueprintPathDirections(false); // Disable blueprint tower path directions.
                 Time.timeScale = m_playbackSpeed;
                 break;
             default:
@@ -619,7 +618,7 @@ public class GameplayManager : MonoBehaviour
         {
             case InteractionState.Disabled:
                 // Unhook selectables.
-                if(m_curSelectable) OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                if (m_curSelectable) OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
 
                 // Remove Precon tower.
                 ClearPreconstructedTower();
@@ -867,6 +866,7 @@ public class GameplayManager : MonoBehaviour
     }
 
     private string m_pathRestrictedReason;
+
     bool CheckPathRestriction()
     {
         Cell curCell = Util.GetCellFromPos(m_preconstructedTowerPos);
@@ -894,12 +894,15 @@ public class GameplayManager : MonoBehaviour
             return false;
         }
 
-        //If the currenct cell is occupied (by a structure), not a valid spot.
+        //If the current cell is occupied (by a structure), not a valid spot, unless it is a blueprint.
         if (curCell.m_isOccupied)
         {
-            Debug.Log($"Cannot Place: This cell is already occupied.");
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOccupied;
-            return false;
+            if (curCell.m_occupant.GetComponent<TowerBlueprint>() == null) // If we DO have a tower blueprint, we're ok placing here.
+            {
+                Debug.Log($"Cannot Place: This cell is already occupied.");
+                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOccupied;
+                return false;
+            }
         }
 
         //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
@@ -1043,6 +1046,17 @@ public class GameplayManager : MonoBehaviour
 
     public void BuildTower()
     {
+        // If there is a blueprint tower in this cell, remove it.
+        for (var i = 0; i < m_blueprintList.Count; i++)
+        {
+            TowerBlueprint blueprint = m_blueprintList[i];
+            Cell towerCell = Util.GetCellFrom3DPos(blueprint.transform.position);
+            if (towerCell.m_cellPos == m_preconstructedTowerPos)
+            {
+                RemoveBlueprintTower(blueprint);
+            }
+        }
+
         Vector3 gridPos = new Vector3(m_preconstructedTowerPos.x, 0, m_preconstructedTowerPos.y);
 
         //We want to place towers to they look away from the Castle.
@@ -1077,48 +1091,39 @@ public class GameplayManager : MonoBehaviour
         OnTowerBuild?.Invoke();
     }
 
-    private void ClearBuiltBlueprintTowers()
+    // Clear Blueprint Tower Models -- Called via CombatView button.
+    public void ClearBlueprintTowerModels()
     {
-        if (m_towerList.Count == 0) return;
+        if (m_blueprintList.Count == 0) return;
 
-        Debug.Log($"Clearing Built Blueprint Towers");
-
-        //Set Gameplay Manager's state
-        if (m_interactionState == InteractionState.SelectedTower && m_curSelectable.GetComponent<TowerBlueprint>() != null)
+        foreach (TowerBlueprint blueprint in m_blueprintList)
         {
-            Debug.Log($"Currently selected a blueprint, deselecting.");
-            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+            //Configure Grid
+            GridCellOccupantUtil.SetOccupant(blueprint.gameObject, false, 1, 1);
+
+            blueprint.RemoveTower();
         }
 
-        if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTowerData.m_isBlueprint)
-        {
-            Debug.Log($"Currently in preconstruction with a blueprint Tower, removing precon.");
-            //Reset outline color. 
-            SetOutlineColor(false);
+        m_blueprintList = new List<TowerBlueprint>();
+        OnBlueprintCountChanged?.Invoke(m_blueprintList.Count);
 
-            //Cancel tower preconstruction
-            OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+        // Removing this refresh, since the SetOccupant does it also.
+        //GridManager.Instance.RefreshGrid();
+    }
+
+    // Clear/Apply Blueprint cell directions -- Called when entering/leaving pause mode.
+    public void ToggleBlueprintPathDirections(bool value)
+    {
+        if (m_blueprintList.Count == 0) return;
+
+        foreach (TowerBlueprint blueprint in m_blueprintList)
+        {
+            //Configure Grid
+            GridCellOccupantUtil.SetOccupant(blueprint.gameObject, value, 1, 1);
         }
 
-        List<Tower> builtTowers = new List<Tower>(m_towerList);
-
-        for (var i = 0; i < builtTowers.Count; ++i)
-        {
-            Tower tower = builtTowers[i];
-            if (tower is TowerBlueprint)
-            {
-                //Configure Grid
-                GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
-
-                builtTowers.Remove(tower);
-                tower.RemoveTower();
-                --i;
-            }
-        }
-
-        m_towerList = builtTowers;
-
-        GridManager.Instance.RefreshGrid();
+        // Removing this refresh, since the SetOccupant does it also.
+        //GridManager.Instance.RefreshGrid();
     }
 
     public void AddTowerToList(Tower tower)
@@ -1128,13 +1133,54 @@ public class GameplayManager : MonoBehaviour
 
     public void RemoveTowerFromList(Tower tower)
     {
-        for (int i = 0; i < m_towerList.Count; ++i)
-        {
-            if (m_towerList[i] == tower)
+        /*
+            for (int i = 0; i < m_towerList.Count; ++i)
             {
-                m_towerList.RemoveAt(i);
+                if (m_towerList[i] == tower)
+                {
+                    m_towerList.RemoveAt(i);
+                }
             }
-        }
+            */
+        m_towerList.Remove(tower);
+    }
+
+    public void RemoveTower(Tower tower)
+    {
+        //Configure Grid
+        GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
+
+        //Clean up actor list
+        RemoveTowerFromList(tower);
+
+        //Remove the tower
+        tower.RemoveTower();
+    }
+
+    public void AddBlueprintToList(TowerBlueprint blueprint)
+    {
+        if (m_blueprintList == null) m_blueprintList = new List<TowerBlueprint>();
+        
+        m_blueprintList.Add(blueprint);
+        OnBlueprintCountChanged?.Invoke(m_blueprintList.Count);
+    }
+
+    public void RemoveBlueprintFromList(TowerBlueprint blueprint)
+    {
+        m_blueprintList.Remove(blueprint);
+        OnBlueprintCountChanged?.Invoke(m_blueprintList.Count);
+    }
+
+    public void RemoveBlueprintTower(TowerBlueprint blueprint)
+    {
+        //Configure Grid
+        GridCellOccupantUtil.SetOccupant(blueprint.gameObject, false, 1, 1);
+
+        //Clean up actor list
+        RemoveBlueprintFromList(blueprint);
+
+        //Remove the tower
+        blueprint.RemoveTower();
     }
 
     public void SellTower(Tower tower, int stoneValue, int woodValue)
@@ -1143,7 +1189,14 @@ public class GameplayManager : MonoBehaviour
         GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
 
         //Clean up actor list
-        RemoveTowerFromList(tower);
+        if (tower is TowerBlueprint)
+        {
+            RemoveBlueprintTower(tower as TowerBlueprint);
+        }
+        else
+        {
+            RemoveTowerFromList(tower);
+        }
 
         //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(stoneValue);

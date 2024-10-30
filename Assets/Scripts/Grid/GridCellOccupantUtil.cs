@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class GridCellOccupantUtil
 {
-    
     public static void SetOccupant(GameObject obj, bool isOccupied, int width, int height, ResourceNode resourceNode = null)
     {
         //Get the bottom left cell.
@@ -32,6 +31,8 @@ public class GridCellOccupantUtil
 
                 cell.UpdateOccupancyDisplay(isOccupied);
 
+                cell.m_occupant = isOccupied ? obj : null;
+                
                 //Handle Tile Map update
                 if (resourceNode != null)
                 {
