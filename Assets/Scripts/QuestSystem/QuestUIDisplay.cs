@@ -3,12 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
+using UnityEngine.UI;
 using Object = System.Object;
 
 public class QuestUIDisplay : MonoBehaviour
 {
     public QuestStepUIDisplay m_questStepUIDisplay;
     public List<QuestStepGroup> m_questsInProgress;
+
+    private RectTransform m_questListRectTransform;
 
     void Awake()
     {
@@ -21,6 +24,8 @@ public class QuestUIDisplay : MonoBehaviour
             QuestManager.Instance.m_questEvents.onQuestStepCreated += QuestStepCreated;
         }
 
+        
+        m_questListRectTransform = GetComponent<RectTransform>();
         //Debug.Log($"Quest UI Display awakened.");
     }
 
@@ -76,8 +81,11 @@ public class QuestUIDisplay : MonoBehaviour
 
             newQuestStepGroup.m_questStepUIDisplays[i] = obj;
         }
-
+        
+        LayoutRebuilder.ForceRebuildLayoutImmediate(m_questListRectTransform);
+        
         m_questsInProgress.Add(newQuestStepGroup);
+        
         Debug.Log($"Quest Display Built for {quest.m_info.m_id}");
     }
 
@@ -125,6 +133,7 @@ public class QuestUIDisplay : MonoBehaviour
 
     private void StartQuest(string id)
     {
+        Debug.Log($"Starting a new quest. Should I rebuild my layout?");
     }
 }
 

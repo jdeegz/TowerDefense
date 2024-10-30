@@ -286,7 +286,7 @@ public class GameplayManager : MonoBehaviour
                 if (!m_canPlace)
                 {
                     //Debug.Log("Cannot build here.");
-                    OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotPlace);
+                    OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
                     return;
                 }
 
@@ -572,7 +572,7 @@ public class GameplayManager : MonoBehaviour
         switch (m_gameplayState)
         {
             case GameplayState.BuildGrid:
-                m_interactionState = InteractionState.Disabled;
+                m_interactionState = InteractionState.Idle;
                 break;
             case GameplayState.PlaceObstacles:
                 break;
@@ -866,10 +866,12 @@ public class GameplayManager : MonoBehaviour
         return canAfford;
     }
 
+    private string m_pathRestrictedReason;
     bool CheckPathRestriction()
     {
         Cell curCell = Util.GetCellFromPos(m_preconstructedTowerPos);
 
+        m_pathRestrictedReason = m_UIStringData.m_buildRestrictedDefault;
         //If the current cell is not apart of the grid, not a valid spot.
         if (curCell == null)
         {
@@ -881,6 +883,7 @@ public class GameplayManager : MonoBehaviour
         if (curCell.m_actorCount > 0)
         {
             Debug.Log($"Cannot Place: There are actors on this cell.");
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsOnCell;
             return false;
         }
 
@@ -895,6 +898,7 @@ public class GameplayManager : MonoBehaviour
         if (curCell.m_isOccupied)
         {
             Debug.Log($"Cannot Place: This cell is already occupied.");
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOccupied;
             return false;
         }
 
@@ -902,6 +906,7 @@ public class GameplayManager : MonoBehaviour
         if (curCell.m_isBuildRestricted)
         {
             Debug.Log($"Cannot Place: This cell is build restricted.");
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedRestricted;
             return false;
         }
 
@@ -909,6 +914,7 @@ public class GameplayManager : MonoBehaviour
         if (!GridManager.Instance.m_spawnPointsAccessible)
         {
             Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
             return false;
         }
 
@@ -952,6 +958,7 @@ public class GameplayManager : MonoBehaviour
                         if (islandCell.m_actorCount > 0)
                         {
                             Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
+                            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                             return false;
                         }
                     }
@@ -1012,6 +1019,7 @@ public class GameplayManager : MonoBehaviour
             if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
             {
                 Debug.Log($"An exit cannot path to another exit or spawner.");
+                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
                 return false;
             }
         }

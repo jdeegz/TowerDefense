@@ -13,6 +13,14 @@ public class UIStringData : ScriptableObject
     public string m_waveComplete;
     public string m_bossWaveComplete;
     public string m_bossDamageType;
+
+    [Header("Building Restriction Reasons")]
+    public string m_buildRestrictedDefault;
+    public string m_buildRestrictedActorsOnCell;
+    public string m_buildRestrictedActorsInIsland;
+    public string m_buildRestrictedOccupied;
+    public string m_buildRestrictedRestricted;
+    public string m_buildRestrictedBlocksPath;
     
     [Header("End of Game Strings")]
     public string m_victory;

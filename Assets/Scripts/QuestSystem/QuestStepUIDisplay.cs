@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class QuestStepUIDisplay : MonoBehaviour
 {
@@ -19,6 +21,8 @@ public class QuestStepUIDisplay : MonoBehaviour
 
     private QuestStep m_questStep;
     private QuestStepUIData m_curQuestStepUIData;
+    private RectTransform m_questRectTransform;
+    private ContentSizeFitter m_questContentSizeFitter;
     
     public void SetupQuestStepUIDisplay(QuestStep questStep)
     {
@@ -26,13 +30,14 @@ public class QuestStepUIDisplay : MonoBehaviour
         m_questStep = questStep;
         gameObject.name = m_questStep.name;
         m_curQuestStepUIData = m_questStep.GetQuestStepUIData();
+        m_questRectTransform = GetComponent<RectTransform>();
+        m_questContentSizeFitter = GetComponent<ContentSizeFitter>();
 
         UpdateUIDisplay();
-    }
-
-    void OnEnable()
-    {
+        
         HandleAnim(m_enterName);
+        m_canvasGroup.alpha = 0;
+        m_canvasGroup.DOFade(1, .5f);
     }
 
     void OnDestroy()
@@ -63,6 +68,8 @@ public class QuestStepUIDisplay : MonoBehaviour
         //Format the string.
         string progressString = $"<b>{m_curQuestStepUIData.m_progressValue} / {m_curQuestStepUIData.m_requiredValue}</b>";
         m_questStepLabel.SetText($"{progressString} {m_curQuestStepUIData.m_descriptionString}");
+        
+        LayoutRebuilder.ForceRebuildLayoutImmediate(m_questRectTransform);
     }
 
     public void SetSubscription(QuestStep newStep)
@@ -80,7 +87,13 @@ public class QuestStepUIDisplay : MonoBehaviour
 
     public void RemoveDisplay()
     {
-        m_animator.SetTrigger("Exit");
-        Destroy(gameObject, 1f);
+        m_questContentSizeFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
+        
+        Sequence sequence = DOTween.Sequence();
+        sequence.Join(m_questRectTransform.DOSizeDelta(new Vector2(m_questRectTransform.sizeDelta.x, 0), 1f));
+        sequence.Join(m_canvasGroup.DOFade(0, .5f));
+        sequence.OnComplete(() => Destroy(gameObject));
+        
+        sequence.Play();
     }
 }

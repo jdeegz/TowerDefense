@@ -11,12 +11,28 @@ public class QuestManager : MonoBehaviour
     public QuestEvents m_questEvents;
     private Dictionary<string, Quest> m_questMap;
     public event Action<QuestStep> onQuestStepCreated;
-
+    private bool m_questManagerActive; // Used to delay the function of this script until we're past Setup mode.
+    
     private void Awake()
     {
         Instance = this;
         m_questMap = CreateQuestMap();
         m_questEvents = new QuestEvents();
+        GameplayManager.OnGameplayStateChanged += GamepalyStateChanged;
+    }
+
+    private void GamepalyStateChanged(GameplayManager.GameplayState newState)
+    {
+        // Setting up the script, was formerly in a Start function.
+        if (newState == GameplayManager.GameplayState.Build && !m_questManagerActive)
+        {
+            m_questManagerActive = true;
+            
+            foreach (Quest quest in m_questMap.Values)
+            {
+                m_questEvents.QuestStateChange(quest);
+            }
+        }
     }
 
     void OnEnable()
@@ -33,16 +49,10 @@ public class QuestManager : MonoBehaviour
         m_questEvents.onFinishQuest -= FinishQuest;
     }
 
-    private void Start()
-    {
-        foreach (Quest quest in m_questMap.Values)
-        {
-            m_questEvents.QuestStateChange(quest);
-        }
-    }
-
     private void Update()
     {
+        if (!m_questManagerActive) return;
+        
         foreach (Quest quest in m_questMap.Values)
         {
             if (quest.m_questState == QuestState.REQUIREMENTS_NOT_MET && CheckRequirementsMet(quest))
