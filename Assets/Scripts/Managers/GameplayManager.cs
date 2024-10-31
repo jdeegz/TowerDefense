@@ -245,6 +245,8 @@ public class GameplayManager : MonoBehaviour
 
     void HandleHotkeys()
     {
+        if (m_interactionState == InteractionState.Disabled) return;
+        
         //Toggle Pause
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -252,7 +254,7 @@ public class GameplayManager : MonoBehaviour
         }
 
         //Toggle FFW
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             FastForwardHotkeyPressed();
         }
@@ -318,7 +320,18 @@ public class GameplayManager : MonoBehaviour
 
     void Mouse2Interaction()
     {
-        if (Input.GetMouseButtonDown(1) && m_interactionState != InteractionState.Disabled)
+        if(m_interactionState == InteractionState.Disabled) return;
+        
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(1))
+        {
+            if (m_curSelectable.m_selectedObjectType != Selectable.SelectedObjectType.Gatherer) return;
+
+            if (m_hoveredSelectable.m_selectedObjectType != Selectable.SelectedObjectType.ResourceWood) return;
+
+            Debug.Log($"{m_curSelectable.gameObject.name} has shift clicked on a tree.");
+            m_curSelectable.GetComponent<GathererController>().QueueNode(m_hoveredSelectable.GetComponent<ResourceNode>());
+        }
+        else if (!Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(1))
         {
             //If something is selected.
             if (m_hoveredSelectable != null || m_preconstructedTowerObj != null)
@@ -571,7 +584,6 @@ public class GameplayManager : MonoBehaviour
         switch (m_gameplayState)
         {
             case GameplayState.BuildGrid:
-                m_interactionState = InteractionState.Idle;
                 break;
             case GameplayState.PlaceObstacles:
                 break;

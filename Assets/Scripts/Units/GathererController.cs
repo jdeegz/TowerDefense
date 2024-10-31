@@ -2,10 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.Serialization;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 public class GathererController : MonoBehaviour
@@ -34,6 +32,8 @@ public class GathererController : MonoBehaviour
         TravelingToCastle,
         Storing,
         TravelingToRuin,
+        TravellingToBlockedNode,
+        IdleCannotAccessNode
     }
 
     private Vector2Int m_curPos;
@@ -60,7 +60,9 @@ public class GathererController : MonoBehaviour
     private int level;
     private int m_debugIndex;
     private Vector3 m_nextCellPosition;
-    
+    private List<ResourceNode> m_resourceNodeQueue;
+    private List<ResourceNode> m_resourceNodesToRemoveFromQueue;
+
     public event Action<List<Vector2Int>> OnGathererPathChanged;
 
     public int m_gathererLevel
@@ -164,6 +166,8 @@ public class GathererController : MonoBehaviour
         }
 
         ResourceManager.Instance.AddGathererLineRenderer(this);
+        m_resourceNodesToRemoveFromQueue = new List<ResourceNode>();
+        m_resourceNodeQueue = new List<ResourceNode>();
     }
 
     void Update()
@@ -173,17 +177,26 @@ public class GathererController : MonoBehaviour
         UpdateStatusEffects();
 
         HandleBoostedEffect();
+
+        if (m_resourceNodesToRemoveFromQueue.Count > 0)
+        {
+            CleanUpQueue();
+        }
     }
 
     private void HandleBoostedEffect()
     {
-        if (m_activeSpeedBoostCount > 0) {
-            if (!m_boostedVFX.activeSelf) {
+        if (m_activeSpeedBoostCount > 0)
+        {
+            if (!m_boostedVFX.activeSelf)
+            {
                 m_boostedVFX.SetActive(true);
             }
         }
-        else if (m_activeSpeedBoostCount == 0) {
-            if (m_boostedVFX.activeSelf) {
+        else if (m_activeSpeedBoostCount == 0)
+        {
+            if (m_boostedVFX.activeSelf)
+            {
                 m_boostedVFX.SetActive(false);
             }
         }
@@ -193,6 +206,82 @@ public class GathererController : MonoBehaviour
     {
         HandleMovement();
         HandleLookRotation();
+        HandleBlockedResourceNode();
+    }
+
+    private void HandleBlockedResourceNode()
+    {
+        if (m_gathererTask != GathererTask.IdleCannotAccessNode) return;
+
+        // We're sitting here, blocked from accessing the resource node in our queue.
+        // We want to try to get closer to our node, but we dont want to check every frame.
+        // We dont want to check for empty cells at a distance further than our current distance. (This is covered by the search early-out if cells match)
+        SearchForUnblock();
+
+        // We want to display an indication that we're blocked. ( ! )
+    }
+
+    private void SearchForUnblock()
+    {
+        ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPointFromObj(m_resourceNodeQueue[0].gameObject);
+
+        Vector2Int nodeCellPos = Util.GetCellFrom3DPos(m_resourceNodeQueue[0].transform.position).m_cellPos;
+        
+        int currentDistance = Math.Max(Mathf.Abs(nodeCellPos.x - m_curPos.x), Mathf.Abs(nodeCellPos.y - m_curPos.y));
+        
+        if (vars.Item3 < 0) // We do not have a pathable index
+        {
+            int distance = 0;
+            Vector2Int center = Util.GetCellFrom3DPos(m_resourceNodeQueue[0].transform.position).m_cellPos;
+            while (distance < currentDistance)
+            {
+                List<Cell> emptyCells = Util.GetEmptyCellsAtDistance(center, distance);
+                if (emptyCells.Count > 0)
+                {
+                    List<Vector2Int> emptyCellPositions = new List<Vector2Int>();
+                    foreach (Cell emptyCell in emptyCells)
+                    {
+                        if (emptyCell.m_cellPos == m_curPos) // We're already on a closest empty cell.
+                        {
+                            UpdateTask(GathererTask.IdleCannotAccessNode);
+                            return;
+                        }
+                        
+                        bool isHarvestCell = false;
+                        
+                        foreach (HarvestPoint harvestPoint in m_resourceNodeQueue[0].m_harvestPoints) // Dont include harvest cells, this prevents the gatherer from walking onto another gatherer.
+                        {
+                            if (harvestPoint.m_harvestPointCell != emptyCell)
+                            {
+                                isHarvestCell = true;
+                                break;
+                            }
+                        }
+
+                        if (isHarvestCell) continue; // Leave this cell and get the next emptyCell
+                        
+                        emptyCellPositions.Add(emptyCell.m_cellPos);
+                    }
+
+                    ValueTuple<List<Vector2Int>, Vector3> emptyCellVars = AStar.FindShortestPath(m_curPos, emptyCellPositions);
+                    
+                    if (emptyCellVars.Item1 != null) // We have a path.
+                    {
+                        m_gathererPath = emptyCellVars.Item1;
+                        UpdateTask(GathererTask.TravellingToBlockedNode);
+                        return;
+                    }
+                }
+                else
+                {
+                    ++distance;
+                }
+            }
+        }
+
+        SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+        RemoveNodeFromQueue(m_curHarvestNode);
+        UpdateTask(GathererTask.TravelingToHarvest);
     }
 
     private void HandleLookRotation()
@@ -220,6 +309,44 @@ public class GathererController : MonoBehaviour
         }
     }
 
+    // QUEUEING FUNCTIONS
+    public void QueueNode(ResourceNode node) // Triggers from gameplay manager (Shift + Click while gatherer is selected)
+    {
+        // Add the node, if node already in queue, remove the node from the queue.
+        if (m_resourceNodeQueue.Contains(node))
+        {
+            Debug.Log($"Node added to remove from queue.");
+            RemoveNodeFromQueue(node);
+        }
+        else
+        {
+            Debug.Log($"Node added to queue.");
+            m_resourceNodeQueue.Add(node);
+            node.OnResourceNodeDepletion += OnQueuedNodeDepleted;
+        }
+    }
+
+    private void CleanUpQueue()
+    {
+        m_resourceNodeQueue = m_resourceNodeQueue
+            .Where(node => !m_resourceNodesToRemoveFromQueue.Contains(node))
+            .ToList();
+        m_resourceNodesToRemoveFromQueue.Clear();
+    }
+
+    private void RemoveNodeFromQueue(ResourceNode node)
+    {
+        Debug.Log($"Node removed from queue.");
+        m_resourceNodesToRemoveFromQueue.Add(node);
+        node.OnResourceNodeDepletion -= OnQueuedNodeDepleted;
+    }
+
+    private void OnQueuedNodeDepleted(ResourceNode depletedNode)
+    {
+        m_resourceNodesToRemoveFromQueue.Add(depletedNode);
+        depletedNode.OnResourceNodeDepletion -= OnQueuedNodeDepleted;
+    }
+
     private void HandleMovement()
     {
         //If we have no path, no need to move.
@@ -244,6 +371,13 @@ public class GathererController : MonoBehaviour
             {
                 Debug.Log($"{m_debugIndex += 1}. Arrived at harvest position.");
                 UpdateTask(GathererTask.Harvesting);
+            }
+
+            // If we are/were traveling to a BLOCKED harvest node, transition to IdleCannotHarvest.
+            if (m_gathererTask == GathererTask.TravellingToBlockedNode)
+            {
+                Debug.Log($"{m_debugIndex += 1}. Arrived at cell closest to Node.");
+                UpdateTask(GathererTask.IdleCannotAccessNode);
             }
 
             // If we are/were travelling to storage, transition to storing.
@@ -349,7 +483,7 @@ public class GathererController : MonoBehaviour
         if (m_harvestPointCell.m_isOccupied)
         {
             m_isMoving = false;
-            UpdateTask(GathererTask.FindingHarvestablePoint);
+            UpdateTask(GathererTask.IdleCannotAccessNode);
         }
     }
 
@@ -607,7 +741,8 @@ public class GathererController : MonoBehaviour
             case GathererTask.Idling:
 
                 break;
-            case GathererTask.FindingHarvestablePoint:
+            case GathererTask.FindingHarvestablePoint: 
+                // RETURN TO CURRENT NODE BECAUSE IT HASN'T DEPLETED.
                 if (m_curHarvestNode)
                 {
                     Debug.Log($"{m_debugIndex += 1}. HarvestNode still active. Finding point to harvest from.");
@@ -621,41 +756,117 @@ public class GathererController : MonoBehaviour
                         m_curHarvestNode = vars.Item1;
                         m_curHarvestPointPos = vars.Item2;
                         m_curHarvestPointIndex = vars.Item3;
-                        //SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
                     }
-                    // Else we cannot harvest this node because no points are pathable, so we go to idle.
-                    // Disabling this Oct 4th 2024 because I would like for the gatherer to find a nearby node.
-                    /*else
-                    {
-                        UpdateTask(GathererTask.Idling);
-                        break;
-                    }*/
                 }
-                else
-                {
-                    // If we dont have a node, find a nearby node.
-                    // Get Neighbor Cells.
-                    Debug.Log($"{m_debugIndex += 1}. Finding NEW nearby {m_curHarvestNodePos}.");
 
-                    // Look for adjacent nodes. We prioritize nodes next to expired node.
-                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 1f));
-                    if (vars.Item1 == null)
+                // TAKE NEXT NODE FROM QUEUE IF THERE IS A QUEUE
+                else if (m_resourceNodeQueue.Count > 0)
+                {
+                    Debug.Log($"Looking through resource Node Queue for first harvestable node.");
+
+                    ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPointFromObj(m_resourceNodeQueue[0].gameObject);
+
+                    if (vars.Item3 < 0) // We do not have a pathable index
                     {
-                        Debug.Log($"{m_debugIndex += 1}. Searching for node further away from. {m_curHarvestNodePos}.");
-                        // Look for nodes an extra cell away.
-                        vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, 3f));
-                        if (vars.Item1 == null)
+                        // So we want to find the open cell that is closest to the resource node and path able. Then in Update continue to try and get to our resource node to harvest.
+                        // The open cell should also be the closest to the gatherer.
+                        Cell targetCell = null;
+                        int distance = 1;
+                        Vector2Int center = Util.GetCellFrom3DPos(m_resourceNodeQueue[0].transform.position).m_cellPos;
+                        while (targetCell == null)
                         {
-                            Debug.Log($"{m_debugIndex += 1}. Found no nodes within 1.5 units of {m_curHarvestNodePos}.");
-                            UpdateTask(GathererTask.Idling);
-                            break;
+                            List<Cell> emptyCells = Util.GetEmptyCellsAtDistance(center, distance);
+                            if (emptyCells.Count > 0)
+                            {
+                                List<Vector2Int> emptyCellPositions = new List<Vector2Int>();
+                                foreach (Cell emptyCell in emptyCells)
+                                {
+                                    if (emptyCell.m_cellPos == m_curPos) // We're already on a closest empty cell.
+                                    {
+                                        targetCell = emptyCell;
+                                        UpdateTask(GathererTask.IdleCannotAccessNode);
+                                        return;
+                                    }
+                        
+                                    bool isHarvestCell = false;
+                        
+                                    foreach (HarvestPoint harvestPoint in m_resourceNodeQueue[0].m_harvestPoints) // Dont include harvest cells, this prevents the gatherer from walking onto another gatherer.
+                                    {
+                                        if (harvestPoint.m_harvestPointCell != emptyCell)
+                                        {
+                                            isHarvestCell = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (isHarvestCell) continue; // Leave this cell and get the next emptyCell
+                        
+                                    emptyCellPositions.Add(emptyCell.m_cellPos);
+                                }
+                                
+                                ValueTuple<List<Vector2Int>, Vector3> emptyCellVars = AStar.FindShortestPath(m_curPos, emptyCellPositions);
+                                if (emptyCellVars.Item1 != null) // We have a path.
+                                {
+                                    targetCell = Util.GetCellFrom3DPos(emptyCellVars.Item2);
+                                    m_gathererPath = emptyCellVars.Item1;
+                                }
+                            }
+                            else
+                            {
+                                ++distance;
+                            }
                         }
+
+                        UpdateTask(GathererTask.TravellingToBlockedNode);
+                        break;
                     }
 
                     SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                    RemoveNodeFromQueue(m_curHarvestNode);
+
+
+                    // Loop through nodes in the queue to find a harvestable node in list order.
+                    /*for (int i = 0; i < m_resourceNodeQueue.Count; ++i)
+                    {
+                        ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPointFromObj(m_resourceNodeQueue[i].gameObject);
+                        if (vars.Item3 >= 0)
+                        {
+                            Debug.Log($"Found harvestable node in resource queue.");
+
+                            SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                            RemoveNodeFromQueue(m_curHarvestNode);
+                            break;
+                        }
+                    }*/
                 }
 
-                //Debug.Log($"Moving to {m_curHarvestNode.gameObject.name}");
+                // FIND A NODE NEARBY OUR PREVIOUS NODE
+                // This is because all of the harvest positions are occupied by towers or gatherers.
+                // This could also be because our curNode was null after depleting the node.
+                else if (m_resourceNodeQueue.Count == 0)
+                {
+                    float searchRange = 1f;
+                    while (searchRange <= 3f && m_curHarvestNode == null)
+                    {
+                        ValueTuple<ResourceNode, Vector2Int, int> vars = GetHarvestPoint(GetHarvestNodes(m_curHarvestNodePos, searchRange));
+
+                        if (vars.Item1 != null) // Harvestable Node Found.
+                        {
+                            SetHarvestVars(vars.Item1, vars.Item2, vars.Item3);
+                        }
+                        else
+                        {
+                            searchRange += 1f;
+                        }
+                    }
+                }
+
+                if (m_curHarvestNode == null)
+                {
+                    UpdateTask(GathererTask.Idling);
+                    break;
+                }
+
                 //If we're already on the desired cell, do not need to move.
                 if (m_curHarvestPointPos != m_curCell.m_cellPos)
                 {
@@ -689,7 +900,7 @@ public class GathererController : MonoBehaviour
                 {
                     if (pos == m_curCell.m_cellPos)
                     {
-                        m_targetObjPosition = GetDepositSiteFromPosition(transform.position); 
+                        m_targetObjPosition = GetDepositSiteFromPosition(transform.position);
                         m_gathererPath = new List<Vector2Int>();
                         Debug.Log($"{m_debugIndex += 1}. At storage already.");
                         UpdateTask(GathererTask.Storing);
@@ -699,7 +910,7 @@ public class GathererController : MonoBehaviour
 
                 Debug.Log($"{m_debugIndex += 1}. Finding point to store from.");
                 startPos = Util.GetVector2IntFrom3DPos(transform.position);
-                ValueTuple<List<Vector2Int>, Vector3> shortestPath = AStar.FindShortestPath(startPos, m_depositLocations);
+                ValueTuple<List<Vector2Int>, Vector3> shortestPath = AStar.FindShortestPath(m_curPos, m_depositLocations);
                 List<Vector2Int> path = shortestPath.Item1;
                 m_targetObjPosition = GetDepositSiteFromPosition(shortestPath.Item2);
                 m_gathererPath = path;
@@ -723,6 +934,7 @@ public class GathererController : MonoBehaviour
                 return obelisk.transform.position;
             }
         }
+
         // If none of the above hit, we're travelling to the castle to depost.
         return GameplayManager.Instance.m_castleController.transform.position;
     }
@@ -885,7 +1097,7 @@ public class GathererController : MonoBehaviour
             }
         }
 
-        if(closestNode) m_targetObjPosition = closestNode.transform.position;
+        if (closestNode) m_targetObjPosition = closestNode.transform.position;
         m_gathererPath = shortestPath;
         return (closestNode, closestNodePointPos, harvestPointIndex);
     }
@@ -934,6 +1146,7 @@ public class GathererController : MonoBehaviour
                 shortestPath = path;
             }
         }
+
         m_targetObjPosition = obj.transform.position;
         m_gathererPath = shortestPath;
         return (node, closestNodePointPos, harvestPointIndex);

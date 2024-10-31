@@ -42,6 +42,33 @@ public static class Util
         return result;
     }
 
+    public static List<Cell> GetEmptyCellsAtDistance(Vector2Int center, int distance)
+    {
+        List<Cell> emptyCells = new List<Cell>();
+
+        // Loop through the grid centered around the target
+        for (int x = -distance; x <= distance; x++)
+        {
+            for (int z = -distance; z <= distance; z++)
+            {
+                // Get the current grid cell
+                Vector2Int currentPos = new Vector2Int(center.x + x, center.y + z);
+
+                // Skip the inner grid
+                if (Mathf.Abs(x) < distance && Mathf.Abs(z) < distance) continue;
+
+                // Add outer cells to the list
+                Cell cell = GetCellFromPos(currentPos);
+                if (!cell.m_isOccupied)
+                {
+                    emptyCells.Add(cell);
+                }
+            }
+        }
+
+        return emptyCells;
+    }
+
     public static Vector3 GetRandomPosition(Vector3 objPosition, Vector3 offset)
     {
         //Position

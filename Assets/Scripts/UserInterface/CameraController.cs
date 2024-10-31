@@ -101,7 +101,7 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.Disabled) return;
+        //if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.Disabled) return;
         
         //On rails movement will focus the camera on a destination. (Example: Selecting a gatherer from the UI)
         if (m_onRails)
