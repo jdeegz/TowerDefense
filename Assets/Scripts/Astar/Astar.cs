@@ -6,15 +6,48 @@ using Vector2Int = UnityEngine.Vector2Int;
 
 public class AStar
 {
-    public static (List<Vector2Int>, Vector3 endPosition) FindShortestPath(Vector2Int start, List<Vector2Int> endPositions)
+    public static List<Vector2Int> FindPathToGoal(Cell goalCell, Cell currentCell)
     {
-        List<Vector2Int> path = new List<Vector2Int>();
+        List<Vector2Int> path = null;
+        List<Cell> emptyCells = null;
+        int currentDistance = Math.Max(Math.Abs(currentCell.m_cellPos.x - goalCell.m_cellPos.x), Math.Abs(currentCell.m_cellPos.y - goalCell.m_cellPos.y));
+        int searchDistance = goalCell.m_isOccupied ? 1 : 0;
+        int maxSearchDistance = Math.Min(currentDistance, 9);
+        while (searchDistance <= maxSearchDistance && emptyCells == null)
+        {
+            emptyCells = Util.GetEmptyCellsAtDistance(goalCell.m_cellPos, searchDistance);
+
+            if (emptyCells == null)
+            {
+                ++searchDistance;
+            }
+        }
+        
+        if (emptyCells == null)
+        {
+            Debug.Log($"Searched {searchDistance} cell distance and found no empty cells.");
+            return null;
+        }
+
+        List<Vector2Int> emptyCellPositions = new List<Vector2Int>();
+        foreach (Cell cell in emptyCells)
+        {
+            emptyCellPositions.Add(cell.m_cellPos);
+        }
+
+        path = FindShortestPath(currentCell.m_cellPos, emptyCellPositions);
+
+        return path;
+    }
+    
+    
+    public static List<Vector2Int> FindShortestPath(Vector2Int start, List<Vector2Int> endPositions)
+    {
         List<Vector2Int> shortestPath = null;
-        Vector3 endPosition = new Vector3();
 
         foreach (Vector2Int end in endPositions)
         {
-            path = FindPath(start, end);
+            List<Vector2Int> path = FindPath(start, end);
             if (path == null)
             {
                 continue;
@@ -25,16 +58,44 @@ public class AStar
             if (shortestPath == null)
             {
                 shortestPath = path;
-                endPosition = new Vector3(end.x, 0, end.y);
             }
             else if (path.Count < shortestPath.Count)
             {
                 shortestPath = path;
-                endPosition = new Vector3(end.x, 0, end.y);
             }
         }
 
-        return (shortestPath, endPosition);
+        return shortestPath;
+    }
+    
+    public static Cell PickClosestPathableCell(Vector2Int start, List<Vector2Int> endPositions)
+    {
+        List<Vector2Int> shortestPath = null;
+        Cell closestPathableCell = null;
+
+        foreach (Vector2Int end in endPositions)
+        {
+            List<Vector2Int> path = FindPath(start, end);
+            if (path == null)
+            {
+                continue;
+            }
+            
+            //Debug.Log($"Path to {end} is {path.Count} long.");
+            
+            if (shortestPath == null)
+            {
+                shortestPath = path;
+                closestPathableCell = Util.GetCellFromPos(end);
+            }
+            else if (path.Count < shortestPath.Count)
+            {
+                shortestPath = path;
+                closestPathableCell = Util.GetCellFromPos(end);
+            }
+        }
+
+        return closestPathableCell;
     }
 
 
@@ -46,7 +107,7 @@ public class AStar
 
         if (start == end)
         {
-            Debug.Log($"End is same as start, returning end as path.");
+            //Debug.Log($"End is same as start, returning end as path.");
             path.Add(end);
             return path;
         }
@@ -115,7 +176,7 @@ public class AStar
         }
 
         // No path found
-        Debug.Log("No Path Found.");
+        Debug.Log($"No Path found between {start} and {end}");
         return null;
     }
 

@@ -85,7 +85,7 @@ public class Obelisk : MonoBehaviour
             //GridCellOccupantUtil.SetBuildRestricted(gameObject, true, 1, 3);
             
             m_meter = Instantiate(IngameUIController.Instance.m_ingameMeter, IngameUIController.Instance.transform);
-            m_meter.SetupMeter(this.gameObject, m_meterOffset);
+            m_meter.SetupMeter(gameObject, m_meterOffset);
             
             //SetupRangeCircle(48, m_obeliskRadius);
             Vector3 scale = m_ambientEffectsRoot.transform.localScale;

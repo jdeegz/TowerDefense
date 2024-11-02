@@ -30,8 +30,8 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         m_gathererImage.sprite = m_gathererData.m_gathererIconSprite;
         m_gathererTypeImage.sprite = m_gathererData.m_gathererTypeSprite;
         m_hotkeyLabel.SetText(hotkey);
-        m_lastTask = gathererController.m_gathererTask;
-        ToggleIdleDisplay(m_gathererController.m_gathererTask == GathererController.GathererTask.Idling);
+        m_lastTask = gathererController.GetGathererTask();
+        ToggleIdleDisplay(m_gathererController.GetGathererTask() == GathererController.GathererTask.Idling);
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnGameObjectDeselected += GathererDeselected;
         m_gathererController.GathererLevelChange += UpdateGathererLevelLabel;
@@ -55,10 +55,10 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     void Update()
     {
-        if (m_gathererController.m_gathererTask != m_lastTask)
+        if (m_gathererController.GetGathererTask() != m_lastTask)
         {
-            m_lastTask = m_gathererController.m_gathererTask;
-            ToggleIdleDisplay(m_gathererController.m_gathererTask == GathererController.GathererTask.Idling);
+            m_lastTask = m_gathererController.GetGathererTask();
+            ToggleIdleDisplay(m_gathererController.GetGathererTask() == GathererController.GathererTask.Idling);
         }
     }
 

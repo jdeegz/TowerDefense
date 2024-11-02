@@ -33,6 +33,7 @@ public class CameraController : MonoBehaviour
     private Vector3 m_cameraSouthEast;
     private Vector3 m_cameraSouthWest;
     private Camera m_camera;
+    private bool m_cameraIsLive = false;
 
     void Awake()
     {
@@ -96,12 +97,13 @@ public class CameraController : MonoBehaviour
             Vector3 pos = (GameplayManager.Instance.m_castleController.transform.position);
             pos.z += 1f;
             transform.position = GetPositionInBounds(pos);
+            m_cameraIsLive = true;
         }
     }
 
     void Update()
     {
-        //if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.Disabled) return;
+        if (!m_cameraIsLive) return;
         
         //On rails movement will focus the camera on a destination. (Example: Selecting a gatherer from the UI)
         if (m_onRails)

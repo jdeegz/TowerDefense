@@ -324,12 +324,11 @@ public class GameplayManager : MonoBehaviour
         
         if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(1))
         {
-            if (m_curSelectable.m_selectedObjectType != Selectable.SelectedObjectType.Gatherer) return;
+            if (!m_curSelectable || m_curSelectable.m_selectedObjectType != Selectable.SelectedObjectType.Gatherer) return;
 
-            if (m_hoveredSelectable.m_selectedObjectType != Selectable.SelectedObjectType.ResourceWood) return;
+            if (!m_hoveredSelectable || m_hoveredSelectable.m_selectedObjectType != Selectable.SelectedObjectType.ResourceWood) return;
 
-            Debug.Log($"{m_curSelectable.gameObject.name} has shift clicked on a tree.");
-            m_curSelectable.GetComponent<GathererController>().QueueNode(m_hoveredSelectable.GetComponent<ResourceNode>());
+            m_curSelectable.GetComponent<GathererController>().AddNodeToHarvestQueue(m_hoveredSelectable.GetComponent<ResourceNode>());
         }
         else if (!Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(1))
         {

@@ -44,7 +44,7 @@ public static class Util
 
     public static List<Cell> GetEmptyCellsAtDistance(Vector2Int center, int distance)
     {
-        List<Cell> emptyCells = new List<Cell>();
+        List<Cell> emptyCells = null;
 
         // Loop through the grid centered around the target
         for (int x = -distance; x <= distance; x++)
@@ -61,6 +61,7 @@ public static class Util
                 Cell cell = GetCellFromPos(currentPos);
                 if (!cell.m_isOccupied)
                 {
+                    if (emptyCells == null) emptyCells = new List<Cell>();
                     emptyCells.Add(cell);
                 }
             }

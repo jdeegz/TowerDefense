@@ -125,13 +125,11 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     {
         m_harvesters += i;
         m_animator.SetInteger(m_gatherersHarvestingHash, m_harvesters);
-        Debug.Log($"{gameObject.name} harvester count updated from {m_harvesters - i} to {m_harvesters}");
     }
 
     public void OnDepletion(bool harvested)
     {
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1, this);
-        //Debug.Log($"{gameObject.name} has been Depleted.");
 
         //Setting this to 0 so it wont show up in Nearby Nodes check. (When dragon destroys node, the node was appearing in the FindNearbyNodes check)
         m_resourcesRemaining = 0;
