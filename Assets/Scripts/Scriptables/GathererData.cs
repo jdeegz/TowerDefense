@@ -20,6 +20,8 @@ public class GathererData : ScriptableObject
     public Sprite m_gathererTypeSprite;
     public Color m_gathererModelColor = Color.blue;
     public Color m_gathererPathColor = Color.blue;
+    public GameObject m_harvestNodeIndicatorObj;
+    public GameObject m_queuedHarvestNodeIndicatorObj;
 
     [Header("Audio")]
     public List<AudioClip> m_commandRequestClips;

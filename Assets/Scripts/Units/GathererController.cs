@@ -18,7 +18,6 @@ public class GathererController : MonoBehaviour
 
     [SerializeField] private GameObject m_resourceAnchor;
     [SerializeField] private GameObject m_boostedVFX;
-    [SerializeField] private GameObject m_resourceNodeQueuedIndicator;
     [SerializeField] private GameObject m_gathererBlockedIndicator;
     [SerializeField] private GameObject m_gathererIdleIndicator;
     [SerializeField] private GathererTask m_gathererTask;
@@ -120,16 +119,23 @@ public class GathererController : MonoBehaviour
 
                 m_curHarvestNode = value;
 
+                Debug.Log($"Gatherer {m_gathererData.m_gathererName}'s current harvest node is now {m_curHarvestNode}.");
+
+                UpdateHarvestNodeIndicator();
+
                 if (m_curHarvestNode) m_curHarvestNode.OnResourceNodeDepletion += OnNodeDepleted;
             }
         }
     }
 
     private Cell m_lastHarvestNodeCell;
+    private GameObject m_harvestNodeIndicatorObj;
+    private GameObject m_curHarvestNodeIndicator;
 
     // RESOURCE NODE QUEUE
     private List<GameObject> m_curNodeQueueIndicators;
     private List<ResourceNode> m_resourceNodeHarvestQueue;
+    private GameObject m_queuedHarvestNodeIndicatorObj;
 
     private List<ResourceNode> ResourceNodeHarvestQueue
     {
@@ -217,6 +223,9 @@ public class GathererController : MonoBehaviour
         m_carryCapacity = m_gathererData.m_carryCapacity;
         m_storingDuration = m_gathererData.m_storingDuration;
         m_gathererRenderer.material.color = m_gathererData.m_gathererModelColor;
+
+        m_harvestNodeIndicatorObj = m_gathererData.m_harvestNodeIndicatorObj;
+        m_queuedHarvestNodeIndicatorObj = m_gathererData.m_queuedHarvestNodeIndicatorObj;
     }
 
     private void OnDestroy()
@@ -346,6 +355,8 @@ public class GathererController : MonoBehaviour
         // Add the node, if node already in queue, remove the node from the queue.
         if (ResourceNodeHarvestQueue == null) ResourceNodeHarvestQueue = new List<ResourceNode>();
 
+        if (node == CurrentHarvestNode) return;
+
         if (ResourceNodeHarvestQueue.Contains(node))
         {
             RemoveNodeFromHarvestQueue(node);
@@ -398,6 +409,30 @@ public class GathererController : MonoBehaviour
         }
     }
 
+    void UpdateHarvestNodeIndicator()
+    {
+        // Return the current one, if there is one.
+        Debug.Log($"{m_gathererData.m_gathererName} updating Harvest Node indicator; Current indicator: {m_curHarvestNodeIndicator}. Current Node: {CurrentHarvestNode}");
+
+        if (m_curHarvestNodeIndicator)
+        {
+            Debug.Log($"Disabling {m_gathererData.m_gathererName}'s Current Harvest Node Indicator.");
+            GameObject oldIndicator = m_curHarvestNodeIndicator;
+            m_curHarvestNodeIndicator = null;
+            oldIndicator.transform.DOScale(0, 0.15f).SetEase(Ease.InBack).OnComplete(() => ObjectPoolManager.ReturnObjectToPool(oldIndicator, ObjectPoolManager.PoolType.GameObject));
+        }
+
+        // Then if we have a node, spawn a new indicator at it.
+        if (CurrentHarvestNode)
+        {
+            Debug.Log($"Enabling a new indicator at {m_gathererData.m_gathererName}'s Harvest Node.");
+            GameObject newIndicator = ObjectPoolManager.SpawnObject(m_harvestNodeIndicatorObj, CurrentHarvestNode.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.GameObject);
+            newIndicator.transform.localScale = Vector3.zero;
+            newIndicator.transform.DOScale(1, .15f).SetEase(Ease.OutBack);
+            m_curHarvestNodeIndicator = newIndicator;
+        }
+    }
+
     void UpdateHarvestQueueIndicators()
     {
         HashSet<Vector3> queuePositions = new HashSet<Vector3>();
@@ -410,7 +445,6 @@ public class GathererController : MonoBehaviour
         {
             if (!queuePositions.Contains(m_curNodeQueueIndicators[i].transform.position))
             {
-                Debug.Log($"Removing Indicator.");
                 m_curNodeQueueIndicators[i].transform.DOScale(0, 0.15f).SetEase(Ease.InBack).OnComplete(() =>
                     ObjectPoolManager.ReturnObjectToPool(m_curNodeQueueIndicators[i], ObjectPoolManager.PoolType.GameObject));
                 m_curNodeQueueIndicators.RemoveAt(i);
@@ -424,10 +458,9 @@ public class GathererController : MonoBehaviour
 
             if (!hasIndicator)
             {
-                GameObject newIndicator = ObjectPoolManager.SpawnObject(m_resourceNodeQueuedIndicator, node.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.GameObject);
+                GameObject newIndicator = ObjectPoolManager.SpawnObject(m_queuedHarvestNodeIndicatorObj, node.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.GameObject);
                 newIndicator.transform.localScale = Vector3.zero;
                 newIndicator.transform.DOScale(1, .15f).SetEase(Ease.OutBack);
-                newIndicator.GetComponent<NodeIndicator>().TintMaterials(m_gathererData.m_gathererModelColor);
                 m_curNodeQueueIndicators.Add(newIndicator);
             }
         }
@@ -455,6 +488,19 @@ public class GathererController : MonoBehaviour
         GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
     }
 
+    private Vector3 m_avoidanceDirection;
+
+    void OnTriggerStay(Collider other)
+    {
+        // Ensure we're only detecting other gatherers
+        if (other.CompareTag("Gatherer") && other.gameObject != this.gameObject)
+        {
+            // Logic to adjust movement for avoidance
+            Vector3 directionToOther = transform.position - other.transform.position;
+            m_avoidanceDirection = directionToOther.normalized / directionToOther.magnitude;
+        }
+    }
+
     private void HandleMovement()
     {
         if (GathererPath == null) return;
@@ -462,7 +508,7 @@ public class GathererController : MonoBehaviour
         int remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
         float remainingDistanceCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
 
-        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.1f)
+        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.26f)
         {
             IsMoving = false;
             DestinationReached();
@@ -470,7 +516,7 @@ public class GathererController : MonoBehaviour
             return;
         }
 
-        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.1f)
+        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.26f)
         {
             IsMoving = false;
             return;
@@ -505,14 +551,25 @@ public class GathererController : MonoBehaviour
 
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
-        //Move forward.
-        float cumulativeMoveSpeed = 1f * m_totalSpeedBoost * Time.deltaTime;
-        transform.position += transform.forward * cumulativeMoveSpeed;
+        // Add avoidance direction to movement
+        float avoidanceStrength = 0.5f;
+        Vector3 finalMovementDirection = m_moveDirection + m_avoidanceDirection * avoidanceStrength;
+        finalMovementDirection = finalMovementDirection.normalized;
 
-        // Look Forward.
-        float cumulativeLookSpeed = m_lookSpeed * m_totalSpeedBoost * Time.deltaTime;
-        Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
+        // Calculate final movement with speed and move the gatherer
+        float cumulativeMoveSpeed = 1f * m_totalSpeedBoost * Time.deltaTime;
+        transform.position += finalMovementDirection * cumulativeMoveSpeed;
+
+        // Check if the avoidance direction is significant enough to influence look direction
+        if (m_avoidanceDirection.magnitude < 0.5f) // Adjust threshold as needed
+        {
+            // Only change look direction if avoidance is minimal
+            float cumulativeLookSpeed = m_lookSpeed * m_totalSpeedBoost * Time.deltaTime;
+            Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
+        }
+        
+        m_avoidanceDirection = Vector3.zero;
     }
 
     private void DestinationReached()
@@ -599,9 +656,10 @@ public class GathererController : MonoBehaviour
                 else // If we're carrying a node, we're on our way to a ruin or to deposit, in both instances, we want to travel to this node next.
                 {
                     ClearHarvestingQueue();
-                    
+
                     CurrentHarvestNode = node;
                 }
+
                 break;
             case Selectable.SelectedObjectType.Tower:
                 break;
@@ -683,7 +741,7 @@ public class GathererController : MonoBehaviour
             return;
         }
 
-        if (ResourceNodeHarvestQueue != null && ResourceNodeHarvestQueue.Count == 0)
+        if (ResourceNodeHarvestQueue == null || ResourceNodeHarvestQueue.Count == 0)
         {
             int searchRange = 1;
             while (searchRange <= 3 && CurrentHarvestNode == null)
@@ -755,7 +813,10 @@ public class GathererController : MonoBehaviour
         }
 
         // No resource node was assigned.
-        if (!foundNode) UpdateTask(GathererTask.Idling);
+        if (!foundNode)
+        {
+            RequestedIdle();
+        }
     }
 
     void PathToDepositCell()
@@ -1030,7 +1091,7 @@ public class GathererController : MonoBehaviour
         m_animator.SetBool(m_isHarvestingHash, false);
 
         PathToDepositCell();
-     
+
         ValueTuple<int, int> vars = CurrentHarvestNode.RequestResource(m_carryCapacity);
         ResourceCarried = vars.Item1;
         int resourceRemaining = vars.Item2;
