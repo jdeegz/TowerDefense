@@ -76,7 +76,6 @@ public class GathererController : MonoBehaviour
         }
     }
 
-
     private List<Vector2Int> m_gathererPath;
 
     public List<Vector2Int> GathererPath
@@ -85,9 +84,7 @@ public class GathererController : MonoBehaviour
         set
         {
             m_gathererPath = value;
-            
-            if(m_gathererPath == null) Debug.Log($"gatherer path is null. o fk.");
-            
+
             if (m_gathererPath != null)
             {
                 if (m_gathererPath.Count > 1)
@@ -95,8 +92,6 @@ public class GathererController : MonoBehaviour
                     m_nextCellInPath = Util.GetCellFromPos(GathererPath[1]);
                     m_nextCellPosition = new Vector3(m_nextCellInPath.m_cellPos.x, 0, m_nextCellInPath.m_cellPos.y);
                 }
-                
-                if(m_gathererPath.Count == 0) Debug.Log($"gatherer path is 0 cells.");
 
                 CheckPathToGoal();
 
@@ -486,6 +481,11 @@ public class GathererController : MonoBehaviour
         }
         else
         {
+            if (m_isBlockedFromGoal)
+            {
+                //If we were blocked, and now we're not. Let's move.
+                IsMoving = true;
+            }
             m_isBlockedFromGoal = false;
         }
     }
@@ -512,14 +512,13 @@ public class GathererController : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (GathererPath == null) return;
+        if (GathererPath == null || !IsMoving) return;
 
         int remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
         float remainingDistanceCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
 
         if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.26f && IsMoving)
         {
-            IsMoving = false;
             GathererPath = null;
             DestinationReached();
             return;
@@ -527,6 +526,7 @@ public class GathererController : MonoBehaviour
 
         if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.26f && IsMoving)
         {
+            //Debug.Log($"{m_gathererData.m_gathererName} has reached last cell & position in path.");
             IsMoving = false;
             return;
         }
@@ -552,11 +552,7 @@ public class GathererController : MonoBehaviour
 
             //Update my path towards my goal.
             GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
-
-            ToggleBlockedIndicator();
         }
-
-        IsMoving = true;
 
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
@@ -706,12 +702,12 @@ public class GathererController : MonoBehaviour
     {
         m_curRuin = requestObj.GetComponent<Ruin>();
 
-        CurrentGoalCell = Util.GetCellFrom3DPos(m_curRuin.transform.position);
-        UpdateTask(GathererTask.TravelingToRuin);
-
         InterruptHarvesting();
 
         RequestStopCoroutine();
+
+        CurrentGoalCell = Util.GetCellFrom3DPos(m_curRuin.transform.position);
+        UpdateTask(GathererTask.TravelingToRuin);
     }
 
     private void RequestedHarvest(ResourceNode node)
@@ -771,7 +767,7 @@ public class GathererController : MonoBehaviour
         }
         else
         {
-            RequestedIdle(); 
+            RequestedIdle();
         }
     }
 
@@ -811,8 +807,10 @@ public class GathererController : MonoBehaviour
                     }
                 }
             }
+
             searchRange++;
         }
+
         return null;
     }
 
@@ -883,12 +881,16 @@ public class GathererController : MonoBehaviour
                 IsMoving = true;
                 break;
             case GathererTask.TravelingToDeposit:
+                IsMoving = true;
                 break;
             case GathererTask.TravelingToRuin:
+                IsMoving = true;
                 break;
             case GathererTask.TravelingToIdle:
+                IsMoving = true;
                 break;
             case GathererTask.Harvesting:
+                IsMoving = false;
                 if (CurrentHarvestNode)
                 {
                     m_curCoroutine = StartCoroutine(Harvesting());
@@ -897,11 +899,14 @@ public class GathererController : MonoBehaviour
                 {
                     RequestNextHarvestNode();
                 }
+
                 break;
             case GathererTask.Storing:
+                IsMoving = false;
                 m_curCoroutine = StartCoroutine(Storing());
                 break;
             case GathererTask.Idling:
+                IsMoving = false;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -966,13 +971,9 @@ public class GathererController : MonoBehaviour
 
     private void InterruptHarvesting()
     {
-        // Unassign from the node (used for Player interupting the Harvesting state)
-        if (CurrentHarvestNode)
+        if (CurrentHarvestNode && m_gathererTask == GathererTask.Harvesting)
         {
-            if (m_gathererTask == GathererTask.Harvesting)
-            {
-                CurrentHarvestNode.SetIsHarvesting(-1); // We only want to do this if we've started harvesting, which increments the value.
-            }
+            CurrentHarvestNode.SetIsHarvesting(-1); // We only want to do this if we've started harvesting, which increments the value.
         }
 
         // Stop gatherer Harvest Animation.

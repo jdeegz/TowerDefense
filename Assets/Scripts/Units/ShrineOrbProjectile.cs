@@ -8,7 +8,7 @@ public class ShrineOrbProjectile : MonoBehaviour
     public float m_projectileSpeed;
     
     private GathererController m_targetGatherer;
-    private float m_stoppingDistance = 0.05f;
+    private float m_stoppingDistance = 0.1f;
     private bool m_isComplete;
     
     public void Setup(GathererController gatherer)

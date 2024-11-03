@@ -10528,6 +10528,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6259160149619677486}
   - component: {fileID: 3698104283116156141}
+  - component: {fileID: 149766903122538265}
+  - component: {fileID: 3386116018851487999}
   m_Layer: 0
   m_Name: CaveSpawner00
   m_TagString: Untagged
@@ -10566,6 +10568,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e6788b9debf8da4d89e724159072a54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_data: {fileID: 11400000, guid: 2342d7896c44e014f98836c1dd9abf30, type: 2}
   m_spawnPoint: {fileID: 6865745267262463439}
-  m_activeWave: []
-  m_spawnerWaves: {fileID: 0}
+--- !u!114 &149766903122538265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8053493432752523825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b720afc83a42d4547b766f747d29d048, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_selectedObjectType: 7
+  m_meshRenderers: []
+--- !u!65 &3386116018851487999
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8053493432752523825}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2, y: 0.2, z: 2}
+  m_Center: {x: 0, y: 0, z: 0}

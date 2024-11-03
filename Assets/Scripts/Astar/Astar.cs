@@ -13,29 +13,30 @@ public class AStar
         int currentDistance = Math.Max(Math.Abs(currentCell.m_cellPos.x - goalCell.m_cellPos.x), Math.Abs(currentCell.m_cellPos.y - goalCell.m_cellPos.y));
         int searchDistance = goalCell.m_isOccupied ? 1 : 0;
         int maxSearchDistance = Math.Min(currentDistance, 9);
-        while (searchDistance <= maxSearchDistance && emptyCells == null)
+        while (searchDistance <= maxSearchDistance && path == null)
         {
             emptyCells = Util.GetEmptyCellsAtDistance(goalCell.m_cellPos, searchDistance);
 
-            if (emptyCells == null)
+            if (emptyCells == null) // We found no empty cells, expand range.
             {
                 ++searchDistance;
+                continue;
+            }
+            
+            List<Vector2Int> emptyCellPositions = new List<Vector2Int>();
+            
+            foreach (Cell cell in emptyCells)
+            {
+                emptyCellPositions.Add(cell.m_cellPos);
+            }
+
+            path = FindShortestPath(currentCell.m_cellPos, emptyCellPositions);
+            
+            if (path == null)
+            {
+                ++searchDistance; // We found no pathable empty cells, expand range.
             }
         }
-        
-        if (emptyCells == null)
-        {
-            Debug.Log($"Searched {searchDistance} cell distance and found no empty cells.");
-            return null;
-        }
-
-        List<Vector2Int> emptyCellPositions = new List<Vector2Int>();
-        foreach (Cell cell in emptyCells)
-        {
-            emptyCellPositions.Add(cell.m_cellPos);
-        }
-
-        path = FindShortestPath(currentCell.m_cellPos, emptyCellPositions);
 
         return path;
     }
@@ -176,7 +177,7 @@ public class AStar
         }
 
         // No path found
-        Debug.Log($"No Path found between {start} and {end}");
+        //Debug.Log($"No Path found between {start} and {end}");
         return null;
     }
 

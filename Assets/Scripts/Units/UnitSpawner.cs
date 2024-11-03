@@ -10,10 +10,11 @@ using Random = UnityEngine.Random;
 
 public class UnitSpawner : MonoBehaviour
 {
-    public Transform m_spawnPoint;
-    public CreepWave m_activeWave;
+    [SerializeField] private TearData m_data;
+    [SerializeField] private Transform m_spawnPoint;
     [SerializeField] private SpawnerWaves m_spawnerWaves;
-
+    
+    private CreepWave m_activeWave;
     private bool m_isSpawnerActive = false;
     private List<CreepSpawner> m_activeCreepSpawners;
     private StatusEffect m_spawnStatusEffect;
@@ -60,6 +61,21 @@ public class UnitSpawner : MonoBehaviour
                 //Debug.Log($"{gameObject.name} done spawning.");
             }
         }
+    }
+
+    public CreepWave GetActiveWave()
+    {
+        return m_activeWave;
+    }
+    
+    public SpawnerWaves GetSpawnerWaves()
+    {
+        return m_spawnerWaves;
+    }
+
+    public Transform GetSpawnPointTransform()
+    {
+        return m_spawnPoint;
     }
 
     private void StartSpawning()
@@ -198,6 +214,15 @@ public class UnitSpawner : MonoBehaviour
                 break;
         }
     }
+    
+    public TearTooltipData GetTooltipData()
+    {
+        TearTooltipData data = new TearTooltipData();
+        data.m_tearName = m_data.m_tearName;
+        data.m_tearDescription = m_data.m_tearDescription;
+        data.m_tearDetails = m_data.m_tearDetails;
+        return data;
+    }
 }
 
 public class CreepSpawner
@@ -279,4 +304,11 @@ public class CreepSpawner
         m_isCreepSpawning = true;
         m_creepSpawnPoint = transform;
     }
+}
+
+public class TearTooltipData
+{
+    public string m_tearName;
+    public string m_tearDescription;
+    public string m_tearDetails;
 }

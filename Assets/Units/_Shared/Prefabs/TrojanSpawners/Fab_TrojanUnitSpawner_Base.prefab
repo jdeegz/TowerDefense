@@ -10528,6 +10528,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6259160149619677486}
   - component: {fileID: 1358135431918659263}
+  - component: {fileID: 1911561432263215991}
+  - component: {fileID: 9056794146164161958}
   m_Layer: 0
   m_Name: Fab_TrojanUnitSpawner_Base
   m_TagString: Untagged
@@ -10566,4 +10568,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f047fcdca23e44543b4c77ed1e52dfe8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_data: {fileID: 11400000, guid: b9a8236a066e94a4f8abf62b767bd47c, type: 2}
   m_creepWaves: []
+--- !u!65 &1911561432263215991
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8053493432752523825}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2, y: 0.2, z: 2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &9056794146164161958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8053493432752523825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b720afc83a42d4547b766f747d29d048, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_selectedObjectType: 7
+  m_meshRenderers: []

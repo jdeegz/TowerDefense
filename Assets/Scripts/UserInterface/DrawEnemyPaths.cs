@@ -22,7 +22,7 @@ public class DrawEnemyPaths : MonoBehaviour
     void UpdateLineRenderer()
     {
         
-        m_startPos = GameplayManager.Instance.m_unitSpawners[0].m_spawnPoint.position;
+        m_startPos = GameplayManager.Instance.m_unitSpawners[0].GetSpawnPointTransform().position;
         m_endPos = GameplayManager.Instance.m_enemyGoal.position;
         NavMeshPath path = new NavMeshPath();
         

@@ -242,6 +242,22 @@ public class UITooltipController : MonoBehaviour
                 m_objectDescriptionString = ruinData.m_ruinDescription;
                 m_objectDetailsString = ruinData.m_ruinDetails;
                 break;
+            case Selectable.SelectedObjectType.Tear: // This is gross.
+                //Is it a unit spawner or a trojan spawner?
+                TearTooltipData tearData;
+                UnitSpawner spawner = hoveredObj.GetComponent<UnitSpawner>();
+                if (spawner)
+                {
+                    tearData = spawner.GetTooltipData();
+                }
+                else
+                {
+                    tearData = hoveredObj.GetComponent<TrojanUnitSpawner>().GetTooltipData();
+                }
+                m_objectNameString = tearData.m_tearName;
+                m_objectDescriptionString = tearData.m_tearDescription;
+                m_objectDetailsString = tearData.m_tearDetails;
+                break;
             case Selectable.SelectedObjectType.UIElement:
                 UITooltip tooltip = m_curUISelectable as UITooltip;
                 m_objectNameString = tooltip.m_nameString;

@@ -29,23 +29,11 @@ public abstract class Projectile : MonoBehaviour
     protected GameObject m_statusSender;
     
     public Renderer m_renderer;
-    public BulletTrailData m_bulletTrailData;
-    protected TrailRenderer m_trail;
     protected int m_shieldLayer;
     
     void Start()
     {
         m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
-        m_trail = GetComponent<TrailRenderer>();
-        ConfigureTrail();
-    }
-
-    private void ConfigureTrail()
-    {
-        if (m_trail != null && m_bulletTrailData != null)
-        {
-            m_bulletTrailData.SetupTrail(m_trail);
-        }
     }
     
     public void SetProjectileData(EnemyController enemy, Transform target, float dmg, Vector3 pos,  GameObject sender, StatusEffectData statusEffectData = null)
@@ -60,7 +48,6 @@ public abstract class Projectile : MonoBehaviour
         m_isFired = true;
         m_isComplete = false;
         if (m_renderer) m_renderer.enabled = true;
-        if (m_trail != null ) m_trail.Clear();
     }
 
     public void SetProjectileStatusEffect(StatusEffect statusEffect)
@@ -89,14 +76,6 @@ public abstract class Projectile : MonoBehaviour
 
         transform.rotation = Quaternion.identity;
         
-        if (m_trail != null && m_bulletTrailData != null)
-        {
-            ObjectPoolManager.OrphanObject(gameObject, m_bulletTrailData.m_time);
-        }
-        
-        else
-        {
-            ObjectPoolManager.ReturnObjectToPool(gameObject);
-        }
+        ObjectPoolManager.OrphanObject(gameObject, 0.5f);
     }
 }

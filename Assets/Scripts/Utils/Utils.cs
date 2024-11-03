@@ -54,6 +54,9 @@ public static class Util
                 // Get the current grid cell
                 Vector2Int currentPos = new Vector2Int(center.x + x, center.y + z);
 
+                // Skip this cell if it's not in the gamefield.
+                if (!IsWithinBounds(currentPos.x, currentPos.y)) continue;
+                
                 // Skip the inner grid
                 if (Mathf.Abs(x) < distance && Mathf.Abs(z) < distance) continue;
 
@@ -156,7 +159,7 @@ public static class Util
         // Check if the starting point is within the grid and has the original value
         Debug.Log($"Starting Flood Fill");
 
-        if (IsValidPoint(startX, startY))
+        if (IsWithinBounds(startX, startY))
         {
             // Enqueue the starting point with distance 0
             queue.Enqueue((startX, startY, 0));
@@ -175,7 +178,7 @@ public static class Util
                 }
 
                 // Check if the current point is within the grid and has the original value
-                if (IsValidPoint(x, y) && !visited.Contains(curCell))
+                if (IsWithinBounds(x, y) && !visited.Contains(curCell))
                 {
                     Debug.Log($"Added a cell to list.");
                     cellsWithinRadius.Add(curCell);
@@ -201,7 +204,7 @@ public static class Util
         return cellsWithinRadius;
     }
 
-    static bool IsValidPoint(int x, int y)
+    static bool IsWithinBounds(int x, int y)
     {
         bool valid = x >= 0 && x < GridManager.Instance.m_gridWidth && y >= 0 && y < GridManager.Instance.m_gridHeight;
         //Debug.Log($"Cell valid: {valid}");
@@ -499,7 +502,7 @@ public static class Util
 
         foreach (Vector2Int neighborCellPos in neighborPos)
         {
-            if (IsValidPoint(neighborCellPos.x, neighborCellPos.y))
+            if (IsWithinBounds(neighborCellPos.x, neighborCellPos.y))
             {
                 Cell cell = GetCellFromPos(neighborCellPos);
                 if (cell != null)
@@ -535,7 +538,7 @@ public static class Util
 
         for (int i = 0; i < neighbors.Length; i++)
         {
-            if (IsValidPoint(neighbors[i].x, neighbors[i].y))
+            if (IsWithinBounds(neighbors[i].x, neighbors[i].y))
             {
                 neighborCells[i] = (gridCells[GetCellIndex(neighbors[i])]);
             }

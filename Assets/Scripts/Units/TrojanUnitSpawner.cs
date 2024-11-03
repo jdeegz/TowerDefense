@@ -7,7 +7,8 @@ public class TrojanUnitSpawner : MonoBehaviour
     //The Trojan spawner is created at the X,Y position of the Enemy Trojan when it dies.
     //It needs to be added to the gameplay manager's active spawner list.
     //It needs to spawn creeps from each creep wave based on their timing data.
-    public List<CreepWave> m_creepWaves;
+    [SerializeField] private TearData m_data;
+    [SerializeField] private List<CreepWave> m_creepWaves;
 
     private List<CreepSpawner> m_activeCreepSpawners;
     private List<Creep> m_activeCreepWave;
@@ -80,5 +81,14 @@ public class TrojanUnitSpawner : MonoBehaviour
         
         //Remove Obj from scene
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
+    }
+    
+    public TearTooltipData GetTooltipData()
+    {
+        TearTooltipData data = new TearTooltipData();
+        data.m_tearName = m_data.m_tearName;
+        data.m_tearDescription = m_data.m_tearDescription;
+        data.m_tearDetails = m_data.m_tearDetails;
+        return data;
     }
 }

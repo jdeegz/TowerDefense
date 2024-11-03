@@ -215,7 +215,7 @@ public class GameplayManager : MonoBehaviour
                 foreach (UnitSpawner spawner in m_unitSpawners)
                 {
                     //Check for Unit Cutscene.
-                    if (GameManager.Instance && spawner.m_activeWave is NewTypeCreepWave newTypeWave && !string.IsNullOrEmpty(newTypeWave.m_waveCutscene))
+                    if (GameManager.Instance && spawner.GetActiveWave() is NewTypeCreepWave newTypeWave && !string.IsNullOrEmpty(newTypeWave.m_waveCutscene))
                     {
                         cutsceneName = newTypeWave.m_waveCutscene;
                     }
@@ -373,10 +373,10 @@ public class GameplayManager : MonoBehaviour
                 // If we right click on a Blueprint, remove it.
                 if (m_hoveredSelectable != null && m_hoveredSelectable.m_selectedObjectType == Selectable.SelectedObjectType.Tower)
                 {
-                    Tower tower = m_hoveredSelectable.GetComponent<Tower>();
-                    if (tower is TowerBlueprint)
+                    TowerBlueprint blueprint = m_hoveredSelectable.GetComponent<TowerBlueprint>();
+                    if (blueprint)
                     {
-                        RemoveTower(tower);
+                        RemoveBlueprintTower(blueprint);
                     }
                 }
             }
@@ -1016,7 +1016,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     for (int y = 0; y < m_unitSpawners.Count; ++y)
                     {
-                        Vector2Int endPos = Util.GetVector2IntFrom3DPos(m_unitSpawners[y].m_spawnPoint.position);
+                        Vector2Int endPos = Util.GetVector2IntFrom3DPos(m_unitSpawners[y].GetSpawnPointTransform().position);
                         List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
                         if (testPath != null)
                         {
@@ -1109,6 +1109,12 @@ public class GameplayManager : MonoBehaviour
 
         foreach (TowerBlueprint blueprint in m_blueprintList)
         {
+            if (m_curSelectable && m_curSelectable.gameObject == blueprint.gameObject)
+            {
+                OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                m_curSelectable = null;
+            }
+            
             //Configure Grid
             GridCellOccupantUtil.SetOccupant(blueprint.gameObject, false, 1, 1);
 

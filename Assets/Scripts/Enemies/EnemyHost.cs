@@ -24,7 +24,7 @@ public class EnemyHost : EnemyController
         m_livingThralls = new List<EnemyThrall>();
         foreach (UnitSpawner spawner in spawners)
         {
-            Vector3 spawnPoint = spawner.m_spawnPoint.position;
+            Vector3 spawnPoint = spawner.GetSpawnPointTransform().position;
             Cell cell = Util.GetCellFrom3DPos(spawner.transform.position);
             Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
             float xOffset = Random.Range(-0.4f, 0.4f);

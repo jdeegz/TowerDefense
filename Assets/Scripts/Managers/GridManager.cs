@@ -108,7 +108,7 @@ public class GridManager : MonoBehaviour
         List<Cell> spawnPointCells = new List<Cell>();
         foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
         {
-            spawnPointCells.Add(Util.GetCellFrom3DPos(spawner.m_spawnPoint.position));
+            spawnPointCells.Add(Util.GetCellFrom3DPos(spawner.GetSpawnPointTransform().position));
         }
 
         int spawnPointCellsFound = 0;
@@ -364,7 +364,7 @@ public class GridManager : MonoBehaviour
         m_spawners = new List<Vector2Int>();
         foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
         {
-            m_spawners.Add(Util.GetVector2IntFrom3DPos(spawner.m_spawnPoint.position));
+            m_spawners.Add(Util.GetVector2IntFrom3DPos(spawner.GetSpawnPointTransform().position));
         }
 
         //Create Exit UnitPaths
@@ -387,7 +387,7 @@ public class GridManager : MonoBehaviour
         //Create Spawners UnitPaths
         foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
         {
-            Vector2Int start = Util.GetVector2IntFrom3DPos(spawner.m_spawnPoint.position);
+            Vector2Int start = Util.GetVector2IntFrom3DPos(spawner.GetSpawnPointTransform().position);
             UnitPath unitPath = new UnitPath();
             unitPath.m_unitSpawner = spawner;
             unitPath.m_startPos = start;
