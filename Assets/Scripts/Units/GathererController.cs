@@ -54,6 +54,8 @@ public class GathererController : MonoBehaviour
                     m_targetObjPosition = newGoalPosition;
                 }
 
+                Debug.Log($"New Current Goal Cell assigned. Now finding path to goal cell.");
+
                 GathererPath = AStar.FindPathToGoal(m_curGoalCell, m_curCell);
             }
         }
@@ -515,15 +517,15 @@ public class GathererController : MonoBehaviour
         int remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
         float remainingDistanceCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
 
-        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.26f)
+        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.26f && IsMoving)
         {
             IsMoving = false;
+            GathererPath = null;
             DestinationReached();
-            //GathererPath = null;
             return;
         }
 
-        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.26f)
+        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.26f && IsMoving)
         {
             IsMoving = false;
             return;
@@ -895,7 +897,6 @@ public class GathererController : MonoBehaviour
                 {
                     RequestNextHarvestNode();
                 }
-
                 break;
             case GathererTask.Storing:
                 m_curCoroutine = StartCoroutine(Storing());
