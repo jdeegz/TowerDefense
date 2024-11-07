@@ -50,4 +50,12 @@ public static class GameSettings
             AudioMixer.SetFloat(SFXVolumeKey, Mathf.Log10(value) * 20);
         }
     }
+    
+    // Window Setting
+    private const string WindowSettingKey = "WindowSetting";
+    public static int WindowSettingValue
+    {
+        get => PlayerPrefs.GetInt(WindowSettingKey, 0);
+        set => PlayerPrefs.SetInt(WindowSettingKey, value);
+    }
 }

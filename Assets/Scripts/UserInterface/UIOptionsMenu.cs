@@ -34,7 +34,6 @@ public class UIOptionsMenu : MonoBehaviour
     [SerializeField] private Button m_restartButton;
     [SerializeField] private Button m_exitApplicationButton;
     [SerializeField] private Button m_closeMenuButton;
-    [SerializeField] private Button m_logoutButton;
     [SerializeField] private TMP_Dropdown m_screenModeDropdown;
     [SerializeField] private UIStringData m_uiStrings;
 
@@ -68,7 +67,6 @@ public class UIOptionsMenu : MonoBehaviour
         m_exitApplicationButton.onClick.AddListener(OnExitApplicationButtonClicked);
         m_closeMenuButton.onClick.AddListener(OnCloseMenuButtonClicked);
         m_screenModeDropdown.onValueChanged.AddListener(OnDropdownValueChanged);
-        m_logoutButton.onClick.AddListener(OnLogoutButtonClicked);
 
         // Get tooltip setting
         bool isTooltipEnabled = GameSettings.DynamicToolTipsEnabled;
@@ -102,7 +100,7 @@ public class UIOptionsMenu : MonoBehaviour
 
             if (GameManager.Instance.m_gameState != GameManager.GameState.Menus)
             {
-                m_logoutButton.gameObject.SetActive(false);
+                //Out-of-game Only Options
             }
         }
 
@@ -196,7 +194,7 @@ public class UIOptionsMenu : MonoBehaviour
 
     private void OnDropdownValueChanged(int index)
     {
-        /*switch (index)
+        switch (index)
         {
             case 0:
                 //Debug.Log($"Option {index} selected.");
@@ -204,11 +202,13 @@ public class UIOptionsMenu : MonoBehaviour
                 break;
             case 1:
                 //Debug.Log($"Option {index} selected.");
-                Screen.SetResolution(m_windowModeWidth, m_windowModeHeight, false);
+                int windowHeight = Mathf.RoundToInt(Screen.currentResolution.height * 0.7f);
+                int windowWidth = Mathf.RoundToInt(windowHeight * 16f / 9f);
+                Screen.SetResolution(windowWidth, windowHeight, false);
                 break;
             default:
                 break;
-        }*/
+        }
     }
 
     void Update()

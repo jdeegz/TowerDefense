@@ -1,8 +1,13 @@
+using System.Security;
+using DG.Tweening;
 using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class TowerBlueprint : Tower
 {
+    [SerializeField] private GameObject m_blueprintRootObj;
+    [SerializeField] private MeshRenderer m_bottomMeshRenderer;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -33,8 +38,45 @@ public class TowerBlueprint : Tower
 
         //VFX
         ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+
+        GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
+    }
+
+    private Vector3 m_raisedPos = new Vector3(0,0,0);
+    private Vector3 m_loweredPos = new Vector3(0,-.54f,0);
+    private bool m_isRaised = true;
+    private Tween m_curTween;
+    private void GameplayPlaybackChanged(GameplayManager.GameSpeed newSpeed)
+    {
+        float duration;
+        switch (newSpeed)
+        {
+            case GameplayManager.GameSpeed.Paused:
+                if (m_isRaised == true) return;
+                duration = Random.Range(0.15f, 0.45f);
+                m_bottomMeshRenderer.enabled = true;
+                if(m_curTween != null && m_curTween.IsPlaying()) m_curTween.Kill();
+                m_curTween = m_blueprintRootObj.transform.DOLocalMove(m_raisedPos, duration).SetEase(Ease.OutBack).SetUpdate(true);
+                m_isRaised = true;
+                break;
+            case GameplayManager.GameSpeed.Normal:
+                if (m_isRaised == false) return;
+                duration = Random.Range(0.15f, 0.45f);
+                if(m_curTween != null && m_curTween.IsPlaying()) m_curTween.Kill();
+                m_curTween = m_blueprintRootObj.transform.DOLocalMove(m_loweredPos, duration).SetEase(Ease.OutBack).SetUpdate(true).OnComplete(() => m_bottomMeshRenderer.enabled = false);
+                m_isRaised = false;
+                break;
+            default:
+                break;
+        }
     }
     
+    public override void RemoveTower()
+    {
+        GameplayManager.OnGamePlaybackChanged -= GameplayPlaybackChanged;
+        base.RemoveTower();
+    }
+
 
     public override TowerTooltipData GetTooltipData()
     {
@@ -53,5 +95,11 @@ public class TowerBlueprint : Tower
     public override void SetUpgradeData(TowerUpgradeData data)
     {
         Debug.Log($"Blueprint Tower has no Upgrade Data to set.");
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        GameplayManager.OnGamePlaybackChanged -= GameplayPlaybackChanged;
     }
 }

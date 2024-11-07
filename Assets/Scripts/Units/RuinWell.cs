@@ -40,6 +40,12 @@ public class RuinWell : Ruin
         }
     }
 
+    void OnDestroy()
+    {
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+        GameplayManager.OnGameObjectSelected -= GameObjectSelected;
+    }
+
     private void SetVisuals()
     {
         foreach (GameObject obj in m_chargeObjs)

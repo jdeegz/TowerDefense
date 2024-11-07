@@ -890,6 +890,11 @@ public class GameplayManager : MonoBehaviour
             return false;
         }
 
+        if (curCell.m_isOutOfBounds)
+        {
+            return false;
+        }
+
         //If we have actors on the cell.
         if (curCell.m_actorCount > 0)
         {

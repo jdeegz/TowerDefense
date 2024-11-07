@@ -338,7 +338,7 @@ public class GridManager : MonoBehaviour
         }
         else
         {
-            cell.UpdateOccupancyDisplay(true);
+            cell.SetIsOutOfBounds(true);
         }
     }
 
@@ -415,6 +415,7 @@ public class Cell
     //Cell Data
     public bool m_isGoal;
     public bool m_isOccupied;
+    [FormerlySerializedAs("m_isInPlayspace")] public bool m_isOutOfBounds;
     public GameObject m_occupant;
     public bool m_isTempOccupied;
     public bool m_isBuildRestricted;
@@ -474,6 +475,12 @@ public class Cell
         {
             UpdateGridCellColor(m_pathableColor);
         }
+    }
+    
+    public void SetIsOutOfBounds(bool b)
+    {
+        m_isOutOfBounds = b;
+        UpdateOccupancyDisplay(b);
     }
 
     public void UpdateTempOccupancyDisplay(bool b)

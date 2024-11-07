@@ -33,6 +33,23 @@ public class RuinController : MonoBehaviour
     private GameObject m_indicatorObj;
     private Ruin m_ruinObj;
 
+    void Awake()
+    {
+        GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+    }
+
+    void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
+    {
+        if (newState == GameplayManager.GameplayState.FloodFillGrid)
+        {
+            // Get the cell the ruin is on. Subscribe to the OnDepleted event of the resource node on the cell.
+            m_ruinCell = Util.GetCellFrom3DPos(transform.position);
+            m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion += ResourceNodeDepleted;
+            ResourceManager.OnAllRuinsDiscovered += AllRuinsDiscovered;
+            Debug.Log($"{gameObject.name} subscribed to Cell {m_ruinCell.m_cellIndex}'s resource node.");
+        }
+    }
+    
     private void UpdateRuinState(RuinState newState)
     {
         m_ruinState = newState;
@@ -42,26 +59,6 @@ public class RuinController : MonoBehaviour
 
     public List<Vector3> GetValidRuinCorners()
     {
-        return m_validPositionsForIndicators;
-    }
-    
-    public List<Vector3> CheckValidRuinCorners()
-    {
-        Cell ruinCell = Util.GetCellFrom3DPos(transform.position);
-        Vector3 cellPos = new Vector3(ruinCell.m_cellPos.x, 0, ruinCell.m_cellPos.y);
-        m_validPositionsForIndicators = new List<Vector3>();
-
-        foreach (Vector3 cornerPosition in m_cornerPositions)
-        {
-            Vector3 pos = cellPos + cornerPosition;
-            Collider[] hits = Physics.OverlapSphere(pos, 0.5f, m_resourceNodeLayerMask);
-            
-            if (hits.Length == 4)
-            {
-                m_validPositionsForIndicators.Add(pos); // This corner is good.
-            }
-        }
-
         return m_validPositionsForIndicators;
     }
 
@@ -80,11 +77,6 @@ public class RuinController : MonoBehaviour
         // Spawn the indicator object at the desired corner.
         GameObject indicatorObj = ResourceManager.Instance.m_resourceManagerData.m_ruinIndicatorObj;
         m_indicatorObj = ObjectPoolManager.SpawnObject(indicatorObj, gameObject.transform.position, Quaternion.identity, m_ruinIndicatorRoot.transform, ObjectPoolManager.PoolType.GameObject);
-        
-        // Get the cell the ruin is on. Subscribe to the OnDepleted event of the resource node on the cell.
-        m_ruinCell = Util.GetCellFrom3DPos(transform.position);
-        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion += ResourceNodeDepleted;
-        ResourceManager.OnAllRuinsDiscovered += AllRuinsDiscovered;
     }
 
     private void AllRuinsDiscovered()
@@ -97,15 +89,14 @@ public class RuinController : MonoBehaviour
         UpdateRuinState(RuinState.Idle);
         ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
         m_indicatorObj = null;
-        
-        ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
-        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
     }
 
     private void ResourceNodeDepleted(ResourceNode obj)
     {
+        // The node was harvested, but we're not indicated so we're not discovered.
+        if (m_ruinState != RuinState.Indicated) return;
+        
         // We've discovered the ruin.
-        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
         UpdateRuinState(RuinState.Discovered);
 
         GameObject ruinObj = ObjectPoolManager.SpawnObject(ResourceManager.Instance.RuinDiscovered(), transform.position, Quaternion.identity, m_ruinDiscoveredRoot.transform, ObjectPoolManager.PoolType.GameObject);
@@ -113,17 +104,12 @@ public class RuinController : MonoBehaviour
         
         ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
         m_indicatorObj = null;
-        
-        ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
     }
 
     void OnDestroy()
     {
-        if (m_ruinCell != null)
-        {
-            m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
-        }
-        
+        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
     }
 }

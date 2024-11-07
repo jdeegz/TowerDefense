@@ -1021,6 +1021,9 @@ public class GathererController : MonoBehaviour
 
                 // Add cells with a resource node in them to the list.
                 Cell cell = Util.GetCellFromPos(currentPos);
+
+                if (cell.m_isOutOfBounds) continue;
+                
                 if (cell.m_isOccupied)
                 {
                     ResourceNode node = cell.m_occupant.GetComponent<ResourceNode>();

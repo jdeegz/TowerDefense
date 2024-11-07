@@ -246,6 +246,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGathererRemoved -= RemoveGathererTrayButton;
         GameplayManager.OnDelayForQuestChanged -= DelayForQuestChanged;
         GameplayManager.OnWaveCompleted -= AlertWaveComplete;
+        GameplayManager.OnBlueprintCountChanged -= BlueprintCountChanged;
 
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;

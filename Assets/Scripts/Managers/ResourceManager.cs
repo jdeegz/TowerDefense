@@ -81,7 +81,6 @@ public class ResourceManager : MonoBehaviour
 
     void Start()
     {
-        //Debug.Log("RESOURCE MANAGER START");
         UpdateWoodAmount(m_resourceManagerData.m_startingWood);
         UpdateStoneAmount(m_resourceManagerData.m_startingStone);
         m_woodDeposits = new List<WoodDeposit>();
@@ -214,7 +213,6 @@ public class ResourceManager : MonoBehaviour
         //When a gatherer harvests a resource Node, and when the wave counter increments. Wave should be a target, and reset after indicating a ruin.
         if (GameplayManager.Instance.m_wave < m_resourceManagerData.m_minWaves)
         {
-            //Debug.Log($"Minimum number of waves not yet passed.");
             return; // Too soon to show a ruin indicator.
         }
 
@@ -222,20 +220,12 @@ public class ResourceManager : MonoBehaviour
         {
             if ((GameplayManager.Instance.m_wave - m_resourceManagerData.m_minWaves) % m_resourceManagerData.m_indicatorFrequency != 0)
             {
-                //Debug.Log($"Current wave ({GameplayManager.Instance.m_wave} - {m_resourceManagerData.m_minWaves}) is not a factor of {m_resourceManagerData.m_indicatorFrequency}.");
                 return; // Need to wait a little longer.
             }
-
-            //Debug.Log($"Current wave is a factor of {m_resourceManagerData.m_indicatorFrequency}.");
-        }
-        else
-        {
-            //Debug.Log($"Current wave is the Minimum wave.");
         }
 
         if (m_validRuinsInMission.Count == 0)
         {
-            //Debug.Log($"We're out of valid Ruins to indicate.");
             return;
         }
 
@@ -244,14 +234,10 @@ public class ResourceManager : MonoBehaviour
         {
             if (ruin.m_ruinState == RuinController.RuinState.Indicated)
             {
-                //++m_ruinIndicatedCount;
                 if (m_ruinIndicatedCount >= m_resourceManagerData.m_maxIndicators)
                 {
-                    //Debug.Log($"We're currently indicating the max number of desired ruins: {m_resourceManagerData.m_maxIndicators}.");
                     return; // We should't indicate any more ruins.
                 }
-
-                //Debug.Log($"We're ready to indicate another ruin. Current indicated: {m_ruinIndicatedCount}.");
             }
         }
 
@@ -262,6 +248,12 @@ public class ResourceManager : MonoBehaviour
         //Debug.Log($"Checking the Valid Ruins list for Invalid Ruins.");
         for (int i = 0; i < m_validRuinsInMission.Count; ++i) // Loop through ruins, identifying if they are still covered by a forest, else add to invalid list and remove.
         {
+            if (m_validRuinsInMission[i] == null)
+            {
+                invalidRuins.Add(m_validRuinsInMission[i]); 
+                continue; 
+            }
+            
             if (!m_validRuinsInMission[i].IsRuinCoveredByForest())
             {
                 Debug.Log($"{m_validRuinsInMission[i].name} is not covered by a forest anymore, removing from Valid Ruins!");

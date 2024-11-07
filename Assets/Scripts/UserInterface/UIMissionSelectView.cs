@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,10 +9,11 @@ public class UIMissionSelectView : MonoBehaviour
     [SerializeField] private Button m_backButton;
     [SerializeField] private Button m_resetSaveDataButton;
     [SerializeField] private GameObject m_missionButtonRoot;
-    [SerializeField] private GameObject m_missionButtonObj;
-    [SerializeField] private List<UIMissionSelectButton> m_missionButtons;
-    // Start is called before the first frame update
+    [SerializeField] private CanvasGroup m_dataResetToast;
+    [SerializeField] private UIMissionSelectButton m_missionButtonPrefab;
 
+    private List<UIMissionSelectButton> m_curMissionButtons;
+    
     void Awake()
     {
         MenuManager.OnMenuStateChanged += MenuManagerStateChanged;
@@ -34,33 +36,41 @@ public class UIMissionSelectView : MonoBehaviour
 
         BuildMissionList();
     }
-
-    private void ClearMissionList()
-    {
-        foreach(Transform child in m_missionButtonRoot.transform)
-        {
-            Destroy(child.gameObject);
-        }
-    }
-
+    
     private void BuildMissionList()
     {
-        int numberOfMissions = 5; //why the hell is this hardcoded lol
+        if (!GameManager.Instance) return;
+        
+        int numberOfMissions;
+        
+        numberOfMissions = GameManager.Instance.m_MissionContainer.m_MissionList.Length;
+
+        if (m_curMissionButtons == null) m_curMissionButtons = new List<UIMissionSelectButton>();
+        
+        for (int i = m_curMissionButtons.Count; i < numberOfMissions; i++)
+        {
+            m_curMissionButtons.Add(null);
+        }
+        
         for (int i = 0; i < numberOfMissions; i++)
         {
-            //Make the button
-            //GameObject newButton = Instantiate(m_missionButtonObj, m_missionButtonRoot.transform);
-            //Access the button's script
-            UIMissionSelectButton missionSelectButtonScript = m_missionButtons[i];
-            //Get the Button script
-            //Button button = newButton.GetComponent<Button>();
-            //Stash the Mission data
+            UIMissionSelectButton button;
+            
+            if (m_curMissionButtons[i] != null)
+            {
+                button = m_curMissionButtons[i];
+            }
+            else
+            {
+              button = Instantiate(m_missionButtonPrefab, m_missionButtonRoot.transform);
+              m_curMissionButtons[i] = button;
+            } 
+            
             MissionData data = GameManager.Instance.m_MissionContainer.m_MissionList[i];
             
             //Read from player data for this mission.
             MissionSaveData missionSaveData = PlayerDataManager.Instance.m_playerData.m_missions[i];
-            missionSelectButtonScript.SetData(data, missionSaveData.m_missionCompletionRank, missionSaveData.m_missionAttempts);
-            
+            button.SetData(data, missionSaveData.m_missionCompletionRank);
         }
     }
     
@@ -74,5 +84,7 @@ public class UIMissionSelectView : MonoBehaviour
         //ClearMissionList();
         PlayerDataManager.Instance.ResetPlayerData();
         BuildMissionList();
+        m_dataResetToast.alpha = 1;
+        m_dataResetToast.DOFade(0, 3f);
     }
 }

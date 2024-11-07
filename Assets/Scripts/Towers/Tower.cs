@@ -235,7 +235,7 @@ public abstract class Tower : MonoBehaviour
         ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
-    public void OnDestroy()
+    public virtual void OnDestroy()
     {
         //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
         if (!Application.isPlaying) return;
