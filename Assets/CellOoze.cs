@@ -68,6 +68,7 @@ public class CellOoze : MonoBehaviour
         m_cellOozeVFX.Stop();
         m_towerDisableVFX.Stop();
         
+        GameplayManager.OnGameplayStateChanged -= RemoveOoze;
         ObjectPoolManager.OrphanObject(gameObject, 1f, ObjectPoolManager.PoolType.Enemy);
     }
     
@@ -95,5 +96,10 @@ public class CellOoze : MonoBehaviour
             m_towerDisableVFX.Stop();
             tower.RequestTowerEnable();
         }
+    }
+
+    private void OnDestroy()
+    {
+        GameplayManager.OnGameplayStateChanged -= RemoveOoze;
     }
 }

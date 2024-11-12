@@ -351,7 +351,7 @@ public class AStar
         }
 
         // No path found
-        Debug.Log($"No Path Found. {start} - {end}");
+        // Debug.Log($"No Path Found. {start} - {end}");
         return null;
     }
 
