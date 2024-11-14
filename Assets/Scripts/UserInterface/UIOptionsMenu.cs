@@ -194,12 +194,6 @@ public class UIOptionsMenu : MonoBehaviour
         ToggleMenu();
     }
 
-    void OnLogoutButtonClicked()
-    {
-        PlayFabManager.Instance.RequestLogout();
-        ToggleMenu();
-    }
-
     private void OnDropdownValueChanged(int index)
     {
         switch (index)

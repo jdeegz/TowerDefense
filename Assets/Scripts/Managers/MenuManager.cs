@@ -10,7 +10,6 @@ public class MenuManager : MonoBehaviour
     public static event Action<MenuState> OnMenuStateChanged;
     [SerializeField] private GameObject m_StartMenuView;
     [SerializeField] private GameObject m_MissionSelectView;
-    [SerializeField] private GameObject m_loginView;
     public MenuState m_menuState;
 
     public enum MenuState
@@ -18,29 +17,11 @@ public class MenuManager : MonoBehaviour
         Idle,
         StartMenu,
         MissionSelect,
-        Login
     }
 
     void Start()
     {
-        UpdateMenuState(MenuState.Idle);
-
-        //If we have no PlayFabManager (running edit mode stuff)
-        if (!PlayFabManager.Instance)
-        {
-            UpdateMenuState(MenuState.StartMenu);
-            return;
-        }
-
-        //If we have a connection.
-        if (PlayFabClientAPI.IsClientLoggedIn())
-        {
-            UpdateMenuState(MenuState.StartMenu);
-            return;
-        }
-
-        //Else we ask for log in.
-        UpdateMenuState(MenuState.Login);
+        UpdateMenuState(MenuState.StartMenu);
     }
 
     public void UpdateMenuState(MenuState newState)
@@ -55,21 +36,17 @@ public class MenuManager : MonoBehaviour
                 break;
             case MenuState.MissionSelect:
                 break;
-            case MenuState.Login:
-                break;
             default:
                 break;
         }
 
         OnMenuStateChanged?.Invoke(newState);
-        //Debug.Log("Menu State:" + newState);
     }
 
     private void MenuManagerOnMenuStateChanged(MenuState state)
     {
         m_StartMenuView.SetActive(state == MenuState.StartMenu);
         m_MissionSelectView.SetActive(state == MenuState.MissionSelect);
-        m_loginView.SetActive(state == MenuState.Login);
     }
 
 
@@ -77,39 +54,10 @@ public class MenuManager : MonoBehaviour
     {
         Instance = this;
         OnMenuStateChanged += MenuManagerOnMenuStateChanged;
-
-        if (PlayFabManager.Instance)
-        {
-            PlayFabManager.Instance.OnLoginComplete += LoginComplete;
-            PlayFabManager.Instance.OnLoginRequired += LoginRequired;
-            PlayFabManager.Instance.OnNamingRequired += NamingRequired;
-        }
-    }
-
-    private void LoginRequired()
-    {
-        UpdateMenuState(MenuState.Login);
-    }
-
-    private void LoginComplete()
-    {
-        UpdateMenuState(MenuState.StartMenu);
-    }
-
-    private void NamingRequired()
-    {
-        UpdateMenuState(MenuState.Login);
     }
 
     void OnDestroy()
     {
         OnMenuStateChanged -= MenuManagerOnMenuStateChanged;
-
-        if (PlayFabManager.Instance)
-        {
-            PlayFabManager.Instance.OnLoginComplete -= LoginComplete;
-            PlayFabManager.Instance.OnLoginRequired -= LoginRequired;
-            PlayFabManager.Instance.OnNamingRequired -= NamingRequired;
-        }
     }
 }
