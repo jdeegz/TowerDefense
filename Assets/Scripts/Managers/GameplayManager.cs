@@ -100,9 +100,9 @@ public class GameplayManager : MonoBehaviour
 
 //Boss Testing Ground
     [Header("Boss Wave Info")]
-    public List<int> m_bossWaves; // What wave does this mission spawn a boss
-    public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
-    private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
+    public List<int> m_bossWaves;                                       // What wave does this mission spawn a boss
+    public BossSequenceController m_bossSequenceController;             // What boss does this mission spawn
+    private BossSequenceController m_activeBossSequenceController;      // Assigned by the BossSequence Controller
     private bool m_watchingCutScene;
 
 //Ooze Cell Info
@@ -111,12 +111,7 @@ public class GameplayManager : MonoBehaviour
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
     private Camera m_mainCamera;
-
-//Full Screen Renderer Info
-    [Header("Fullscreen Effects")]
-    [SerializeField] private Material m_castleDamagedFullScreenMaterial;
-    private bool m_effectEnabled;
-    private float m_effectDissolve;
+    private MissionSaveData m_curMissionSaveData;
 
     public enum GameplayState
     {
@@ -166,6 +161,7 @@ public class GameplayManager : MonoBehaviour
         if (m_watchingCutScene) return;
 
         HandleHotkeys();
+        
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
@@ -318,6 +314,12 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
+    void StartMission()
+    {
+        UpdateGameplayState(GameplayState.Build);
+        ResourceManager.Instance.StartDepositTimer();
+    }
+    
     void Mouse2Interaction()
     {
         if(m_interactionState == InteractionState.Disabled) return;
@@ -343,6 +345,7 @@ public class GameplayManager : MonoBehaviour
                         break;
                     case InteractionState.SelectedGatherer:
                         Debug.Log("Command Requested on Gatherer.");
+                        if (m_gameplayState == GameplayState.Setup) StartMission();
                         OnCommandRequested?.Invoke(m_hoveredSelectable.gameObject, m_hoveredSelectable.m_selectedObjectType);
                         break;
                     case InteractionState.SelectedTower:
@@ -472,6 +475,14 @@ public class GameplayManager : MonoBehaviour
 
         m_delayForQuest = m_gameplayData.m_delayForQuest;
         m_blueprintList = new List<TowerBlueprint>();
+        
+        //Test to open player save data and read from it.
+        m_curMissionSaveData = PlayerDataManager.Instance.GetMissionSaveData(gameObject.scene.name);
+    }
+
+    public MissionSaveData GetCurrentMissionSaveData()
+    {
+        return m_curMissionSaveData;
     }
 
     void OnDestroy()
@@ -591,6 +602,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CreatePaths:
                 break;
             case GameplayState.Setup:
+                UpdateInteractionState(InteractionState.Idle);
                 UpdateGamePlayback(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
@@ -607,12 +619,14 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2);
+                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2, m_wave);
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
             case GameplayState.Defeat:
-                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1);
+                int wave = 0;
+                if (m_endlessModeActive) wave = m_wave - 1;
+                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1, wave);
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
@@ -697,7 +711,8 @@ public class GameplayManager : MonoBehaviour
             case Selectable.SelectedObjectType.Ruin:
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                // No function setup for this Selectable Type.
+                break;
         }
     }
 
@@ -1379,13 +1394,31 @@ public class GameplayManager : MonoBehaviour
         OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
     }
 
+    private bool m_endlessModeActive;
+
+    public void StartEndlessMode()
+    {
+        m_endlessModeActive = true;
+        UpdateGameplayState(GameplayState.Build);
+        UpdateGamePlayback(GameSpeed.Normal);
+        UpdateInteractionState(InteractionState.Idle);
+    }
+
+    public bool IsEndlessModeActive()
+    {
+        return m_endlessModeActive;
+    }
+    
     public void CheckForWin()
     {
         //Obelisk Win Condition.
-        if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
+        if (!m_endlessModeActive)
         {
-            UpdateGameplayState(GameplayState.Victory);
-            return;
+            if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
+            {
+                UpdateGameplayState(GameplayState.Victory);
+                return;
+            }
         }
 
         //Total Waves Win Condition. OLD, removed the total Waves field 10/7/2024
@@ -1405,6 +1438,11 @@ public class GameplayManager : MonoBehaviour
         }
 
         UpdateGameplayState(GameplayState.Build);
+    }
+
+    public bool IsWatchingCutscene()
+    {
+        return m_watchingCutScene;
     }
 
     public void RequestSelectGatherer(GameObject obj)

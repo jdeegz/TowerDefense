@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class CastleController : MonoBehaviour
 {
@@ -257,7 +258,8 @@ public class CastleController : MonoBehaviour
     {
         //Get Parent Mesh Renderer if there is one.
         Renderer Renderer = parent.GetComponent<Renderer>();
-        if (Renderer != null)
+        
+        if (Renderer != null && !(Renderer is TrailRenderer) && !(Renderer is VFXRenderer))
         {
             if (m_allRenderers == null)
             {

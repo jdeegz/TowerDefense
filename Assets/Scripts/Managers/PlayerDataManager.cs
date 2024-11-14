@@ -120,7 +120,7 @@ public class PlayerDataManager : MonoBehaviour
         }
     }
 
-    public void UpdateMissionSaveData(int completeionRank)
+    public void UpdateMissionSaveData(int completeionRank, int wave)
     {
         MissionSaveData newMissionSaveData = new MissionSaveData();
         newMissionSaveData.m_missionCompletionRank = completeionRank;
@@ -132,6 +132,8 @@ public class PlayerDataManager : MonoBehaviour
             {
                 //increment attempts in current data.
                 newMissionSaveData.m_missionAttempts = mission.m_missionAttempts + 1;
+
+                newMissionSaveData.m_waveHighScore = Math.Max(wave, mission.m_waveHighScore);
 
                 //only save the highest completion rank.
                 newMissionSaveData.m_missionCompletionRank = Math.Max(newMissionSaveData.m_missionCompletionRank, mission.m_missionCompletionRank);
@@ -147,6 +149,19 @@ public class PlayerDataManager : MonoBehaviour
         }
 
         HandleWrite();
+    }
+
+    public MissionSaveData GetMissionSaveData(string sceneName)
+    {
+        foreach (MissionSaveData saveData in m_playerData.m_missions)
+        {
+            if (saveData.m_sceneName == sceneName)
+            {
+                return saveData;
+            }
+        }
+        
+        return null;
     }
 
     public void ResetPlayerData()
@@ -221,6 +236,7 @@ public class MissionSaveData
 {
     public string m_sceneName;
     public int m_missionAttempts;
+    public int m_waveHighScore;
     public int m_missionCompletionRank;
 
     public MissionSaveData()

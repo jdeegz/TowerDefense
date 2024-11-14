@@ -25,10 +25,11 @@ public class MissionGameplayData : ScriptableObject
     public int m_cycleLength = 10;                  // The wave-length of a cycle
     
     [Header("Wave Settings")]
-    public float m_healthMultiplier = 0;           // Global health modifier. Possibly used for difficulty settings?
-    public bool m_delayForQuest = false;           // Does this mission contain quests we need to wait for?
-    public float m_firstBuildDuraction = 15;       // The first build phase length in seconds.
-    public float m_buildDuration = 6;              // Subsequent build phase lengths in seconds.
+    public float m_healthMultiplier = 0;            // Global health modifier. Possibly used for difficulty settings?
+    public bool m_delayForQuest = false;            // Does this mission contain quests we need to wait for?
+    public bool m_allowEndlessMode = true;          // Does this mission allow an endless mode?
+    public float m_firstBuildDuraction = 15;        // The first build phase length in seconds.
+    public float m_buildDuration = 6;               // Subsequent build phase lengths in seconds.
     public float m_afterBossBuildDuration = 30;              // Subsequent build phase lengths in seconds.
     
     [Header("Equipped Towers")]

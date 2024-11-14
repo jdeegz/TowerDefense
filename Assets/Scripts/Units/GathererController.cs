@@ -93,6 +93,12 @@ public class GathererController : MonoBehaviour
                     m_nextCellPosition = new Vector3(m_nextCellInPath.m_cellPos.x, 0, m_nextCellInPath.m_cellPos.y);
                 }
 
+                if (m_gathererPath.Count == 1)
+                {
+                    m_nextCellInPath = Util.GetCellFromPos(GathererPath[0]);
+                    m_nextCellPosition = new Vector3(m_nextCellInPath.m_cellPos.x, 0, m_nextCellInPath.m_cellPos.y);
+                }
+
                 CheckPathToGoal();
 
                 OnGathererPathChanged?.Invoke(m_gathererPath);
@@ -343,7 +349,7 @@ public class GathererController : MonoBehaviour
     void FixedUpdate()
     {
         // Each frame, check to see if we can enter the next cell, if not, find a new path to our goal.
-        if (GathererPath != null && m_nextCellInPath.m_isOccupied)
+        if (GathererPath != null && m_nextCellInPath != null && m_nextCellInPath.m_isOccupied)
         {
             GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
         }
@@ -688,10 +694,10 @@ public class GathererController : MonoBehaviour
 
     private void RequestedIdle()
     {
+        ClearHarvestVars();
+        
         CurrentGoalCell = m_idleCell;
         UpdateTask(GathererTask.TravelingToIdle);
-
-        ClearHarvestVars();
 
         ClearHarvestingQueue();
 
@@ -957,6 +963,7 @@ public class GathererController : MonoBehaviour
         {
             if (m_gathererTask == GathererTask.Harvesting)
             {
+                Debug.Log($"setting tree harvesting value -1");
                 CurrentHarvestNode.SetIsHarvesting(-1); // We only want to do this if we've started harvesting, which increments the value.
             }
 

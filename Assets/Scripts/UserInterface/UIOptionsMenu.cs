@@ -162,21 +162,29 @@ public class UIOptionsMenu : MonoBehaviour
     private void OnSurrenderButtonClicked()
     {
         Debug.Log("Surrendering Mission.");
-        PlayerDataManager.Instance.UpdateMissionSaveData(1);
+        int wave = 0;
+        
+        // Are we surrendering from an endless match, or normal?
+        if (GameplayManager.Instance.IsEndlessModeActive())
+        {
+            wave = GameplayManager.Instance.m_wave;
+        }
+        
+        PlayerDataManager.Instance.UpdateMissionSaveData(1, wave);
         GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
     }
 
     private void OnRestartButtonClicked()
     {
         Debug.Log("Restarting Mission.");
-        PlayerDataManager.Instance.UpdateMissionSaveData(1);
+        PlayerDataManager.Instance.UpdateMissionSaveData(1, 0);
         GameManager.Instance.RequestSceneRestart();
     }
 
     private void OnExitApplicationButtonClicked()
     {
         Debug.Log("Quitting Application.");
-        PlayerDataManager.Instance.UpdateMissionSaveData(1);
+        PlayerDataManager.Instance.UpdateMissionSaveData(1, 0);
         Application.Quit();
     }
 
@@ -223,10 +231,12 @@ public class UIOptionsMenu : MonoBehaviour
 
     public void ToggleMenu()
     {
+        if (GameplayManager.Instance.IsWatchingCutscene()) return;
+        
         m_canvasGroup.alpha = m_canvasGroup.alpha == 0 ? 1 : 0;
         m_canvasGroup.blocksRaycasts = !m_canvasGroup.blocksRaycasts;
 
-        //If we're in gameplay, pause the game while the menu it opened.
+        //If we're in gameplay, pause the game while the menu is opened.
         if (GameplayManager.Instance == null) return;
 
         if (m_canvasGroup.blocksRaycasts)

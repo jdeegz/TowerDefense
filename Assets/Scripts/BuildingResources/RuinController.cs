@@ -46,7 +46,7 @@ public class RuinController : MonoBehaviour
             m_ruinCell = Util.GetCellFrom3DPos(transform.position);
             m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion += ResourceNodeDepleted;
             ResourceManager.OnAllRuinsDiscovered += AllRuinsDiscovered;
-            Debug.Log($"{gameObject.name} subscribed to Cell {m_ruinCell.m_cellIndex}'s resource node.");
+            //Debug.Log($"{gameObject.name} subscribed to Cell {m_ruinCell.m_cellIndex}'s resource node.");
         }
     }
     
@@ -54,7 +54,7 @@ public class RuinController : MonoBehaviour
     {
         m_ruinState = newState;
 
-        Debug.Log($"{gameObject.name}'s Ruin State is now {m_ruinState}");
+        //Debug.Log($"{gameObject.name}'s Ruin State is now {m_ruinState}");
     }
 
     public List<Vector3> GetValidRuinCorners()
@@ -71,7 +71,7 @@ public class RuinController : MonoBehaviour
     public void IndicateThisRuin()
     {
         // Update ruin controller state.
-        Debug.Log($"This ruin has been indicated by Resource Manager.");
+        //Debug.Log($"This ruin has been indicated by Resource Manager.");
         UpdateRuinState(RuinState.Indicated);
 
         // Spawn the indicator object at the desired corner.

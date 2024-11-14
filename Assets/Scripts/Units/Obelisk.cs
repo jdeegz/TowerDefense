@@ -12,6 +12,7 @@ public class Obelisk : MonoBehaviour
     public LineRenderer m_obeliskRangeCircle;
     public GameObject m_ambientEffectsRoot;
     public GameObject m_targetPoint;
+    public GameObject m_blockObj;
 
     private float m_obeliskRadius;
     private int m_curChargeCount;
@@ -81,7 +82,7 @@ public class Obelisk : MonoBehaviour
         {
             //Set occupancy
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-            //GridCellOccupantUtil.SetBuildRestricted(gameObject, true, 3, 1);
+            GridCellOccupantUtil.SetBuildRestricted(m_blockObj, true, 1, 1);
             //GridCellOccupantUtil.SetBuildRestricted(gameObject, true, 1, 3);
             
             m_meter = Instantiate(IngameUIController.Instance.m_ingameMeter, IngameUIController.Instance.transform);

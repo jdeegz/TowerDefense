@@ -34,6 +34,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
     [SerializeField] private TextMeshProUGUI m_ffwLabel;
+    [SerializeField] private TextMeshProUGUI m_highScoreLabel;
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
@@ -129,6 +130,8 @@ public class UICombatView : MonoBehaviour
             { KeyCode.T, 3 },
             { KeyCode.Y, 4 },
         };
+        
+        m_highScoreLabel.gameObject.SetActive(false);
     }
 
     private void BlueprintCountChanged(int i)
@@ -269,29 +272,15 @@ public class UICombatView : MonoBehaviour
         switch (state)
         {
             case GameplayManager.GameplayState.Setup:
-                //If there obelisks in the mission we care about those instead of wave counts.
-                /*if (GameplayManager.Instance.m_obeliskCount > 0)
-                {
-                    m_obeliskDisplayObj.SetActive(true);
-                    m_waveDisplayObj.SetActive(false);
-                }
-                else
-                {
-                    m_obeliskDisplayObj.SetActive(false);
-                    m_waveDisplayObj.SetActive(true);
-                }*/
+                m_canvasGroup.alpha = 1;
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
-                if (m_canvasGroup.alpha == 0)
-                {
-                    m_canvasGroup.alpha = 1;
-                }
-
                 m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
+                HandleHighScoreLabel();
                 break;
             case GameplayManager.GameplayState.CutScene:
                 break;
@@ -305,9 +294,27 @@ public class UICombatView : MonoBehaviour
                 break;
         }
 
-        //gameObject.SetActive(state != GameplayManager.GameplayState.Setup);
         m_castleRepairDisplayObj.SetActive(state == GameplayManager.GameplayState.Build && m_curCastleHealth < m_maxCastleHealth);
         m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_delayForQuest);
+    }
+
+    void HandleHighScoreLabel()
+    {
+        m_highScoreLabel.gameObject.SetActive(GameplayManager.Instance.IsEndlessModeActive());
+
+        if (!m_highScoreLabel.gameObject.activeSelf) return;
+        
+        if(m_wave < GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore)
+        {
+            string highScoreString = string.Format(m_uiStringData.m_displayHighScore, GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore);
+            m_highScoreLabel.SetText(highScoreString);
+        }
+        else
+        {
+            m_highScoreLabel.SetText(m_uiStringData.m_newHighScoreDisplay);
+            ColorUtility.TryParseHtmlString("#F1D24B", out Color color); 
+            m_highScoreLabel.color = color;
+        }
     }
 
     private void GameplayPlaybackChanged(GameplayManager.GameSpeed newSpeed)
@@ -484,7 +491,7 @@ public class UICombatView : MonoBehaviour
         alert.SetLabelText(text, Color.white);
         alert.SetupAlert(Vector2.zero);
     }
-    
+
     private void RuinIndicated()
     {
         UIAlert alert = ObjectPoolManager.SpawnObject(m_ruinIndicatedAlertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
