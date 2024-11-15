@@ -19,7 +19,7 @@ public class GridCellOccupantUtil
             {
                 Vector2Int pos = new Vector2Int((int)m_bottomLeftCell.x + x, (int)m_bottomLeftCell.z + z);
                 Cell cell = Util.GetCellFromPos(pos);
-
+                
                 if (cell.m_isOccupied && isOccupied)
                 {
                     if (pos.x != 0 && pos.x != GridManager.Instance.m_gridWidth - 1 && pos.y != 0 && pos.y != GridManager.Instance.m_gridHeight - 1)

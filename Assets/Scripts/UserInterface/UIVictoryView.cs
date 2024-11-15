@@ -167,7 +167,7 @@ public class UIVictoryView : MonoBehaviour
         if (GameManager.Instance != null)
         {
             Debug.Log("Restarting Mission.");
-            PlayerDataManager.Instance.UpdateMissionSaveData(1, m_victoriousWave);
+            PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, m_victoriousWave);
             GameManager.Instance.RequestSceneRestart();
         }
     }
@@ -176,7 +176,7 @@ public class UIVictoryView : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
+            GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus, MenuManager.MenuState.MissionSelect);
         }
     }
 }

@@ -76,11 +76,14 @@ public class ProjectileMissile : Projectile
 
     void DealDamage()
     {
+        //This needs to use the missiles collider center as position instead of the missile position.
+        Vector3 explosionPosition = gameObject.GetComponent<Collider>().bounds.center;
+        
         //Spawn VFX
-        ObjectPoolManager.SpawnObject(m_impactEffect, transform.position, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), null, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_impactEffect, explosionPosition, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), null, ObjectPoolManager.PoolType.ParticleSystem);
 
         //Find affected enemies
-        Collider[] hits = Physics.OverlapSphere(m_targetPos, m_impactRadius, m_areaLayerMask.value);
+        Collider[] hits = Physics.OverlapSphere(explosionPosition, m_impactRadius, m_areaLayerMask.value);
         if (hits.Length <= 0)
         {
             return;
@@ -88,14 +91,27 @@ public class ProjectileMissile : Projectile
 
         foreach (Collider col in hits)
         {
-            //Shoot a ray to each hit. If we hit a shield we stop and go to the next Sphere Overlap hit.
-            Vector3 rayDirection = (col.bounds.center - transform.position).normalized;
-            Ray ray = new Ray(transform.position, rayDirection);
-            RaycastHit[] raycastHits = Physics.RaycastAll(ray, Mathf.Infinity, m_raycastLayerMask.value);
+            //If the explosion position is within the collider, it's a hit, regardless of shields.
+            if (col.bounds.Contains(explosionPosition))
+            {
+                SendDamage(col);
+                continue;
+            }
+    
+            // Use ClosestPoint for ray direction
+            Vector3 targetPoint = col.bounds.center;
+            Vector3 rayDirection = (targetPoint - explosionPosition).normalized;
+            
+            
+            // Offset ray origin slightly
+            Vector3 rayOrigin = explosionPosition;
+            Ray ray = new Ray(rayOrigin, rayDirection);
 
+            // Perform RaycastAll
+            RaycastHit[] raycastHits = Physics.RaycastAll(ray, m_impactRadius, m_raycastLayerMask.value);
             if (raycastHits.Length == 0)
             {
-                return;
+                continue;
             }
             
             Array.Sort(raycastHits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
@@ -111,21 +127,25 @@ public class ProjectileMissile : Projectile
 
                 if (hit.collider == col)
                 {
-                    EnemyController enemyHit = col.GetComponent<EnemyController>();
-                    enemyHit.OnTakeDamage(m_projectileDamage);
-                    ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
-
-                    //Apply Status Effect
-                    if (m_statusEffectData != null)
-                    {
-                        StatusEffect statusEffect = new StatusEffect(m_statusSender, m_statusEffectData);
-                        enemyHit.ApplyEffect(statusEffect);
-                    }
-
+                    SendDamage(col);
                     break;
                 }
             }
         }
+    }
+
+    void SendDamage(Collider col)
+    {
+        EnemyController enemyHit = col.GetComponent<EnemyController>();
+        enemyHit.OnTakeDamage(m_projectileDamage);
+        ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
+
+        //Apply Status Effect
+        if (m_statusEffectData != null)
+        {
+            StatusEffect statusEffect = new StatusEffect(m_statusSender, m_statusEffectData);
+            enemyHit.ApplyEffect(statusEffect);
+        } 
     }
 
 

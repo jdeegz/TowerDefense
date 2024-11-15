@@ -670,7 +670,6 @@ public class GathererController : MonoBehaviour
 
                     CurrentHarvestNode = node;
                 }
-
                 break;
             case Selectable.SelectedObjectType.Tower:
                 break;
@@ -680,7 +679,7 @@ public class GathererController : MonoBehaviour
                 if (ResourceCarried == 0) RequestedIdle();
                 break;
             case Selectable.SelectedObjectType.Ruin:
-                RequestTravelToRuin(requestObj);
+                if(m_gathererTask != GathererTask.Storing) RequestTravelToRuin(requestObj);
                 break;
             case Selectable.SelectedObjectType.Obelisk:
                 if (ResourceCarried == 0) RequestedIdle();
@@ -696,12 +695,13 @@ public class GathererController : MonoBehaviour
     {
         ClearHarvestVars();
         
-        CurrentGoalCell = m_idleCell;
-        UpdateTask(GathererTask.TravelingToIdle);
-
         ClearHarvestingQueue();
 
         RequestStopCoroutine();
+        
+        CurrentGoalCell = m_idleCell;
+        UpdateTask(GathererTask.TravelingToIdle);
+
     }
 
     private void RequestTravelToRuin(GameObject requestObj)

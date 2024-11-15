@@ -10,7 +10,7 @@ public class Dissolvable : MonoBehaviour
     private List<Material> m_materials;
     private float m_dissolveDuration = 0.66f;
 
-    void Start()
+    void Awake()
     {
         CollectMaterials(transform);
     }

@@ -111,7 +111,7 @@ public class GameplayManager : MonoBehaviour
     [Header("Strings")]
     [SerializeField] private UIStringData m_UIStringData;
     private Camera m_mainCamera;
-    private MissionSaveData m_curMissionSaveData;
+    private MissionSaveData m_curMissionSaveData = null;
 
     public enum GameplayState
     {
@@ -475,9 +475,6 @@ public class GameplayManager : MonoBehaviour
 
         m_delayForQuest = m_gameplayData.m_delayForQuest;
         m_blueprintList = new List<TowerBlueprint>();
-        
-        //Test to open player save data and read from it.
-        m_curMissionSaveData = PlayerDataManager.Instance.GetMissionSaveData(gameObject.scene.name);
     }
 
     public MissionSaveData GetCurrentMissionSaveData()
@@ -513,6 +510,10 @@ public class GameplayManager : MonoBehaviour
         /*var pipeline = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
         m_scriptableRenderer = pipeline.scriptableRenderer;
         m_scriptableRendererFeature = m_scriptableRenderer.supportedRenderingFeatures.Find(feature => feature is FullscreenEffect);*/
+        if (PlayerDataManager.Instance)
+        {
+            m_curMissionSaveData = PlayerDataManager.Instance.GetMissionSaveData(gameObject.scene.name);
+        }
     }
 
     public enum GameSpeed
@@ -600,6 +601,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.FloodFillGrid:
                 break;
             case GameplayState.CreatePaths:
+                //Test to open player save data and read from it.
                 break;
             case GameplayState.Setup:
                 UpdateInteractionState(InteractionState.Idle);
@@ -619,14 +621,14 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(2, m_wave);
+                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,2, m_wave);
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
             case GameplayState.Defeat:
                 int wave = 0;
                 if (m_endlessModeActive) wave = m_wave - 1;
-                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(1, wave);
+                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, wave);
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;

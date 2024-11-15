@@ -74,6 +74,7 @@ public class EnemyThrall : EnemyController
         
         if (m_vulnerabilityEffectData)
         {
+            m_storedSpeedModifier = m_lastSpeedModifierSlower;
             StatusEffect statusEffect = new StatusEffect(gameObject, m_vulnerabilityEffectData);
             ApplyEffect(statusEffect);
         }

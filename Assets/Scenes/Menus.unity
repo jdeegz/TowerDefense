@@ -2101,7 +2101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7735849, g: 0.5969006, b: 0.16420436, a: 1}
+  m_Color: {r: 0.8, g: 0.6022472, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4482,7 +4482,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_StartMenuView: {fileID: 2128840721}
   m_MissionSelectView: {fileID: 2079147400}
-  m_loginView: {fileID: 2018809238}
   m_menuState: 0
 --- !u!1 &826437568
 GameObject:
@@ -4703,19 +4702,19 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 846778120}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 429580725}
   - {fileID: 1226084254}
-  m_Father: {fileID: 1558263684}
+  m_Father: {fileID: 2128840722}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -69}
-  m_SizeDelta: {x: 0, y: 40}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -635.3811, y: -310.00104}
+  m_SizeDelta: {x: 481.506, y: 279.25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &857965976
 GameObject:
@@ -6201,7 +6200,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -60, y: -60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1226084255
 MonoBehaviour:
@@ -6223,17 +6222,28 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: All Feedback & Bugs welcome!
+  m_text: 'Thank you for playtesting!
+
+
+    Your feedback on the game''s difficulty,
+    controls, and clarity will greatly help me assure the quality of the game when
+    it is released.
+
+
+    All feedback is welcomed, and can be shared in the Discord
+    Server or DM!
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 3d4a8e17737e7c347a18f71b0a6bfc7f, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 147d28f7a05efb34d8d7790e71c7657c, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: d8392afaa97752a4f9559f6899a2a1ff, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -6250,14 +6260,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
+  m_fontSize: 20.3
   m_fontSizeBase: 24
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 2
+  m_fontStyle: 1
+  m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -7385,11 +7395,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87265ad1670d72d44b26f73cd495e0b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_listRootObj: {fileID: 1578454500}
-  m_leaderboardTitleObj: {fileID: 2990805528713021026, guid: 15a5ade2b6ff2f1448efdfa444627fcd, type: 3}
-  m_leaderboardPlayerObj: {fileID: 2847298736249730507, guid: 4c132d2d452338c4888ebbf4481d0684, type: 3}
-  m_loginRequiredDisplay: {fileID: 2034207585}
-  m_loginStatusLabel: {fileID: 801407610}
 --- !u!1 &1404665564
 GameObject:
   m_ObjectHideFlags: 0
@@ -8550,7 +8555,6 @@ RectTransform:
   m_Children:
   - {fileID: 1928400572}
   - {fileID: 556921328}
-  - {fileID: 846778121}
   m_Father: {fileID: 2128840722}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -10157,6 +10161,81 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &1714316388
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1714316389}
+  - component: {fileID: 1714316391}
+  - component: {fileID: 1714316390}
+  m_Layer: 0
+  m_Name: Arrow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1714316389
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714316388}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2128840722}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -548.6167, y: -411.4765}
+  m_SizeDelta: {x: 667.14, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1714316390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714316388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.8, g: 0.6039216, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: bf5a3cf153b8d574787ffb86525203b7, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1714316391
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714316388}
+  m_CullTransparentMesh: 1
 --- !u!1 &1714328464
 GameObject:
   m_ObjectHideFlags: 0
@@ -13691,6 +13770,8 @@ RectTransform:
   - {fileID: 945593986}
   - {fileID: 1350742500}
   - {fileID: 801407609}
+  - {fileID: 1714316389}
+  - {fileID: 846778121}
   m_Father: {fileID: 1492492333}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

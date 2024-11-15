@@ -24,7 +24,7 @@ public class QuestManager : MonoBehaviour
     private void GamepalyStateChanged(GameplayManager.GameplayState newState)
     {
         // Setting up the script, was formerly in a Start function.
-        if (newState == GameplayManager.GameplayState.Build && !m_questManagerActive)
+        if (newState == GameplayManager.GameplayState.Setup && !m_questManagerActive)
         {
             m_questManagerActive = true;
             

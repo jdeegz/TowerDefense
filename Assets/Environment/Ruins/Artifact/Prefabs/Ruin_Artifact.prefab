@@ -15,7 +15,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &365868166350095161
 Transform:
   m_ObjectHideFlags: 0
@@ -114,7 +114,7 @@ VFXRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3739929949266740847}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -257,6 +257,7 @@ MonoBehaviour:
   m_audioSource: {fileID: 5740357156022674056}
   m_data: {fileID: 11400000, guid: 031ed0a0393e11648860f3472248440a, type: 2}
   m_chargedDisplayRoot: {fileID: 1550431027507092923}
+  m_artifactScrollObj: {fileID: 7458830302837555777}
   m_chargeVFX: {fileID: 5297534881924086118}
   m_claimVFX: {fileID: 5775108210235980395, guid: 7e26c4ed078c41145a7f36f9858e0efd, type: 3}
 --- !u!1001 &8667775860945234519
@@ -306,6 +307,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: e9a6a14a02a0db5449ebed644d832793, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -6932950105287432170, guid: e9a6a14a02a0db5449ebed644d832793, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -5525334752135708732, guid: e9a6a14a02a0db5449ebed644d832793, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

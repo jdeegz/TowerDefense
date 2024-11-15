@@ -5,6 +5,7 @@ using DG.Tweening;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 using Sequence = DG.Tweening.Sequence;
 
 public class UIAlert : MonoBehaviour
@@ -51,5 +52,6 @@ public class UIAlert : MonoBehaviour
     {
         m_label.SetText(text);
         m_label.color = color;
+        LayoutRebuilder.MarkLayoutForRebuild(m_objRectTransform);
     }
 }

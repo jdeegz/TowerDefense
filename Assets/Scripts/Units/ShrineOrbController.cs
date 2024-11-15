@@ -103,7 +103,7 @@ public class ShrineOrbController : MonoBehaviour
         Vector3 pos = m_spawnPoint;
 
         pos.x = Random.Range(m_spawnPoint.x - m_radius, m_spawnPoint.x + m_radius);
-        pos.y = Random.Range(m_spawnPoint.y, m_spawnPoint.y + m_radius);
+        pos.y = Random.Range(1, 1 + m_radius);
         pos.z = Random.Range(m_spawnPoint.z - m_radius, m_spawnPoint.z + m_radius);
         
         return pos;

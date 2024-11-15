@@ -111,7 +111,7 @@ public class PlayerDataManager : MonoBehaviour
         for (var i = 0; i < missionListDesync; i++)
         {
             var missionData = GameManager.Instance.m_MissionContainer.m_MissionList[i];
-            MissionSaveData newMissionSaveData = new MissionSaveData();
+            MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene);
             newMissionSaveData.m_sceneName = missionData.m_missionScene;
             newMissionSaveData.m_missionAttempts = 0;
             newMissionSaveData.m_missionCompletionRank = m_playerData.m_missions.Count == 0 ? 1 : 0;
@@ -120,9 +120,9 @@ public class PlayerDataManager : MonoBehaviour
         }
     }
 
-    public void UpdateMissionSaveData(int completeionRank, int wave)
+    public void UpdateMissionSaveData(string missionName, int completeionRank, int wave)
     {
-        MissionSaveData newMissionSaveData = new MissionSaveData();
+        MissionSaveData newMissionSaveData = new MissionSaveData(missionName);
         newMissionSaveData.m_missionCompletionRank = completeionRank;
 
         for (var i = 0; i < m_playerData.m_missions.Count; i++)
@@ -239,8 +239,8 @@ public class MissionSaveData
     public int m_waveHighScore;
     public int m_missionCompletionRank;
 
-    public MissionSaveData()
+    public MissionSaveData(string sceneName)
     {
-        m_sceneName = SceneManager.GetActiveScene().name;
+        m_sceneName = sceneName; 
     }
 }

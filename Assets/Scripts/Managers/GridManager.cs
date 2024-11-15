@@ -220,6 +220,8 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+        
+        m_gridCellObj.SetActive(false);
 
         //Debug.Log("Grid Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);

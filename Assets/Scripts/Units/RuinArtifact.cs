@@ -7,6 +7,7 @@ public class RuinArtifact : Ruin
 {
     public ArtifactRuinData m_data;
     public GameObject m_chargedDisplayRoot;
+    public GameObject m_artifactScrollObj;
     public VisualEffect m_chargeVFX;
     public GameObject m_claimVFX;
 
@@ -37,7 +38,11 @@ public class RuinArtifact : Ruin
     {
         m_chargeCount += i;
 
-        if(m_chargeCount == 0) m_chargeVFX.Stop();
+        if (m_chargeCount == 0)
+        {
+            m_chargeVFX.Stop();
+            m_artifactScrollObj.SetActive(false);
+        }
     }
 
     public override RuinTooltipData GetTooltipData()

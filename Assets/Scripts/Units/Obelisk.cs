@@ -96,6 +96,11 @@ public class Obelisk : MonoBehaviour
 
             GameplayManager.Instance.AddObeliskToList(this);
         }
+
+        if (newState is GameplayManager.GameplayState.Victory or GameplayManager.GameplayState.Defeat)
+        {
+            m_chargedVFXGroup.SetActive(false);
+        }
     }
     
     public void PlayAudio(AudioClip audioClip)

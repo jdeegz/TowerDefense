@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        Cursor.lockState = CursorLockMode.Confined;
     }
 
     public void UpdateGameState(GameState newState)
@@ -60,7 +61,7 @@ public class GameManager : MonoBehaviour
         RequestChangeScene("Menus", GameState.Menus);
     }
 
-    public void RequestChangeScene(String sceneName, GameState newState)
+    public void RequestChangeScene(String sceneName, GameState newState, MenuManager.MenuState? menuState = null)
     {
         Time.timeScale = 1.0f;
         if (sceneName == m_curScene)
@@ -68,15 +69,13 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        {
-            m_loadingTransitionController.TransitionStart(sceneName, () => StartChangeScene(sceneName));
-            UpdateGameState(newState);
-        }
+        m_loadingTransitionController.TransitionStart(sceneName, () => StartChangeScene(sceneName, menuState));
+        UpdateGameState(newState);
     }
 
-    void StartChangeScene(String sceneName)
+    void StartChangeScene(String sceneName, MenuManager.MenuState? menuState = null)
     {
-        StartCoroutine(ChangeSceneAsync(sceneName));
+        StartCoroutine(ChangeSceneAsync(sceneName, menuState));
     }
 
     public void RequestSceneRestart()
@@ -85,8 +84,8 @@ public class GameManager : MonoBehaviour
         String sceneName = SceneManager.GetActiveScene().name;
         m_loadingTransitionController.TransitionStart(sceneName, () => StartChangeScene(sceneName));
     }
-
-    private IEnumerator ChangeSceneAsync(String newScene)
+    
+    private IEnumerator ChangeSceneAsync(String newScene, MenuManager.MenuState? menuState)
     {
         if (m_curScene != null)
         {
@@ -108,6 +107,11 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
+        if (menuState.HasValue && MenuManager.Instance != null)
+        {
+            MenuManager.Instance.UpdateMenuState(menuState.Value);
+        }
+        
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
         m_loadingTransitionController.TransitionEnd();
     }

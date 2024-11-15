@@ -8,21 +8,19 @@ public class RuinWell : Ruin
 
     [Header("Visual Objects")]
     public List<GameObject> m_chargeObjs;
-    public GameObject m_maxChargePersistantObj;
     public GameObject m_claimVFX;
-    
+
     private int m_curCharges;
     private int m_maxCharges;
     private int m_chargesPerInterval;
     private int m_lastChargeWave;
     private int m_intervalLength;
-    
+
     // Setup data
     public override void Awake()
     {
         base.Awake();
-        SetVisuals();
-        
+
         m_curCharges = m_data.m_startingCharge;
         m_maxCharges = m_data.m_maxCharges;
         m_chargesPerInterval = m_data.m_chargesPerInterval;
@@ -34,10 +32,8 @@ public class RuinWell : Ruin
         RequestPlayAudio(m_data.m_discoveredAudioClip);
 
         m_lastChargeWave = GameplayManager.Instance.m_wave;
-        for (int i = 0; i < m_curCharges; i++)
-        {
-            m_chargeObjs[i].SetActive(true);
-        }
+
+        SetVisuals();
     }
 
     void OnDestroy()
@@ -52,8 +48,10 @@ public class RuinWell : Ruin
         {
             obj.SetActive(false);
         }
+
+        if (m_curCharges == 0) return;
         
-        m_maxChargePersistantObj.SetActive(false);
+        m_chargeObjs[m_curCharges - 1].SetActive(true);
     }
 
     private void GameObjectSelected(GameObject obj)
@@ -61,7 +59,7 @@ public class RuinWell : Ruin
         if (obj != gameObject) return;
 
         if (m_curCharges < m_maxCharges) return;
-        
+
         GrantCharges();
     }
 
@@ -78,10 +76,10 @@ public class RuinWell : Ruin
             RequestPlayAudio(m_data.m_discoveredAudioClip);
             return;
         }
-        
+
         if (m_curCharges < m_maxCharges && GameplayManager.Instance.m_wave - m_lastChargeWave <= m_intervalLength)
         {
-            // Increment curCharges
+            // Increment curCharges -- This will increment only once. Change the above condition to have it catch up to missing charges / waves.
             m_lastChargeWave = GameplayManager.Instance.m_wave;
             IncrementCharges();
         }
@@ -91,34 +89,29 @@ public class RuinWell : Ruin
     {
         // DATA UPDATES
         int newChargesToAdd = Math.Min(m_chargesPerInterval, m_maxCharges - m_curCharges);
-        
-        // VISUAL UPDATES
+        m_curCharges += newChargesToAdd;
+        SetVisuals();
+
+        /*// VISUAL UPDATES
         for (int i = 0; i < newChargesToAdd; i++)
         {
             ++m_curCharges;
             m_chargeObjs[m_curCharges - 1].SetActive(true);
         }
-        
+
         if (m_curCharges >= m_maxCharges)
         {
             m_maxChargePersistantObj.SetActive(true);
-        }
+        }*/
 
         // AUDIO
         RequestPlayAudio(m_data.m_unclaimedAudioClip);
     }
-    
+
     void GrantCharges()
     {
-        // VISUAL UPDATES
-        m_maxChargePersistantObj.SetActive(false);
-        foreach (GameObject obj in m_chargeObjs)
-        {
-            obj.SetActive(false);
-        }
-        
         IngameUIController.Instance.SpawnCurrencyAlert(0, m_curCharges, true, transform.position);
-        
+
         // Spawn VFX
         foreach (GameObject obj in m_chargeObjs)
         {
@@ -127,19 +120,23 @@ public class RuinWell : Ruin
 
         // AUDIO
         RequestPlayAudio(m_data.m_chargeConsumedAudioClip);
-        
+
         // DATA RESET
         ResourceManager.Instance.UpdateStoneAmount(m_curCharges);
         m_curCharges = 0;
 
         GameplayManager.Instance.DeselectObject(gameObject.GetComponent<Selectable>());
+
+        // VISUAL UPDATES
+        SetVisuals();
     }
-    
+
     public override RuinTooltipData GetTooltipData()
     {
         RuinTooltipData data = new RuinTooltipData();
         data.m_ruinName = m_data.m_ruinName;
-        data.m_ruinDescription = m_data.m_ruinDescription;
+        string description = string.Format(m_data.m_ruinDescription, m_curCharges);
+        data.m_ruinDescription = description;
         data.m_ruinDetails = null;
         return data;
     }
