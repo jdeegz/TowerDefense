@@ -930,7 +930,7 @@ public class GameplayManager : MonoBehaviour
         //If the current cell is occupied (by a structure), not a valid spot, unless it is a blueprint.
         if (curCell.m_isOccupied)
         {
-            if (curCell.m_occupant.GetComponent<TowerBlueprint>() == null) // If we DO have a tower blueprint, we're ok placing here.
+            if (curCell.m_occupant != null && curCell.m_occupant.GetComponent<TowerBlueprint>() == null) // If we DO have a tower blueprint, we're ok placing here.
             {
                 Debug.Log($"Cannot Place: This cell is already occupied.");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOccupied;
