@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   m_Settings:
-    AOMethod: 1
-    Downsample: 0
+    AOMethod: 0
+    Downsample: 1
     AfterOpaque: 1
     Source: 1
     NormalSamples: 1
     Intensity: 1.5
-    DirectLightingStrength: 0.15
-    Radius: 2
+    DirectLightingStrength: 0
+    Radius: 3
     Samples: 0
     BlurQuality: 0
     Falloff: 100
@@ -164,27 +164,27 @@ MonoBehaviour:
     probeSamplingDebugTexture: {fileID: 0}
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
-  - {fileID: -4529147020027551350}
   - {fileID: -3901703554106998009}
   - {fileID: 546202664339280743}
   - {fileID: 4306772045444635538}
   - {fileID: -4013067382306479179}
   - {fileID: 7036420128484428248}
+  - {fileID: -4529147020027551350}
   - {fileID: 3758359818619181503}
   - {fileID: 4932844208533599652}
   - {fileID: 7188610880002612785}
   - {fileID: -340310107598150191}
-  m_RendererFeatureMap: 8a21bd1fc83c25c107c392264a5ddac9679350e76d809407925b4f695bbac43bb563ea597ab84ec8d809b988d362a661bfd9e5a657602834a4f5fc1dacfb7444315e102b8213c363d125239bc2f946fb
+  m_RendererFeatureMap: 07c392264a5ddac9679350e76d809407925b4f695bbac43bb563ea597ab84ec8d809b988d362a6618a21bd1fc83c25c1bfd9e5a657602834a4f5fc1dacfb7444315e102b8213c363d125239bc2f946fb
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 2
   m_OpaqueLayerMask:
     serializedVersion: 2
-    m_Bits: 53175
+    m_Bits: 118711
   m_TransparentLayerMask:
     serializedVersion: 2
-    m_Bits: 53175
+    m_Bits: 118711
   m_DefaultStencilState:
     overrideStencilState: 0
     stencilReference: 0
@@ -195,7 +195,7 @@ MonoBehaviour:
   m_ShadowTransparentReceive: 1
   m_RenderingMode: 0
   m_DepthPrimingMode: 1
-  m_CopyDepthMode: 2
+  m_CopyDepthMode: 0
   m_DepthAttachmentFormat: 0
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
