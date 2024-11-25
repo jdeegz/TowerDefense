@@ -24,8 +24,8 @@ Material:
     RenderType: Transparent
   disabledShaderPasses:
   - MOTIONVECTORS
-  - SHADOWCASTER
   - DepthOnly
+  - SHADOWCASTER
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -43,11 +43,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FogTexture:
-        m_Texture: {fileID: 2800000, guid: 50fbacaf74edba244b90515fe1c554bb, type: 3}
+        m_Texture: {fileID: 2800000, guid: d4aa74d4f874a6249a075f2a4550d529, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FogTexture2:
-        m_Texture: {fileID: 2800000, guid: a1fd52adc41299443b404a9a72658527, type: 3}
+        m_Texture: {fileID: 2800000, guid: b6c72f23cd9c1c5428aaa0e787a0d9aa, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SampleTexture2D_5df9dd7bc5ce41949ef73b27780a89a6_Texture_1_Texture2D:
@@ -85,8 +85,9 @@ Material:
     - _Float: 0.613
     - _FogMaskInteriorSide: 0.27
     - _FogMaskInteriorSoftness: 0.99
-    - _FogStrength: 0.149
-    - _FogStrength2: 0.357
+    - _FogStrength: 1.093
+    - _FogStrength2: 1.147
+    - _Power: 0.18
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 0
@@ -98,14 +99,14 @@ Material:
     - _ZWrite: 0
     - _ZWriteControl: 0
     m_Colors:
-    - _Color: {r: 0.4919455, g: 0.617042, b: 0.6320754, a: 1}
+    - _Color: {r: 0.28132787, g: 0.4283894, b: 0.5471698, a: 1}
     - _DistortionScale: {r: 0.2, g: 0.2, b: 0, a: 0}
     - _DistortionScale2: {r: 0.2, g: 0.2, b: 0, a: 0}
     - _DistortionSpeed: {r: 0.0005, g: -0.0005, b: 0, a: 0}
     - _DistortionSpeed2: {r: 0.001, g: 0, b: 0, a: 0}
-    - _FogMaskOffset: {r: 0, g: 0.04, b: 0, a: 0}
-    - _FogScale: {r: 1, g: 1, b: 0, a: 0}
-    - _FogScale2: {r: 2, g: 2, b: 0, a: 0}
+    - _FogMaskOffset: {r: 0, g: 0.05, b: 0, a: 0}
+    - _FogScale: {r: 1, g: 3, b: 0, a: 0}
+    - _FogScale2: {r: 0.5, g: 3, b: 0, a: 0}
     - _FogScrollSpeed: {r: -0.025, g: -0.01, b: 0, a: 0}
     - _FogScrollSpeed2: {r: -0.05, g: -0.005, b: 0, a: 0}
   m_BuildTextureStacks: []

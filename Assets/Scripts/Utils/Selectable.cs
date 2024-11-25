@@ -8,7 +8,7 @@ using UnityEngine.UIElements.Experimental;
 public class Selectable : MonoBehaviour
 {
     public SelectedObjectType m_selectedObjectType;
-    [SerializeField] private MeshRenderer[] m_meshRenderers;
+    [SerializeField] private Renderer[] m_meshRenderers;
 
     private string m_selectedLayerString = "Outline Selected"; //Must sync with layer name.
     private string m_hoveredLayerString = "Outline Hover"; //Must sync with layer name.
@@ -105,7 +105,7 @@ public class Selectable : MonoBehaviour
     public void ToggleSelectionOutline(bool enabled)
     {
         string layerName = enabled ? m_selectedLayerString : m_defaultLayerString;
-        foreach (MeshRenderer meshRenderer in m_meshRenderers)
+        foreach (Renderer meshRenderer in m_meshRenderers)
         {
             meshRenderer.gameObject.layer = LayerMask.NameToLayer(layerName);
         }
@@ -114,7 +114,7 @@ public class Selectable : MonoBehaviour
     public void ToggleHoveredOutline(bool enabled)
     {
         string layerName = enabled ? m_hoveredLayerString : m_defaultLayerString;
-        foreach (MeshRenderer meshRenderer in m_meshRenderers)
+        foreach (Renderer meshRenderer in m_meshRenderers)
         {
             meshRenderer.gameObject.layer = LayerMask.NameToLayer(layerName);
         }

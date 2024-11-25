@@ -230,7 +230,7 @@ public class GathererController : MonoBehaviour
         m_harvestDuration = m_gathererData.m_harvestDuration;
         m_carryCapacity = m_gathererData.m_carryCapacity;
         m_storingDuration = m_gathererData.m_storingDuration;
-        m_gathererRenderer.material.color = m_gathererData.m_gathererModelColor;
+        m_gathererRenderer.material.SetColor("_SkinTint", m_gathererData.m_gathererModelColor);
 
         m_harvestNodeIndicatorObj = m_gathererData.m_harvestNodeIndicatorObj;
         m_queuedHarvestNodeIndicatorObj = m_gathererData.m_queuedHarvestNodeIndicatorObj;
@@ -875,6 +875,16 @@ public class GathererController : MonoBehaviour
         UpdateTask(GathererTask.TravelingToDeposit);
     }
 
+    private void SetAnimatorTrigger(string triggerName)
+    {
+        m_animator.SetTrigger(triggerName);    
+    }
+    
+    private void SetAnimatorBool(string boolName, bool value)
+    {
+        m_animator.SetBool(boolName, value);    
+    }
+    
     private void UpdateTask(GathererTask newTask)
     {
         m_gathererTask = newTask;
@@ -885,17 +895,22 @@ public class GathererController : MonoBehaviour
         {
             case GathererTask.TravelingToHarvest:
                 IsMoving = true;
+                SetAnimatorTrigger("Run");
                 break;
             case GathererTask.TravelingToDeposit:
+                SetAnimatorTrigger("Run");
                 IsMoving = true;
                 break;
             case GathererTask.TravelingToRuin:
+                SetAnimatorTrigger("Run");
                 IsMoving = true;
                 break;
             case GathererTask.TravelingToIdle:
+                SetAnimatorTrigger("Run");
                 IsMoving = true;
                 break;
             case GathererTask.Harvesting:
+                SetAnimatorTrigger("Harvest");
                 IsMoving = false;
                 if (CurrentHarvestNode)
                 {
@@ -908,10 +923,12 @@ public class GathererController : MonoBehaviour
 
                 break;
             case GathererTask.Storing:
+                SetAnimatorTrigger("Idle");
                 IsMoving = false;
                 m_curCoroutine = StartCoroutine(Storing());
                 break;
             case GathererTask.Idling:
+                SetAnimatorTrigger("Idle");
                 IsMoving = false;
                 break;
             default:
@@ -1122,6 +1139,8 @@ public class GathererController : MonoBehaviour
 
         ResourceCarried = 0;
 
+        SetAnimatorBool("CarryingWood", false);
+        
         RequestNextHarvestNode();
     }
 
@@ -1142,6 +1161,8 @@ public class GathererController : MonoBehaviour
         ValueTuple<int, int> vars = CurrentHarvestNode.RequestResource(m_carryCapacity);
         ResourceCarried = vars.Item1;
         int resourceRemaining = vars.Item2;
+        
+        SetAnimatorBool("CarryingWood", true);
 
         //If there are resources remaining in the node, unset some of the variables on the node.
         if (resourceRemaining > 0)

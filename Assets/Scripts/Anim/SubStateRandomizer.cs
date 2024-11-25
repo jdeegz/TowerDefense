@@ -8,10 +8,17 @@ public class TestStateMachineBehavior : StateMachineBehaviour
     public int m_clipArrayLength = 1;
     public int m_lastClipIndex;
     // OnStateEnter is called before OnStateEnter is called on any state inside this state machine
-    //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        /*int newClipIndex = 0;
+        if (m_clipArrayLength >= 1)
+        { 
+            newClipIndex = GetDifferentRandomNumber(0, m_clipArrayLength);
+        }
+        
+        animator.SetInteger(m_parameterName, newClipIndex);
+        Debug.Log($"New Clip Idex: {newClipIndex}, Array Length: {m_clipArrayLength}");*/ 
+    }
 
     // OnStateUpdate is called before OnStateUpdate is called on any state inside this state machine
     //override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -20,10 +27,17 @@ public class TestStateMachineBehavior : StateMachineBehaviour
     //}
 
     // OnStateExit is called before OnStateExit is called on any state inside this state machine
-    //override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    //{
-    //    
-    //}
+    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        int newClipIndex = 0;
+        if (m_clipArrayLength >= 1)
+        { 
+            newClipIndex = GetDifferentRandomNumber(0, m_clipArrayLength);
+        }
+        
+        animator.SetInteger(m_parameterName, newClipIndex);
+        Debug.Log($"New Clip Idex: {newClipIndex}, Array Length: {m_clipArrayLength}"); 
+    }
 
     // OnStateMove is called before OnStateMove is called on any state inside this state machine
     //override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -38,7 +52,7 @@ public class TestStateMachineBehavior : StateMachineBehaviour
     //}
 
     // OnStateMachineEnter is called when entering a state machine via its Entry Node
-    override public void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
+    /*override public void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
     {
         int newClipIndex = 0;
         if (m_clipArrayLength >= 1)
@@ -47,14 +61,22 @@ public class TestStateMachineBehavior : StateMachineBehaviour
         }
         
         animator.SetInteger(m_parameterName, newClipIndex);
+        Debug.Log($"New Clip Idex: {newClipIndex}, Array Length: {m_clipArrayLength}");
         
     }
 
     // OnStateMachineExit is called when exiting a state machine via its Exit Node
-    //override public void OnStateMachineExit(Animator animator, int stateMachinePathHash)
-    //{
-    //   
-    //}
+    override public void OnStateMachineExit(Animator animator, int stateMachinePathHash)
+    {
+        int newClipIndex = 0;
+        if (m_clipArrayLength >= 1)
+        { 
+            newClipIndex = GetDifferentRandomNumber(0, m_clipArrayLength);
+        }
+        
+        animator.SetInteger(m_parameterName, newClipIndex);
+        Debug.Log($"New Clip Idex: {newClipIndex}, Array Length: {m_clipArrayLength}");
+    }*/
     
     public int GetDifferentRandomNumber(int min, int max)
     {
