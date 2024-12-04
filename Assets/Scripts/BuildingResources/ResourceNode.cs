@@ -30,7 +30,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         if (m_modelRoot != null)
         {
-            RandomRotation(m_modelRoot);
+            //RandomRotation(m_modelRoot);
         }
 
         RandomResourceAmount();
@@ -96,10 +96,10 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
         if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
         {
-            foreach (GameObject obj in m_objectsToToggle)
+            /*foreach (GameObject obj in m_objectsToToggle)
             {
                 obj.SetActive(!obj.activeSelf);
-            }
+            }*/
         }
 
         if (m_resourcesRemaining <= 0)
