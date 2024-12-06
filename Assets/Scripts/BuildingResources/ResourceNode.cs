@@ -69,21 +69,6 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         }
     }
 
-    void RandomRotation(GameObject obj)
-    {
-        // Define the possible rotation angles
-        int[] angles = { 0, 90, 180, 270 };
-
-        // Select a random index from the angles array
-        int randomIndex = Random.Range(0, angles.Length);
-
-        // Get the corresponding angle
-        int randomAngle = angles[randomIndex];
-
-        // Apply the random rotation to the object
-        obj.transform.rotation = Quaternion.Euler(0, randomAngle, 0);
-    }
-
     public (int, int) RequestResource(int i)
     {
         int resourcesHarvested = 0;
@@ -96,10 +81,10 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
         if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
         {
-            /*foreach (GameObject obj in m_objectsToToggle)
+            foreach (GameObject obj in m_objectsToToggle)
             {
                 obj.SetActive(!obj.activeSelf);
-            }*/
+            }
         }
 
         if (m_resourcesRemaining <= 0)

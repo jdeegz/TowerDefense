@@ -70,9 +70,8 @@ public class ResourceNodeEditor : Editor
             GameObject newObject = (GameObject)PrefabUtility.InstantiatePrefab(prefabs[index]);
 
             newObject.transform.position = originalNodeTransform.position;
-            float randomYRot = Random.Range(0, 359);
-            Quaternion newRot = newObject.transform.rotation;
-            newRot.y = randomYRot;
+            float randomYRot = Random.Range(0, 360);
+            Quaternion newRot = Quaternion.Euler(0, randomYRot, 0);
             newObject.transform.rotation = newRot;
             newObject.transform.localScale = originalNodeTransform.localScale;
             newObject.transform.parent = originalNodeTransform.parent;

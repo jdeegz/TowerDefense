@@ -1,16 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TreeProp : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField] private List<GameObject> m_objectsToToggle;
 
-    // Update is called once per frame
-    void Update()
+    public void ToggleObjects(bool value)
     {
-        
+        Debug.Log($"toggle object value: {value}.");
+        foreach (GameObject obj in m_objectsToToggle)
+        {
+            Debug.Log($"Obj state is :{obj.activeSelf}, setting to {!value}.");
+            obj.SetActive(!value);
+        }
     }
 }
