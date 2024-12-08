@@ -8,6 +8,9 @@ public class GridProp : MonoBehaviour
     private Cell m_cell;
     private float m_scaleX = 1;
     private float m_scaleZ = 1;
+    
+    // Bool to say this cell is completely blocked. (Stones for example)
+    public bool m_isCellBlocker;
 
     //Bool to allow us to make buildable, but walled cells.
     public bool m_isBuildable;
@@ -38,26 +41,19 @@ public class GridProp : MonoBehaviour
     {
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
-            /*//Set up Unobstractable exits.
-            int northExit = m_northExit ? 1 : 0;
-            int eastExit = m_eastExit ? 1 : 0;
-            int southExit = m_southExit ? 1 : 0;
-            int westExit = m_westExit ? 1 : 0;
-            for (int x = (int)transform.position.x - westExit; x < transform.position.x + m_scaleX + eastExit; ++x)
-            {
-                for (int z = (int)transform.position.z - southExit; z < transform.position.z + m_scaleZ + northExit; ++z)
-                {
-                    m_cell = Util.GetCellFromPos(new Vector2Int(x, z));
-                    if(!m_isBuildable) m_cell.UpdateActorCount(1, gameObject.name);
-                    m_cell.UpdateOccupancy(false);
-                }
-            }*/
-            
             //Setup Cell Occupancy info.
             Vector2Int cellPos = Util.GetVector2IntFrom3DPos(transform.position);
             m_cell = Util.GetCellFromPos(cellPos);
-            m_cell.UpdateBuildRestrictedValue(!m_isBuildable);
+
+            if (m_isCellBlocker)
+            {
+                GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+                return;
+            }
+            
             m_cell.UpdateOccupancyDisplay(false);
+            
+            m_cell.UpdateBuildRestrictedValue(!m_isBuildable);
             
             //Setup Walls
             m_cell.m_canPathNorth = m_canPathNorth;
@@ -70,6 +66,8 @@ public class GridProp : MonoBehaviour
             if (!m_canPathEast) Util.GetCellFromPos(new Vector2Int(cellPos.x + 1, cellPos.y)).m_canPathWest = false;
             if (!m_canPathSouth) Util.GetCellFromPos(new Vector2Int(cellPos.x, cellPos.y - 1)).m_canPathNorth = false;
             if (!m_canPathWest) Util.GetCellFromPos(new Vector2Int(cellPos.x - 1, cellPos.y)).m_canPathEast = false;
+            
+            
         }
     }
 }
