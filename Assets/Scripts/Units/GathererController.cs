@@ -230,7 +230,7 @@ public class GathererController : MonoBehaviour
         m_harvestDuration = m_gathererData.m_harvestDuration;
         m_carryCapacity = m_gathererData.m_carryCapacity;
         m_storingDuration = m_gathererData.m_storingDuration;
-        m_gathererRenderer.material.SetColor("_SkinTint", m_gathererData.m_gathererModelColor);
+        //m_gathererRenderer.material.SetColor("_SkinTint", m_gathererData.m_gathererModelColor);
 
         m_harvestNodeIndicatorObj = m_gathererData.m_harvestNodeIndicatorObj;
         m_queuedHarvestNodeIndicatorObj = m_gathererData.m_queuedHarvestNodeIndicatorObj;

@@ -594,9 +594,9 @@ public class UnitPath
             Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
             m_lineRenderer.lineRendererProperties.texture = instancedMaterial;
             m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
-            ColorUtility.TryParseHtmlString("#b5770b", out Color colorOn);
+            ColorUtility.TryParseHtmlString("#eca816", out Color colorOn);
             m_lineRendererColorOn = colorOn;
-            ColorUtility.TryParseHtmlString("#6D767E", out Color colorOff);
+            ColorUtility.TryParseHtmlString("#9fa7af", out Color colorOff);
             m_lineRendererColorOff = colorOff;
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
             m_lineRenderer.lineRendererProperties.roundedCorners = true;

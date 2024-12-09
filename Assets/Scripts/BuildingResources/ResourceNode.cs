@@ -10,7 +10,6 @@ using Random = UnityEngine.Random;
 public class ResourceNode : MonoBehaviour, IResourceNode
 {
     public ResourceNodeData m_nodeData;
-    [SerializeField] private Animator m_animator;
     [SerializeField] private GameObject m_modelRoot;
     [SerializeField] private GameObject m_treeBurnedVFX;
     [SerializeField] private List<GameObject> m_objectsToToggle;
@@ -103,13 +102,13 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     public void WasSelected()
     {
-        m_animator.SetTrigger("isSelected");
+        //m_animator.SetTrigger("isSelected");
     }
 
     public void SetIsHarvesting(int i)
     {
         m_harvesters += i;
-        m_animator.SetInteger(m_gatherersHarvestingHash, m_harvesters);
+        //m_animator.SetInteger(m_gatherersHarvestingHash, m_harvesters);
     }
 
     public void OnDepletion(bool harvested)
