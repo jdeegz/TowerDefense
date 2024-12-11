@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -18,7 +19,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     [HideInInspector] public ResourceManager.ResourceType m_type;
     public List<HarvestPoint> m_harvestPoints;
     public event Action<ResourceNode> OnResourceNodeDepletion;
-
+    private Quaternion m_treeRotation;
     private int m_harvesters;
     private static int m_gatherersHarvestingHash = Animator.StringToHash("gatherersHarvesting");
 
@@ -27,11 +28,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         m_resourcesRemaining = m_nodeData.m_maxResources;
         m_type = m_nodeData.m_resourceType;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
-        if (m_modelRoot != null)
-        {
-            //RandomRotation(m_modelRoot);
-        }
-
+        m_treeRotation = transform.rotation; // Used for harvesting animations.
         RandomResourceAmount();
     }
 
@@ -125,6 +122,30 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
         OnResourceNodeDepletion?.Invoke(this);
         Destroy(gameObject);
+    }
+
+    private Tween m_curContactTween;
+    private Sequence m_curContactSequence;
+    public void RequestContactRotation(Transform gathererTransform)
+    {
+        if (m_curContactSequence != null && m_curContactSequence.IsActive())
+        {
+            Debug.Log("Rotation already in progress!");
+            return;
+        }
+        
+        // Collect and assign Rotations
+        Quaternion offset = Quaternion.AngleAxis(8f, gathererTransform.right); 
+        Quaternion targetRotation = offset * m_treeRotation;
+        
+        // Build and fire the Sequence
+        m_curContactSequence = DOTween.Sequence();
+        m_curContactSequence.Append(transform.DORotateQuaternion(targetRotation, 0.075f))
+            .Append(transform.DORotateQuaternion(m_treeRotation, 0.1f))
+            .OnComplete(() =>
+            {
+                m_curContactSequence = null; 
+            });
     }
 
 

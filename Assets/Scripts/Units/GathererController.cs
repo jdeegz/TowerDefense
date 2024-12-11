@@ -621,6 +621,16 @@ public class GathererController : MonoBehaviour
         if (m_isSelected) RequestPlayAudio(m_gathererData.m_selectedGathererClips, m_audioSource);
     }
 
+    public void Contact()
+    {
+        if (m_curHarvestNode != null)
+        {
+            Vector3 pos = transform.position;
+            m_curHarvestNode.RequestContactRotation(transform);
+            AudioPlayWoodChop();
+        }
+    }
+
     public void AudioPlayWoodChop()
     {
         int i = Random.Range(0, m_gathererData.m_harvestingClips.Count);
