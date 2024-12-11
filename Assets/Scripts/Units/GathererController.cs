@@ -205,8 +205,6 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    private static int m_isHarvestingHash = Animator.StringToHash("isHarvesting");
-
     // ATTRIBUTES
     private float m_harvestDuration;
     private int m_carryCapacity;
@@ -523,14 +521,14 @@ public class GathererController : MonoBehaviour
         int remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
         float remainingDistanceCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
 
-        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.26f && IsMoving)
+        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.05f && IsMoving)
         {
             GathererPath = null;
             DestinationReached();
             return;
         }
 
-        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.26f && IsMoving)
+        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.05f && IsMoving)
         {
             //Debug.Log($"{m_gathererData.m_gathererName} has reached last cell & position in path.");
             IsMoving = false;
@@ -628,6 +626,7 @@ public class GathererController : MonoBehaviour
             Vector3 pos = transform.position;
             m_curHarvestNode.RequestContactRotation(transform);
             AudioPlayWoodChop();
+            ++swingCount;
         }
     }
 
@@ -890,6 +889,11 @@ public class GathererController : MonoBehaviour
         m_animator.SetTrigger(triggerName);    
     }
     
+    private void SetAnimatorFloat(string floatName, float value)
+    {
+        m_animator.SetFloat(floatName, value);
+    }
+    
     private void SetAnimatorBool(string boolName, bool value)
     {
         m_animator.SetBool(boolName, value);    
@@ -998,7 +1002,7 @@ public class GathererController : MonoBehaviour
         }
 
         // Stop gatherer Harvest Animation.
-        m_animator.SetBool(m_isHarvestingHash, false);
+        //m_animator.SetBool(m_isHarvestingHash, false);
 
         CurrentHarvestNode = null;
     }
@@ -1011,7 +1015,7 @@ public class GathererController : MonoBehaviour
         }
 
         // Stop gatherer Harvest Animation.
-        m_animator.SetBool(m_isHarvestingHash, false);
+        //m_animator.SetBool(m_isHarvestingHash, false);
     }
 
     private void OnNodeDepleted(ResourceNode node)
@@ -1099,8 +1103,11 @@ public class GathererController : MonoBehaviour
         }
     }
 
+    private int swingCount;
+    private int swingsToHarvest = 4;
     private IEnumerator Harvesting()
     {
+        swingCount = 0;
         bool facingGoal = false;
         Vector3 goalPos = new Vector3(CurrentGoalCell.m_cellPos.x, 0, CurrentGoalCell.m_cellPos.y);
         while (facingGoal == false)
@@ -1110,7 +1117,12 @@ public class GathererController : MonoBehaviour
         }
 
         StartHarvesting();
-        yield return new WaitForSeconds(m_harvestDuration * m_totalDurationBoost);
+
+        while (swingCount < swingsToHarvest)
+        {
+            yield return null;
+        }
+        //yield return new WaitForSeconds(m_harvestDuration * m_totalDurationBoost);
         CompletedHarvest();
     }
 
@@ -1156,7 +1168,7 @@ public class GathererController : MonoBehaviour
 
     private void StartHarvesting()
     {
-        m_animator.SetBool(m_isHarvestingHash, true);
+        //m_animator.SetBool(m_isHarvestingHash, true);
         CurrentHarvestNode.SetIsHarvesting(1);
     }
 
@@ -1164,7 +1176,7 @@ public class GathererController : MonoBehaviour
     {
         m_curCoroutine = null;
 
-        m_animator.SetBool(m_isHarvestingHash, false);
+        //m_animator.SetBool(m_isHarvestingHash, false);
 
         PathToDepositCell();
 
@@ -1214,6 +1226,7 @@ public class GathererController : MonoBehaviour
 
             m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, m_activeSpeedBoostCount));
             m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, m_activeSpeedBoostCount));
+            SetAnimatorFloat("SpeedMultiplier", m_totalSpeedBoost);
             m_expiredshrineRuinEffects.Clear();
         }
 
@@ -1235,6 +1248,7 @@ public class GathererController : MonoBehaviour
 
             m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, m_activeSpeedBoostCount));
             m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, m_activeSpeedBoostCount));
+            SetAnimatorFloat("SpeedMultiplier", m_totalSpeedBoost);
             m_newshrineRuinEffects.Clear();
         }
     }

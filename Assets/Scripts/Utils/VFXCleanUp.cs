@@ -20,7 +20,7 @@ public class VFXCleanUp : MonoBehaviour
     public bool m_hasVFXSystemsInChildren;
 
 
-    public GameObject m_rootObj;
+    public GameObject m_rootObj; // Should be automated? Is this script always on the root?
 
     void Start()
     {

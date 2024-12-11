@@ -13,6 +13,8 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     public ResourceNodeData m_nodeData;
     [SerializeField] private GameObject m_modelRoot;
     [SerializeField] private GameObject m_treeBurnedVFX;
+    [SerializeField] private GameObject m_treeShedVFX;
+    [SerializeField] private GameObject m_treeFelledVFX;
     [SerializeField] private List<GameObject> m_objectsToToggle;
 
     private int m_resourcesRemaining;
@@ -37,7 +39,14 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         int randomInt = Random.Range(0, 22);
         if (randomInt == 1)
         {
-            RequestResource(m_resourcesRemaining - 1);
+            m_resourcesRemaining -= 1;
+            if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
+            {
+                foreach (GameObject obj in m_objectsToToggle)
+                {
+                    obj.SetActive(!obj.activeSelf);
+                }
+            }
         }
     }
 
@@ -73,6 +82,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             //Give the gatherer how much they ask for or all that is remaining.
             resourcesHarvested = Math.Min(i, m_resourcesRemaining);
             m_resourcesRemaining -= resourcesHarvested;
+            ObjectPoolManager.SpawnObject(m_treeShedVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
 
         if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
@@ -118,14 +128,20 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (!harvested)
         {
             ObjectPoolManager.SpawnObject(m_treeBurnedVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+            Destroy(gameObject);
+        }
+        else
+        {
+            RequestFelledRotation();
         }
 
         OnResourceNodeDepletion?.Invoke(this);
-        Destroy(gameObject);
+        
     }
 
     private Tween m_curContactTween;
     private Sequence m_curContactSequence;
+    private Transform m_curGathererTransform;
     public void RequestContactRotation(Transform gathererTransform)
     {
         if (m_curContactSequence != null && m_curContactSequence.IsActive())
@@ -135,7 +151,8 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         }
         
         // Collect and assign Rotations
-        Quaternion offset = Quaternion.AngleAxis(8f, gathererTransform.right); 
+        m_curGathererTransform = gathererTransform;
+        Quaternion offset = Quaternion.AngleAxis(8f, m_curGathererTransform.right); 
         Quaternion targetRotation = offset * m_treeRotation;
         
         // Build and fire the Sequence
@@ -145,6 +162,25 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             .OnComplete(() =>
             {
                 m_curContactSequence = null; 
+            });
+    }
+
+    public void RequestFelledRotation()
+    {
+        gameObject.GetComponent<Collider>().enabled = false;
+        
+        // Collect and assign Rotations
+        Quaternion offset = Quaternion.AngleAxis(90f, m_curGathererTransform.right); 
+        Quaternion targetRotation = offset * m_treeRotation;
+        
+        // Build and fire the Sequence
+        m_curContactSequence = DOTween.Sequence();
+        m_curContactSequence.Append(transform.DORotateQuaternion(targetRotation, 1f).SetEase(Ease.InQuad))
+            .OnComplete(() =>
+            {
+                ObjectPoolManager.SpawnObject(m_treeFelledVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+                m_curContactSequence = null; 
+                Destroy(gameObject);
             });
     }
 
