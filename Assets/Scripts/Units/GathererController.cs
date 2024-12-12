@@ -436,7 +436,7 @@ public class GathererController : MonoBehaviour
             Debug.Log($"Enabling a new indicator at {m_gathererData.m_gathererName}'s Harvest Node.");
             m_curHarvestNodeIndicator = ObjectPoolManager.SpawnObject(m_harvestNodeIndicatorObj, CurrentHarvestNode.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.GameObject);
             m_curHarvestNodeIndicator.transform.localScale = Vector3.zero;
-            m_curHarvestNodeIndicator.transform.DOScale(1, .15f).SetEase(Ease.OutBack);
+            m_curHarvestNodeIndicator.transform.DOScale(1, .15f).SetEase(Ease.OutBack).SetUpdate(true);
         }
     }
 
@@ -469,7 +469,7 @@ public class GathererController : MonoBehaviour
                 GameObject newIndicator = ObjectPoolManager.SpawnObject(m_queuedHarvestNodeIndicatorObj, node.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.GameObject);
                 m_curNodeQueueIndicators.Add(newIndicator);
                 newIndicator.transform.localScale = Vector3.zero;
-                newIndicator.transform.DOScale(1, .15f).SetEase(Ease.OutBack);
+                newIndicator.transform.DOScale(1, .15f).SetEase(Ease.OutBack).SetUpdate(true);
             }
         }
     }
@@ -521,14 +521,14 @@ public class GathererController : MonoBehaviour
         int remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
         float remainingDistanceCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
 
-        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.05f && IsMoving)
+        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.1f && IsMoving)
         {
             GathererPath = null;
             DestinationReached();
             return;
         }
 
-        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.05f && IsMoving)
+        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.1f && IsMoving)
         {
             //Debug.Log($"{m_gathererData.m_gathererName} has reached last cell & position in path.");
             IsMoving = false;
