@@ -106,7 +106,7 @@ public class ResourceManager : MonoBehaviour
             {
                 line.m_lineRenderer.SetPosition(0, line.m_gatherer.transform.position);
 
-                if (Vector3.Distance(line.m_gatherer.transform.position, line.m_lineRenderer.GetPosition(1)) <= 0.5f)
+                if (Vector3.Distance(line.m_gatherer.transform.position, line.m_lineRenderer.GetPosition(1)) <= 0.71f)
                 {
                     // If we're next to the next index, update the list by removing that position.
                     line.UpdateLineRendererProgress();
@@ -386,6 +386,8 @@ public class GathererLineRendererObject
 
     void UpdateLineRendererPositions(List<Vector2Int> path)
     {
+        return; // disabling for a sec
+        
         MoveTargetObj();
         m_lineRenderer.enabled = true;
         m_lineRenderer.positionCount = path.Count + 2;

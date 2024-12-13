@@ -39,6 +39,7 @@ public class GathererController : MonoBehaviour
     }
 
     private Cell m_curGoalCell;
+    private Vector3 m_curGoalCellPos;
 
     private Cell CurrentGoalCell
     {
@@ -49,6 +50,8 @@ public class GathererController : MonoBehaviour
             if (m_curGoalCell != null)
             {
                 Vector3 newGoalPosition = new Vector3(m_curGoalCell.m_cellPos.x, 0, m_curGoalCell.m_cellPos.y);
+                m_curGoalCellPos = newGoalPosition;
+
                 if (m_targetObjPosition != newGoalPosition)
                 {
                     m_targetObjPosition = newGoalPosition;
@@ -490,6 +493,7 @@ public class GathererController : MonoBehaviour
                 //If we were blocked, and now we're not. Let's move.
                 IsMoving = true;
             }
+
             m_isBlockedFromGoal = false;
         }
     }
@@ -507,7 +511,9 @@ public class GathererController : MonoBehaviour
     {
         // Ensure we're only detecting other gatherers
         if (other.CompareTag("Gatherer") && other.gameObject != this.gameObject)
+
         {
+            Debug.Log($"avoiding {other.gameObject.name}");
             // Logic to adjust movement for avoidance
             Vector3 directionToOther = transform.position - other.transform.position;
             m_avoidanceDirection = directionToOther.normalized / directionToOther.magnitude;
@@ -516,23 +522,41 @@ public class GathererController : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (GathererPath == null || !IsMoving) return;
+        if (!IsMoving) return;
+        //if (GathererPath == null || !IsMoving) return;
 
-        int remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
-        float remainingDistanceCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
+        // Get the cell-distance between our current cell and our goal cell.
+        float remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
 
-        if (remainingCellDistance <= 1 && remainingDistanceCellCenter <= 0.1f && IsMoving)
+        // Get the float distance of our current position and the halfway point.
+        float distanceToGoalPoint = Vector3.Distance(transform.position, m_curGoalCellPos);
+        float distanceToNextCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
+
+        if (GathererPath == null || m_curPos == GathererPath.Last()) // We've arrived in the last cell of the path, are we next to the goal cell?
         {
-            GathererPath = null;
-            DestinationReached();
-            return;
-        }
-
-        if (m_curPos == GathererPath.Last() && remainingDistanceCellCenter <= 0.1f && IsMoving)
-        {
-            //Debug.Log($"{m_gathererData.m_gathererName} has reached last cell & position in path.");
-            IsMoving = false;
-            return;
+            //Debug.Log($"We've reached the last cell of our path.");
+            if (remainingCellDistance <= 1) // We're adjacent to the goal cell.
+            {
+                float stoppingDistance = Vector2Int.Distance(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos) / 2 + 0.1f;
+                //Debug.Log($"We're in a cell adjacent the current goal. Distance to border: {distanceToGoalPoint}, Stopping Distance: {stoppingDistance}");
+                if (distanceToGoalPoint <= stoppingDistance && IsMoving) // We're on the border between the two cells.
+                {
+                    //Debug.Log($"We've reached the border between the two cells.");
+                    DestinationReached();
+                    GathererPath = null;
+                    return;
+                }
+            }
+            else // We're at the last cell, but it's not adjacent, meaning we cannot access the Goal Cell to do our duty. Chill in the center of the cell
+            {
+                //Debug.Log($"We're in a cell that is NOT adjacent the current goal. Distance to center: {distanceToNextCellCenter}");
+                if (distanceToNextCellCenter <= 0.1f && IsMoving)
+                {
+                    //Debug.Log($"We've reached the center point of our last cell.");
+                    IsMoving = false;
+                    return;
+                }
+            }
         }
 
         //Check to see if we're in a new cell.
@@ -555,10 +579,25 @@ public class GathererController : MonoBehaviour
             m_curCell.UpdateActorCount(1, gameObject.name);
 
             //Update my path towards my goal.
+            /*if (m_curPos != GathererPath.Last())
+            {
+                GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
+            }*/
             GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
         }
 
-        m_moveDirection = (m_nextCellPosition - transform.position).normalized;
+        if (GathererPath == null || m_curPos == GathererPath.Last())
+        {
+            Vector2 stoppingPoint2d = Vector2.Lerp(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos, 0.45f);
+            Vector3 stoppingPoint = new Vector3(stoppingPoint2d.x, 0, stoppingPoint2d.y);
+            m_moveDirection = (stoppingPoint - transform.position).normalized;
+        }
+        else
+        {
+            m_moveDirection = (m_nextCellPosition - transform.position).normalized;
+        }
+
+
 
         // Add avoidance direction to movement
         float avoidanceStrength = 0.5f;
@@ -679,6 +718,7 @@ public class GathererController : MonoBehaviour
 
                     CurrentHarvestNode = node;
                 }
+
                 break;
             case Selectable.SelectedObjectType.Tower:
                 break;
@@ -688,7 +728,7 @@ public class GathererController : MonoBehaviour
                 if (ResourceCarried == 0) RequestedIdle();
                 break;
             case Selectable.SelectedObjectType.Ruin:
-                if(m_gathererTask != GathererTask.Storing) RequestTravelToRuin(requestObj);
+                if (m_gathererTask != GathererTask.Storing) RequestTravelToRuin(requestObj);
                 break;
             case Selectable.SelectedObjectType.Obelisk:
                 if (ResourceCarried == 0) RequestedIdle();
@@ -703,14 +743,13 @@ public class GathererController : MonoBehaviour
     private void RequestedIdle()
     {
         ClearHarvestVars();
-        
+
         ClearHarvestingQueue();
 
         RequestStopCoroutine();
-        
+
         CurrentGoalCell = m_idleCell;
         UpdateTask(GathererTask.TravelingToIdle);
-
     }
 
     private void RequestTravelToRuin(GameObject requestObj)
@@ -884,21 +923,30 @@ public class GathererController : MonoBehaviour
         UpdateTask(GathererTask.TravelingToDeposit);
     }
 
+    private List<String> m_triggerNames = new List<string>()
+    {
+        "Run", "Idle", "Harvest"
+    };
+    
     private void SetAnimatorTrigger(string triggerName)
     {
-        m_animator.SetTrigger(triggerName);    
+        foreach (String trigger in m_triggerNames)
+        {
+            m_animator.ResetTrigger(trigger);
+        }
+        m_animator.SetTrigger(triggerName);
     }
-    
+
     private void SetAnimatorFloat(string floatName, float value)
     {
         m_animator.SetFloat(floatName, value);
     }
-    
+
     private void SetAnimatorBool(string boolName, bool value)
     {
-        m_animator.SetBool(boolName, value);    
+        m_animator.SetBool(boolName, value);
     }
-    
+
     private void UpdateTask(GathererTask newTask)
     {
         m_gathererTask = newTask;
@@ -1061,7 +1109,7 @@ public class GathererController : MonoBehaviour
                 Cell cell = Util.GetCellFromPos(currentPos);
 
                 if (cell.m_isOutOfBounds) continue;
-                
+
                 if (cell.m_isOccupied)
                 {
                     ResourceNode node = cell.m_occupant.GetComponent<ResourceNode>();
@@ -1105,6 +1153,7 @@ public class GathererController : MonoBehaviour
 
     private int swingCount;
     private int swingsToHarvest = 4;
+
     private IEnumerator Harvesting()
     {
         swingCount = 0;
@@ -1122,6 +1171,7 @@ public class GathererController : MonoBehaviour
         {
             yield return null;
         }
+
         //yield return new WaitForSeconds(m_harvestDuration * m_totalDurationBoost);
         CompletedHarvest();
     }
@@ -1162,7 +1212,7 @@ public class GathererController : MonoBehaviour
         ResourceCarried = 0;
 
         SetAnimatorBool("CarryingWood", false);
-        
+
         RequestNextHarvestNode();
     }
 
@@ -1183,7 +1233,7 @@ public class GathererController : MonoBehaviour
         ValueTuple<int, int> vars = CurrentHarvestNode.RequestResource(m_carryCapacity);
         ResourceCarried = vars.Item1;
         int resourceRemaining = vars.Item2;
-        
+
         SetAnimatorBool("CarryingWood", true);
 
         //If there are resources remaining in the node, unset some of the variables on the node.
