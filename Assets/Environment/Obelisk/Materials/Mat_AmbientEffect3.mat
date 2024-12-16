@@ -7,13 +7,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_AmbientEffect2
+  m_Name: Mat_AmbientEffect3
   m_Shader: {fileID: -6465566751694194690, guid: 9d7efe3e6381fd041954518bd2f0b5a1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALBEIDO_BLEND_MODE_OVERLAY
-  - _ALPHA_BLEND_MODE_MULTIPLY
+  - _ALPHA_BLEND_MODE_LINEAR_DODGE
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -24,8 +24,8 @@ Material:
     RenderType: Transparent
   disabledShaderPasses:
   - MOTIONVECTORS
-  - DepthOnly
   - SHADOWCASTER
+  - DepthOnly
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -119,15 +119,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _b_Albeido_Texture:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: b7a0eb3b1c328cb40823006a600851e5, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _b_Alpha_Texture:
-        m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
+        m_Texture: {fileID: 2800000, guid: 3eedb8f7bada83f4090f3ab024ab92c5, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _s_Albeido_Texture:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: e8b868ef55d1cf644aca4ae3a32c4601, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _s_Alpha_Texture:
@@ -149,7 +149,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _ALBEIDO_BLEND_MODE: 0
-    - _ALPHA_BLEND_MODE: 1
+    - _ALPHA_BLEND_MODE: 2
     - _AlphaClip: 0
     - _AlphaClipThreshold: 0
     - _AlphaToMask: 0
@@ -162,11 +162,11 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DIssolveFade: 0.334
+    - _DIssolveFade: 0.779
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DissolveOutlineThickness: 0
-    - _DissolveValue: 0.703
+    - _DissolveValue: 1
     - _DstBlend: 10
     - _DstBlendAlpha: 1
     - _EnvironmentReflections: 1
@@ -197,7 +197,7 @@ Material:
     - _s_Albeido_Rotation: 0
     - _s_Alpha_Rotation: 0
     m_Colors:
-    - _Alpha_Multiplier: {r: 1, g: 1, b: 1, a: 1}
+    - _Alpha_Multiplier: {r: 0, g: 0, b: 0, a: 1}
     - _Alpha_Texture_Scroll_Speed: {r: 0, g: 0, b: 0, a: 0}
     - _Alpha_Tiling: {r: 1, g: 1, b: 0, a: 0}
     - _BaseColor: {r: 0.9960785, g: 0.454902, b: 0.9960785, a: 1}
@@ -206,7 +206,7 @@ Material:
     - _BaseSecondaryTiling: {r: 1, g: 0.5, b: 0, a: 0}
     - _BaseTiling: {r: 1, g: 0.5, b: 0, a: 0}
     - _BaseTint: {r: 1, g: 1, b: 1, a: 0}
-    - _Bottom_Color: {r: 0.17794515, g: 0.51010936, b: 1.732, a: 1}
+    - _Bottom_Color: {r: 0.008950828, g: 0, b: 0.078, a: 1}
     - _Color: {r: 0.99607843, g: 0.454902, b: 0.99607843, a: 1}
     - _Diffuse_Color: {r: 0.8207547, g: 0, b: 0, a: 1}
     - _Diffuse_Scroll_Speed: {r: 0.01, g: 0.15, b: 0, a: 0}
@@ -221,14 +221,14 @@ Material:
     - _SkinColorLow: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 0.005, g: 0.005, b: 0.005, a: 0}
-    - _Top_Color: {r: 0.09951603, g: 0.28362042, b: 0.9503783, a: 1}
+    - _Top_Color: {r: 0.076876745, g: 0.046367973, b: 0.504, a: 1}
     - _UVOffset: {r: 0, g: 0, b: 0, a: 0}
-    - _b_Albeido_Scroll_Speed: {r: -0.05, g: -0.15, b: 0, a: 0}
-    - _b_Albeido_Tiling: {r: 3, g: 2, b: 0, a: 0}
-    - _b_Alpha_Scroll_Speed: {r: 0.02, g: -0.1, b: 0, a: 0}
+    - _b_Albeido_Scroll_Speed: {r: 0, g: -0.1, b: 0, a: 0}
+    - _b_Albeido_Tiling: {r: 1, g: 1, b: 0, a: 0}
+    - _b_Alpha_Scroll_Speed: {r: 0.01, g: 0, b: 0, a: 0}
     - _b_Alpha_Tiling: {r: 3, g: 3, b: 0, a: 0}
-    - _s_Albeido_Scroll_Speed: {r: 0, g: 0.1, b: 0, a: 0}
-    - _s_Albeido_Tiling: {r: 5, g: 5, b: 0, a: 0}
+    - _s_Albeido_Scroll_Speed: {r: 0, g: 0, b: 0, a: 0}
+    - _s_Albeido_Tiling: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &7081015444112586615

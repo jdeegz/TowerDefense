@@ -13,14 +13,15 @@ public class Obelisk : MonoBehaviour
     public GameObject m_ambientEffectsRoot;
     public GameObject m_targetPoint;
     public GameObject m_blockObj;
-
+    public Renderer m_meterRenderer;
+    
+    private Material m_meterMaterial;
+    private string m_meterScrollParameter = "_DissolveValue";
     private float m_obeliskRadius;
     private int m_curChargeCount;
     private int m_maxChargeCount;
-    private float m_meterOffset;
     private List<Cell> m_cellsInRange;
     private Cell m_cell;
-    private UIIngameMeter m_meter;
     private AudioSource m_audioSource;
     
     public enum ObeliskState
@@ -64,9 +65,10 @@ public class Obelisk : MonoBehaviour
         m_maxChargeCount = m_obeliskData.m_maxChargeCount;
         m_curChargeCount = 0;
         m_obeliskRadius = m_obeliskData.m_obeliskRange;
-        m_meterOffset = m_obeliskData.m_meterOffset;
         
         m_audioSource = GetComponent<AudioSource>();
+        m_meterMaterial = m_meterRenderer.material;
+        m_meterMaterial.SetFloat(m_meterScrollParameter, 1);
     }
 
     
@@ -85,10 +87,8 @@ public class Obelisk : MonoBehaviour
             GridCellOccupantUtil.SetBuildRestricted(m_blockObj, true, 1, 1);
             //GridCellOccupantUtil.SetBuildRestricted(gameObject, true, 1, 3);
             
-            m_meter = Instantiate(IngameUIController.Instance.m_ingameMeter, IngameUIController.Instance.transform);
-            m_meter.SetupMeter(gameObject, m_meterOffset);
             
-            //SetupRangeCircle(48, m_obeliskRadius);
+            SetupRangeCircle(48, m_obeliskRadius);
             Vector3 scale = m_ambientEffectsRoot.transform.localScale;
             scale.x *= m_obeliskRadius * 2;
             scale.z *= m_obeliskRadius * 2;
@@ -117,7 +117,8 @@ public class Obelisk : MonoBehaviour
 
                 if (m_curChargeCount > m_maxChargeCount) m_curChargeCount = m_maxChargeCount;
                 
-                m_meter.SetProgress((float)m_curChargeCount / m_maxChargeCount);
+                float progress = (float)m_curChargeCount / m_maxChargeCount;
+                m_meterMaterial.SetFloat(m_meterScrollParameter, 1 - progress);
                 
                 PlayAudio(m_obeliskData.m_soulCollected);
                 if (m_curChargeCount >= m_maxChargeCount)
@@ -152,8 +153,8 @@ public class Obelisk : MonoBehaviour
     void SetupRangeCircle(int segments, float radius)
     {
         m_obeliskRangeCircle.positionCount = segments;
-        m_obeliskRangeCircle.startWidth = 0.05f;
-        m_obeliskRangeCircle.endWidth = 0.05f;
+        m_obeliskRangeCircle.startWidth = 0.03f;
+        m_obeliskRangeCircle.endWidth = 0.03f;
         for(int i = 0; i < segments; ++i)
         {
             float circumferenceProgress = (float) i / segments;
@@ -164,7 +165,7 @@ public class Obelisk : MonoBehaviour
             float x = xScaled * radius;
             float y = yScaled * radius;
 
-            Vector3 currentPosition = new Vector3(x, 0.1f, y);
+            Vector3 currentPosition = new Vector3(x, 0.01f, y);
 
             m_obeliskRangeCircle.SetPosition(i, currentPosition);
         }
