@@ -537,7 +537,7 @@ public class GathererController : MonoBehaviour
             //Debug.Log($"We've reached the last cell of our path.");
             if (remainingCellDistance <= 1) // We're adjacent to the goal cell.
             {
-                float stoppingDistance = Vector2Int.Distance(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos) / 2 + 0.1f;
+                float stoppingDistance = Vector2Int.Distance(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos) / 2 + 0.15f;
                 //Debug.Log($"We're in a cell adjacent the current goal. Distance to border: {distanceToGoalPoint}, Stopping Distance: {stoppingDistance}");
                 if (distanceToGoalPoint <= stoppingDistance && IsMoving) // We're on the border between the two cells.
                 {
@@ -1196,15 +1196,17 @@ public class GathererController : MonoBehaviour
 
         ResourceManager.Instance.UpdateWoodAmount(storageAmount, this);
 
+        Vector3 alertPosition = transform.position;
+        alertPosition.y += .7f; 
         if (storageAmount > 1) //Did we deposit a crit amount?
         {
-            IngameUIController.Instance.SpawnCritCurrencyAlert(storageAmount, 0, true, transform.position);
+            IngameUIController.Instance.SpawnCritCurrencyAlert(storageAmount, 0, true, alertPosition);
 
             RequestPlayAudio(m_gathererData.m_critDepositClip, m_audioSource);
         }
         else
         {
-            IngameUIController.Instance.SpawnCurrencyAlert(storageAmount, 0, true, transform.position);
+            IngameUIController.Instance.SpawnCurrencyAlert(storageAmount, 0, true, alertPosition);
 
             RequestPlayAudio(m_gathererData.m_depositClip, m_audioSource);
         }
