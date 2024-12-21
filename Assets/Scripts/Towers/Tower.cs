@@ -22,8 +22,6 @@ public abstract class Tower : MonoBehaviour
     [Header("Range Circle")]
     [SerializeField] protected LineRenderer m_towerRangeCircle;
 
-    [SerializeField] protected int m_towerRangeCircleSegments;
-
     [Space(15)]
     [SerializeField] protected bool m_isBuilt;
 
@@ -41,7 +39,7 @@ public abstract class Tower : MonoBehaviour
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
         m_towerRangeCircle.enabled = false;
-        SetupRangeCircle(m_towerRangeCircleSegments, m_towerData.m_fireRange);
+        SetupRangeCircle(48, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
         m_animator = GetComponent<Animator>();
         m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
@@ -257,8 +255,8 @@ public abstract class Tower : MonoBehaviour
     void SetupRangeCircle(int segments, float radius)
     {
         m_towerRangeCircle.positionCount = segments;
-        m_towerRangeCircle.startWidth = 0.15f;
-        m_towerRangeCircle.endWidth = 0.15f;
+        m_towerRangeCircle.startWidth = 0.06f;
+        m_towerRangeCircle.endWidth = 0.06f;
         for (int i = 0; i < segments; ++i)
         {
             float circumferenceProgress = (float)i / segments;

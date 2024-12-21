@@ -153,8 +153,8 @@ public class Obelisk : MonoBehaviour
     void SetupRangeCircle(int segments, float radius)
     {
         m_obeliskRangeCircle.positionCount = segments;
-        m_obeliskRangeCircle.startWidth = 0.03f;
-        m_obeliskRangeCircle.endWidth = 0.03f;
+        m_obeliskRangeCircle.startWidth = 0.06f;
+        m_obeliskRangeCircle.endWidth = 0.06f;
         for(int i = 0; i < segments; ++i)
         {
             float circumferenceProgress = (float) i / segments;
