@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -17,15 +18,22 @@ public class UITowerSelectHUD : MonoBehaviour
     
     private Tower m_curTower;
     private TowerData m_curTowerData;
+    private RectTransform m_rect;
 
     void Start()
     {
+        m_rect = GetComponent<RectTransform>();
         ToggleTowerSelectHUD(false);
     }
 
     public void ToggleTowerSelectHUD(bool b)
     {
         gameObject.SetActive(b);
+
+        if (b)
+        {
+            m_rect.DOScale(1.0f, .5f).From(0.6f).SetEase(Ease.OutBack);
+        }
     }
 
     public void SelectTower(GameObject obj)

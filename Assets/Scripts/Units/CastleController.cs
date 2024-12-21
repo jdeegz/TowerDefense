@@ -9,6 +9,7 @@ public class CastleController : MonoBehaviour
     public CastleData m_castleData;
 
     [SerializeField] public List<GameObject> m_castleEntrancePoints;
+    [SerializeField] private Transform m_modelsParent;
     private List<Renderer> m_allRenderers;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
@@ -27,7 +28,7 @@ public class CastleController : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        CollectMeshRenderers(transform);
+        CollectMeshRenderers(m_modelsParent);
 
         m_maxHealth = m_castleData.m_maxHealth;
         m_curHealth = m_castleData.m_maxHealth;

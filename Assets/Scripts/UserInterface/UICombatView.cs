@@ -18,7 +18,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private Button m_pauseButton;
     [SerializeField] private Button m_menuButton;
     [SerializeField] private Button m_playButton;
-    [SerializeField] private Button m_ffwButton;
+    [SerializeField] private Toggle m_ffwButton;
     [SerializeField] private Button m_nextWaveButton;
     [SerializeField] private Button m_clearBlueprintsButton;
 
@@ -334,17 +334,27 @@ public class UICombatView : MonoBehaviour
         }
 
 
-        m_playButton.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
-        m_pauseButton.gameObject.SetActive(newSpeed != GameplayManager.GameSpeed.Paused);
+        //m_playButton.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
+        //m_pauseButton.gameObject.SetActive(newSpeed != GameplayManager.GameSpeed.Paused);
         m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
         m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
     }
 
     private void GameplaySpeedChanged(int speed)
     {
-        m_ffwLabel.SetText($"{speed}x");
-
+        //m_ffwLabel.SetText($"{speed}x");
         m_ffwActiveDisplayObj.SetActive(speed != 1);
+        //Are we fast?
+        /*bool isFastForwarded = speed != 1;
+
+        if (isFastForwarded && m_ffwButton.isOn == false)
+        {
+            m_ffwButton.isOn = true;
+        }
+        else
+        {
+            m_ffwButton.isOn = false;
+        }*/
     }
 
     private void ToggleButtonInteractivity(bool b)
@@ -370,7 +380,7 @@ public class UICombatView : MonoBehaviour
         m_pauseButton.onClick.AddListener(OnPauseButtonClicked);
         m_menuButton.onClick.AddListener(OnMenuButtonClicked);
         m_playButton.onClick.AddListener(OnPlayButtonClicked);
-        m_ffwButton.onClick.AddListener(OnFFWButtonClicked);
+        m_ffwButton.onValueChanged.AddListener(OnFFWButtonClicked);
         m_nextWaveButton.onClick.AddListener(OnNextWaveButtonClicked);
         m_clearBlueprintsButton.onClick.AddListener(OnClearBlueprintsButtonClicked);
 
@@ -509,7 +519,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
     }
 
-    private void OnFFWButtonClicked()
+    private void OnFFWButtonClicked(bool value)
     {
         GameplayManager.Instance.UpdateGameSpeed();
     }

@@ -42,7 +42,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 8, y: 100}
+  m_SizeDelta: {x: 80, y: 128}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6851391480382963222
 CanvasRenderer:
@@ -124,9 +124,7 @@ MonoBehaviour:
   m_towerCost: {fileID: 5684959268462557155}
   m_towerHotkey: {fileID: 2147745364177809436}
   m_towerImage: {fileID: 8607414281923353940}
-  m_backgroundImage: {fileID: 0}
-  m_backgroundBaseColor: {r: 0.42352942, g: 0.5372549, b: 0.7529412, a: 1}
-  m_backgroundCannotAffordColor: {r: 0.2756319, g: 0.31706125, b: 0.3584906, a: 1}
+  m_buttonUIEffect: {fileID: 2661762582052322}
 --- !u!95 &846719674290434830
 Animator:
   serializedVersion: 7
@@ -309,7 +307,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -47}
+  m_AnchoredPosition: {x: 0, y: -40}
   m_SizeDelta: {x: 70, y: 29}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7533761965723103420
@@ -422,6 +420,7 @@ GameObject:
   - component: {fileID: 3290673448378188807}
   - component: {fileID: 4476007676993758703}
   - component: {fileID: 8607414281923353940}
+  - component: {fileID: 2661762582052322}
   m_Layer: 0
   m_Name: TowerIcon
   m_TagString: Untagged
@@ -470,8 +469,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 20, y: 0, z: 20, w: 0}
   m_Maskable: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -486,6 +485,51 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 45.7
+--- !u!114 &2661762582052322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6323088818893092267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938fce054c42f40a3969e27a88d9bdd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ToneFilter: 0
+  m_ToneIntensity: 1
+  m_ToneParams: {x: 0, y: 0, z: 0, w: 0}
+  m_ColorFilter: 0
+  m_ColorIntensity: 1
+  m_Color: {r: 1, g: 0.7607843, b: 0, a: 1}
+  m_SamplingFilter: 0
+  m_SamplingIntensity: 0.5
+  m_TransitionFilter: 0
+  m_TransitionRate: 0.5
+  m_TransitionReverse: 0
+  m_TransitionTex: {fileID: 0}
+  m_TransitionTexScale: {x: 1, y: 1}
+  m_TransitionTexOffset: {x: 0, y: 0}
+  m_TransitionRotation: 0
+  m_TransitionKeepAspectRatio: 1
+  m_TransitionWidth: 0.2
+  m_TransitionSoftness: 0.2
+  m_TransitionColorFilter: 6
+  m_TransitionColor: {r: 0, g: 0.5, b: 1, a: 1}
+  m_TargetMode: 0
+  m_TargetColor: {r: 1, g: 0.6039734, b: 0, a: 1}
+  m_TargetRange: 0.498
+  m_TargetSoftness: 0.5
+  m_BlendType: 1
+  m_SrcBlendMode: 1
+  m_DstBlendMode: 10
+  m_ShadowMode: 0
+  m_ShadowDistance: {x: 2, y: 2}
+  m_ShadowIteration: 1
+  m_ShadowFade: 1
+  m_ShadowEffectOnOrigin: 0
+  m_ShadowMirrorScale: 0.5
 --- !u!1 &7693240021807797278
 GameObject:
   m_ObjectHideFlags: 0

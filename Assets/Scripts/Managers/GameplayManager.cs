@@ -356,7 +356,7 @@ public class GameplayManager : MonoBehaviour
                         SetOutlineColor(false);
 
                         //Cancel tower preconstruction
-                        OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                        //OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                         ClearPreconstructedTower();
                         m_interactionState = InteractionState.Idle;
                         break;
@@ -859,6 +859,11 @@ public class GameplayManager : MonoBehaviour
         DrawPreconCellObj();
     }
 
+    public TowerData GetPreconTowerData()
+    {
+        return m_preconstructedTowerData;
+    }
+
     private Material m_drawCellMaterial;
 
     private void DrawPreconCellObj()
@@ -1067,6 +1072,7 @@ public class GameplayManager : MonoBehaviour
     {
         if (m_preconstructedTowerObj)
         {
+            OnGameObjectDeselected?.Invoke(m_preconstructedTowerObj);
             Destroy(m_preconstructedTowerObj);
         }
 

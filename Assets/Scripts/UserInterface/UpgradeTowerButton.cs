@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Coffee.UIEffects;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -10,14 +11,17 @@ using UnityEngine.UI;
 public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Button m_upgradeButton;
-    [SerializeField] private TextMeshProUGUI m_upgradeNameLabel;
     [SerializeField] private TextMeshProUGUI m_upgradeCostLabel;
     [SerializeField] private Image m_upgradeImage;
-    [SerializeField] private Image m_backgroundImage;
-    [SerializeField] private Image m_iconFrameImage;
-    [SerializeField] private Color m_backgroundBaseColor;
-    [SerializeField] private Color m_backgroundCannotAffordColor;
     [SerializeField] private UITowerSelectHUD m_parentHUD;
+    [SerializeField] private UIEffect m_buttonUIEffect;
+    private ButtonState m_buttonState;
+    public enum ButtonState
+    {
+        Normal,
+        Selected,
+        Hovered,
+    }
     
     private int m_upgradeStoneValue = 0;
     private int m_upgradeWoodValue = 0;
@@ -30,6 +34,11 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         ResourceManager.UpdateStoneBank += CheckStoneCost;
         ResourceManager.UpdateWoodBank += CheckWoodCost;
+    }
+
+    void OnEnable()
+    {
+        SetButtonOutline(ButtonState.Normal);
     }
 
     private void CheckStoneCost(int total, int delta)
@@ -50,15 +59,11 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         if (m_canAffordWood && m_canAffordStone)
         {
-            m_backgroundImage.color = m_backgroundBaseColor;
-            m_iconFrameImage.color = m_backgroundBaseColor;
-            m_upgradeCostLabel.color = Color.white;
+            m_buttonUIEffect.toneFilter = ToneFilter.None;
         }
         else
         {
-            m_backgroundImage.color = m_backgroundCannotAffordColor;
-            m_iconFrameImage.color = m_backgroundCannotAffordColor;
-            m_upgradeCostLabel.color = Color.red;
+            m_buttonUIEffect.toneFilter = ToneFilter.Grayscale;
         }
     }
     
@@ -66,9 +71,6 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         m_tower = curTower;
         m_towerData = upgradeData;
-        
-        //Name
-        m_upgradeNameLabel.SetText($"{upgradeData.m_towerName}");
         
         //Icon
         m_upgradeImage.sprite = upgradeData.m_uiIcon;
@@ -118,10 +120,44 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         //Get the selectable component related to this button.
         Selectable selectable = m_towerData.m_prefab.GetComponent<Selectable>();
         UITooltipController.Instance.SetUISelectable(selectable);
+        if(m_buttonState == ButtonState.Normal) SetButtonOutline(ButtonState.Hovered);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         UITooltipController.Instance.SetUISelectable(null);
+        if(m_buttonState == ButtonState.Hovered) SetButtonOutline(ButtonState.Normal);
+    }
+
+    public void SetButtonOutline(ButtonState state)
+    {
+        if (state != m_buttonState)
+        {
+            ToneFilter savedToneFilter = m_buttonUIEffect.toneFilter;
+            
+            switch (state)
+            {
+                case ButtonState.Normal:
+                    m_buttonState = ButtonState.Normal;
+                    m_buttonUIEffect.LoadPreset("UIEffect_Normal");
+                    break;
+                case ButtonState.Selected:
+                    m_buttonState = state;
+                    m_buttonUIEffect.LoadPreset("UIEffect_Selected");
+                    break;
+                case ButtonState.Hovered:
+                    if (m_buttonState != ButtonState.Selected)
+                    {
+                        m_buttonState = state;
+                        m_buttonUIEffect.LoadPreset("UIEffect_Hovered");
+                    }
+
+                    break;
+                default:
+                    Debug.Log($"Not state.");
+                    break;
+            }
+            m_buttonUIEffect.toneFilter = savedToneFilter;
+        }
     }
 }
