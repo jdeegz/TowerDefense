@@ -188,7 +188,7 @@ public class UIOptionsMenu : MonoBehaviour
         Application.Quit();
     }
 
-    private void OnCloseMenuButtonClicked()
+    public void OnCloseMenuButtonClicked()
     {
         //Close the menu
         ToggleMenu();

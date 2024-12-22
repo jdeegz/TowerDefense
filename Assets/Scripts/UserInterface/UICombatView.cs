@@ -497,9 +497,9 @@ public class UICombatView : MonoBehaviour
 
     private void AlertWaveComplete(string text)
     {
-        UIAlert alert = ObjectPoolManager.SpawnObject(m_waveCompleteAlertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
+        /*UIAlert alert = ObjectPoolManager.SpawnObject(m_waveCompleteAlertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
         alert.SetLabelText(text, Color.white);
-        alert.SetupAlert(Vector2.zero);
+        alert.SetupAlert(Vector2.zero);*/
     }
 
     private void RuinIndicated()

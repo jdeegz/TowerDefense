@@ -199,8 +199,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294109912
+  m_fontColor: {r: 0.84705883, g: 0.91764706, b: 0.9490196, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -732,6 +732,7 @@ GameObject:
   - component: {fileID: 5387917682865482241}
   - component: {fileID: 6179663183370492375}
   - component: {fileID: 2251720295588193842}
+  - component: {fileID: 8744330906788271002}
   m_Layer: 0
   m_Name: RetryButton
   m_TagString: Untagged
@@ -780,14 +781,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.9811321, g: 0.7669446, b: 0.254539, a: 1}
+  m_Color: {r: 0.22352941, g: 0.4627451, b: 0.8, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: be66b869b06297a4f9b6348542ae1b1c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1642b7818c8be054ebe7b37ff4bc6c3f, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -796,7 +797,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 2
 --- !u!114 &6179663183370492375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -882,6 +883,79 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+        - m_Target: {fileID: 8744330906788271002}
+          m_TargetAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+          m_MethodName: LoadPreset
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 4098280710436803551, guid: 1d8e1467886d30d46ba834a18fc4a9a7, type: 3}
+            m_ObjectArgumentAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 8744330906788271002}
+          m_TargetAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+          m_MethodName: LoadPreset
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 7518812959939862397, guid: be059d6207e359540b45969777b4d326, type: 3}
+            m_ObjectArgumentAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &8744330906788271002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2137555759907846035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938fce054c42f40a3969e27a88d9bdd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ToneFilter: 0
+  m_ToneIntensity: 1
+  m_ToneParams: {x: 0, y: 0, z: 0, w: 0}
+  m_ColorFilter: 0
+  m_ColorIntensity: 1
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_SamplingFilter: 0
+  m_SamplingIntensity: 0.5
+  m_TransitionFilter: 0
+  m_TransitionRate: 0.5
+  m_TransitionReverse: 0
+  m_TransitionTex: {fileID: 0}
+  m_TransitionTexScale: {x: 1, y: 1}
+  m_TransitionTexOffset: {x: 0, y: 0}
+  m_TransitionRotation: 0
+  m_TransitionKeepAspectRatio: 1
+  m_TransitionWidth: 0.2
+  m_TransitionSoftness: 0.2
+  m_TransitionColorFilter: 6
+  m_TransitionColor: {r: 0, g: 0.5, b: 1, a: 1}
+  m_TargetMode: 0
+  m_TargetColor: {r: 1, g: 1, b: 1, a: 1}
+  m_TargetRange: 0.1
+  m_TargetSoftness: 0.5
+  m_BlendType: 1
+  m_SrcBlendMode: 1
+  m_DstBlendMode: 10
+  m_ShadowMode: 0
+  m_ShadowDistance: {x: 1, y: -1}
+  m_ShadowIteration: 1
+  m_ShadowFade: 0.9
+  m_ShadowEffectOnOrigin: 0
+  m_ShadowMirrorScale: 0.5
 --- !u!1 &2766723885908992649
 GameObject:
   m_ObjectHideFlags: 0
@@ -1132,6 +1206,7 @@ GameObject:
   - component: {fileID: 4045339287693665718}
   - component: {fileID: 8650962467095864257}
   - component: {fileID: 6308951226019098340}
+  - component: {fileID: 3757176078454316002}
   m_Layer: 0
   m_Name: EndlessButton
   m_TagString: Untagged
@@ -1180,14 +1255,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.9811321, g: 0.7669446, b: 0.254539, a: 1}
+  m_Color: {r: 0.22352941, g: 0.4627451, b: 0.8, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: be66b869b06297a4f9b6348542ae1b1c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1642b7818c8be054ebe7b37ff4bc6c3f, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1196,7 +1271,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 2
 --- !u!114 &8650962467095864257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1282,6 +1357,79 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+        - m_Target: {fileID: 3757176078454316002}
+          m_TargetAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+          m_MethodName: LoadPreset
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 4098280710436803551, guid: 1d8e1467886d30d46ba834a18fc4a9a7, type: 3}
+            m_ObjectArgumentAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3757176078454316002}
+          m_TargetAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+          m_MethodName: LoadPreset
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 7518812959939862397, guid: be059d6207e359540b45969777b4d326, type: 3}
+            m_ObjectArgumentAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &3757176078454316002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3491295059999742255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938fce054c42f40a3969e27a88d9bdd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ToneFilter: 0
+  m_ToneIntensity: 1
+  m_ToneParams: {x: 0, y: 0, z: 0, w: 0}
+  m_ColorFilter: 0
+  m_ColorIntensity: 1
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_SamplingFilter: 0
+  m_SamplingIntensity: 0.5
+  m_TransitionFilter: 0
+  m_TransitionRate: 0.5
+  m_TransitionReverse: 0
+  m_TransitionTex: {fileID: 0}
+  m_TransitionTexScale: {x: 1, y: 1}
+  m_TransitionTexOffset: {x: 0, y: 0}
+  m_TransitionRotation: 0
+  m_TransitionKeepAspectRatio: 1
+  m_TransitionWidth: 0.2
+  m_TransitionSoftness: 0.2
+  m_TransitionColorFilter: 6
+  m_TransitionColor: {r: 0, g: 0.5, b: 1, a: 1}
+  m_TargetMode: 0
+  m_TargetColor: {r: 1, g: 1, b: 1, a: 1}
+  m_TargetRange: 0.1
+  m_TargetSoftness: 0.5
+  m_BlendType: 1
+  m_SrcBlendMode: 1
+  m_DstBlendMode: 10
+  m_ShadowMode: 0
+  m_ShadowDistance: {x: 1, y: -1}
+  m_ShadowIteration: 1
+  m_ShadowFade: 0.9
+  m_ShadowEffectOnOrigin: 0
+  m_ShadowMirrorScale: 0.5
 --- !u!1 &4000128561371562209
 GameObject:
   m_ObjectHideFlags: 0
@@ -1356,8 +1504,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294109912
+  m_fontColor: {r: 0.84705883, g: 0.91764706, b: 0.9490196, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1477,14 +1625,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.17158653, g: 0.14462441, b: 0.24528301, a: 1}
+  m_Color: {r: 0.14509805, g: 0.15686275, b: 0.24313727, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: be66b869b06297a4f9b6348542ae1b1c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1642b7818c8be054ebe7b37ff4bc6c3f, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1996,8 +2144,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294109912
+  m_fontColor: {r: 0.84705883, g: 0.91764706, b: 0.9490196, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2146,6 +2294,7 @@ GameObject:
   - component: {fileID: 7825147106617399213}
   - component: {fileID: 7825147106617399212}
   - component: {fileID: 3612434009937057831}
+  - component: {fileID: 5546511553563159273}
   m_Layer: 0
   m_Name: ExitButton
   m_TagString: Untagged
@@ -2194,14 +2343,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.11240414, g: 0.745283, b: 0.10194911, a: 1}
+  m_Color: {r: 0.06987806, g: 0.6, b: 0.060000017, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: be66b869b06297a4f9b6348542ae1b1c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1642b7818c8be054ebe7b37ff4bc6c3f, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2210,7 +2359,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 2
 --- !u!114 &7825147106617399212
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2296,6 +2445,79 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+        - m_Target: {fileID: 5546511553563159273}
+          m_TargetAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+          m_MethodName: LoadPreset
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 4098280710436803551, guid: 1d8e1467886d30d46ba834a18fc4a9a7, type: 3}
+            m_ObjectArgumentAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 5546511553563159273}
+          m_TargetAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+          m_MethodName: LoadPreset
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 7518812959939862397, guid: be059d6207e359540b45969777b4d326, type: 3}
+            m_ObjectArgumentAssemblyTypeName: Coffee.UIEffects.UIEffect, Coffee.UIEffect
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &5546511553563159273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7825147106617399210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938fce054c42f40a3969e27a88d9bdd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ToneFilter: 0
+  m_ToneIntensity: 1
+  m_ToneParams: {x: 0, y: 0, z: 0, w: 0}
+  m_ColorFilter: 0
+  m_ColorIntensity: 1
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_SamplingFilter: 0
+  m_SamplingIntensity: 0.5
+  m_TransitionFilter: 0
+  m_TransitionRate: 0.5
+  m_TransitionReverse: 0
+  m_TransitionTex: {fileID: 0}
+  m_TransitionTexScale: {x: 1, y: 1}
+  m_TransitionTexOffset: {x: 0, y: 0}
+  m_TransitionRotation: 0
+  m_TransitionKeepAspectRatio: 1
+  m_TransitionWidth: 0.2
+  m_TransitionSoftness: 0.2
+  m_TransitionColorFilter: 6
+  m_TransitionColor: {r: 0, g: 0.5, b: 1, a: 1}
+  m_TargetMode: 0
+  m_TargetColor: {r: 1, g: 1, b: 1, a: 1}
+  m_TargetRange: 0.1
+  m_TargetSoftness: 0.5
+  m_BlendType: 1
+  m_SrcBlendMode: 1
+  m_DstBlendMode: 10
+  m_ShadowMode: 0
+  m_ShadowDistance: {x: 1, y: -1}
+  m_ShadowIteration: 1
+  m_ShadowFade: 0.9
+  m_ShadowEffectOnOrigin: 0
+  m_ShadowMirrorScale: 0.5
 --- !u!1 &7825147106738086471
 GameObject:
   m_ObjectHideFlags: 0
@@ -2370,8 +2592,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294109912
+  m_fontColor: {r: 0.84705883, g: 0.91764706, b: 0.9490196, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
