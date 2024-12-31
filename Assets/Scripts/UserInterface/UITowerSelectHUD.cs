@@ -32,7 +32,7 @@ public class UITowerSelectHUD : MonoBehaviour
 
         if (b)
         {
-            m_rect.DOScale(1.0f, .5f).From(0.6f).SetEase(Ease.OutBack);
+            m_rect.DOScale(1.0f, .15f).From(0.6f).SetEase(Ease.OutBack);
         }
     }
 
@@ -42,6 +42,9 @@ public class UITowerSelectHUD : MonoBehaviour
         m_curTower = obj.GetComponent<Tower>();
         m_curTowerData = m_curTower.GetTowerData();
         m_track3dObject.SetupTracking(obj, GetComponent<RectTransform>(), 0);
+        
+        //Audio
+        m_curTower.RequestPlayOneShot(m_curTowerData.m_audioSelectedClip);
         
         //Sell values
         m_sellStoneValue = m_curTowerData.m_stoneSellCost;
@@ -89,6 +92,7 @@ public class UITowerSelectHUD : MonoBehaviour
 
     private void RequestSellTower()
     {
+        m_curTower.RequestPlayOneShot(m_curTowerData.m_audioDestroyClip);
         GameplayManager.Instance.SellTower(m_curTower, m_sellStoneValue, m_sellWoodValue);
         DeselectTower();
     }

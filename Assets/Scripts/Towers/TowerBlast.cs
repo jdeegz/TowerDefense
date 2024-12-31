@@ -88,9 +88,14 @@ public class TowerBlast : Tower
 
         projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position, gameObject, m_statusEffectData);
 
-        int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
+        // AUDIO
+        int i = Random.Range(0, m_towerData.m_audioFireClips.Count);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
+        
+        // ANIMATION
         //m_animator.SetTrigger("Fire");
+        
+        // VFX
         FireVFX();
     }
 

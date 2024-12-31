@@ -2329,7 +2329,6 @@ MonoBehaviour:
   m_obelisksChargedLabel: {fileID: 260461180780765679}
   m_castleHealthLabel: {fileID: 8043211634134099290}
   m_debugInfoLabel: {fileID: 8371430940947547457}
-  m_ffwLabel: {fileID: 0}
   m_highScoreLabel: {fileID: 6087028790098654065}
   m_towerTrayButtonPrefab: {fileID: 1338795559678056421, guid: 04284a80e0d40af4fb45124034f8c77e, type: 3}
   m_blueprintTowerTrayButtonPrefab: {fileID: 1161443828223209471, guid: d601aa1802b78ae4fb40bc794ed51f95, type: 3}
@@ -2350,6 +2349,16 @@ MonoBehaviour:
   m_stoneGathererDisplay: {fileID: 3361926050920379464}
   m_castleRepairFill: {fileID: 6182619082135974874}
   m_menuObj: {fileID: 0}
+  m_woodGained: []
+  m_woodSpent: []
+  m_stoneGained: {fileID: 0}
+  m_stoneSpent: {fileID: 0}
+  m_healthGained: {fileID: 0}
+  m_healthLost: {fileID: 0}
+  m_castleRepairing: {fileID: 0}
+  m_waveStarting: {fileID: 0}
+  m_waveSpawningComplete: {fileID: 0}
+  m_waveCleared: {fileID: 0}
 --- !u!82 &3790338852460970388
 AudioSource:
   m_ObjectHideFlags: 0
@@ -6270,7 +6279,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3030264557356620798
 RectTransform:
   m_ObjectHideFlags: 0

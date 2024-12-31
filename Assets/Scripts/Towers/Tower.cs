@@ -8,6 +8,7 @@ public abstract class Tower : MonoBehaviour
 {
     [Header("Tower Data")]
     [SerializeField] protected TowerData m_towerData;
+    [SerializeField] protected GameObject m_modelRoot;
 
     [SerializeField] protected StatusEffectData m_statusEffectData;
     [SerializeField] protected LayerMask m_layerMask;
@@ -214,6 +215,7 @@ public abstract class Tower : MonoBehaviour
         //Operational
         gameObject.GetComponent<Collider>().enabled = true;
         m_isBuilt = true;
+        m_modelRoot.SetActive(true);
 
         //Animation
         m_animator.SetTrigger("Construct");
@@ -233,6 +235,12 @@ public abstract class Tower : MonoBehaviour
         ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
+    public void RequestPlayOneShot(AudioClip clip)
+    {
+        if (clip == null) return;
+        m_audioSource.PlayOneShot(clip);
+    }
+
     public virtual void OnDestroy()
     {
         //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
@@ -249,7 +257,8 @@ public abstract class Tower : MonoBehaviour
 
     public virtual void RemoveTower()
     {
-        ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Tower);
+        m_modelRoot.SetActive(false);
+        ObjectPoolManager.OrphanObject(gameObject, .5f, ObjectPoolManager.PoolType.Tower);
     }
 
     void SetupRangeCircle(int segments, float radius)

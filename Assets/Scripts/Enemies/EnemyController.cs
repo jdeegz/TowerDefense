@@ -336,8 +336,11 @@ public abstract class EnemyController : Dissolvable, IEffectable
         if (m_curHealth <= 0) return;
 
         //Audio
-        int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
-        m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
+        if (m_enemyData.m_audioDamagedClips.Count > 0)
+        {
+            int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
+            m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
+        }
 
         //Calculate Damage
         float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;

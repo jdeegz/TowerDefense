@@ -17,6 +17,10 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     [SerializeField] private GameObject m_treeFelledVFX;
     [SerializeField] private List<GameObject> m_objectsToToggle;
 
+    [SerializeField] private AudioSource m_audioSource;
+    [SerializeField] private List<AudioClip> m_woodHarvestedClips;
+    [SerializeField] private List<AudioClip> m_woodDepletedClips;
+
     private int m_resourcesRemaining;
     [HideInInspector] public ResourceManager.ResourceType m_type;
     public List<HarvestPoint> m_harvestPoints;
@@ -87,6 +91,9 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
         if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
         {
+            int index = Random.Range(0, m_woodHarvestedClips.Count);
+            m_audioSource.PlayOneShot(m_woodHarvestedClips[index]);
+            
             foreach (GameObject obj in m_objectsToToggle)
             {
                 obj.SetActive(!obj.activeSelf);
@@ -96,10 +103,19 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (m_resourcesRemaining <= 0)
         {
             //If we hit 0 resources after giving some up, send the gatherer nearby nodes and start the destroy process.
+            int index = Random.Range(0, m_woodDepletedClips.Count);
+            m_audioSource.PlayOneShot(m_woodDepletedClips[index]);
             OnDepletion(true);
         }
 
         return (resourcesHarvested, m_resourcesRemaining);
+    }
+
+    public void RequestPlayAudioClip(AudioClip clip)
+    {
+        if (clip == null) return;
+        
+        m_audioSource.PlayOneShot(clip);
     }
 
     public bool HasResources()
@@ -180,8 +196,23 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             {
                 ObjectPoolManager.SpawnObject(m_treeFelledVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
                 m_curContactSequence = null; 
-                Destroy(gameObject);
+                m_modelRoot.SetActive(false);
+                Destroy(gameObject, 2f);
             });
+    }
+    
+    public void RequestPlayAudio(AudioClip clip)
+    {
+        //source.Stop();
+        m_audioSource.PlayOneShot(clip);
+        Debug.Log($"playing clip {clip.name}");
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips)
+    {
+        int i = Random.Range(0, clips.Count);
+        m_audioSource.PlayOneShot(clips[i]);
+        Debug.Log($"playing clip {clips[i].name}");
     }
 
 

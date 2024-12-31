@@ -66,7 +66,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5170081343101694216}
+  - {fileID: 5170081343101694217}
   - {fileID: 5827220323388652955}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -83,6 +83,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: e3b1afeea4718df4eb251fa750e39c17, type: 2}
+  m_modelRoot: {fileID: 5170081343101694216}
   m_statusEffectData: {fileID: 11400000, guid: 528b8c16b84abdd42bf0b532dc553b46, type: 2}
   m_layerMask:
     serializedVersion: 2
@@ -93,8 +94,8 @@ MonoBehaviour:
   m_turretPivot: {fileID: 8807272703932726323}
   m_muzzlePoint: {fileID: 5827220323388652955}
   m_towerRangeCircle: {fileID: 6278354036822932288}
-  m_towerRangeCircleSegments: 24
   m_isBuilt: 0
+  m_targetSystem: 0
 --- !u!114 &347791572052040698
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -156,10 +157,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 150
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 10
+  MinDistance: 15
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -192,7 +193,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -930,7 +931,12 @@ MonoBehaviour:
   optionalScrambleMode: 0
   optionalShakeRandomnessMode: 0
   optionalString: 
---- !u!4 &5170081343101694216 stripped
+--- !u!1 &5170081343101694216 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7107b5f57ccccac42a900e3c7ead22db, type: 3}
+  m_PrefabInstance: {fileID: 5170081343101694215}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5170081343101694217 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7107b5f57ccccac42a900e3c7ead22db, type: 3}
   m_PrefabInstance: {fileID: 5170081343101694215}

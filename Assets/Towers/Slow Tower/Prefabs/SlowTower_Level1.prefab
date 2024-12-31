@@ -51,6 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: b57c11a925317294b8ba1d466ddf2608, type: 2}
+  m_modelRoot: {fileID: 5716525086391441189}
   m_statusEffectData: {fileID: 11400000, guid: 289f3cc7c5a8bce458736e30d51096e9, type: 2}
   m_layerMask:
     serializedVersion: 2
@@ -61,7 +62,6 @@ MonoBehaviour:
   m_turretPivot: {fileID: 5793207384203868124}
   m_muzzlePoint: {fileID: 6884257509909812900}
   m_towerRangeCircle: {fileID: 6278354036822932288}
-  m_towerRangeCircleSegments: 24
   m_isBuilt: 0
   m_targetSystem: 2
 --- !u!114 &347791572052040698
@@ -122,10 +122,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 150
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 10
+  MinDistance: 15
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -158,7 +158,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -563,6 +563,11 @@ MeshRenderer:
 --- !u!4 &4908639833016552863 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2ceac4cc37746634ab6592a6d97d7579, type: 3}
+  m_PrefabInstance: {fileID: 4869592511216462452}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5716525086391441189 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2ceac4cc37746634ab6592a6d97d7579, type: 3}
   m_PrefabInstance: {fileID: 4869592511216462452}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &5793207384203868124 stripped

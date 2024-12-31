@@ -54,7 +54,7 @@ public class CastleController : MonoBehaviour
         }
         else
         {
-            PlayAudio(m_castleData.m_audioResourceLost);
+            // PlayAudio(m_castleData.m_audioResourceLost);
         }
     }
 

@@ -35,7 +35,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4593042331104839014}
+  - {fileID: 4593042331104839015}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2187293234774646025
@@ -51,6 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: d73f00ea870146c4882155e634c994a2, type: 2}
+  m_modelRoot: {fileID: 4593042331104839014}
   m_statusEffectData: {fileID: 0}
   m_layerMask:
     serializedVersion: 2
@@ -61,8 +62,8 @@ MonoBehaviour:
   m_turretPivot: {fileID: 5326227157123458155}
   m_muzzlePoint: {fileID: 6312467736352544772}
   m_towerRangeCircle: {fileID: 1862652109791902443}
-  m_towerRangeCircleSegments: 24
   m_isBuilt: 0
+  m_targetSystem: 0
   m_flameTowerProjectile: {fileID: 2463556456710798240}
 --- !u!114 &5183412170005638364
 MonoBehaviour:
@@ -206,10 +207,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 150
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 10
+  MinDistance: 15
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -242,7 +243,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -566,7 +567,12 @@ PrefabInstance:
       addedObject: {fileID: 6704507566654615258}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7a7c6bc50ceb56a49bc4c84bc4d4ac9b, type: 3}
---- !u!4 &4593042331104839014 stripped
+--- !u!1 &4593042331104839014 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7a7c6bc50ceb56a49bc4c84bc4d4ac9b, type: 3}
+  m_PrefabInstance: {fileID: 4593042331104839013}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4593042331104839015 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7a7c6bc50ceb56a49bc4c84bc4d4ac9b, type: 3}
   m_PrefabInstance: {fileID: 4593042331104839013}

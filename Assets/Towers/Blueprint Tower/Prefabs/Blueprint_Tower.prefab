@@ -171,10 +171,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 150
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 10
+  MinDistance: 15
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -207,7 +207,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -303,6 +303,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: 2475bb710833bce4296b08a4ce35f79f, type: 2}
+  m_modelRoot: {fileID: 4398006869609802358}
   m_statusEffectData: {fileID: 0}
   m_layerMask:
     serializedVersion: 2
@@ -313,7 +314,6 @@ MonoBehaviour:
   m_turretPivot: {fileID: 6455545844041535471}
   m_muzzlePoint: {fileID: 4345284591980767619}
   m_towerRangeCircle: {fileID: 7449980379196180286}
-  m_towerRangeCircleSegments: 24
   m_isBuilt: 0
   m_targetSystem: 0
   m_blueprintRootObj: {fileID: 4398006869609802358}

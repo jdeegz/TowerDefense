@@ -310,6 +310,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: 3d355eb8945484948b94c4dbcb105b77, type: 2}
+  m_modelRoot: {fileID: 0}
   m_statusEffectData: {fileID: 11400000, guid: 8ef5791e8fba5bf4690f880a352ef506, type: 2}
   m_layerMask:
     serializedVersion: 2
@@ -320,7 +321,6 @@ MonoBehaviour:
   m_turretPivot: {fileID: 3008423777022699307}
   m_muzzlePoint: {fileID: 2288060040268308535}
   m_towerRangeCircle: {fileID: 6278354036822932288}
-  m_towerRangeCircleSegments: 24
   m_isBuilt: 0
   m_targetSystem: 2
   m_projectileImpactVFX: {fileID: 5832349499761035930}
@@ -558,10 +558,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 150
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 10
+  MinDistance: 15
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -594,7 +594,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0

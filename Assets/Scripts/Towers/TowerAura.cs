@@ -113,7 +113,7 @@ public class TowerAura : Tower
     void StartDome()
     {
         //Start Effects
-        var m_auraobj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, transform);
+        var m_auraobj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_modelRoot.transform);
         m_auraVFX = m_auraobj.GetComponent<VisualEffect>();
         m_auraVFX.Play();
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 0f, 3f)

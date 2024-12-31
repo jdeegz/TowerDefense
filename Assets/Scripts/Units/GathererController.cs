@@ -22,9 +22,7 @@ public class GathererController : MonoBehaviour
     [SerializeField] private GameObject m_gathererIdleIndicator;
     [SerializeField] private GathererTask m_gathererTask;
     [SerializeField] private Animator m_animator;
-    [SerializeField] private Renderer m_gathererRenderer;
-
-    private AudioSource m_audioSource;
+    [SerializeField] private AudioSource m_audioSource;
 
     public enum GathererTask
     {
@@ -226,8 +224,6 @@ public class GathererController : MonoBehaviour
         GameplayManager.OnGameObjectSelected += GathererSelected;
         GameplayManager.OnCommandRequested += CommandRequested;
 
-        m_audioSource = GetComponent<AudioSource>();
-
         m_harvestDuration = m_gathererData.m_harvestDuration;
         m_carryCapacity = m_gathererData.m_carryCapacity;
         m_storingDuration = m_gathererData.m_storingDuration;
@@ -293,7 +289,7 @@ public class GathererController : MonoBehaviour
         {
             IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
             GathererLevel += i;
-            RequestPlayAudio(m_gathererData.m_levelUpClip, m_audioSource);
+            RequestPlayAudio(m_gathererData.m_levelUpClip);
         }
     }
 
@@ -372,6 +368,8 @@ public class GathererController : MonoBehaviour
         }
         else
         {
+            node.RequestPlayAudio(m_gathererData.m_queueingClips);
+
             if (CurrentHarvestNode == null)
             {
                 RequestedHarvest(node);
@@ -598,7 +596,6 @@ public class GathererController : MonoBehaviour
         }
 
 
-
         // Add avoidance direction to movement
         float avoidanceStrength = 0.5f;
         Vector3 finalMovementDirection = m_moveDirection + m_avoidanceDirection * avoidanceStrength;
@@ -655,44 +652,40 @@ public class GathererController : MonoBehaviour
     private void GathererSelected(GameObject selectedObj)
     {
         m_isSelected = selectedObj == gameObject;
-        if (m_isSelected) RequestPlayAudio(m_gathererData.m_selectedGathererClips, m_audioSource);
+        if (m_isSelected) RequestPlayAudio(m_gathererData.m_selectedGathererClips);
     }
 
     public void Contact()
     {
         if (m_curHarvestNode != null)
         {
-            Vector3 pos = transform.position;
             m_curHarvestNode.RequestContactRotation(transform);
-            AudioPlayWoodChop();
+            RequestPlayAudio(m_gathererData.m_harvestingClips);
             ++swingCount;
         }
     }
 
-    public void AudioPlayWoodChop()
+    public void RequestAudioLoop(AudioClip clip)
     {
-        int i = Random.Range(0, m_gathererData.m_harvestingClips.Count);
-        m_audioSource.PlayOneShot(m_gathererData.m_harvestingClips[i]);
+        //source.Stop();
+        m_audioSource.loop = true;
+        m_audioSource.clip = clip;
+        m_audioSource.Play();
+        //Debug.Log($"playing audio loop: {clip.name}");
     }
 
-    public void RequestAudioLoop(AudioClip clip, AudioSource source)
+    public void RequestPlayAudio(AudioClip clip)
     {
-        source.Stop();
-        source.loop = true;
-        source.clip = clip;
-        source.Play();
+        //source.Stop();
+        m_audioSource.PlayOneShot(clip);
+        //Debug.Log($"playing clip {clip.name}");
     }
 
-    public void RequestPlayAudio(AudioClip clip, AudioSource source)
-    {
-        source.Stop();
-        source.PlayOneShot(clip);
-    }
-
-    public void RequestPlayAudio(List<AudioClip> clips, AudioSource source)
+    public void RequestPlayAudio(List<AudioClip> clips)
     {
         int i = Random.Range(0, clips.Count);
-        source.PlayOneShot(clips[i]);
+        m_audioSource.PlayOneShot(clips[i]);
+        //Debug.Log($"playing clip {clips[i].name}");
     }
 
     private void CommandRequested(GameObject requestObj, Selectable.SelectedObjectType type)
@@ -708,6 +701,7 @@ public class GathererController : MonoBehaviour
                 if (m_gathererData.m_type != ResourceManager.ResourceType.Wood) return;
 
                 ResourceNode node = requestObj.GetComponent<ResourceNode>();
+                node.RequestPlayAudio(m_gathererData.m_queueingClips);
                 if (ResourceCarried == 0)
                 {
                     RequestedHarvest(node);
@@ -737,7 +731,7 @@ public class GathererController : MonoBehaviour
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
 
-        RequestPlayAudio(m_gathererData.m_commandRequestClips, m_audioSource);
+        RequestPlayAudio(m_gathererData.m_commandRequestClips);
     }
 
     private void RequestedIdle()
@@ -927,13 +921,14 @@ public class GathererController : MonoBehaviour
     {
         "Run", "Idle", "Harvest"
     };
-    
+
     private void SetAnimatorTrigger(string triggerName)
     {
         foreach (String trigger in m_triggerNames)
         {
             m_animator.ResetTrigger(trigger);
         }
+
         m_animator.SetTrigger(triggerName);
     }
 
@@ -1027,11 +1022,12 @@ public class GathererController : MonoBehaviour
 
         if (isIdle)
         {
-            RequestAudioLoop(m_gathererData.m_idleClip, m_audioSource);
+            RequestAudioLoop(m_gathererData.m_idleClip);
         }
-        else if (m_audioSource.isPlaying)
+        else if (m_audioSource.isPlaying && m_audioSource.clip == m_gathererData.m_idleClip)
         {
             m_audioSource.Stop();
+            m_audioSource.clip = null;
         }
     }
 
@@ -1197,18 +1193,21 @@ public class GathererController : MonoBehaviour
         ResourceManager.Instance.UpdateWoodAmount(storageAmount, this);
 
         Vector3 alertPosition = transform.position;
-        alertPosition.y += .7f; 
+        alertPosition.y += .7f;
+        
+        // AUDIO
+        RequestPlayAudio(m_gathererData.m_woodDepositClips);
+        
+        // ALERT
         if (storageAmount > 1) //Did we deposit a crit amount?
         {
             IngameUIController.Instance.SpawnCritCurrencyAlert(storageAmount, 0, true, alertPosition);
-
-            RequestPlayAudio(m_gathererData.m_critDepositClip, m_audioSource);
+            //RequestPlayAudio(m_gathererData.m_woodDepositClips, m_audioSource);
         }
         else
         {
             IngameUIController.Instance.SpawnCurrencyAlert(storageAmount, 0, true, alertPosition);
-
-            RequestPlayAudio(m_gathererData.m_depositClip, m_audioSource);
+            //RequestPlayAudio(m_gathererData.m_woodDepositClips, m_audioSource);
         }
 
         ResourceCarried = 0;

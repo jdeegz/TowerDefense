@@ -35,7 +35,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5285468025380455972}
+  - {fileID: 5285468025380455973}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4744193911536591023
@@ -51,6 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: fe116a1269e5f214eb486e50bc3ddfe1, type: 2}
+  m_modelRoot: {fileID: 5285468025380455972}
   m_statusEffectData: {fileID: 0}
   m_layerMask:
     serializedVersion: 2
@@ -61,8 +62,8 @@ MonoBehaviour:
   m_turretPivot: {fileID: 3010122246086227413}
   m_muzzlePoint: {fileID: 7223010089528663050}
   m_towerRangeCircle: {fileID: 8421067145053673028}
-  m_towerRangeCircleSegments: 24
   m_isBuilt: 0
+  m_targetSystem: 0
 --- !u!114 &7504318509985019201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,7 +198,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -205,10 +206,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 150
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 10
+  MinDistance: 15
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -241,7 +242,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -432,7 +433,12 @@ MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 586037181633258292, guid: 1ef226b771e30084d8c2f656a58b7313, type: 3}
   m_PrefabInstance: {fileID: 5285468025380455971}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &5285468025380455972 stripped
+--- !u!1 &5285468025380455972 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1ef226b771e30084d8c2f656a58b7313, type: 3}
+  m_PrefabInstance: {fileID: 5285468025380455971}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5285468025380455973 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1ef226b771e30084d8c2f656a58b7313, type: 3}
   m_PrefabInstance: {fileID: 5285468025380455971}

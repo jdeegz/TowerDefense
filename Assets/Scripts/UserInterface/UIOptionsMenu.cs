@@ -156,6 +156,7 @@ public class UIOptionsMenu : MonoBehaviour
 
     void PlayAudio(AudioClip clip)
     {
+        Debug.Log($"playing audio clip: {clip.name}");
         m_audioSource.PlayOneShot(clip);
     }
 

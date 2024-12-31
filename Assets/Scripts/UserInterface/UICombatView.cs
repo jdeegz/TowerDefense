@@ -1,13 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using DG.Tweening;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class UICombatView : MonoBehaviour
 {
@@ -33,7 +31,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_obelisksChargedLabel;
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
-    [SerializeField] private TextMeshProUGUI m_ffwLabel;
     [SerializeField] private TextMeshProUGUI m_highScoreLabel;
 
     [Header("Objects")]
@@ -48,7 +45,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_castleRepairDisplayObj;
     [SerializeField] private GameObject m_ffwActiveDisplayObj;
 
-
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
     [SerializeField] private RectTransform m_gathererTrayLayoutObj;
@@ -57,11 +53,22 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_stoneBankDisplay;
     [SerializeField] private RectTransform m_woodGathererDisplay;
     [SerializeField] private RectTransform m_stoneGathererDisplay;
-
     [SerializeField] private Image m_castleRepairFill;
 
     [Header("Scene References")]
     [SerializeField] private UIOptionsMenu m_menuObj;
+
+    [Header("AudioClips")]
+    [SerializeField] private List<AudioClip> m_woodGained;
+    [SerializeField] private List<AudioClip> m_woodSpent;
+    [SerializeField] private AudioClip m_stoneGained;
+    [SerializeField] private AudioClip m_stoneSpent;
+    [SerializeField] private AudioClip m_healthGained;
+    [SerializeField] private AudioClip m_healthLost;
+    [SerializeField] private AudioClip m_castleRepairing;
+    [SerializeField] private AudioClip m_waveStarting;
+    [SerializeField] private AudioClip m_waveSpawningComplete;
+    [SerializeField] private AudioClip m_waveCleared;
 
     private bool m_menusOpen;
     private float m_timeToNextWave;
@@ -79,11 +86,13 @@ public class UICombatView : MonoBehaviour
     private Dictionary<KeyCode, int> m_towerKeyMap;
     private int m_blueprintTowerKey;
     private int m_wave;
+    private AudioSource m_audioSource;
 
     void Awake()
     {
         m_canvasGroup.alpha = 0;
-
+        m_audioSource = GetComponent<AudioSource>();
+        
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
@@ -192,7 +201,7 @@ public class UICombatView : MonoBehaviour
         }
 
         m_woodGathererLabel.SetText(i.ToString());
-        m_woodGathererShake = m_woodGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_woodGathererShake = m_woodGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.15f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_woodGathererShake.Play();
     }
 
@@ -206,7 +215,7 @@ public class UICombatView : MonoBehaviour
         }
 
         m_stoneGathererLabel.SetText(i.ToString());
-        m_stoneGathererShake = m_stoneGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_stoneGathererShake = m_stoneGathererDisplay.DOPunchScale(new Vector3(0.15f, 0.15f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
         m_stoneGathererShake.Play();
     }
 
@@ -218,9 +227,9 @@ public class UICombatView : MonoBehaviour
             m_woodBankShake.Kill();
             m_woodBankDisplay.localScale = Vector3.one;
         }
-
+        
         m_woodBankLabel.SetText($"{total}<sprite name=\"ResourceWood\">");
-        m_woodBankShake = m_woodBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_woodBankShake = m_woodBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.15f, 1, .7f).SetAutoKill(true);
         m_woodBankShake.Play();
     }
 
@@ -233,7 +242,7 @@ public class UICombatView : MonoBehaviour
         }
 
         m_stoneBankLabel.SetText($"{total}<sprite name=\"ResourceStone\">");
-        m_stoneBankShake = m_stoneBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.3f, 1, .7f).SetAutoKill(true);
+        m_stoneBankShake = m_stoneBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.15f, 1, .7f).SetAutoKill(true);
         m_stoneBankShake.Play();
     }
 
