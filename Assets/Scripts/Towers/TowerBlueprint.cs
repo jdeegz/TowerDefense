@@ -29,6 +29,7 @@ public class TowerBlueprint : Tower
         //Operational
         gameObject.GetComponent<Collider>().enabled = true;
         m_isBuilt = false;
+        m_modelRoot.SetActive(true);
 
         //Animation
         m_animator.SetTrigger("Construct");

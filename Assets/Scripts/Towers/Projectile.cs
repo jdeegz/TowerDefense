@@ -6,13 +6,23 @@ using DG.Tweening;
 using DG.Tweening.Core.Easing;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.VFX;
+using Random = UnityEngine.Random;
+
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(SphereCollider))]
 public abstract class Projectile : MonoBehaviour
 {
+    [Header("Projectile Data")]
+    [SerializeField] protected ProjectileData m_projectileData;
     [SerializeField] protected float m_projectileSpeed = .5f;
     [SerializeField] protected float m_stoppingDistance = .1f;
+    
+    [Header("Projectile Components")]
     [SerializeField] protected GameObject m_hitVFXPrefab;
+    [SerializeField] protected AudioSource m_audioSource;
+    [SerializeField] protected Renderer m_renderer;
+    [SerializeField] protected VisualEffect m_trail;
 
     protected bool m_isFired = false;
     protected bool m_isComplete;
@@ -28,7 +38,6 @@ public abstract class Projectile : MonoBehaviour
     protected StatusEffectData m_statusEffectData;
     protected GameObject m_statusSender;
     
-    public Renderer m_renderer;
     protected int m_shieldLayer;
     
     void Start()
@@ -48,6 +57,7 @@ public abstract class Projectile : MonoBehaviour
         m_isFired = true;
         m_isComplete = false;
         if (m_renderer) m_renderer.enabled = true;
+        if (m_trail) m_trail.Play();
     }
 
     public void SetProjectileStatusEffect(StatusEffect statusEffect)
@@ -69,13 +79,33 @@ public abstract class Projectile : MonoBehaviour
         
         m_enemy = null;
         
-        if (m_renderer)
-        {
-            m_renderer.enabled = false;
-        }
-
-        transform.rotation = Quaternion.identity;
+        if (m_renderer) m_renderer.enabled = false;
+        if (m_trail) m_trail.Stop();
         
-        ObjectPoolManager.OrphanObject(gameObject, 0.5f);
+        transform.rotation = Quaternion.identity;
+
+        RequestPlayAudio(m_projectileData.m_impactClips);
+        
+        ObjectPoolManager.OrphanObject(gameObject, 1f);
+    }
+    
+    public virtual void Loaded()
+    {
+        // Base implementation (optional)
+    }
+    
+    public void RequestPlayAudio(AudioClip clip)
+    {
+        if (clip == null) return;
+        
+        m_audioSource.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips)
+    {
+        if (clips == null || clips.Count == 0) return;
+        
+        int i = Random.Range(0, clips.Count);
+        m_audioSource.PlayOneShot(clips[i]);
     }
 }

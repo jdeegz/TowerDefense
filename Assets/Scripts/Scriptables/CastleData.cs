@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "CastleData", menuName = "ScriptableObjects/CastleData")]
 public class CastleData : ScriptableObject
@@ -14,10 +15,8 @@ public class CastleData : ScriptableObject
     public float m_repairHealthInterval;
     
     //Audio
-    public AudioClip m_audioHealthGained;
-    public AudioClip m_audioHealthLost;
-    public AudioClip m_audioResourceGained;
-    public AudioClip m_audioResourceLost;
-    public AudioClip m_audioWaveStart;
-    public AudioClip m_audioWaveEnd;
+    public AudioClip m_healthGainedClip;
+    public List<AudioClip> m_healthLostClips;
+    public AudioClip m_repairingClip;
+    public AudioClip m_destroyedClip;
 }

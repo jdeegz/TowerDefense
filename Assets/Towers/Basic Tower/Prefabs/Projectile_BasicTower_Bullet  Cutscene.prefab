@@ -244,13 +244,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d52c95edada179458e89df5ccef6e9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_projectileData: {fileID: 11400000, guid: c0a48c703a30e4d4db3749f946c06064, type: 2}
   m_projectileSpeed: 10
   m_stoppingDistance: 0.1
   m_hitVFXPrefab: {fileID: 8933404775076088512, guid: 57a08fb13b834de4ea327f992bb1e475, type: 3}
+  m_audioSource: {fileID: 6438635067482408040}
   m_renderer: {fileID: 4880940884978403497}
-  m_bulletTrailData: {fileID: 0}
+  m_trail: {fileID: 4488549029836830693}
 --- !u!23 &4880940884978403497 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 977616384506371518, guid: 9fc7d5e1964cd9e44b2b6e4a68234119, type: 3}
+  m_PrefabInstance: {fileID: 5633340351395337495}
+  m_PrefabAsset: {fileID: 0}
+--- !u!82 &6438635067482408040 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 1690825995862577535, guid: 9fc7d5e1964cd9e44b2b6e4a68234119, type: 3}
   m_PrefabInstance: {fileID: 5633340351395337495}
   m_PrefabAsset: {fileID: 0}

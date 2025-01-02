@@ -31,6 +31,11 @@ public class ProjectileMissile : Projectile
         if (m_renderer) m_renderer.enabled = true;
     }
 
+    public override void Loaded()
+    {
+        RequestPlayAudio(m_projectileData.m_reloadClips);
+    }
+
     void FixedUpdate()
     {
         if (!m_isComplete && IsTargetInStoppingDistance())

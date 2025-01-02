@@ -346,7 +346,9 @@ public class UICombatView : MonoBehaviour
         //m_playButton.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
         //m_pauseButton.gameObject.SetActive(newSpeed != GameplayManager.GameSpeed.Paused);
         m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
-        m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
+
+        m_pauseButton.interactable = newSpeed != GameplayManager.GameSpeed.Paused;
+        m_playButton.interactable = newSpeed != GameplayManager.GameSpeed.Normal;
     }
 
     private void GameplaySpeedChanged(int speed)

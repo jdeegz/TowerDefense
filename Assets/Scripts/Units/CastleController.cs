@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
+using Random = UnityEngine.Random;
 
 public class CastleController : MonoBehaviour
 {
@@ -47,20 +48,7 @@ public class CastleController : MonoBehaviour
 
     void OnBankUpdated(int amount, int total)
     {
-        
-        if (amount > 0)
-        {
-            // PlayAudio(m_castleData.m_audioResourceGained);
-        }
-        else
-        {
-            // PlayAudio(m_castleData.m_audioResourceLost);
-        }
-    }
-
-    public void PlayAudio(AudioClip audioClip)
-    {
-        m_audioSource.PlayOneShot(audioClip);
+        //
     }
 
     void OnDestroy()
@@ -103,15 +91,12 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.Setup:
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                PlayAudio(m_castleData.m_audioWaveStart);
                 break;
             case GameplayManager.GameplayState.BossWave:
-                PlayAudio(m_castleData.m_audioWaveStart);
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
-                PlayAudio(m_castleData.m_audioWaveEnd);
                 break;
             case GameplayManager.GameplayState.CutScene:
                 break;
@@ -127,23 +112,45 @@ public class CastleController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build && m_curHealth < m_maxHealth)
+        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build && m_curHealth < m_maxHealth && !m_isRepairing)
+        {
+            // Start repairing.
+            RepairCastle();
+        }
+    }
+
+    private bool m_isRepairing;
+
+    void RepairCastle()
+    {
+        m_isRepairing = true;
+        
+        StopScheduledClip();
+        StartCoroutine(RepairCoroutine());
+    }
+
+    private IEnumerator RepairCoroutine()
+    {
+        PlayScheduledClip(m_castleData.m_repairingClip);
+        Debug.Log($"playing repair clip.");
+        
+        m_repairElapsedTime = 0;
+        while (m_repairElapsedTime < m_repairHealthInterval)
         {
             m_repairElapsedTime += Time.deltaTime;
-            if (m_repairElapsedTime >= m_repairHealthInterval)
-            {
-                m_repairElapsedTime = 0;
-                UpdateHealth?.Invoke(m_repairHealthAmount);
-                //Debug.Log("Castle Repaired.");
-            }
+            yield return null;
         }
+        
+        UpdateHealth?.Invoke(m_repairHealthAmount);
+        StopScheduledClip();
+        m_isRepairing = false;
     }
 
     public int GetCastleMaxHealth()
     {
         return m_maxHealth;
     }
-    
+
     public int GetCastleCurHealth()
     {
         return m_curHealth;
@@ -172,7 +179,7 @@ public class CastleController : MonoBehaviour
         IngameUIController.Instance.SpawnHealthAlert(1, transform.position);
         UpdateHealth?.Invoke(-dmg);
     }
-    
+
     public void TakeBossDamage(int dmg)
     {
         if (m_hitFlashCoroutine != null)
@@ -182,7 +189,7 @@ public class CastleController : MonoBehaviour
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
         IngameUIController.Instance.SpawnMaxHealthAlert(1, transform.position);
-        
+
         UpdateMaxHealth?.Invoke(-dmg);
     }
 
@@ -192,11 +199,11 @@ public class CastleController : MonoBehaviour
 
         if (i > 0)
         {
-            PlayAudio(m_castleData.m_audioHealthGained);
+            RequestPlayAudio(m_castleData.m_healthGainedClip);
         }
         else
         {
-            PlayAudio(m_castleData.m_audioHealthLost);
+            RequestPlayAudio(m_castleData.m_healthLostClips);
         }
 
         if (m_curHealth <= 0)
@@ -204,20 +211,20 @@ public class CastleController : MonoBehaviour
             DestroyCastle?.Invoke();
         }
     }
-    
+
     void OnUpdateMaxHealth(int i)
     {
         m_maxHealth += i;
-        
+
         m_curHealth += i;
 
         if (i > 0)
         {
-            PlayAudio(m_castleData.m_audioHealthGained);
+            RequestPlayAudio(m_castleData.m_healthGainedClip);
         }
         else
         {
-            PlayAudio(m_castleData.m_audioHealthLost);
+            RequestPlayAudio(m_castleData.m_healthLostClips);
         }
 
         if (m_curHealth <= 0)
@@ -259,7 +266,7 @@ public class CastleController : MonoBehaviour
     {
         //Get Parent Mesh Renderer if there is one.
         Renderer Renderer = parent.GetComponent<Renderer>();
-        
+
         if (Renderer != null && !(Renderer is TrailRenderer) && !(Renderer is VFXRenderer))
         {
             if (m_allRenderers == null)
@@ -281,6 +288,31 @@ public class CastleController : MonoBehaviour
             //Recursivly add meshrenderers by calling this function again with the child as the transform.
             Transform child = parent.GetChild(i);
             CollectMeshRenderers(child);
+        }
+    }
+
+    public void RequestPlayAudio(AudioClip clip)
+    {
+        m_audioSource.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips)
+    {
+        int i = Random.Range(0, clips.Count);
+        m_audioSource.PlayOneShot(clips[i]);
+    }
+    
+    public void PlayScheduledClip(AudioClip clip)
+    {
+        m_audioSource.clip = clip;
+        m_audioSource.Play();
+    }
+
+    public void StopScheduledClip()
+    {
+        if (m_audioSource.isPlaying)
+        {
+            m_audioSource.Stop();
         }
     }
 

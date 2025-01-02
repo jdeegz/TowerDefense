@@ -14,6 +14,30 @@ public class TowerBeam : Tower
     private Tween m_curTween;
     private float m_curDissolve = 1f;
     private float m_timeUntilFire;
+    private bool m_isShooting;
+    private bool IsShooting
+    {
+        get { return m_isShooting; }
+        set {
+            if (value != m_isShooting)
+            {
+                m_isShooting = value;
+                if (m_isShooting)
+                {
+                    //TURN ON BEAM
+                    StartBeam();
+                    RequestPlayAudio(m_towerData.m_audioFireClips);
+                    RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
+                }
+                else
+                {
+                    //TURN OFF BEAM
+                    StopBeam();
+                    RequestStopAudioLoop();
+                }
+            } 
+        }
+    }
 
 
     void Start()
@@ -44,7 +68,8 @@ public class TowerBeam : Tower
         
         if (m_curTarget == null)
         {
-            StopBeam();
+            //StopBeam();
+            IsShooting = false;
             return;
         }
 
@@ -66,7 +91,7 @@ public class TowerBeam : Tower
     
     public override void RequestTowerDisable()
     {
-        StopBeam();
+        IsShooting = false;
         
         base.RequestTowerDisable();
     }
@@ -93,7 +118,7 @@ public class TowerBeam : Tower
         //Turn on/update beam if the new target is different.
         if (m_lastTarget != m_curTarget)
         {
-            StartBeam();
+            IsShooting = true;
             m_lastTarget = m_curTarget;
         }
     }
@@ -114,7 +139,7 @@ public class TowerBeam : Tower
 
     public override void RemoveTower()
     {
-        StopBeam();
+        IsShooting = false;
         base.RemoveTower();
     }
 

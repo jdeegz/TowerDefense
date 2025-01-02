@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "ObeliskData_Default", menuName = "ScriptableObjects/ObeliskData")]
 public class ObeliskData : ScriptableObject
@@ -17,6 +18,6 @@ public class ObeliskData : ScriptableObject
     public int m_soulValue = 1;
     public float m_obeliskRange = 6f;
 
-    public AudioClip m_soulCollected;
-    public AudioClip m_obeliskCharged;
+    public List<AudioClip> m_soulCollectedClips;
+    public AudioClip m_obeliskChargedClip;
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public abstract class Tower : MonoBehaviour
 {
@@ -235,10 +236,35 @@ public abstract class Tower : MonoBehaviour
         ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
-    public void RequestPlayOneShot(AudioClip clip)
+    public void RequestPlayAudio(AudioClip clip, AudioSource audioSource = null)
     {
         if (clip == null) return;
-        m_audioSource.PlayOneShot(clip);
+        
+        if (audioSource == null) audioSource = m_audioSource;
+        audioSource.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips, AudioSource audioSource = null)
+    {
+        if (clips[0] == null) return;
+        
+        if (audioSource == null) audioSource = m_audioSource;
+        int i = Random.Range(0, clips.Count);
+        audioSource.PlayOneShot(clips[i]);
+    }
+
+    public void RequestPlayAudioLoop(AudioClip clip, AudioSource audioSource = null)
+    {
+        if (audioSource == null) audioSource = m_audioSource;
+        audioSource.loop = true;
+        audioSource.clip = clip;
+        audioSource.Play();
+    }
+    
+    public void RequestStopAudioLoop(AudioSource audioSource = null)
+    {
+        if (audioSource == null) audioSource = m_audioSource;
+        audioSource.Stop();
     }
 
     public virtual void OnDestroy()
@@ -246,10 +272,10 @@ public abstract class Tower : MonoBehaviour
         //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
         if (!Application.isPlaying) return;
 
-        if (m_audioSource.enabled)
+        /*if (m_audioSource.enabled)
         {
-            m_audioSource.PlayOneShot(m_towerData.m_audioDestroyClip);
-        }
+            RequestPlayAudio(m_towerData.m_audioDestroyClip);
+        }*/
 
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;

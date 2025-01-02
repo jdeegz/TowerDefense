@@ -98,6 +98,9 @@ public class TowerAura : Tower
     {
         StatusEffect statusEffect = new StatusEffect(gameObject, m_statusEffectData);
         enemyController.ApplyEffect(statusEffect);
+        
+        // AUDIO
+        RequestPlayAudio(m_towerData.m_audioFireClips);
     }
     
     private void Reload()
@@ -121,6 +124,9 @@ public class TowerAura : Tower
         
         //Start searching for targets.
         m_searchForTargets = true;
+        
+        // AUDIO
+        RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
     }
 
     void StopDome()
@@ -133,6 +139,9 @@ public class TowerAura : Tower
                 ObjectPoolManager.ReturnObjectToPool(m_auraVFX.gameObject, ObjectPoolManager.PoolType.ParticleSystem);
                 m_auraVFX = null;
             });
+        
+        // AUDIO
+        RequestStopAudioLoop();
     }
     
     public override void RemoveTower()

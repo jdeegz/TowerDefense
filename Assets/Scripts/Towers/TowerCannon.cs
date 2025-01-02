@@ -102,20 +102,9 @@ public class TowerCannon : Tower
     {
         //Make the projectile objects
         GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation, m_muzzlePoints[i].transform, ObjectPoolManager.PoolType.Projectile);
-        /*projectileObj.transform.localRotation = Quaternion.identity;
-        projectileObj.transform.position = m_muzzlePoints[i].transform.position;*/
-
+        
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-
-        /*
-        //Assign any necessary effects to the projectile.
-        if (m_statusEffectData)
-        {
-            StatusEffect statusEffect = new StatusEffect();
-            statusEffect.SetSender(gameObject);
-            statusEffect.m_data = m_statusEffectData;
-            projectileScript.SetProjectileStatusEffect(statusEffect);
-        }*/
+        if(m_isBuilt) projectileScript.Loaded();
 
         //Store the projectiles in a list to pull from later.
         m_loadedProjectiles[i] = projectileScript;
@@ -135,8 +124,7 @@ public class TowerCannon : Tower
         projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, projectileScript.transform.position, gameObject, m_statusEffectData);
 
         //Play fire Sound
-        int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
-        m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
+        RequestPlayAudio(m_towerData.m_audioFireClips);
 
         //Play fire Animation
         //m_animator.SetTrigger("Fire");

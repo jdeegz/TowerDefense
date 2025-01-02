@@ -9,6 +9,9 @@ using Random = UnityEngine.Random;
 
 public class TowerChargeUp : Tower
 {
+    [Header("Audio")]
+    [SerializeField] private AudioSource m_secondaryAudioSource;
+    
     [Header("Visual Attributes")]
     public VisualEffect m_projectileImpactVFX;
 
@@ -37,6 +40,20 @@ public class TowerChargeUp : Tower
     private float m_resetStep;
     private float m_resetTime;
     private float m_curStacks;
+
+    private float CurStacks
+    {
+        get { return m_curStacks; }
+        set
+        {
+            if (value != m_curStacks)
+            {
+                m_curStacks = value;
+                HandlePanelColor();
+            }
+        }
+    }
+
     private Vector2 m_scrollOffset;
     private float m_lastStacks;
     private float m_timeUntilBeamOff;
@@ -60,23 +77,20 @@ public class TowerChargeUp : Tower
             return;
         }
 
-
-        HandlePanelColor();
-
         if (m_beamActive)
         {
             return;
         }
-        
+
         RotateTowardsTarget();
-        
+
         m_targetDetectionTimer += Time.deltaTime;
         if (m_targetDetectionTimer >= m_targetDetectionInterval)
         {
             m_targetDetectionTimer = 0f;
             FindTarget();
         }
-        
+
         if (m_curTarget == null)
         {
             ChargeDown();
@@ -100,11 +114,12 @@ public class TowerChargeUp : Tower
             HandleBeamVisual();
 
             //If we we are fully charged, and target is in cone of view, fire.
-            if (m_curStacks >= m_maxStacks && IsTargetInSight())
+            if (CurStacks >= m_maxStacks && IsTargetInSight())
             {
                 //Enable the visual effect.
                 StartBeam();
                 Fire();
+                RequestPlayAudio(m_towerData.m_audioFireClips, m_secondaryAudioSource);
             }
         }
     }
@@ -112,7 +127,7 @@ public class TowerChargeUp : Tower
     private void ChargeDown()
     {
         //Dont charge down if we're at 0.
-        if (m_curStacks <= 0) return;
+        if (CurStacks <= 0) return;
 
         //If we were charging, we're no longer charging.
         if (m_isCharging)
@@ -127,17 +142,17 @@ public class TowerChargeUp : Tower
         //Delay clock, then remove stacks when met.
         m_curStackDropDelay += Time.deltaTime;
 
-        if (m_curStackDropDelay >= m_stackDropDelayTime && m_curStacks > 0)
+        if (m_curStackDropDelay >= m_stackDropDelayTime && CurStacks > 0)
         {
-            m_curStacks -= (m_towerData.m_fireRate * m_maxStacks) * Time.deltaTime;
-            //Debug.Log($"Charging Down: {m_curStacks} / {m_maxStacks}");
+            CurStacks -= (m_towerData.m_fireRate * m_maxStacks) * Time.deltaTime;
+            //Debug.Log($"Charging Down: {CurStacks} / {m_maxStacks}");
         }
     }
 
     private void ChargeUp()
     {
         //Dont charge up if we're at max stacks.
-        if (m_curStacks >= m_maxStacks) return;
+        if (CurStacks >= m_maxStacks) return;
 
         if (m_isCharging == false)
         {
@@ -146,43 +161,58 @@ public class TowerChargeUp : Tower
         }
 
         //Increase curStacks based on max stacks and fire rate.
-        m_curStacks += (m_towerData.m_fireRate * m_maxStacks) * Time.deltaTime;
+        CurStacks += (m_towerData.m_fireRate * m_maxStacks) * Time.deltaTime;
 
         //Handle the Charge up VFX
-        float normalizedTime = (float)m_curStacks / m_maxStacks;
+        float normalizedTime = (float)CurStacks / m_maxStacks;
         Color color = m_beamGradient.Evaluate(normalizedTime);
         m_muzzleChargeVFX.SetVector4("_Color", color);
-        m_muzzleChargeVFX.SetFloat("_Speed", m_curStacks / 8);
-        m_muzzleChargeVFX.SetFloat("_Rate", m_curStacks);
+        m_muzzleChargeVFX.SetFloat("_Speed", CurStacks / 8);
+        m_muzzleChargeVFX.SetFloat("_Rate", CurStacks);
     }
-    
+
     public override void RequestTowerDisable()
     {
         StopBeam();
         m_muzzleChargeVFX.Stop();
-        m_curStacks = 0;
+        CurStacks = 0;
 
         base.RequestTowerDisable();
     }
 
+    private float m_audioPitchMin = 0.5f;
+    private float m_audioPitchMax = 1.5f;
     private void HandlePanelColor()
     {
-        if (m_curStacks == m_lastStacks) return;
+        if (CurStacks == m_lastStacks) return;
 
-        float normalizedTime = m_curStacks / m_maxStacks;
+        float normalizedTime = CurStacks / m_maxStacks;
         Color color = m_panelGradient.Evaluate(normalizedTime);
         foreach (MeshRenderer mesh in m_panelMeshRenderers)
         {
             mesh.material.SetColor("_EmissionColor", color);
         }
 
-        m_lastStacks = m_curStacks;
+        m_lastStacks = CurStacks;
+        
+        // AUDIO - TOWER AMBIENT 
+        m_audioSource.pitch = Mathf.Lerp(m_audioPitchMin, m_audioPitchMax, normalizedTime);
+        //m_audioSource.volume = Mathf.Lerp(0, 1, normalizedTime);
+        
+        if (CurStacks > 0 && !m_audioSource.isPlaying)
+        {
+            RequestPlayAudioLoop(m_towerData.m_audioLoops[0], m_audioSource);
+        }
+        else if (CurStacks == 0 && m_audioSource.isPlaying)
+        {
+            RequestStopAudioLoop(m_audioSource);
+        }
     }
 
     private void Fire()
     {
         //Remove Stacks
-        m_curStacks *= 0.5f;
+        CurStacks *= 0.5f;
 
         //Deal Damage if we hit the target's collider.
         if (m_colliderHit == m_targetCollider)
@@ -286,13 +316,13 @@ public class TowerChargeUp : Tower
         m_projectileLineRenderer.material.SetVector("_BaseScrollSpeed", m_scrollOffset);
 
         //Color the texture.
-        float normalizedTime = (float)m_curStacks / m_maxStacks;
+        float normalizedTime = (float)CurStacks / m_maxStacks;
         Color color = m_beamGradient.Evaluate(normalizedTime);
         m_projectileLineRenderer.material.SetColor("_Color", color);
         m_projectileImpactVFX.SetVector4("_Color", color);
 
         //Modify Speed & Rate.
-        m_projectileImpactVFX.SetFloat("_Rate", m_curStacks);
+        m_projectileImpactVFX.SetFloat("_Rate", CurStacks);
     }
 
     public override TowerTooltipData GetTooltipData()
@@ -329,7 +359,7 @@ public class TowerChargeUp : Tower
         TowerUpgradeData data = new TowerUpgradeData();
 
         data.m_turretRotation = GetTurretRotation();
-        data.m_stacks = (int)m_curStacks;
+        data.m_stacks = (int)CurStacks;
 
         return data;
     }
@@ -337,6 +367,6 @@ public class TowerChargeUp : Tower
     public override void SetUpgradeData(TowerUpgradeData data)
     {
         SetTurretRotation(data.m_turretRotation);
-        m_curStacks = data.m_stacks;
+        CurStacks = data.m_stacks;
     }
 }

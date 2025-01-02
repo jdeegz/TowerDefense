@@ -8,8 +8,32 @@ using UnityEngine.VFX;
 public class TowerArc : Tower
 {
     public VisualEffect m_flameTowerProjectile;
+    private bool m_isShooting;
+    private bool IsShooting
+    {
+        get { return m_isShooting; }
+        set {
+            if (value != m_isShooting)
+            {
+                m_isShooting = value;
+                if (m_isShooting)
+                {
+                    //TURN ON FLAMES
+                    m_flameTowerProjectile.Play();
+                    RequestPlayAudio(m_towerData.m_audioFireClips);
+                    RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
+                }
+                else
+                {
+                    //TURN OFF FLAMES
+                    m_flameTowerProjectile.Stop();
+                    RequestStopAudioLoop();
+                }
+            } 
+        }
+    }
+    
     private float m_timeUntilFire;
-    private GameObject m_activeProjectileObj;
 
     void Update()
     {
@@ -33,7 +57,7 @@ public class TowerArc : Tower
         if (m_curTarget == null)
         {
             //If target is not in range, destroy the flame cone if there is one.
-            m_flameTowerProjectile.Stop();
+            IsShooting = false;
             return;
         }
 
@@ -54,11 +78,9 @@ public class TowerArc : Tower
             //If we have elapsed time, and are looking at the target, fire.
             if (m_timeUntilFire >= 1f / m_towerData.m_fireRate && IsTargetInSight())
             {
-                if (m_activeProjectileObj == null)
-                {
-                    m_flameTowerProjectile.Play();
-                }
-
+                IsShooting = true;
+                
+                //m_flameTowerProjectile.Play();
                 Fire();
                 m_timeUntilFire = 0;
             }
@@ -67,7 +89,8 @@ public class TowerArc : Tower
 
     public override void RequestTowerDisable()
     {
-        m_flameTowerProjectile.Stop();
+        IsShooting = false;
+        //m_flameTowerProjectile.Stop();
 
         base.RequestTowerDisable();
     }
@@ -83,39 +106,19 @@ public class TowerArc : Tower
             //Reset Counter
             m_timeUntilSecondaryFire = 0f;
 
-            //Spawn VFX
+            // VISUAL
             ObjectPoolManager.SpawnObject(m_towerData.m_secondaryProjectilePrefab, transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+            
+            // AUDIO
+            RequestPlayAudio(m_towerData.m_audioSecondaryFireClips);
+            
+            // COLLISION
             Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_secondaryfireRange, m_layerMask.value);
 
             //Find enemies and deal damage
             if (hits.Length <= 0) return;
             foreach (Collider col in hits)
             {
-                //DISABLED BECAUSE IT MIGHT BE COOL
-                //Shoot a ray to each hit. If we hit a shield we stop and go to the next Arc hit.
-                /*Vector3 rayDirection = (col.transform.position - transform.position).normalized;
-                float rayLength = Vector3.Distance(transform.position, col.transform.position);
-
-                Ray ray = new Ray(transform.position, rayDirection);
-                RaycastHit[] raycastHits = Physics.RaycastAll(ray, rayLength, m_raycastLayerMask);
-
-                if (raycastHits.Length == 0)
-                {
-                    Debug.Log($"Something broke.");
-                    return;
-                }
-
-                //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
-                for (int i = 0; i < raycastHits.Length; i++)
-                {
-                    if (raycastHits[i].collider.gameObject.layer == m_shieldLayer)
-                    {
-                        //We hit the shield.
-                        //In the future we may want to tell the enemy we hit their shield so they can animate.
-                        return;
-                    }
-                }*/
-
                 EnemyController enemyHit = col.GetComponent<EnemyController>();
                 enemyHit.OnTakeDamage(m_towerData.m_secondaryDamage);
             }
@@ -132,7 +135,7 @@ public class TowerArc : Tower
         {
             Vector3 hitPos = hits[i].transform.position;
             hitPos.y = m_muzzlePoint.transform.position.y;
-            
+
             Vector3 direction = hitPos - m_muzzlePoint.transform.position;
             float coneAngleCosine = Mathf.Cos(Mathf.Deg2Rad * (m_towerData.m_fireConeAngle / 2f));
 

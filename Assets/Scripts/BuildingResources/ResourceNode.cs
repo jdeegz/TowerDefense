@@ -205,14 +205,12 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     {
         //source.Stop();
         m_audioSource.PlayOneShot(clip);
-        Debug.Log($"playing clip {clip.name}");
     }
 
     public void RequestPlayAudio(List<AudioClip> clips)
     {
         int i = Random.Range(0, clips.Count);
         m_audioSource.PlayOneShot(clips[i]);
-        Debug.Log($"playing clip {clips[i].name}");
     }
 
 

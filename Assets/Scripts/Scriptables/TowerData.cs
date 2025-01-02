@@ -54,10 +54,12 @@ public class TowerData : ScriptableObject
     
     [Header("sFX")]
     public List<AudioClip> m_audioFireClips;
+    public List<AudioClip> m_audioSecondaryFireClips;
+    public List<AudioClip> m_audioLoops;
     public AudioClip m_audioBuildClip;
     public AudioClip m_audioDestroyClip;
     public AudioClip m_audioSelectedClip;
 
-    [Header("Title")]
+    [Header("Upgrades")]
     public List<TowerData> m_upgradeOptions;
 }

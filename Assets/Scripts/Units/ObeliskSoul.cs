@@ -13,6 +13,9 @@ public class ObeliskSoul : MonoBehaviour
     private Obelisk m_obelisk;
     private Tween m_tweenToObelisk;
     private int m_soulValue;
+
+    [SerializeField] private List<AudioClip> m_birthAudioClips;
+    [SerializeField] private AudioSource m_audioSource;
     
     public void SetupSoul(Vector3 endPos, Obelisk obelisk, int soulValue)
     {
@@ -20,6 +23,7 @@ public class ObeliskSoul : MonoBehaviour
         m_obelisk = obelisk;
         m_soulValue = soulValue;
         HandleMovement();
+        RequestAudioLoop(m_birthAudioClips);
     }
 
     void HandleMovement()
@@ -33,5 +37,32 @@ public class ObeliskSoul : MonoBehaviour
         m_obelisk.IncreaseObeliskCharge(m_soulValue);
         m_soulVFX.Stop();
         ObjectPoolManager.OrphanObject(gameObject, 1.2f, ObjectPoolManager.PoolType.ParticleSystem); //1.2f is the max life duration of the vfx particle.
+    }
+    
+    public void RequestPlayAudio(AudioClip clip)
+    {
+        //source.Stop();
+        m_audioSource.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips)
+    {
+        int i = Random.Range(0, clips.Count);
+        m_audioSource.PlayOneShot(clips[i]);
+    }
+    
+    public void RequestAudioLoop(AudioClip clip)
+    {
+        m_audioSource.loop = true;
+        m_audioSource.clip = clip;
+        m_audioSource.Play();
+    }
+    
+    public void RequestAudioLoop(List<AudioClip> clips)
+    {
+        int i = Random.Range(0, clips.Count);
+        m_audioSource.loop = true;
+        m_audioSource.clip = clips[i];
+        m_audioSource.Play();
     }
 }

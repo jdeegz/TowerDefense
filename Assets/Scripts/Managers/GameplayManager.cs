@@ -13,6 +13,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.TextCore.Text;
 using Object = System.Object;
+using Random = UnityEngine.Random;
 
 public class GameplayManager : MonoBehaviour
 {
@@ -48,6 +49,8 @@ public class GameplayManager : MonoBehaviour
 
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
+    public GameplayAudioData m_gameplayAudioData;
+    public AudioSource m_audioSource;
 
     public int m_wave;
     [HideInInspector] public float m_timeToNextWave;
@@ -272,6 +275,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     //Debug.Log("Not Enough Resources.");
                     OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotAfford);
+                    RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
                 }
 
@@ -279,6 +283,7 @@ public class GameplayManager : MonoBehaviour
                 {
                     //Debug.Log("Cannot build here.");
                     OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
+                    RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
                 }
 
@@ -535,6 +540,16 @@ public class GameplayManager : MonoBehaviour
 
         if (m_gameSpeed == GameSpeed.Normal) Time.timeScale = m_playbackSpeed;
 
+        // AUDIO
+        if (m_playbackSpeed == minSpeed)
+        {
+            RequestPlayAudio(m_gameplayAudioData.m_ffwOff);
+        }
+        else
+        {
+            RequestPlayAudio(m_gameplayAudioData.m_ffwOn);
+        }
+        
         OnGameSpeedChanged?.Invoke(m_playbackSpeed);
     }
 
@@ -552,6 +567,7 @@ public class GameplayManager : MonoBehaviour
             case GameSpeed.Paused:
                 ToggleBlueprintPathDirections(true); // Re-enable path directions to include blueprint towers.
                 Time.timeScale = 0;
+                RequestPlayAudio(m_gameplayAudioData.m_pause);
                 break;
             case GameSpeed.Normal:
                 if (m_interactionState == InteractionState.PreconstructionTower && m_preconstructedTower is TowerBlueprint)
@@ -562,6 +578,7 @@ public class GameplayManager : MonoBehaviour
 
                 ToggleBlueprintPathDirections(false); // Disable blueprint tower path directions.
                 Time.timeScale = m_playbackSpeed;
+                RequestPlayAudio(m_gameplayAudioData.m_play);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newSpeed), newSpeed, null);
@@ -608,6 +625,7 @@ public class GameplayManager : MonoBehaviour
                 UpdateGamePlayback(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
+                RequestPlayAudio(m_gameplayAudioData.m_waveStartClip);
                 m_timeToNextWave = m_gameplayData.m_buildDuration;
                 break;
             case GameplayState.BossWave:
@@ -626,9 +644,12 @@ public class GameplayManager : MonoBehaviour
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
             case GameplayState.Defeat:
+                RequestPlayAudio(m_gameplayAudioData.m_defeatClip);
+                
                 int wave = 0;
                 if (m_endlessModeActive) wave = m_wave - 1;
                 if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, wave);
+                
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
@@ -1406,6 +1427,7 @@ public class GameplayManager : MonoBehaviour
 
     public void StartEndlessMode()
     {
+        RequestPlayAudio(m_gameplayAudioData.m_endlessModeStartedClip);
         m_endlessModeActive = true;
         UpdateGameplayState(GameplayState.Build);
         UpdateGamePlayback(GameSpeed.Normal);
@@ -1424,6 +1446,7 @@ public class GameplayManager : MonoBehaviour
         {
             if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
             {
+                RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
                 UpdateGameplayState(GameplayState.Victory);
                 return;
             }
@@ -1444,6 +1467,8 @@ public class GameplayManager : MonoBehaviour
         {
             OnWaveCompleted?.Invoke(m_UIStringData.m_waveComplete);
         }
+        
+        RequestPlayAudio(m_gameplayAudioData.m_audioWaveEndClips);
 
         UpdateGameplayState(GameplayState.Build);
     }
@@ -1546,6 +1571,17 @@ public class GameplayManager : MonoBehaviour
     public BossSequenceController GetActiveBossController()
     {
         return m_activeBossSequenceController;
+    }
+    
+    public void RequestPlayAudio(AudioClip clip)
+    {
+        m_audioSource.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips)
+    {
+        int i = Random.Range(0, clips.Count);
+        m_audioSource.PlayOneShot(clips[i]);
     }
 }
 

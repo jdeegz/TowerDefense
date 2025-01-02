@@ -11,6 +11,9 @@ using Random = UnityEngine.Random;
 
 public class TowerRay : Tower
 {
+    [Header("Audio")]
+    [SerializeField] private AudioSource m_secondaryAudioSource;
+    
     [Header("Visual Attributes")]
     public VisualEffect m_projectileImpactVFX;
 
@@ -40,10 +43,25 @@ public class TowerRay : Tower
     public float m_speedCap;
     public int m_maxStacks;
     public float m_maxBeamWidth;
+    
 
     private float m_resetStep;
     private float m_resetTime;
     private int m_curStacks;
+
+    private int CurStacks
+    {
+        get { return m_curStacks; }
+        set
+        {
+            if (value != m_curStacks)
+            {
+                m_curStacks = value;
+                HandlePanelColor();
+            }
+        }
+    }
+    
     private float m_curDamage;
     private float m_curFireRate;
     private Vector2 m_scrollOffset;
@@ -53,6 +71,30 @@ public class TowerRay : Tower
     private float m_curBeamWidth = 0;
     private bool m_beamActive;
     private Collider m_colliderHit;
+    private bool m_isShooting;
+    private bool IsShooting
+    {
+        get { return m_isShooting; }
+        set {
+            if (value != m_isShooting)
+            {
+                m_isShooting = value;
+                if (m_isShooting)
+                {
+                    //TURN ON BEAM
+                    StartBeam();
+                    RequestPlayAudio(m_towerData.m_audioFireClips, m_secondaryAudioSource);
+                    RequestPlayAudioLoop(m_towerData.m_audioSecondaryFireClips[0], m_secondaryAudioSource);
+                }
+                else
+                {
+                    //TURN OFF BEAM
+                    StopBeam();
+                    RequestStopAudioLoop(m_secondaryAudioSource);
+                }
+            } 
+        }
+    }
 
     void Update()
     {
@@ -68,7 +110,7 @@ public class TowerRay : Tower
 
         //RAY STACK MANAGEMENT
         //If we have stacks, increment the time. Time is being set to 0 each fire.
-        if (m_curStacks > 0 && m_curStackDropDelay <= m_stackDropDelayTime)
+        if (CurStacks > 0 && m_curStackDropDelay <= m_stackDropDelayTime)
         {
             m_curStackDropDelay += Time.deltaTime;
         }
@@ -80,8 +122,7 @@ public class TowerRay : Tower
             if (m_resetTime >= m_resetStep)
             {
                 m_resetTime = 0;
-                if (m_curStacks > 0) m_curStacks--;
-                HandlePanelColor();
+                if (CurStacks > 0) CurStacks--;
             }
         }
 
@@ -94,25 +135,25 @@ public class TowerRay : Tower
 
         if (m_curTarget == null)
         {
-            if (m_beamActive) StopBeam();
+            IsShooting = false;
             return;
         }
 
         if (m_curTarget.GetCurrentHP() <= 0)
         {
-            if (m_beamActive) StopBeam();
+            IsShooting = false;
             m_curTarget = null;
             return;
         }
 
         if (!IsTargetInFireRange(m_curTarget.transform.position))
         {
-            if (m_beamActive) StopBeam();
+            IsShooting = false;
             m_curTarget = null;
         }
         else
         {
-            m_curFireRate = m_towerData.m_fireRate * Mathf.Pow(m_speedPower, m_curStacks);
+            m_curFireRate = m_towerData.m_fireRate * Mathf.Pow(m_speedPower, CurStacks);
             if (m_curFireRate > m_speedCap)
             {
                 m_curFireRate = m_speedCap;
@@ -120,19 +161,21 @@ public class TowerRay : Tower
 
             if (IsTargetInSight())
             {
-                if (m_beamActive) HandleBeamVisual();
+                IsShooting = true;
+                
+                HandleBeamVisual();
                 
                 if (m_timeUntilFire >= 1f / m_curFireRate)
                 {
-                    if (m_curStacks < m_maxStacks) m_curStacks++;
-                    StartBeam();
+                    if (CurStacks < m_maxStacks) CurStacks++;
                     Fire();
-                    HandlePanelColor();
-
                     m_timeUntilFire = 0;
                 }
             }
-            else if (m_beamActive) StopBeam();
+            else
+            {
+                IsShooting = false;
+            }
         }
     }
 
@@ -153,8 +196,8 @@ public class TowerRay : Tower
 
     public override void RequestTowerDisable()
     {
-        StopBeam();
-        m_curStacks = 0;
+        IsShooting = false;
+        CurStacks = 0;
 
         base.RequestTowerDisable();
     }
@@ -168,6 +211,8 @@ public class TowerRay : Tower
 
         m_projectileImpactVFX.Stop();
         m_muzzleVFX.Stop();
+        
+        //RequestStopAudioLoop(m_secondaryAudioSource);
     }
 
     void DisableBeam()
@@ -175,13 +220,11 @@ public class TowerRay : Tower
         m_projectileLineRenderer.enabled = false;
         m_projectileLineRenderer_Darken.enabled = false;
         if (m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.enabled = false;
-        m_beamActive = false;
     }
 
     void StartBeam()
     {
         m_curTween.Kill();
-        m_beamActive = true;
         m_projectileLineRenderer.enabled = true;
         m_projectileLineRenderer_Darken.enabled = true;
         if (m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.enabled = true;
@@ -191,17 +234,20 @@ public class TowerRay : Tower
 
         m_projectileImpactVFX.Play();
         m_muzzleVFX.Play();
+        
+        RequestPlayAudio(m_towerData.m_audioFireClips[0]);
+        //RequestPlayAudioLoop(m_towerData.m_audioSecondaryFireClips[0], m_secondaryAudioSource);
     }
 
     public override void RemoveTower()
     {
-        StopBeam();
+        IsShooting = false;
         base.RemoveTower();
     }
 
     private void HandleMaxStackVisuals()
     {
-        /*if (m_curStacks == m_maxStacks)
+        /*if (CurStacks == m_maxStacks)
         {
             m_maxStackVFX.SetActive(true);
         }
@@ -211,24 +257,39 @@ public class TowerRay : Tower
         }*/
     }
 
+    private float m_audioPitchMin = 0.5f;
+    private float m_audioPitchMax = 1.0f;
     private void HandlePanelColor()
     {
-        //if (m_curStacks == m_lastStacks) return;
+        //if (CurStacks == m_lastStacks) return;
 
-        float normalizedTime = (float)m_curStacks / m_maxStacks;
+        float normalizedTime = (float)CurStacks / m_maxStacks;
         Color color = m_panelGradient.Evaluate(normalizedTime);
         foreach (MeshRenderer mesh in m_panelMeshRenderers)
         {
             mesh.material.SetColor("_EmissionColor", color);
         }
+        
+        Debug.Log($"{gameObject.name}'s Material Color: {color} at stacks: {CurStacks}.");
 
-        //m_lastStacks = m_curStacks;
+        // AUDIO - TOWER AMBIENT 
+        m_audioSource.pitch = Mathf.Lerp(m_audioPitchMin, m_audioPitchMax, normalizedTime);
+        //m_audioSource.volume = Mathf.Lerp(0, 1, normalizedTime);
+        
+        if (CurStacks > 0 && !m_audioSource.isPlaying)
+        {
+            RequestPlayAudioLoop(m_towerData.m_audioLoops[0], m_audioSource);
+        }
+        else if (CurStacks == 0 && m_audioSource.isPlaying)
+        {
+            RequestStopAudioLoop(m_audioSource);
+        }
     }
 
     private void Fire()
     {
         //Calculate Damage.
-        m_curDamage = m_towerData.m_baseDamage * Mathf.Pow(m_damagePower, m_curStacks);
+        m_curDamage = m_towerData.m_baseDamage * Mathf.Pow(m_damagePower, CurStacks);
         if (m_curDamage > m_damageCap)
         {
             m_curDamage = m_damageCap;
@@ -249,12 +310,12 @@ public class TowerRay : Tower
 
 
         //Play Audio.
-        int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
-        m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
+        /*int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
+        m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);*/
 
         //Reset Counters.
         m_curStackDropDelay = 0;
-        m_resetStep = m_totalResetTime / m_curStacks;
+        m_resetStep = m_totalResetTime / CurStacks;
     }
 
 
@@ -279,7 +340,7 @@ public class TowerRay : Tower
         }
 
         //Line Width based on Stacks
-        /*float width = 0.0f + (m_curStacks - 0f) * (0.5f - 0.0f) / (m_maxStacks - 0f);
+        /*float width = 0.0f + (CurStacks - 0f) * (0.5f - 0.0f) / (m_maxStacks - 0f);
         m_projectileLineRenderer.startWidth = width;
         m_projectileLineRenderer.endWidth = width;*/
 
@@ -291,7 +352,7 @@ public class TowerRay : Tower
 
 
         //Color the texture.
-        float normalizedTime = (float)m_curStacks / m_maxStacks;
+        float normalizedTime = (float)CurStacks / m_maxStacks;
         Color color = m_beamGradient.Evaluate(normalizedTime);
         m_projectileLineRenderer.material.SetColor("_Color", color);
         if (m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.material.SetColor("_Color", color);
@@ -300,8 +361,8 @@ public class TowerRay : Tower
 
         //Modify Speed & Rate.
         m_projectileImpactVFX.SetFloat("_Rate", m_curFireRate);
-        m_muzzleVFX.SetFloat("_Speed", m_curStacks / 8);
-        m_muzzleVFX.SetFloat("_Rate", m_curStacks);
+        m_muzzleVFX.SetFloat("_Speed", CurStacks / 8);
+        m_muzzleVFX.SetFloat("_Rate", CurStacks);
         //Handle the Charge up VFX
     }
 
@@ -345,7 +406,7 @@ public class TowerRay : Tower
         TowerUpgradeData data = new TowerUpgradeData();
 
         data.m_turretRotation = GetTurretRotation();
-        data.m_stacks = m_curStacks;
+        data.m_stacks = CurStacks;
 
         return data;
     }
@@ -353,6 +414,6 @@ public class TowerRay : Tower
     public override void SetUpgradeData(TowerUpgradeData data)
     {
         SetTurretRotation(data.m_turretRotation);
-        m_curStacks = data.m_stacks;
+        CurStacks = data.m_stacks;
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Diagnostics;
+using Random = UnityEngine.Random;
 
 public class Obelisk : MonoBehaviour
 {
@@ -46,7 +47,7 @@ public class Obelisk : MonoBehaviour
                 break;
             case ObeliskState.Charged:
                 m_chargedVFXGroup.SetActive(true);
-                PlayAudio(m_obeliskData.m_obeliskCharged);
+                RequestPlayAudio(m_obeliskData.m_obeliskChargedClip);
                 GameplayManager.Instance.CheckObeliskStatus();
                 break;
             default:
@@ -113,18 +114,23 @@ public class Obelisk : MonoBehaviour
         switch (m_obeliskState)
         {
             case ObeliskState.Charging:
-                m_curChargeCount += i;
+                if (m_curChargeCount >= m_maxChargeCount) return; // Dont increment if we're capped.
 
-                if (m_curChargeCount > m_maxChargeCount) m_curChargeCount = m_maxChargeCount;
+                m_curChargeCount += i;
                 
+                // METER
                 float progress = (float)m_curChargeCount / m_maxChargeCount;
                 m_meterMaterial.SetFloat(m_meterScrollParameter, 1 - progress);
                 
-                PlayAudio(m_obeliskData.m_soulCollected);
+                // AUDIO
+                RequestPlayAudio(m_obeliskData.m_soulCollectedClips);
+                
+                // CHARGED CHECK
                 if (m_curChargeCount >= m_maxChargeCount)
                 {
                     UpdateObeliskState(ObeliskState.Charged);
                 }
+                
                 OnObeliskChargeChanged?.Invoke(m_curChargeCount);
                 break;
             case ObeliskState.Charged:
@@ -184,6 +190,18 @@ public class Obelisk : MonoBehaviour
         data.m_obeliskCurCharge = m_curChargeCount;
         data.m_obeliskMaxCharge = m_maxChargeCount;
         return data;
+    }
+    
+    public void RequestPlayAudio(AudioClip clip)
+    {
+        //source.Stop();
+        m_audioSource.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips)
+    {
+        int i = Random.Range(0, clips.Count);
+        m_audioSource.PlayOneShot(clips[i]);
     }
 }
 
