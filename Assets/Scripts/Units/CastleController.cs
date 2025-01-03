@@ -19,8 +19,9 @@ public class CastleController : MonoBehaviour
     private int m_maxHealth;
     private int m_curHealth;
     private int m_repairHealthAmount;
-    private float m_repairHealthInterval;
+    private int m_repairFrequency;
     private float m_repairElapsedTime;
+    private int m_healthRepaired = 0;
 
     public event Action<int> UpdateHealth;
     public event Action<int> UpdateMaxHealth;
@@ -34,7 +35,7 @@ public class CastleController : MonoBehaviour
         m_maxHealth = m_castleData.m_maxHealth;
         m_curHealth = m_castleData.m_maxHealth;
         m_repairHealthAmount = m_castleData.m_repairHealthAmount;
-        m_repairHealthInterval = m_castleData.m_repairHealthInterval;
+        m_repairFrequency = m_castleData.m_repairFrequency;
 
         UpdateHealth += OnUpdateHealth;
         UpdateMaxHealth += OnUpdateMaxHealth;
@@ -97,6 +98,7 @@ public class CastleController : MonoBehaviour
             case GameplayManager.GameplayState.Combat:
                 break;
             case GameplayManager.GameplayState.Build:
+                RepairCastle();
                 break;
             case GameplayManager.GameplayState.CutScene:
                 break;
@@ -112,37 +114,39 @@ public class CastleController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build && m_curHealth < m_maxHealth && !m_isRepairing)
-        {
-            // Start repairing.
-            RepairCastle();
-        }
+        //
     }
 
     private bool m_isRepairing;
 
     void RepairCastle()
     {
-        m_isRepairing = true;
-        
-        StopScheduledClip();
+        if (m_curHealth >= m_maxHealth) return;
         StartCoroutine(RepairCoroutine());
     }
 
+
     private IEnumerator RepairCoroutine()
     {
-        PlayScheduledClip(m_castleData.m_repairingClip);
-        Debug.Log($"playing repair clip.");
-        
-        m_repairElapsedTime = 0;
-        while (m_repairElapsedTime < m_repairHealthInterval)
+        int amountToRepair = Math.Min(m_maxHealth - m_curHealth, m_repairFrequency);
+        m_isRepairing = true;
+        while (m_healthRepaired < amountToRepair)
         {
-            m_repairElapsedTime += Time.deltaTime;
-            yield return null;
+            PlayScheduledClip(m_castleData.m_repairingClip);
+            m_repairElapsedTime = 0;
+            
+            while (m_repairElapsedTime < GameplayManager.Instance.m_gameplayData.m_buildDuration / m_repairFrequency)
+            {
+                m_repairElapsedTime += Time.deltaTime;
+                yield return null;
+            }
+            
+            ++m_healthRepaired;
+            UpdateHealth?.Invoke(m_repairHealthAmount);
+            StopScheduledClip();
         }
-        
-        UpdateHealth?.Invoke(m_repairHealthAmount);
-        StopScheduledClip();
+
+        m_healthRepaired = 0;
         m_isRepairing = false;
     }
 
@@ -165,7 +169,7 @@ public class CastleController : MonoBehaviour
 
     public float RepairProgress()
     {
-        return m_repairElapsedTime / m_repairHealthInterval;
+        return m_repairElapsedTime / (GameplayManager.Instance.m_gameplayData.m_buildDuration / m_repairFrequency);
     }
 
     public void TakeDamage(int dmg)
@@ -301,7 +305,7 @@ public class CastleController : MonoBehaviour
         int i = Random.Range(0, clips.Count);
         m_audioSource.PlayOneShot(clips[i]);
     }
-    
+
     public void PlayScheduledClip(AudioClip clip)
     {
         m_audioSource.clip = clip;
@@ -324,7 +328,7 @@ public class CastleController : MonoBehaviour
         data.m_maxHealth = m_maxHealth;
         data.m_curHealth = m_curHealth;
         data.m_repairHealthAmount = m_repairHealthAmount;
-        data.m_repairHealthInterval = m_repairHealthInterval;
+        data.m_repairFrequency = m_repairFrequency;
         return data;
     }
 }
@@ -336,5 +340,5 @@ public class CastleTooltipData
     public int m_maxHealth;
     public int m_curHealth;
     public int m_repairHealthAmount;
-    public float m_repairHealthInterval;
+    public int m_repairFrequency;
 }

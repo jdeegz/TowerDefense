@@ -223,7 +223,7 @@ public class UITooltipController : MonoBehaviour
                 m_objectDescriptionString = castleNodeData.m_castleDescription;
                 m_objectDetailsString = $"{castleNodeData.m_curHealth} / {castleNodeData.m_maxHealth}{m_healthIconString}<br>" +
                                         $"Repair Amount: {castleNodeData.m_repairHealthAmount}{m_healthIconString}<br>" +
-                                        $"Repair Speed: {castleNodeData.m_repairHealthInterval}{m_timeIconString}";
+                                        $"Repairs Per Wave: {castleNodeData.m_repairFrequency}";
                 break;
             case Selectable.SelectedObjectType.Obelisk:
                 ObeliskTooltipData obeliskNodeData = hoveredObj.GetComponent<Obelisk>().GetTooltipData();

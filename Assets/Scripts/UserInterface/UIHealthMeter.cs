@@ -38,6 +38,7 @@ public class UIHealthMeter : MonoBehaviour
         m_track3dObject.SetupTracking(m_enemy.gameObject, GetComponent<RectTransform>(), yOffset);
         m_enemy.UpdateHealth += OnUpdateHealth;
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
+        m_isBuilt = true;
     }
 
     public void SetBoss(EnemyController enemy, float health)

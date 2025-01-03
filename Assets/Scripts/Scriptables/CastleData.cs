@@ -12,7 +12,7 @@ public class CastleData : ScriptableObject
     
     public int m_maxHealth;
     public int m_repairHealthAmount;
-    public float m_repairHealthInterval;
+    public int m_repairFrequency;
     
     //Audio
     public AudioClip m_healthGainedClip;
