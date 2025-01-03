@@ -18,6 +18,8 @@ public class UIHealthMeter : MonoBehaviour
     private float m_curHealth;
     private int m_newHealth;
     private float m_originalWidth;
+    private bool m_isBuilt;
+    private float m_fillSpeed = 10f;
 
     //Health needs to be abstracted out so a Castle and Enemy can use this same script.
     private EnemyController m_enemy;
@@ -47,6 +49,7 @@ public class UIHealthMeter : MonoBehaviour
         m_enemy.UpdateHealth += OnUpdateHealth;
         m_enemy.DestroyEnemy += OnEnemyDestroyed;
         HandleFadeIn();
+        m_isBuilt = true;
     }
 
     void HandleFadeIn()
@@ -61,11 +64,30 @@ public class UIHealthMeter : MonoBehaviour
 
     void Update()
     {
-        m_lifeImage.fillAmount = Mathf.Lerp(m_lifeImage.fillAmount, m_curHealth / m_maxHealth, 10 * Time.deltaTime);
+        UpdateMeterFill();
+    }
+
+    void UpdateMeterFill()
+    {
+        if (!m_isBuilt) return;
+        
+        //float fillValue = Mathf.Lerp(m_lifeImage.fillAmount, m_curHealth / m_maxHealth, 10 * Time.deltaTime);
+        //m_lifeImage.fillAmount = fillValue;
+        
+        float target = m_curHealth/m_maxHealth;
+        float current = m_lifeImage.fillAmount;
+
+        if (target > current) {
+            m_lifeImage.fillAmount = target; // instant
+        }
+        else {
+            m_lifeImage.fillAmount = Mathf.Max(current - m_fillSpeed * Time.deltaTime, target); // move towards target but not past it. 
+        }
     }
 
     void OnEnemyDestroyed(Vector3 pos)
     {
+        m_isBuilt = false;
         m_enemy.UpdateHealth -= OnUpdateHealth;
         m_enemy.DestroyEnemy -= OnEnemyDestroyed;
         ObjectPoolManager.ReturnObjectToPool(gameObject);

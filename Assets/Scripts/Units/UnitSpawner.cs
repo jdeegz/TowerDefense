@@ -28,6 +28,7 @@ public class UnitSpawner : MonoBehaviour
     private void Start()
     {
         m_isSpawnerActive = false;
+        RequestPlayAudioLoop(m_data.m_audioSpawnerActiveLoops);
     }
 
     public void SetSpawnerStatusEffect(StatusEffect statusEffect, int duration)
@@ -62,7 +63,7 @@ public class UnitSpawner : MonoBehaviour
                 m_isSpawnerActive = false;
                 GameplayManager.Instance.DisableSpawner();
 
-                RequestStopAudioLoop();
+                //RequestStopAudioLoop();
             }
         }
     }
@@ -95,7 +96,7 @@ public class UnitSpawner : MonoBehaviour
 
         if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
         Debug.Log($"{gameObject.name} starting fade in coroutine");
-        m_curCoroutine = StartCoroutine(FadeInAudio(1f, audioSource));
+        m_curCoroutine = StartCoroutine(FadeInAudio(4f, audioSource));
     }
 
     private Coroutine m_curCoroutine;
@@ -143,7 +144,7 @@ public class UnitSpawner : MonoBehaviour
 
     private void StartSpawning()
     {
-        RequestPlayAudioLoop(m_data.m_audioSpawnerActiveLoops);
+        //RequestPlayAudioLoop(m_data.m_audioSpawnerActiveLoops);
 
         GameplayManager.Instance.ActivateSpawner();
 

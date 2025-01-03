@@ -58,18 +58,6 @@ public class UICombatView : MonoBehaviour
     [Header("Scene References")]
     [SerializeField] private UIOptionsMenu m_menuObj;
 
-    [Header("AudioClips")]
-    [SerializeField] private List<AudioClip> m_woodGained;
-    [SerializeField] private List<AudioClip> m_woodSpent;
-    [SerializeField] private AudioClip m_stoneGained;
-    [SerializeField] private AudioClip m_stoneSpent;
-    [SerializeField] private AudioClip m_healthGained;
-    [SerializeField] private AudioClip m_healthLost;
-    [SerializeField] private AudioClip m_castleRepairing;
-    [SerializeField] private AudioClip m_waveStarting;
-    [SerializeField] private AudioClip m_waveSpawningComplete;
-    [SerializeField] private AudioClip m_waveCleared;
-
     private bool m_menusOpen;
     private float m_timeToNextWave;
     private int m_curCastleHealth;
@@ -86,12 +74,10 @@ public class UICombatView : MonoBehaviour
     private Dictionary<KeyCode, int> m_towerKeyMap;
     private int m_blueprintTowerKey;
     private int m_wave;
-    private AudioSource m_audioSource;
 
     void Awake()
     {
         m_canvasGroup.alpha = 0;
-        m_audioSource = GetComponent<AudioSource>();
         
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;

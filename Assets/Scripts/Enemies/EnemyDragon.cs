@@ -496,7 +496,7 @@ public class EnemyDragon : EnemyController
             // Assign the position of each bone based on spacing
             for (int i = 1; i < m_dragonBones.Count; i++)
             {
-                float transformHistoryFloat = Mathf.Clamp(m_headTransformHistory.Count - i * m_dragonBoneSpacing / (m_baseMoveSpeed * Time.fixedUnscaledDeltaTime), 0, m_headTransformHistory.Count - 1);
+                float transformHistoryFloat = Mathf.Clamp(m_headTransformHistory.Count - i * m_dragonBoneSpacing / (m_baseMoveSpeed * Time.fixedDeltaTime), 0, m_headTransformHistory.Count - 1);
                 int transformHistoryIndex = Mathf.FloorToInt(transformHistoryFloat);
 
                 BoneTransform targetTransform = m_headTransformHistory.ElementAt(transformHistoryIndex);

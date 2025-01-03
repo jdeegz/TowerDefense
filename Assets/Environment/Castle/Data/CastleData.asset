@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: CastleData
   m_EditorClassIdentifier: 
   m_castleName: Spire of Morosith
-  m_castleDescription: 'Protect this Spire from Grainwraiths. Damages can be repaired,
-    but annihilation may be inevitible.
+  m_castleDescription: 'Protect this Spire from Grainwraiths. Minor Damages will
+    be repaired between waves.
 
 
-    Once the Obelisks have captured enough
-    core elements, the Spire will be able to heal the Gossamer in this region.'
+    Once the Obelisks are full, the Spire will be
+    able to heal the Gossamer in this region.
+
+
+    Wood may deposited here.'
   m_maxHealth: 6
   m_repairHealthAmount: 1
   m_repairHealthInterval: 3
@@ -26,9 +29,5 @@ MonoBehaviour:
   m_healthLostClips:
   - {fileID: 8300000, guid: b5175aa4cb0e1ed48800b4f44705066b, type: 3}
   - {fileID: 8300000, guid: 339543baefe32b2489c7b995652e20d5, type: 3}
-  m_waveStartClip: {fileID: 8300000, guid: 863f2d697eb7d19418ae11065c73b272, type: 3}
-  m_audioWaveEndClips:
-  - {fileID: 8300000, guid: 252ca901006cf0e4fa421d3add4f0fd6, type: 3}
-  - {fileID: 8300000, guid: da32b4d49ace63e40813955202d9b1d4, type: 3}
-  - {fileID: 8300000, guid: 001489c2df4cf1247b818f67754226aa, type: 3}
   m_repairingClip: {fileID: 8300000, guid: 1d21701814849a141867844dee78644a, type: 3}
+  m_destroyedClip: {fileID: 0}
