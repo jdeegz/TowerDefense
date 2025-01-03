@@ -20,6 +20,7 @@ public class EnemyDragon : EnemyController
     public List<GameObject> m_dragonBones;
     public float m_dragonBoneSpacing = .5f;
     public VisualEffect m_dragonBreathVFX;
+    [SerializeField]private AudioSource m_secondaryAudioSource;
 
     private BossSequenceController m_bossSequenceController;
 
@@ -360,7 +361,7 @@ public class EnemyDragon : EnemyController
         }
 
         m_attackingSpeedModifier = 0;
-
+        RequestPlayAudio(((BossEnemyData)m_enemyData).m_audioAnticFireballClip);
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackDelay);
         HandleAttack();
         yield return new WaitForSeconds(((BossEnemyData)m_enemyData).m_attackCooldown);
@@ -386,6 +387,7 @@ public class EnemyDragon : EnemyController
 
     private void HandleAttack()
     {
+        RequestPlayAudio(((BossEnemyData)m_enemyData).m_audioShootFireballClip);
         ObjectPoolManager.SpawnObject(((BossEnemyData)m_enemyData).m_projectileObj, m_muzzleObj.transform.position, m_muzzleObj.transform.rotation, null, ObjectPoolManager.PoolType.Projectile);
     }
 
@@ -494,7 +496,7 @@ public class EnemyDragon : EnemyController
             // Assign the position of each bone based on spacing
             for (int i = 1; i < m_dragonBones.Count; i++)
             {
-                float transformHistoryFloat = Mathf.Clamp(m_headTransformHistory.Count - i * m_dragonBoneSpacing / (m_baseMoveSpeed * Time.fixedDeltaTime), 0, m_headTransformHistory.Count - 1);
+                float transformHistoryFloat = Mathf.Clamp(m_headTransformHistory.Count - i * m_dragonBoneSpacing / (m_baseMoveSpeed * Time.fixedUnscaledDeltaTime), 0, m_headTransformHistory.Count - 1);
                 int transformHistoryIndex = Mathf.FloorToInt(transformHistoryFloat);
 
                 BoneTransform targetTransform = m_headTransformHistory.ElementAt(transformHistoryIndex);
@@ -545,6 +547,7 @@ public class EnemyDragon : EnemyController
         }
         else
         {
+            RequestPlayAudio(((BossEnemyData)m_enemyData).m_audioMovementClips, m_audioSource);
             UpdateBossState(BossState.MoveToDestination);
         }
     }
@@ -569,6 +572,8 @@ public class EnemyDragon : EnemyController
         if (!m_colliderObj.activeSelf && m_distanceTravelled > m_coneStartDelay && m_distanceTravelled < m_coneEndBuffer)
         {
             m_colliderObj.SetActive(true);
+            RequestPlayAudio(((BossEnemyData)m_enemyData).m_audioStrafeIgniteClip);
+            RequestPlayAudioLoop(((BossEnemyData)m_enemyData).m_audioStrafeLoop, m_secondaryAudioSource);
             m_dragonBreathVFX.Play();
             DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 0f, 1f)
                 .OnUpdate(() => m_dragonBreathVFX.SetFloat("Dissolve", m_curDissolve));
@@ -577,6 +582,7 @@ public class EnemyDragon : EnemyController
         {
             m_colliderObj.SetActive(false);
             m_dragonBreathVFX.Stop();
+            RequestStopAudioLoop(m_secondaryAudioSource);
             DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 1f, 1f)
                 .OnUpdate(() => m_dragonBreathVFX.SetFloat("Dissolve", m_curDissolve));
         }

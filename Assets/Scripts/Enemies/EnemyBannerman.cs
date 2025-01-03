@@ -79,6 +79,8 @@ public class EnemyBannerman : MonoBehaviour
 
     private void Heal()
     {
+        m_enemyController.RequestPlayAudio(m_enemyController.m_enemyData.m_audioEnemyFeatureClip);
+        
         Collider[] colliders = Physics.OverlapSphere(m_enemyController.m_targetPoint.position, m_healRadius, m_healLayerMask);
 
         if (colliders.Length <= 0) return; //No one found to heal.

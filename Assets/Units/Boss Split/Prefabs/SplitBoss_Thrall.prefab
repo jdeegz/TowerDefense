@@ -106,10 +106,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 200
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 6
+  MinDistance: 25
+  MaxDistance: 80
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -206,7 +206,7 @@ MonoBehaviour:
   m_vulnerabilityEffectData: {fileID: 11400000, guid: e852b525c6840bc4e95f98d83416f195, type: 2}
   m_renderer: {fileID: 4896660811173158083}
   m_dissolveRange: {x: 0.15, y: 1}
-  m_dissolveDuration: 0.66
+  m_dissolveShieldDuration: 0.3
 --- !u!1 &6845048733821058307
 GameObject:
   m_ObjectHideFlags: 0

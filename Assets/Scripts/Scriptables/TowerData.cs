@@ -59,7 +59,10 @@ public class TowerData : ScriptableObject
     public AudioClip m_audioBuildClip;
     public AudioClip m_audioDestroyClip;
     public AudioClip m_audioSelectedClip;
-
-    [Header("Upgrades")]
+    
+    public List<AudioClip> m_audioTowerDeactivatedClips;
+    public List<AudioClip> m_audioTowerActivatedClips;
+    
+    [Header("Upgrade Paths")]
     public List<TowerData> m_upgradeOptions;
 }

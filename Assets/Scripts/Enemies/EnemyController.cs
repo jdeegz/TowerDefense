@@ -120,7 +120,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
         //Define AudioSource
         m_audioSource = GetComponent<AudioSource>();
-        m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
+        RequestPlayAudio(m_enemyData.m_audioSpawnClips, m_audioSource);
+        RequestPlayAudioLoop(m_enemyData.m_audioLifeLoop, m_audioSource);
 
         //Setup ObeliskData if the mission has obelisks
         if (GameplayManager.Instance && GameplayManager.Instance.m_obelisksInMission.Count > 0)
@@ -148,6 +149,37 @@ public abstract class EnemyController : Dissolvable, IEffectable
         //Setup Life Meter
         UIHealthMeter lifeMeter = ObjectPoolManager.SpawnObject(IngameUIController.Instance.m_healthMeter.gameObject, IngameUIController.Instance.transform).GetComponent<UIHealthMeter>();
         lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
+    }
+    
+    public void RequestPlayAudio(AudioClip clip, AudioSource audioSource = null)
+    {
+        if (clip == null) return;
+        
+        if (audioSource == null) audioSource = m_audioSource;
+        audioSource.PlayOneShot(clip);
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips, AudioSource audioSource = null)
+    {
+        if (clips[0] == null) return;
+        
+        if (audioSource == null) audioSource = m_audioSource;
+        int i = Random.Range(0, clips.Count);
+        audioSource.PlayOneShot(clips[i]);
+    }
+    
+    public void RequestPlayAudioLoop(AudioClip clip, AudioSource audioSource = null)
+    {
+        if (audioSource == null) audioSource = m_audioSource;
+        audioSource.loop = true;
+        audioSource.clip = clip;
+        audioSource.Play();
+    }
+    
+    public void RequestStopAudioLoop(AudioSource audioSource = null)
+    {
+        if (audioSource == null) audioSource = m_audioSource;
+        audioSource.Stop();
     }
 
     void Update()
@@ -335,13 +367,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
     {
         if (m_curHealth <= 0) return;
 
-        //Audio
-        if (m_enemyData.m_audioDamagedClips.Count > 0)
-        {
-            int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
-            m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
-        }
-
         //Calculate Damage
         float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
         m_curHealth -= cumDamage;
@@ -393,11 +418,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
     {
         if (m_curHealth >= m_curMaxHealth) return;
 
-        //Audio
-        m_audioSource.PlayOneShot(m_enemyData.m_audioHealedClip);
-
-        //VFX
-
         //Hit Flash
         if (m_allRenderers == null) return;
         if (m_hitFlashCoroutine != null)
@@ -419,6 +439,9 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_isComplete) return;
+        
+        RequestPlayAudio(m_enemyData.m_audioDeathClips);
+        RequestStopAudioLoop(m_audioSource);
 
         m_isComplete = true;
         m_isActive = false;

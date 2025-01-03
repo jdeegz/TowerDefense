@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening.Core.Enums;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
@@ -13,8 +14,9 @@ public class UnitSpawner : MonoBehaviour
     [SerializeField] private TearData m_data;
     [SerializeField] private Transform m_spawnPoint;
     [SerializeField] private SpawnerWaves m_spawnerWaves;
-    
-    private CreepWave m_activeWave;
+    [SerializeField] private AudioSource m_audioSource;
+
+    private CreepWave m_activeWave = null;
     private bool m_isSpawnerActive = false;
     private List<CreepSpawner> m_activeCreepSpawners;
     private StatusEffect m_spawnStatusEffect;
@@ -56,18 +58,21 @@ public class UnitSpawner : MonoBehaviour
             //If we have NO active creep spawners, disable this spawner.
             if (m_activeCreepSpawners.Count == 0)
             {
+                Debug.Log($"{gameObject.name} done spawning.");
                 m_isSpawnerActive = false;
                 GameplayManager.Instance.DisableSpawner();
-                //Debug.Log($"{gameObject.name} done spawning.");
+
+                RequestStopAudioLoop();
             }
         }
     }
 
     public CreepWave GetActiveWave()
     {
+        //CreepWave activeWave = new CreepWave(m_activeWave);
         return m_activeWave;
     }
-    
+
     public SpawnerWaves GetSpawnerWaves()
     {
         return m_spawnerWaves;
@@ -78,17 +83,67 @@ public class UnitSpawner : MonoBehaviour
         return m_spawnPoint;
     }
 
+    public void RequestPlayAudioLoop(List<AudioClip> clips, AudioSource audioSource = null)
+    {
+        if (audioSource == null) audioSource = m_audioSource;
+
+        int i = Random.Range(0, clips.Count);
+        audioSource.volume = 0;
+        audioSource.loop = true;
+        audioSource.clip = clips[i];
+        audioSource.Play();
+
+        if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
+        Debug.Log($"{gameObject.name} starting fade in coroutine");
+        m_curCoroutine = StartCoroutine(FadeInAudio(1f, audioSource));
+    }
+
+    private Coroutine m_curCoroutine;
+
+    private IEnumerator FadeInAudio(float duration, AudioSource audioSource)
+    {
+        float startVolume = audioSource.volume;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.unscaledDeltaTime;
+            audioSource.volume = Mathf.Clamp01(startVolume + (elapsedTime / duration));
+            yield return null;
+        }
+
+        audioSource.volume = 1f;
+        Debug.Log($"{gameObject.name} fade in coroutine completed.");
+    }
+
+    private IEnumerator FadeOutAudio(float duration, AudioSource audioSource)
+    {
+        float startVolume = audioSource.volume;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.unscaledDeltaTime;
+            audioSource.volume = Mathf.Clamp01(startVolume - (elapsedTime / duration));
+            yield return null;
+        }
+
+        audioSource.volume = 0f;
+        audioSource.Stop();
+        Debug.Log($"{gameObject.name} fade out coroutine completed.");
+    }
+
+    public void RequestStopAudioLoop(AudioSource audioSource = null)
+    {
+        if (audioSource == null) audioSource = m_audioSource;
+        Debug.Log($"starting fade out coroutine.");
+        if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
+        m_curCoroutine = StartCoroutine(FadeOutAudio(3f, audioSource));
+    }
+
     private void StartSpawning()
     {
-        //We get the next Wave from GetNextCreepWave, if it is null, we dont need to start Spawning.
-        if (m_activeWave == null) return;
-        
-        /*//Check for Unit Cutscene.
-        if (GameManager.Instance && m_activeWave is NewTypeCreepWave newTypeWave && newTypeWave.m_waveCutscene != null)
-        {
-            Debug.Log($"Cutscene named: {newTypeWave.m_waveCutscene} found for this wave.");
-            GameManager.Instance.RequestAdditiveSceneLoad(newTypeWave.m_waveCutscene);
-        }*/
+        RequestPlayAudioLoop(m_data.m_audioSpawnerActiveLoops);
 
         GameplayManager.Instance.ActivateSpawner();
 
@@ -117,13 +172,15 @@ public class UnitSpawner : MonoBehaviour
     public CreepWave GetNextCreepWave()
     {
         int gameplayWave = GameplayManager.Instance.m_wave + 1;
-        //Debug.Log($"Spawner fetching wave data. Index: {gameplayWave}.");
+
         CreepWave creepWave = new CreepWave();
 
         //INTRO WAVES
         if (gameplayWave < m_spawnerWaves.m_introWaves.Count)
         {
             creepWave = m_spawnerWaves.m_introWaves[gameplayWave];
+
+            //Does this wave have units in it?
             return creepWave;
         }
 
@@ -133,10 +190,11 @@ public class UnitSpawner : MonoBehaviour
             if (gameplayWave == newTypeCreepWave.m_waveToSpawnOn)
             {
                 creepWave = newTypeCreepWave;
+
                 return creepWave;
             }
         }
-        
+
         //Subtract the number of training ways so that we start at wave 0 in the new lists.
         gameplayWave -= m_spawnerWaves.m_introWaves.Count;
 
@@ -147,15 +205,16 @@ public class UnitSpawner : MonoBehaviour
         {
             int wave = (gameplayWave) % m_spawnerWaves.m_challengingWaves.Count;
             creepWave = m_spawnerWaves.m_challengingWaves[wave];
+
+            return creepWave;
         }
         else
         {
             int wave = (gameplayWave) % m_spawnerWaves.m_loopingWaves.Count;
             creepWave = m_spawnerWaves.m_loopingWaves[wave];
+            
+            return creepWave;
         }
-
-        //Debug.Log($"Getting next creep wave.");
-        return creepWave;
     }
 
 
@@ -193,7 +252,10 @@ public class UnitSpawner : MonoBehaviour
             case GameplayManager.GameplayState.Setup:
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                StartSpawning();
+                if (m_activeWave.m_creeps != null && m_activeWave.m_creeps.Count > 0)
+                {
+                    StartSpawning();
+                }
                 break;
             case GameplayManager.GameplayState.BossWave:
                 break;
@@ -214,7 +276,7 @@ public class UnitSpawner : MonoBehaviour
                 break;
         }
     }
-    
+
     public TearTooltipData GetTooltipData()
     {
         TearTooltipData data = new TearTooltipData();

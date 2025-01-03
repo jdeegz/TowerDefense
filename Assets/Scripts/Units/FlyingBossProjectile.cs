@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class FlyingBossProjectile : MonoBehaviour
 {
-    public float m_moveSpeed = 2;
+    [SerializeField] private AudioSource m_audioSource;
+    [SerializeField] private AudioClip m_audioImpactClip;
+    public float m_moveSpeed = 4;
     private Vector3 m_goal;
     
     void Start()
@@ -21,6 +23,7 @@ public class FlyingBossProjectile : MonoBehaviour
         if (Vector3.Distance(transform.position, m_goal) <= 1.5f)
         {
             GameplayManager.Instance.m_castleController.TakeBossDamage(1);
+            GameplayManager.Instance.m_castleController.RequestPlayAudio(m_audioImpactClip);
             ObjectPoolManager.ReturnObjectToPool(gameObject);
         }
     }

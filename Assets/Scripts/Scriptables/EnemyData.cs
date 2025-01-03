@@ -32,9 +32,9 @@ public class EnemyData : ScriptableObject
     public GameObject m_trojanSpawner;
     
     [Header("Audio")]
-    public AudioClip m_audioSpawnClip;
-    public AudioClip m_audioDeathClip;
-    public AudioClip m_audioHealedClip;
-    public List<AudioClip> m_audioDamagedClips;
+    public List<AudioClip> m_audioSpawnClips;
+    public List<AudioClip> m_audioDeathClips;
+    public AudioClip m_audioLifeLoop;
+    public AudioClip m_audioEnemyFeatureClip;
 
 }

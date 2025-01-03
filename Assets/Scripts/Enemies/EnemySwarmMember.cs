@@ -51,7 +51,7 @@ public class EnemySwarmMember : EnemyController
 
         //Define AudioSource
         //m_audioSource = GetComponent<AudioSource>();
-        //m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
+        //m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClips);
 
         //Setup ObeliskData if the mission has obelisks
         /*if (GameplayManager.Instance && GameplayManager.Instance.m_obelisksInMission.Count > 0)

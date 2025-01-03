@@ -37,14 +37,11 @@ public class EnemyThrall : EnemyController
     // HANDLING DAMAGE
     public override void OnTakeDamage(float dmg)
     {
-        
         //Send damage to enemyHost
         float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
         m_enemyHost.OnTakeDamage(cumDamage);
 
         //Audio
-        int i = Random.Range(0, m_enemyData.m_audioDamagedClips.Count);
-        m_audioSource.PlayOneShot(m_enemyData.m_audioDamagedClips[i]);
 
         //VFX
     }
@@ -69,6 +66,8 @@ public class EnemyThrall : EnemyController
     {
         // Stop moving
         m_baseMoveSpeed = 0f;
+        
+        RequestStopAudioLoop(m_audioSource);
         
         m_shieldMaterial.DOFloat(m_dissolveRange.y, "_DissolveValue", m_dissolveShieldDuration);
         
@@ -104,6 +103,7 @@ public class EnemyThrall : EnemyController
     void ResumeMoving()
     {
         m_shieldMaterial.DOFloat(m_dissolveRange.x, "_DissolveValue", m_dissolveShieldDuration / 2);
+        RequestPlayAudioLoop(m_enemyData.m_audioLifeLoop, m_audioSource);
         
         // Resume moving -- Refresh where we want to move to, in case the player has adjusted the path during the spawning of ooze.
         // This chunk of code is copied from the base HandleMovement function.

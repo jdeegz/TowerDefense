@@ -33,7 +33,7 @@ public class TargetDummy : EnemyController
         
         //Define AudioSource
         m_audioSource = GetComponent<AudioSource>();
-        m_audioSource.PlayOneShot(m_enemyData.m_audioSpawnClip);
+        RequestPlayAudio(m_enemyData.m_audioSpawnClips);
         
         if (m_statusEffects != null) m_statusEffects.Clear();
         if (m_expiredStatusEffects != null) m_expiredStatusEffects.Clear();

@@ -617,9 +617,9 @@ public class UnitPath
         }
     }
 
-    private void UnitSpawnActiveWaveSet(CreepWave creepList)
+    private void UnitSpawnActiveWaveSet(CreepWave activeWave)
     {
-        if (creepList.m_creeps.Count > 0)
+        if (activeWave.m_creeps != null && activeWave.m_creeps.Count > 0)
         {
             //Debug.Log($"Setting Line Renderer to {m_lineRendererColorOn}");
             m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOn;

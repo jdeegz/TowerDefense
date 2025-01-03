@@ -55,12 +55,14 @@ public abstract class Tower : MonoBehaviour
 
     public virtual void RequestTowerDisable()
     {
+        RequestPlayAudio(m_towerData.m_audioTowerDeactivatedClips, m_audioSource);
         m_curTarget = null;
         enabled = false;
     }
 
     public virtual void RequestTowerEnable()
     {
+        RequestPlayAudio(m_towerData.m_audioTowerActivatedClips, m_audioSource);
         enabled = true;
     }
 
