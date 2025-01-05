@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using TechnoBabelGames;
+using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -73,9 +74,14 @@ public class ResourceManager : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        if (newState == GameplayManager.GameplayState.Build)
+        /*if (newState == GameplayManager.GameplayState.Build)
         {
             RequestRuinIndicator();
+        }*/
+
+        if (newState == GameplayManager.GameplayState.PlaceObstacles)
+        {
+            SetupRuinIndications();
         }
     }
 
@@ -208,6 +214,54 @@ public class ResourceManager : MonoBehaviour
         return m_woodGathererCount;
     }
 
+    public void SetupRuinIndications()
+    {
+        //How many ruins do we want in the mission? 
+        //m_resourceManagerData.m_maxIndicators
+
+        //while ruinsIndicated is < m_maxIndicators
+        //Pick a ruin via the weighted deck.
+        //Enable the indicator
+        //Disable the resource in that cell
+        //invoke action?
+        for (m_ruinIndicatedCount = 0; m_ruinIndicatedCount < m_resourceManagerData.m_maxIndicators; ++m_ruinIndicatedCount)
+        {
+            // Get the total weight, to then pick a random value from it.
+            int weightSum = 0;
+            for (int i = 0; i < m_validRuinsInMission.Count; ++i)
+            {
+                weightSum += m_validRuinsInMission[i].m_ruinWeight;
+            }
+
+            int chosenWeight = Random.Range(0, weightSum);
+            int lastTotalWeight = 0;
+            for (int i = 0; i < m_validRuinsInMission.Count; ++i) // increase lastTotalWeight until it's greater than the chosen (random) weight.
+            {
+                if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
+                {
+                    // This is the node we have chosen.
+                    m_validRuinsInMission[i].IndicateThisRuin();
+                    m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
+                    RuinIndicated?.Invoke();
+                    break;
+                }
+
+                lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
+            }
+        }
+        
+        //for each ruin still in the valid list, replace them with a tree.
+        foreach (RuinController ruin in m_validRuinsInMission)
+        {
+            Vector3 pos = ruin.transform.position;
+            Transform parent = ruin.m_ruinIndicatorRoot.transform;
+            GameObject obj = m_treePrefabs[Random.Range(0, m_treePrefabs.Count)];
+            ResourceNode resourceNode = ObjectPoolManager.SpawnObject(obj, pos, quaternion.identity, parent, ObjectPoolManager.PoolType.GameObject).GetComponent<ResourceNode>();
+            resourceNode.CreateResourceNode();
+        }
+    }
+
+
     public void RequestRuinIndicator()
     {
         //When a gatherer harvests a resource Node, and when the wave counter increments. Wave should be a target, and reset after indicating a ruin.
@@ -250,10 +304,10 @@ public class ResourceManager : MonoBehaviour
         {
             if (m_validRuinsInMission[i] == null)
             {
-                invalidRuins.Add(m_validRuinsInMission[i]); 
-                continue; 
+                invalidRuins.Add(m_validRuinsInMission[i]);
+                continue;
             }
-            
+
             if (!m_validRuinsInMission[i].IsRuinCoveredByForest())
             {
                 Debug.Log($"{m_validRuinsInMission[i].name} is not covered by a forest anymore, removing from Valid Ruins!");
@@ -336,7 +390,7 @@ public class GathererLineRendererObject
         gathererLineRendererGameObject.transform.rotation = Quaternion.identity;
 
         m_lineRenderer = gathererLineRendererGameObject.AddComponent<LineRenderer>();
-        
+
         m_lineRenderer.enabled = false;
         m_lineRenderer.startWidth = 0.075f;
         m_lineRenderer.endWidth = 0.075f;
@@ -345,6 +399,7 @@ public class GathererLineRendererObject
         {
             mat.color = gatherer.m_gathererData.m_gathererPathColor;
         }
+
         m_lineRenderer.numCornerVertices = 5;
 
         m_gatherer.OnGathererPathChanged += UpdateLineRendererPositions;
@@ -387,7 +442,7 @@ public class GathererLineRendererObject
     void UpdateLineRendererPositions(List<Vector2Int> path)
     {
         return; // disabling for a sec
-        
+
         MoveTargetObj();
         m_lineRenderer.enabled = true;
         m_lineRenderer.positionCount = path.Count + 2;

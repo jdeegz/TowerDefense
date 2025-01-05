@@ -89,7 +89,7 @@ public class MusicManager : MonoBehaviour
             float elapsed = 0f;
             while (elapsed < m_crossFadeDuration)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += Time.unscaledDeltaTime; // Use unscaledDeltaTime to respect pause
                 currentSource.volume = Mathf.Lerp(1, 0, elapsed / m_crossFadeDuration);
                 nextSource.volume = Mathf.Lerp(0, 1, elapsed / m_crossFadeDuration);
                 yield return null;
@@ -103,9 +103,11 @@ public class MusicManager : MonoBehaviour
             m_lastPlayedClip = nextClip;
 
             // Wait for the next clip to finish before crossfading again
-            yield return new WaitForSeconds(nextSource.clip.length - m_crossFadeDuration);
+            yield return new WaitForSecondsRealtime(nextSource.clip.length - m_crossFadeDuration);
         }
     }
+
+
 
     private AudioClip PickRandomClip(List<AudioClip> clips)
     {

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GridCellOccupantUtil
 {
+    
     public static void SetOccupant(GameObject obj, bool isOccupied, int width, int height, ResourceNode resourceNode = null)
     {
         //Get the bottom left cell.
@@ -24,7 +25,7 @@ public class GridCellOccupantUtil
                 {
                     if (pos.x != 0 && pos.x != GridManager.Instance.m_gridWidth - 1 && pos.y != 0 && pos.y != GridManager.Instance.m_gridHeight - 1)
                     {
-                        Debug.Log($"Cell is being double occupied at {pos} by {obj.name}!");
+                        Debug.Log($"Cell is being double occupied at {pos} by First:{cell.m_occupant.name} Second:{obj.name}!");
                         obj.SetActive(false);
                     }
                 }
@@ -32,19 +33,14 @@ public class GridCellOccupantUtil
                 cell.UpdateOccupancyDisplay(isOccupied);
 
                 cell.m_occupant = isOccupied ? obj : null;
+                cell.m_cellResourceNode = isOccupied ? resourceNode : null;
                 
                 //Handle Tile Map update
                 if (resourceNode != null)
                 {
                     GridManager.Instance.ToggleTileMap(new Vector3Int(cell.m_cellPos.x, cell.m_cellPos.y, 0), isOccupied);
-                    cell.m_cellResourceNode = resourceNode;
                 }
             }
-        }
-
-        if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles)
-        {
-            GridManager.Instance.RefreshGrid();
         }
     }
 

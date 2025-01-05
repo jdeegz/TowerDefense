@@ -155,6 +155,18 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         
     }
 
+    public void CreateResourceNode()
+    {
+        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1, this);
+    }
+
+    public void RemoveResourceNodeImmediate()
+    {
+        GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1, this);
+        Destroy(gameObject);
+        Debug.Log($"destroying tree.");
+    }
+
     private Tween m_curContactTween;
     private Sequence m_curContactSequence;
     private Transform m_curGathererTransform;

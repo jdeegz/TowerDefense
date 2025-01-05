@@ -1,11 +1,8 @@
 using System;
-using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using TechnoBabelGames;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.Analytics;
 using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 
@@ -21,7 +18,7 @@ public class GridManager : MonoBehaviour
     public GameObject[] m_gridcellObjects;
 
     [FormerlySerializedAs("m_groundLayer")]
-    public LayerMask m_waterLayer; 
+    public LayerMask m_waterLayer;
     public LayerMask m_groundLayer;
 
     [Header("Tile Map Data")]
@@ -220,12 +217,12 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
-        
+
         m_gridCellObj.SetActive(false);
 
         //Debug.Log("Grid Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);
-
+        
         //Debug.Log("Obstacles Placed.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.FloodFillGrid);
     }
@@ -248,7 +245,7 @@ public class GridManager : MonoBehaviour
         }
 
         m_previousPreconIndex = preconTowerCellIndex;
-        
+
         //Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
         FloodFillGrid(m_gridCells, null);
     }
@@ -283,7 +280,7 @@ public class GridManager : MonoBehaviour
         TileBase tile = isOccupied ? m_ruleTile : null;
         m_tileMap.SetTile(pos, tile);
     }
-    
+
     public void RefreshGrid()
     {
         //A node depleted!
@@ -329,7 +326,7 @@ public class GridManager : MonoBehaviour
         {
             cell.UpdateOccupancyDisplay(true);
         }*/
-        
+
         RaycastHit hit;
 
         // Perform the raycast using the layer mask
@@ -417,7 +414,8 @@ public class Cell
     //Cell Data
     public bool m_isGoal;
     public bool m_isOccupied;
-    [FormerlySerializedAs("m_isInPlayspace")] public bool m_isOutOfBounds;
+    [FormerlySerializedAs("m_isInPlayspace")]
+    public bool m_isOutOfBounds;
     public GameObject m_occupant;
     public bool m_isTempOccupied;
     public bool m_isBuildRestricted;
@@ -460,7 +458,7 @@ public class Cell
             m_actorsList.Remove(name);
         }
     }
-    
+
     public void UpdateBuildRestrictedValue(bool value)
     {
         m_isBuildRestricted = value;
@@ -478,7 +476,7 @@ public class Cell
             UpdateGridCellColor(m_pathableColor);
         }
     }
-    
+
     public void SetIsOutOfBounds(bool b)
     {
         m_isOutOfBounds = b;
@@ -551,6 +549,7 @@ public class Cell
 
         m_tempDirectionToNextCell = direction;
     }
+
 
     public void SetDirection()
     {
@@ -766,7 +765,7 @@ public class UnitPath
     {
         if (m_lineRenderer == null) return;
         List<Vector2Int> path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
-        
+
         float length = 0;
         for (int i = 1; i < path.Count; i++)
         {
@@ -775,7 +774,7 @@ public class UnitPath
 
         length *= 2;
         m_lineRenderer.lineRendererProperties.texture.SetFloat("_Tiling", length);
-        
+
         m_path = path;
         m_lineRenderer.SetPoints(path);
     }

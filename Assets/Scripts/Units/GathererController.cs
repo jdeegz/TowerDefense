@@ -279,13 +279,10 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    public void RequestIncrementGathererLevel(int i)
+    public void RequestIncrementGathererLevel(int i, bool hasCharge)
     {
         //If the ruin has no power up to give, get outta here.
-        if (m_curRuin.GetType() != typeof(RuinArtifact)) return;
-
-        RuinArtifact artifact = m_curRuin as RuinArtifact;
-        if (artifact.CheckForCharge())
+        if (hasCharge)
         {
             IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
             GathererLevel += i;
@@ -628,8 +625,8 @@ public class GathererController : MonoBehaviour
                 UpdateTask(GathererTask.Storing);
                 break;
             case GathererTask.TravelingToRuin:
-                RequestIncrementGathererLevel(1);
-
+                m_curRuin.GathererArrivedAtRuin(this);
+                
                 // If we're carrying resources, resume delivering them.
                 if (ResourceCarried > 0)
                 {
@@ -836,7 +833,8 @@ public class GathererController : MonoBehaviour
         int searchRange = 1;
         while (searchRange <= 3 && CurrentHarvestNode == null)
         {
-            List<ResourceNode> resourceNodes = GetHarvestNodesAtRange(m_lastHarvestNodeCell.m_cellPos, searchRange);
+            Vector2Int searchFromPos = m_lastHarvestNodeCell != null ? m_lastHarvestNodeCell.m_cellPos : m_curCell.m_cellPos;
+            List<ResourceNode> resourceNodes = GetHarvestNodesAtRange(searchFromPos, searchRange);
             if (resourceNodes == null || resourceNodes.Count == 0)
             {
                 searchRange++;

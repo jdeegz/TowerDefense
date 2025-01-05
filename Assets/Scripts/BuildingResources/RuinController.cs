@@ -43,8 +43,8 @@ public class RuinController : MonoBehaviour
         if (newState == GameplayManager.GameplayState.FloodFillGrid)
         {
             // Get the cell the ruin is on. Subscribe to the OnDepleted event of the resource node on the cell.
-            m_ruinCell = Util.GetCellFrom3DPos(transform.position);
-            m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion += ResourceNodeDepleted;
+            /*m_ruinCell = Util.GetCellFrom3DPos(transform.position);
+            m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion += ResourceNodeDepleted;*/
             ResourceManager.OnAllRuinsDiscovered += AllRuinsDiscovered;
             //Debug.Log($"{gameObject.name} subscribed to Cell {m_ruinCell.m_cellIndex}'s resource node.");
         }
@@ -73,10 +73,15 @@ public class RuinController : MonoBehaviour
         // Update ruin controller state.
         //Debug.Log($"This ruin has been indicated by Resource Manager.");
         UpdateRuinState(RuinState.Indicated);
-
+        
+        //Get the resource node in this cell and remove it.
+        m_ruinCell = Util.GetCellFrom3DPos(transform.position);
+        
         // Spawn the indicator object at the desired corner.
         GameObject indicatorObj = ResourceManager.Instance.m_resourceManagerData.m_ruinIndicatorObj;
         m_indicatorObj = ObjectPoolManager.SpawnObject(indicatorObj, gameObject.transform.position, Quaternion.identity, m_ruinIndicatorRoot.transform, ObjectPoolManager.PoolType.GameObject);
+        GridCellOccupantUtil.SetOccupant(m_indicatorObj, true, 1, 1);
+        m_indicatorObj.GetComponent<RuinIndicator>().SetUpRuinIndicator(this);
     }
 
     private void AllRuinsDiscovered()
@@ -87,6 +92,21 @@ public class RuinController : MonoBehaviour
         }
         
         UpdateRuinState(RuinState.Idle);
+        ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
+        m_indicatorObj = null;
+    }
+
+    public void GathererDiscoveredRuin()
+    {
+        // The node was harvested, but we're not indicated so we're not discovered.
+        if (m_ruinState != RuinState.Indicated) return;
+        
+        // We've discovered the ruin.
+        UpdateRuinState(RuinState.Discovered);
+
+        GameObject ruinObj = ObjectPoolManager.SpawnObject(ResourceManager.Instance.RuinDiscovered(), transform.position, Quaternion.identity, m_ruinDiscoveredRoot.transform, ObjectPoolManager.PoolType.GameObject);
+        m_ruinObj = ruinObj.GetComponent<Ruin>();
+        
         ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
         m_indicatorObj = null;
     }
@@ -108,7 +128,7 @@ public class RuinController : MonoBehaviour
 
     void OnDestroy()
     {
-        m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
+        //m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
     }

@@ -17,6 +17,11 @@ public class RuinWell : Ruin
     private int m_intervalLength;
 
     // Setup data
+    public override void GathererArrivedAtRuin(GathererController gathererController)
+    {
+        //
+    }
+
     public override void Awake()
     {
         base.Awake();

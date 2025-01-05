@@ -24,6 +24,11 @@ public class RuinShrine : Ruin
 
     private List<GathererController> m_gatherers;
 
+    public override void GathererArrivedAtRuin(GathererController gathererController)
+    {
+        //
+    }
+
     void Awake()
     {
         base.Awake();

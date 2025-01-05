@@ -4,10 +4,11 @@ public abstract class Ruin : MonoBehaviour
 {
     public AudioSource m_audioSource;
     public abstract RuinTooltipData GetTooltipData();
+    public abstract void GathererArrivedAtRuin(GathererController gathererController);
     
     public virtual void  Awake()
     {
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        //
     }
 
     public void RequestPlayAudio(AudioClip clip)

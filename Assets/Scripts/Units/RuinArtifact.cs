@@ -13,6 +13,11 @@ public class RuinArtifact : Ruin
 
     private int m_chargeCount = 1;
 
+    public override void GathererArrivedAtRuin(GathererController gathererController)
+    {
+        gathererController.RequestIncrementGathererLevel(1, CheckForCharge());
+    }
+
     void Awake()
     {
         base.Awake();
