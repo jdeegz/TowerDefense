@@ -43,7 +43,7 @@ public class UIMissionSelectView : MonoBehaviour
         
         int numberOfMissions;
         
-        numberOfMissions = GameManager.Instance.m_MissionContainer.m_MissionList.Length;
+        numberOfMissions = GameManager.Instance.m_missionTable.m_MissionList.Length;
 
         if (m_curMissionButtons == null) m_curMissionButtons = new List<UIMissionSelectButton>();
         
@@ -66,7 +66,7 @@ public class UIMissionSelectView : MonoBehaviour
               m_curMissionButtons[i] = button;
             } 
             
-            MissionData data = GameManager.Instance.m_MissionContainer.m_MissionList[i];
+            MissionData data = GameManager.Instance.m_missionTable.m_MissionList[i];
             
             //Read from player data for this mission.
             MissionSaveData missionSaveData = PlayerDataManager.Instance.m_playerData.m_missions[i];

@@ -15,14 +15,34 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private TowerData m_towerData;
     [SerializeField] private TextMeshProUGUI m_towerCost;
     [SerializeField] private TextMeshProUGUI m_towerHotkey;
+    [SerializeField] private TextMeshProUGUI m_towerQTY;
+    [SerializeField] private GameObject m_towerQTYobj;
     [SerializeField] private Image m_towerImage;
     [SerializeField] private UIEffect m_buttonUIEffect;
 
     private bool m_canAffordWood;
     private bool m_canAffordStone;
+    private bool m_canAffordQty;
     private Button m_button;
     private int m_equippedTowerIndex;
     private int m_blueprintTowerIndex;
+    private int m_maxQty;
+    private int m_qty;
+
+    private int Quantity
+    {
+        get { return m_qty; }
+        set
+        {
+            if (value != m_qty)
+            {
+                m_qty = value;
+                m_towerQTY.SetText("x{0}", m_qty);
+                m_canAffordQty = m_qty is > 0 or -1;
+                m_towerQTYobj.SetActive(m_qty != -1);
+            }
+        }
+    }
 
     private ButtonState m_buttonState;
 
@@ -33,6 +53,24 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Hovered,
     }
 
+    public TowerData GetTowerData()
+    {
+        return m_towerData;
+    }
+
+    public void IncrementQuantity(int i)
+    {
+        Quantity += i;
+
+        Debug.Log($"STRUCTURE: {m_towerData.m_towerName}'s quantity increased to: {m_qty}.");
+    }
+    
+    public void DecrementQuantity(int i)
+    {
+        Quantity -= i;
+
+        Debug.Log($"STRUCTURE: {m_towerData.m_towerName}'s quantity increased to: {m_qty}.");
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -64,7 +102,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void CanAffordToBuildTower()
     {
-        if (m_canAffordWood && m_canAffordStone)
+        if (m_canAffordWood && m_canAffordStone && m_canAffordQty)
         {
             m_buttonUIEffect.toneFilter = ToneFilter.None;
         }
@@ -74,7 +112,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    public void SetupTowerData(TowerData towerData, int i)
+    public void SetupData(TowerData towerData, int i, int qty = -1)
     {
         m_towerData = towerData;
 
@@ -87,6 +125,8 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         //Tower Hotkey
         m_towerHotkey.SetText((i + 1).ToString());
+
+        Quantity = qty;
     }
 
     public void SelectTowerButton()
@@ -130,6 +170,11 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             SetButtonOutline(ButtonState.Normal);
         }
+    }
+
+    private void TowerBuilt(GameObject obj)
+    {
+        //If this tower was built, reduce the quantity if quantity is not -1
     }
 
     private void GameObjectSelected(GameObject obj)

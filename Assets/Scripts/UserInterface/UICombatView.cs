@@ -47,6 +47,7 @@ public class UICombatView : MonoBehaviour
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
+    [SerializeField] private RectTransform m_structureTrayLayoutObj;
     [SerializeField] private RectTransform m_gathererTrayLayoutObj;
     [SerializeField] private RectTransform m_healthDisplay;
     [SerializeField] private RectTransform m_woodBankDisplay;
@@ -64,6 +65,8 @@ public class UICombatView : MonoBehaviour
     private int m_maxCastleHealth;
     private GameObject m_blueprintButtonObj;
     private List<Button> m_buttons;
+    private List<TowerTrayButton> m_towerButtons;
+    private List<TowerTrayButton> m_structureButtons;
     private Tween m_healthShake;
     private Tween m_woodBankShake;
     private Tween m_stoneBankShake;
@@ -78,7 +81,7 @@ public class UICombatView : MonoBehaviour
     void Awake()
     {
         m_canvasGroup.alpha = 0;
-        
+
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
@@ -125,7 +128,7 @@ public class UICombatView : MonoBehaviour
             { KeyCode.T, 3 },
             { KeyCode.Y, 4 },
         };
-        
+
         m_highScoreLabel.gameObject.SetActive(false);
     }
 
@@ -213,7 +216,7 @@ public class UICombatView : MonoBehaviour
             m_woodBankShake.Kill();
             m_woodBankDisplay.localScale = Vector3.one;
         }
-        
+
         m_woodBankLabel.SetText($"{total}<sprite name=\"ResourceWood\">");
         m_woodBankShake = m_woodBankDisplay.DOPunchScale(new Vector3(0.15f, 0.3f, 0f), 0.15f, 1, .7f).SetAutoKill(true);
         m_woodBankShake.Play();
@@ -246,6 +249,9 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnWaveCompleted -= AlertWaveComplete;
         GameplayManager.OnBlueprintCountChanged -= BlueprintCountChanged;
 
+        PlayerDataManager.OnUnlockableUnlocked -= UnlockableUnlocked;
+        PlayerDataManager.OnUnlockableLocked -= UnlockableLocked;
+        
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
         ResourceManager.UpdateWoodRate -= UpdateWoodRateDisplay;
@@ -298,8 +304,8 @@ public class UICombatView : MonoBehaviour
         m_highScoreLabel.gameObject.SetActive(GameplayManager.Instance.IsEndlessModeActive());
 
         if (!m_highScoreLabel.gameObject.activeSelf) return;
-        
-        if(m_wave < GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore)
+
+        if (m_wave < GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore)
         {
             string highScoreString = string.Format(m_uiStringData.m_displayHighScore, GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore);
             m_highScoreLabel.SetText(highScoreString);
@@ -307,7 +313,7 @@ public class UICombatView : MonoBehaviour
         else
         {
             m_highScoreLabel.SetText(m_uiStringData.m_newHighScoreDisplay);
-            ColorUtility.TryParseHtmlString("#F1D24B", out Color color); 
+            ColorUtility.TryParseHtmlString("#F1D24B", out Color color);
             m_highScoreLabel.color = color;
         }
     }
@@ -371,6 +377,9 @@ public class UICombatView : MonoBehaviour
         m_castleController = GameplayManager.Instance.m_castleController;
         m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
         m_castleController.UpdateMaxHealth += UpdateCastleMaxHealthDisplay;
+        PlayerDataManager.OnUnlockableUnlocked += UnlockableUnlocked;
+        PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
+        PlayerDataManager.Instance.ReadProgressionTable();
         m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_castleData.m_maxHealth;
         m_curCastleHealth = m_maxCastleHealth;
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
@@ -385,6 +394,19 @@ public class UICombatView : MonoBehaviour
 
         BuildTowerTrayDisplay();
         m_clearBlueprintsButton.gameObject.SetActive(false);
+    }
+
+    private void UnlockableLocked(ProgressionUnlockableData unlockableData)
+    {
+        // Is the unlockable something we need to destroy a Tray button for?
+        RequestRemoveTrayButton(unlockableData);
+    }
+
+    private void UnlockableUnlocked(ProgressionUnlockableData unlockableData)
+    {
+        // Is the unlockable something we need to build a Tray button for?
+        Debug.Log($"{unlockableData.name} earned, building a tray button if required.");
+        RequestTrayButton(unlockableData);
     }
 
     private void OnClearBlueprintsButtonClicked()
@@ -436,18 +458,20 @@ public class UICombatView : MonoBehaviour
         //To Do if i ever need to remove gatherers.
     }
 
+    private int m_trayButtonIndex;
+
     private void BuildTowerTrayDisplay()
     {
         // TOWERS
         int i;
-        for (i = 0; i < GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count; ++i)
+        for (m_trayButtonIndex = 0; m_trayButtonIndex < GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count; ++m_trayButtonIndex)
         {
             GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_towerTrayLayoutObj);
             TowerTrayButton towerTrayButtonScript = buttonPrefab.GetComponent<TowerTrayButton>();
 
             if (towerTrayButtonScript)
             {
-                towerTrayButtonScript.SetupTowerData(GameplayManager.Instance.m_gameplayData.m_equippedTowers[i], i);
+                towerTrayButtonScript.SetupData(GameplayManager.Instance.m_gameplayData.m_equippedTowers[m_trayButtonIndex], m_trayButtonIndex);
             }
 
             Button buttonScript = buttonPrefab.GetComponent<Button>();
@@ -464,8 +488,9 @@ public class UICombatView : MonoBehaviour
 
         if (blueprintTowerTrayButtonScript)
         {
-            blueprintTowerTrayButtonScript.SetupTowerData(GameplayManager.Instance.m_gameplayData.m_blueprintTower, i);
-            m_blueprintTowerKey = i;
+            blueprintTowerTrayButtonScript.SetupData(GameplayManager.Instance.m_gameplayData.m_blueprintTower, m_trayButtonIndex);
+            m_blueprintTowerKey = m_trayButtonIndex;
+            ++m_trayButtonIndex;
         }
 
         Button blueprintButtonScript = m_blueprintButtonObj.GetComponent<Button>();
@@ -476,7 +501,127 @@ public class UICombatView : MonoBehaviour
         }
 
         ToggleBlueprintButton(false);
+
+        // STRUCTURES
     }
+
+    private void RequestTrayButton(ProgressionUnlockableData unlockableData)
+    {
+        Debug.Log($"Tray Button requested;");
+
+        // What kind of Tray button?
+        ProgressionRewardData rewardData = unlockableData.GetRewardData();
+
+        switch (rewardData.RewardType)
+        {
+            case "Tower":
+                ProgressionRewardTower towerRewardData = rewardData as ProgressionRewardTower;
+                TowerData towerData = towerRewardData.GetTowerData();
+                //RequestTowerButton(towerData);
+                Debug.Log($"Tower Tray Building not yet implemented.");
+                break;
+            case "Structure":
+                ProgressionRewardStructure structureRewardData = rewardData as ProgressionRewardStructure;
+                TowerData structureData = structureRewardData.GetStructureData();
+                RequestStructureButton(structureRewardData, structureData);
+                break;
+            default:
+                Debug.Log($"No case for {rewardData.RewardType}.");
+                break;
+        }
+    }
+    
+    private void RequestRemoveTrayButton(ProgressionUnlockableData unlockableData)
+    {
+        Debug.Log($"Tray Button Removal requested;");
+
+        // What kind of Tray button?
+        ProgressionRewardData rewardData = unlockableData.GetRewardData();
+
+        switch (rewardData.RewardType)
+        {
+            case "Tower":
+                ProgressionRewardTower towerRewardData = rewardData as ProgressionRewardTower;
+                TowerData towerData = towerRewardData.GetTowerData();
+                //RemoveTowerButton(towerData);
+                Debug.Log($"Tower Tray Removing not yet implemented.");
+                break;
+            case "Structure":
+                ProgressionRewardStructure structureRewardData = rewardData as ProgressionRewardStructure;
+                TowerData structureData = structureRewardData.GetStructureData();
+                RemoveStructureButton(structureData, structureRewardData.GetStructureRewardQty());
+                break;
+            default:
+                Debug.Log($"No case for {rewardData.RewardType}.");
+                break;
+        }
+    }
+    // STRUCTURES
+
+    private void RequestStructureButton(ProgressionRewardStructure rewardData, TowerData structureData)
+    {
+        // Initialize list if null.
+        if (m_structureButtons == null)
+        {
+            m_structureButtons = new List<TowerTrayButton>();
+        }
+
+        // Check to see if we have a button with this data already.
+        foreach (TowerTrayButton button in m_structureButtons)
+        {
+            if (structureData == button.GetTowerData())
+            {
+                // We have a button already, increment Qty.
+                button.IncrementQuantity(rewardData.GetStructureRewardQty());
+                return;
+            }
+        }
+
+        // Else build a new button.
+        BuildStructureButton(structureData, rewardData.GetStructureRewardQty());
+    }
+
+    private int m_trayStructureButtonIndex = 0;
+    private void BuildStructureButton(TowerData structureData, int qty)
+    {
+        Debug.Log($"Building Structure Button: Starting");
+
+        GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_structureTrayLayoutObj);
+        TowerTrayButton towerTrayButtonScript = buttonPrefab.GetComponent<TowerTrayButton>();
+
+        towerTrayButtonScript.SetupData(structureData, m_trayStructureButtonIndex + GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count, qty);
+        ++m_trayStructureButtonIndex;
+
+
+        Button buttonScript = buttonPrefab.GetComponent<Button>();
+
+        m_buttons.Add(buttonScript);
+        m_structureButtons.Add(towerTrayButtonScript);
+
+
+        Debug.Log($"Building Structure Button: Complete");
+    }
+
+    private void RemoveStructureButton(TowerData structureData, int qty)
+    {
+        if (m_structureButtons == null) return;
+
+        Debug.Log($"Removing Structure Button: Starting");
+
+        foreach (TowerTrayButton structureButton in m_structureButtons)
+        {
+            if (structureButton.GetTowerData() == structureData)
+            {
+                m_structureButtons.Remove(structureButton);
+                Button buttonScript = structureButton.GetComponent<Button>();
+                m_buttons.Remove(buttonScript);
+                Destroy(structureButton.gameObject);
+            }
+        }
+        
+        Debug.Log($"Removing Structure Button: Complete");
+    }
+
 
     private void ToggleBlueprintButton(bool value)
     {
@@ -526,7 +671,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.Instance.m_timeToNextWave = 0f;
     }
 
-    // Update is called once per frame
+// Update is called once per frame
     void Update()
     {
         HandleSpawnClock();

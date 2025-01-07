@@ -47,6 +47,9 @@ public class GameplayManager : MonoBehaviour
     public static event Action<int> OnBlueprintCountChanged;
 
 
+    [Header("Progression")]
+    [SerializeField] private ProgressionTable m_progressionTable;
+    
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
     public GameplayAudioData m_gameplayAudioData;
@@ -465,6 +468,7 @@ public class GameplayManager : MonoBehaviour
 
     private void Awake()
     {
+        PlayerDataManager.Instance.SetProgressionTable(m_progressionTable);
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
         Instance = this;
         m_mainCamera = Camera.main;
@@ -515,10 +519,7 @@ public class GameplayManager : MonoBehaviour
         /*var pipeline = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
         m_scriptableRenderer = pipeline.scriptableRenderer;
         m_scriptableRendererFeature = m_scriptableRenderer.supportedRenderingFeatures.Find(feature => feature is FullscreenEffect);*/
-        if (PlayerDataManager.Instance)
-        {
-            m_curMissionSaveData = PlayerDataManager.Instance.GetMissionSaveData(gameObject.scene.name);
-        }
+        m_curMissionSaveData = PlayerDataManager.Instance.GetMissionSaveData(gameObject.scene.name);
     }
 
     public enum GameSpeed
@@ -639,7 +640,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,2, m_wave);
+                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,2, m_wave);
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
@@ -648,7 +649,7 @@ public class GameplayManager : MonoBehaviour
                 
                 int wave = 0;
                 if (m_endlessModeActive) wave = m_wave - 1;
-                if (PlayerDataManager.Instance) PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, wave);
+                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, wave);
                 
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);

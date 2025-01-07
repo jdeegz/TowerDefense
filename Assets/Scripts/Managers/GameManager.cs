@@ -3,13 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
     public static event Action<GameState> OnGameStateChanged;
-    public MissionContainerData m_MissionContainer;
+    public MissionContainerData m_missionTable;
+    public ProgressionTable m_progressionTable;
     public MissionData m_curMission;
     private String m_curScene;
     private String m_curCutScene;
