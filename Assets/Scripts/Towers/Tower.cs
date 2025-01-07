@@ -45,8 +45,6 @@ public abstract class Tower : MonoBehaviour
         m_audioSource = GetComponent<AudioSource>();
         m_animator = GetComponent<Animator>();
         m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
-
-        //If we have a status effect on this tower, create an instance of it to use when applying.
     }
 
     private void GameplayStatChanged(GameplayManager.GameplayState newState)

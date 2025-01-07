@@ -35,7 +35,15 @@ public class GridCellOccupantUtil
                 cell.m_occupant = isOccupied ? obj : null;
                 cell.m_cellResourceNode = isOccupied ? resourceNode : null;
                 
+                
+                if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles)
+                {
+                    GridManager.Instance.RefreshGrid();
+                }
+                
+                
                 //Handle Tile Map update
+                //OLD  -- TO DELETE
                 if (resourceNode != null)
                 {
                     GridManager.Instance.ToggleTileMap(new Vector3Int(cell.m_cellPos.x, cell.m_cellPos.y, 0), isOccupied);

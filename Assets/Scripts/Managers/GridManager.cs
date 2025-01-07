@@ -283,14 +283,8 @@ public class GridManager : MonoBehaviour
 
     public void RefreshGrid()
     {
-        //A node depleted!
-        //If we're in precon, we want to unset precon mode's temporary assignments of occupancy and direction.
-        //Then flood fill to update temp directions. Then SET those directions.
-        //Then return to precon testing.
-        //Debug.Log($"GridManager: Node Depletion Detected.");
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
-            //Debug.Log($"GridManager: Reverting Precon Temp Changes.");
             Debug.Log($"Attempting to refresh grid, m_previousPreconIndex of: {m_previousPreconIndex}");
             int preconIndex = m_previousPreconIndex;
             RevertPreconTempChanges();

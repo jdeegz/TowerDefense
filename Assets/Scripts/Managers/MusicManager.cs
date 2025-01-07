@@ -83,7 +83,7 @@ public class MusicManager : MonoBehaviour
             nextSource.volume = 0;
             nextSource.Play();
 
-            Debug.Log($"Now Playing: {nextClip.name}.");
+            //Debug.Log($"Now Playing: {nextClip.name}.");
 
             // Crossfade between sources
             float elapsed = 0f;
