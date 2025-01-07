@@ -26,7 +26,6 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private Button m_button;
     private int m_equippedTowerIndex;
     private int m_blueprintTowerIndex;
-    private int m_maxQty;
     private int m_qty;
 
     private int Quantity
@@ -40,6 +39,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 m_towerQTY.SetText("x{0}", m_qty);
                 m_canAffordQty = m_qty is > 0 or -1;
                 m_towerQTYobj.SetActive(m_qty != -1);
+                CanAffordToBuildTower();
             }
         }
     }
@@ -58,20 +58,6 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         return m_towerData;
     }
 
-    public void IncrementQuantity(int i)
-    {
-        Quantity += i;
-
-        Debug.Log($"STRUCTURE: {m_towerData.m_towerName}'s quantity increased to: {m_qty}.");
-    }
-    
-    public void DecrementQuantity(int i)
-    {
-        Quantity -= i;
-
-        Debug.Log($"STRUCTURE: {m_towerData.m_towerName}'s quantity increased to: {m_qty}.");
-    }
-
     // Start is called before the first frame update
     void Start()
     {
@@ -80,10 +66,21 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ResourceManager.UpdateWoodBank += CheckWoodCost;
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
+        GameplayManager.OnTowerBuild += TowerBuilt;
         CheckStoneCost(ResourceManager.Instance.GetStoneAmount(), 0);
         CheckWoodCost(ResourceManager.Instance.GetWoodAmount(), 0);
 
         m_button.onClick.AddListener(SelectTowerButton);
+    }
+
+    private void TowerBuilt(TowerData towerData)
+    {
+        if (towerData != m_towerData) return;
+        
+        if (GameplayManager.Instance.m_unlockedStructures.TryGetValue(towerData, out int currentValue))
+        {
+            Quantity = currentValue;
+        }
     }
 
     private void CheckStoneCost(int total, int delta)
@@ -124,7 +121,8 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         m_towerImage.sprite = towerData.m_uiIcon;
 
         //Tower Hotkey
-        m_towerHotkey.SetText((i + 1).ToString());
+        string hotkeyText = i == -1 ? "B" : (i + 1).ToString();
+        m_towerHotkey.SetText(hotkeyText);
 
         Quantity = qty;
     }
@@ -177,6 +175,16 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         //If this tower was built, reduce the quantity if quantity is not -1
     }
 
+    public void SetQuantity(int i)
+    {
+        Quantity = i;
+    }
+    
+    public void UpdateQuantity(int i)
+    {
+        Quantity += i;
+    }
+    
     private void GameObjectSelected(GameObject obj)
     {
         TowerData data = GameplayManager.Instance.GetPreconTowerData();

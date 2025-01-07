@@ -3,6 +3,7 @@ using UnityEngine;
 public class RuinIndicator : Ruin
 {
     [SerializeField] private RuinData m_data;
+    [SerializeField] private ProgressionKeyData m_unlockKeyData;
     private RuinController m_ruinController;
     
     public override RuinTooltipData GetTooltipData()
@@ -20,6 +21,8 @@ public class RuinIndicator : Ruin
     }
     public override void GathererArrivedAtRuin(GathererController gathererController)
     {
+        Debug.Log($"Gatherer Arrived at undiscovered ruin! Requesting Unlock Key!");
+        PlayerDataManager.Instance.RequestUnlockKey(m_unlockKeyData);
         m_ruinController.GathererDiscoveredRuin();
     }
 }

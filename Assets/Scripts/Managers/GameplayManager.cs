@@ -35,7 +35,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<String> OnWaveCompleted;
     public static event Action<Vector2Int> OnPreconTowerMoved;
     public static event Action OnPreconstructedTowerClear;
-    public static event Action OnTowerBuild;
+    public static event Action<TowerData> OnTowerBuild;
     public static event Action OnTowerSell;
     public static event Action OnTowerUpgrade;
     public static event Action<int, int> OnObelisksCharged;
@@ -45,11 +45,14 @@ public class GameplayManager : MonoBehaviour
     public static event Action OnCutSceneEnd;
     public static event Action<bool> OnDelayForQuestChanged;
     public static event Action<int> OnBlueprintCountChanged;
+    public static event Action<TowerData, int> OnUnlockedStucturesUpdated;
 
 
     [Header("Progression")]
     [SerializeField] private ProgressionTable m_progressionTable;
-    
+    private int m_qty;
+    public Dictionary<TowerData, int> m_unlockedStructures;
+
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
     public GameplayAudioData m_gameplayAudioData;
@@ -106,9 +109,9 @@ public class GameplayManager : MonoBehaviour
 
 //Boss Testing Ground
     [Header("Boss Wave Info")]
-    public List<int> m_bossWaves;                                       // What wave does this mission spawn a boss
-    public BossSequenceController m_bossSequenceController;             // What boss does this mission spawn
-    private BossSequenceController m_activeBossSequenceController;      // Assigned by the BossSequence Controller
+    public List<int> m_bossWaves; // What wave does this mission spawn a boss
+    public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
+    private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
     private bool m_watchingCutScene;
 
 //Ooze Cell Info
@@ -146,7 +149,7 @@ public class GameplayManager : MonoBehaviour
         SelecteObelisk,
         SelectRuin
     }
-    
+
     public bool m_delayForQuest
     {
         get { return delayForQuest; }
@@ -163,11 +166,18 @@ public class GameplayManager : MonoBehaviour
 
     void Update()
     {
+        //TEMPORARY TEST STUFF
+        if (Input.GetKeyUp(KeyCode.G))
+        {
+            Debug.Log($"P button pressed.");
+            PlayerDataManager.Instance.ResetProgressionTable();
+        }
+        
         //We do not want to update _anything_ while we're in a cutscene!
         if (m_watchingCutScene) return;
 
         HandleHotkeys();
-        
+
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
@@ -248,7 +258,7 @@ public class GameplayManager : MonoBehaviour
     void HandleHotkeys()
     {
         if (m_interactionState == InteractionState.Disabled) return;
-        
+
         //Toggle Pause
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -290,6 +300,16 @@ public class GameplayManager : MonoBehaviour
                     return;
                 }
 
+                if (m_unlockedStructures.TryGetValue(m_preconstructedTowerData, out int quantity))
+                {
+                    if (quantity == 0)
+                    {
+                        OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
+                        RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
+                        Debug.Log($"Out of {m_preconstructedTowerData.name}'s!");
+                        return;
+                    }
+                }
 
                 //Reset outline color. This will be overridden by Tower Precon functions.
                 SetOutlineColor(false);
@@ -327,11 +347,11 @@ public class GameplayManager : MonoBehaviour
         UpdateGameplayState(GameplayState.Build);
         ResourceManager.Instance.StartDepositTimer();
     }
-    
+
     void Mouse2Interaction()
     {
-        if(m_interactionState == InteractionState.Disabled) return;
-        
+        if (m_interactionState == InteractionState.Disabled) return;
+
         if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButtonDown(1))
         {
             if (!m_curSelectable || m_curSelectable.m_selectedObjectType != Selectable.SelectedObjectType.Gatherer) return;
@@ -469,6 +489,9 @@ public class GameplayManager : MonoBehaviour
     private void Awake()
     {
         PlayerDataManager.Instance.SetProgressionTable(m_progressionTable);
+        PlayerDataManager.OnUnlockableUnlocked += UnlockableUnlocked;
+        PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
+        m_unlockedStructures = PlayerDataManager.Instance.GetUnlockedStructures();
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
         Instance = this;
         m_mainCamera = Camera.main;
@@ -491,12 +514,103 @@ public class GameplayManager : MonoBehaviour
         return m_curMissionSaveData;
     }
 
+    private void UnlockableLocked(ProgressionUnlockableData unlockableData)
+    {
+        ProgressionRewardData rewardData = unlockableData.GetRewardData();
+
+        switch (rewardData.RewardType)
+        {
+            // TOWERS
+            case "Tower":
+                Debug.Log($"Towers not yet implemented.");
+                break;
+            
+            // STRUCTURES
+            case "Structure":
+                
+                //Type specification
+                ProgressionRewardStructure structureRewardData = rewardData as ProgressionRewardStructure;
+                
+                // Define the data that has been revoked.
+                TowerData structureData = structureRewardData.GetStructureData();
+                
+                int qty = structureRewardData.GetStructureRewardQty();
+                
+                //Remove the QTY.
+                if (m_unlockedStructures.ContainsKey(structureData))
+                {
+                    //Assure we don't go below 0 quantity, subtract the smallest of qty locked or current qty.
+                    qty = Math.Min(qty, m_unlockedStructures.GetValueOrDefault(structureData, 0));
+                    m_unlockedStructures[structureData] += -qty;
+                    
+                    //Invoke the addition of type & stock
+                    OnUnlockedStucturesUpdated?.Invoke(structureData, -qty);
+                }
+                break;
+            
+            // TYPE NOT FOUND
+            default:
+                break;
+        }
+    }
+
+    private void UnlockableUnlocked(ProgressionUnlockableData unlockableData)
+    {
+        if (m_unlockedStructures == null) m_unlockedStructures = new Dictionary<TowerData, int>();
+        
+        ProgressionRewardData rewardData = unlockableData.GetRewardData();
+
+        switch (rewardData.RewardType)
+        {
+            // TOWERS
+            case "Tower":
+                
+                ProgressionRewardTower towerRewardData = rewardData as ProgressionRewardTower;
+                TowerData towerData = towerRewardData.GetTowerData();
+                //RequestTowerButton(towerData);
+                Debug.Log($"Tower Tray Building not yet implemented.");
+                break;
+            
+            // STRUCTURES
+            case "Structure":
+               
+                //Type specification
+                ProgressionRewardStructure structureRewardData = rewardData as ProgressionRewardStructure;
+                
+                // Define the data that has been awarded.
+                TowerData structureData = structureRewardData.GetStructureData();
+                
+                //Does Unlocked Stuctures already have an entry for this? If so, update the quantity. If not add it.
+                int qty = structureRewardData.GetStructureRewardQty();
+                if (m_unlockedStructures.ContainsKey(structureData))
+                {
+                    m_unlockedStructures[structureData] += qty;
+                }
+                else
+                {
+                    m_unlockedStructures[structureData] = m_unlockedStructures.GetValueOrDefault(structureData, 0) + qty;
+                }
+                
+                //Invoke the addition of type & stock
+                OnUnlockedStucturesUpdated?.Invoke(structureData, qty);
+                break;
+            
+            // TYPE NOT FOUND
+            default:
+                
+                Debug.Log($"No case for {rewardData.RewardType}.");
+                break;
+        }
+    }
+
     void OnDestroy()
     {
         OnGameplayStateChanged -= GameplayManagerStateChanged;
         OnGamePlaybackChanged -= GameplayPlaybackChanged;
         OnGameObjectSelected -= GameObjectSelected;
         OnGameObjectDeselected -= GameObjectDeselected;
+        PlayerDataManager.OnUnlockableUnlocked -= UnlockableUnlocked;
+        PlayerDataManager.OnUnlockableLocked -= UnlockableLocked;
     }
 
     private void GameplayPlaybackChanged(GameSpeed state)
@@ -550,7 +664,7 @@ public class GameplayManager : MonoBehaviour
         {
             RequestPlayAudio(m_gameplayAudioData.m_ffwOn);
         }
-        
+
         OnGameSpeedChanged?.Invoke(m_playbackSpeed);
     }
 
@@ -640,17 +754,17 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,2, m_wave);
+                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
             case GameplayState.Defeat:
                 RequestPlayAudio(m_gameplayAudioData.m_defeatClip);
-                
+
                 int wave = 0;
                 if (m_endlessModeActive) wave = m_wave - 1;
-                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, wave);
-                
+                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
+
                 UpdateGamePlayback(GameSpeed.Paused);
                 UpdateInteractionState(InteractionState.Disabled);
                 break;
@@ -823,6 +937,16 @@ public class GameplayManager : MonoBehaviour
         m_canAfford = false;
         m_canBuild = false;
         m_canPlace = false;
+
+        if (m_unlockedStructures.TryGetValue(m_preconstructedTowerData, out int quantity))
+        {
+            m_qty = quantity;
+        }
+        else
+        {
+            m_qty = -1;
+        }
+
         SetOutlineColor(m_canBuild);
         //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
     }
@@ -867,12 +991,13 @@ public class GameplayManager : MonoBehaviour
         bool canAfford = CheckAffordability();
         bool canPlace = CheckPathRestriction();
 
+
         //If either values have changed, updated the canBuild and invoke ObjRestricted.
         if (canAfford != m_canAfford || canPlace != m_canPlace)
         {
             m_canAfford = canAfford;
             m_canPlace = canPlace;
-            m_canBuild = canAfford && canPlace;
+            m_canBuild = canAfford && canPlace && m_qty is -1 or > 0;
             SetOutlineColor(!m_canBuild);
             //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
             //Debug.Log("Can Afford : " + m_canAfford + " Can Place: " + m_canPlace);
@@ -930,7 +1055,7 @@ public class GameplayManager : MonoBehaviour
         //If the current cell is not apart of the grid, not a valid spot.
         if (curCell == null)
         {
-            Debug.Log($"CannotPlace: Current Cell is Null");
+            //Debug.Log($"CannotPlace: Current Cell is Null");
             return false;
         }
 
@@ -942,7 +1067,7 @@ public class GameplayManager : MonoBehaviour
         //If we have actors on the cell.
         if (curCell.m_actorCount > 0)
         {
-            Debug.Log($"Cannot Place: There are actors on this cell.");
+            //Debug.Log($"Cannot Place: There are actors on this cell.");
             m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsOnCell;
             return false;
         }
@@ -950,7 +1075,7 @@ public class GameplayManager : MonoBehaviour
         //If we're hovering on the exit cell
         if (m_preconstructedTowerPos == Util.GetVector2IntFrom3DPos(m_enemyGoal.position))
         {
-            Debug.Log($"Cannot Place: This is the exit cell.");
+            //Debug.Log($"Cannot Place: This is the exit cell.");
             return false;
         }
 
@@ -959,7 +1084,7 @@ public class GameplayManager : MonoBehaviour
         {
             if (curCell.m_occupant != null && curCell.m_occupant.GetComponent<TowerBlueprint>() == null) // If we DO have a tower blueprint, we're ok placing here.
             {
-                Debug.Log($"Cannot Place: This cell is already occupied.");
+                //Debug.Log($"Cannot Place: This cell is already occupied.");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOccupied;
                 return false;
             }
@@ -968,7 +1093,7 @@ public class GameplayManager : MonoBehaviour
         //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
         if (curCell.m_isBuildRestricted)
         {
-            Debug.Log($"Cannot Place: This cell is build restricted.");
+            //Debug.Log($"Cannot Place: This cell is build restricted.");
             m_pathRestrictedReason = m_UIStringData.m_buildRestrictedRestricted;
             return false;
         }
@@ -976,8 +1101,15 @@ public class GameplayManager : MonoBehaviour
         //Check to see if any of our UnitPaths have no path.
         if (!GridManager.Instance.m_spawnPointsAccessible)
         {
-            Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
+            //Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
             m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
+            return false;
+        }
+
+        //Do we have any of this structure in stock?
+        if (m_qty == 0)
+        {
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedQuantityNotMet;
             return false;
         }
 
@@ -1000,7 +1132,7 @@ public class GameplayManager : MonoBehaviour
             //Assure we're not past the bound of the grid.
             if (cell == null)
             {
-                Debug.Log("Neighbor not on Grid:" + neighbors[i]);
+                //Debug.Log("Neighbor not on Grid:" + neighbors[i]);
                 continue;
             }
 
@@ -1012,7 +1144,7 @@ public class GameplayManager : MonoBehaviour
                 //If we found a path, this neighbor is OK. If not, we need to check if it creates an island.
                 if (testPath == null)
                 {
-                    Debug.Log($"No path found from neighbor {i}, checking for inhabited islands.");
+                    //Debug.Log($"No path found from neighbor {i}, checking for inhabited islands.");
                     //If we did not find a path, check islands for actors. If there are, we cannot build here.
                     List<Vector2Int> islandCells = new List<Vector2Int>(AStar.FindIsland(neighbors[i], m_preconstructedTowerPos));
                     foreach (Vector2Int cellPos in islandCells)
@@ -1020,7 +1152,7 @@ public class GameplayManager : MonoBehaviour
                         Cell islandCell = Util.GetCellFromPos(cellPos);
                         if (islandCell.m_actorCount > 0)
                         {
-                            Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
+                            //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
                             m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                             return false;
                         }
@@ -1081,7 +1213,7 @@ public class GameplayManager : MonoBehaviour
             //If the number of pathable exits is less than the number of exits, return false. One cannot path to another exit.
             if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
             {
-                Debug.Log($"An exit cannot path to another exit or spawner.");
+                //Debug.Log($"An exit cannot path to another exit or spawner.");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
                 return false;
             }
@@ -1149,7 +1281,14 @@ public class GameplayManager : MonoBehaviour
             IngameUIController.Instance.SpawnCurrencyAlert(cost.Item2, cost.Item1, false, newTowerObj.transform.position);
         }
 
-        OnTowerBuild?.Invoke();
+        //Update Quantities
+        if (m_qty != -1 && m_unlockedStructures.ContainsKey(m_preconstructedTowerData))
+        {
+            m_unlockedStructures[m_preconstructedTowerData] = Math.Max(0, m_unlockedStructures.GetValueOrDefault(m_preconstructedTowerData, 0) - 1);
+            m_qty = m_unlockedStructures[m_preconstructedTowerData];
+        }
+
+        OnTowerBuild?.Invoke(m_preconstructedTowerData);
     }
 
     // Clear Blueprint Tower Models -- Called via CombatView button.
@@ -1164,7 +1303,7 @@ public class GameplayManager : MonoBehaviour
                 OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                 m_curSelectable = null;
             }
-            
+
             //Configure Grid
             GridCellOccupantUtil.SetOccupant(blueprint.gameObject, false, 1, 1);
 
@@ -1227,7 +1366,7 @@ public class GameplayManager : MonoBehaviour
     public void AddBlueprintToList(TowerBlueprint blueprint)
     {
         if (m_blueprintList == null) m_blueprintList = new List<TowerBlueprint>();
-        
+
         m_blueprintList.Add(blueprint);
         OnBlueprintCountChanged?.Invoke(m_blueprintList.Count);
     }
@@ -1439,7 +1578,7 @@ public class GameplayManager : MonoBehaviour
     {
         return m_endlessModeActive;
     }
-    
+
     public void CheckForWin()
     {
         //Obelisk Win Condition.
@@ -1468,7 +1607,7 @@ public class GameplayManager : MonoBehaviour
         {
             OnWaveCompleted?.Invoke(m_UIStringData.m_waveComplete);
         }
-        
+
         RequestPlayAudio(m_gameplayAudioData.m_audioWaveEndClips);
 
         UpdateGameplayState(GameplayState.Build);
@@ -1573,7 +1712,7 @@ public class GameplayManager : MonoBehaviour
     {
         return m_activeBossSequenceController;
     }
-    
+
     public void RequestPlayAudio(AudioClip clip)
     {
         m_audioSource.PlayOneShot(clip);

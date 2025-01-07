@@ -203,6 +203,7 @@ public class PlayerDataManager
         {
             unlockable.AwardUnlockable();
             OnUnlockableUnlocked?.Invoke(unlockable);
+            Debug.Log($"{unlockable.name} earned.");
         }
     }
 
@@ -231,17 +232,38 @@ public class PlayerDataManager
         m_progressionTable = progressionTable;
     }
 
-    public void ReadProgressionTable()
+    public Dictionary<TowerData, int> GetUnlockedStructures()
     {
+        Dictionary<TowerData, int> unlockedStructures = new Dictionary<TowerData, int>();
+        
         foreach (ProgressionUnlockableData unlockableData in m_progressionTable.GetListUnlockableData())
         {
+            ProgressionRewardStructure rewardData = unlockableData.GetRewardData() as ProgressionRewardStructure;
+            if (rewardData.RewardType != "Structure")
+            {
+                continue;
+            }
+            
             UnlockProgress unlockProgress = unlockableData.GetProgress();
             if (unlockProgress.m_isUnlocked)
             {
-                Debug.Log($"Invoked OnUnlockableUnlocked for {unlockableData.name}");
-                OnUnlockableUnlocked?.Invoke(unlockableData);
+                TowerData towerData = rewardData.GetStructureData();
+                unlockedStructures[towerData] = unlockedStructures.GetValueOrDefault(towerData, 0) + rewardData.GetStructureRewardQty();
             }
         }
+
+
+        Debug.Log($"Returning Unlockable Structures.");
+        foreach (var kvp in unlockedStructures)
+        {
+            Debug.Log($"{kvp.Key.m_towerName} x{kvp.Value}");
+        }
+        return unlockedStructures;
+    }
+
+    public void ResetProgressionTable()
+    {
+        m_progressionTable.ResetProgressionData();
     }
 }
 

@@ -269,7 +269,7 @@ public class GridManager : MonoBehaviour
         //Set the values back to their original state if this is not our first iteration.
         if (m_previousPreconIndex > 0)
         {
-            Debug.Log($"Reverting precon temp changes. Current index: {m_previousPreconIndex} new index: -1.");
+            //Debug.Log($"Reverting precon temp changes. Current index: {m_previousPreconIndex} new index: -1.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
             m_previousPreconIndex = -1;
         }

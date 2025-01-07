@@ -281,7 +281,7 @@ public class TowerChargeUp : Tower
         m_projectileLineRenderer.enabled = false;
         m_projectileLineRenderer_Darken.enabled = false;
         m_beamActive = false;
-        Debug.Log($"Beam Disabled");
+        //Debug.Log($"Beam Disabled");
     }
 
     void SetLineWidth()

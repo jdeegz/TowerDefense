@@ -24,6 +24,7 @@ public class UIStringData : ScriptableObject
     public string m_buildRestrictedOccupied;
     public string m_buildRestrictedRestricted;
     public string m_buildRestrictedBlocksPath;
+    public string m_buildRestrictedQuantityNotMet;
     
     [Header("End of Game Strings")]
     public string m_victory;
