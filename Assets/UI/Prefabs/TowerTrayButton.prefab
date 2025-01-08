@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294109912
-  m_fontColor: {r: 0.84705883, g: 0.91764706, b: 0.9490196, a: 1}
+    rgba: 4278239999
+  m_fontColor: {r: 1, g: 0.7607843, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -264,6 +264,8 @@ MonoBehaviour:
   m_towerQTYobj: {fileID: 8216341497157264314}
   m_towerImage: {fileID: 8607414281923353940}
   m_buttonUIEffect: {fileID: 2661762582052322}
+  m_inStockColor: {r: 1, g: 0.7607843, b: 0, a: 1}
+  m_outOfStockColor: {r: 0.84705883, g: 0.91764706, b: 0.9490196, a: 1}
 --- !u!95 &846719674290434830
 Animator:
   serializedVersion: 7
@@ -636,8 +638,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 938fce054c42f40a3969e27a88d9bdd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ToneFilter: 0
-  m_ToneIntensity: 1
+  m_ToneFilter: 1
+  m_ToneIntensity: 0
   m_ToneParams: {x: 0, y: 0, z: 0, w: 0}
   m_ColorFilter: 0
   m_ColorIntensity: 1
@@ -840,8 +842,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 24.190002, y: 41.200012}
-  m_SizeDelta: {x: 33.8862, y: 21.976}
+  m_AnchoredPosition: {x: 24.190002, y: 41.939682}
+  m_SizeDelta: {x: 33.8862, y: 20.4967}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2197320104467616632
 CanvasRenderer:
@@ -864,15 +866,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21960786, g: 0.28235295, b: 0.5803922, a: 1}
+  m_Color: {r: 0.02, g: 0.02, b: 0.02, a: 0.8}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b5d8a17af6e293243b2921283048df5b, type: 3}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: 1642b7818c8be054ebe7b37ff4bc6c3f, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -880,4 +882,4 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 6

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -5,6 +6,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ProgressionKeyData", menuName = "ScriptableObjects/Progression/ProgressionKeyData")]
 public class ProgressionKeyData : ScriptableObject
 {
+    public event Action<bool> KeyChanged;
+    
     public bool ProgressionKeyEnabled
     {
         get
@@ -35,6 +38,7 @@ public class ProgressionKeyData : ScriptableObject
                 PlayerDataManager.Instance.m_playerData.m_progressionKeys.Add(new SerializedKVP(name, value));
             }
 
+            KeyChanged?.Invoke(ProgressionKeyEnabled);
             PlayerDataManager.Instance.HandleWrite();
         }
     }

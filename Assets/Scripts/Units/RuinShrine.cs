@@ -71,7 +71,7 @@ public class RuinShrine : Ruin
     {
         // SPAWN A CHARGE
         GameObject orb = ObjectPoolManager.SpawnObject(m_chargeObj, m_chargeSpawnRoot.transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.GameObject);
-        orb.GetComponent<ShrineOrbController>().SetShrine(this);
+        //orb.GetComponent<ShrineOrbController>().SetShrine(this);
 
         // AUDIO
         RequestPlayAudio(m_data.m_chargeConsumedAudioClip);

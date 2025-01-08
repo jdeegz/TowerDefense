@@ -22,7 +22,6 @@ public class RuinIndicator : Ruin
     public override void GathererArrivedAtRuin(GathererController gathererController)
     {
         Debug.Log($"Gatherer Arrived at undiscovered ruin! Requesting Unlock Key!");
-        PlayerDataManager.Instance.RequestUnlockKey(m_unlockKeyData);
         m_ruinController.GathererDiscoveredRuin();
     }
 }

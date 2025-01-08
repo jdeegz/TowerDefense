@@ -18,7 +18,7 @@ public class ShrineOrbController : MonoBehaviour
     private Vector3 m_spawnPoint;               // Where we spawned. Referenced to get new destination.
     private Vector3 m_curDestination;           // Where we're currently heading.
     private float m_stoppingDistance = 1f;
-    private RuinShrine m_ruinShrineParent;
+    private TowerShrine m_orbParentTower;
     
     void Start()
     {
@@ -30,9 +30,9 @@ public class ShrineOrbController : MonoBehaviour
         //GameplayManager.OnGameObjectSelected += GameObjectSelected;
     }
 
-    public void SetShrine(RuinShrine ruinShrine)
+    public void SetShrine(TowerShrine towerShrine)
     {
-        m_ruinShrineParent = ruinShrine;
+        m_orbParentTower = towerShrine;
     }
     
     private void GameObjectSelected(GameObject obj)
@@ -86,13 +86,13 @@ public class ShrineOrbController : MonoBehaviour
     void RemoveCharge()
     {
         // Inform Shrine
-        m_ruinShrineParent.ChargeClicked();
+        m_orbParentTower.ChargeClicked();
         
         // Spawn VFX
         ObjectPoolManager.SpawnObject(m_claimVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         
         // Play Audio
-        m_ruinShrineParent.RequestPlayAudio(m_claimSounds[Random.Range(0, m_claimSounds.Count)]);
+        m_orbParentTower.RequestPlayAudio(m_claimSounds[Random.Range(0, m_claimSounds.Count)]);
         
         // Remove Object
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.GameObject);

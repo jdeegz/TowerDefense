@@ -35,7 +35,6 @@ public class ResourceManager : MonoBehaviour
 
     [Header("RequestRuinIndicator Data")]
     public ResourceManagerData m_resourceManagerData;
-
     public List<RuinController> m_ruinsInMission;
     public List<RuinController> m_validRuinsInMission;
     public int m_ruinDiscoveredCount;
@@ -69,6 +68,9 @@ public class ResourceManager : MonoBehaviour
         m_woodBank = 0;
         m_stoneGathererCount = 0;
         m_woodGathererCount = 0;
+        UpdateWoodAmount(m_resourceManagerData.m_startingWood);
+        UpdateStoneAmount(m_resourceManagerData.m_startingStone);
+        m_woodDeposits = new List<WoodDeposit>();
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
@@ -87,9 +89,7 @@ public class ResourceManager : MonoBehaviour
 
     void Start()
     {
-        UpdateWoodAmount(m_resourceManagerData.m_startingWood);
-        UpdateStoneAmount(m_resourceManagerData.m_startingStone);
-        m_woodDeposits = new List<WoodDeposit>();
+        
         m_validRuinsInMission = new List<RuinController>(m_ruinsInMission);
     }
 
@@ -216,15 +216,18 @@ public class ResourceManager : MonoBehaviour
 
     public void SetupRuinIndications()
     {
-        //How many ruins do we want in the mission? 
-        //m_resourceManagerData.m_maxIndicators
-
-        //while ruinsIndicated is < m_maxIndicators
-        //Pick a ruin via the weighted deck.
-        //Enable the indicator
-        //Disable the resource in that cell
-        //invoke action?
-        for (m_ruinIndicatedCount = 0; m_ruinIndicatedCount < m_resourceManagerData.m_maxIndicators; ++m_ruinIndicatedCount)
+        if (m_resourceManagerData.m_missionUnlockables.Count == 0) return;
+        
+        List<ProgressionKeyData> keysInMission = new List<ProgressionKeyData>();
+        foreach (ProgressionUnlockableData unlockableData in m_resourceManagerData.m_missionUnlockables)
+        {
+            foreach (ProgressionKeyData key in unlockableData.GetKeyData())
+            {
+                keysInMission.Add(key);
+            }
+        }
+        
+        for (int k = 0; k < keysInMission.Count; ++k)
         {
             // Get the total weight, to then pick a random value from it.
             int weightSum = 0;
@@ -240,7 +243,7 @@ public class ResourceManager : MonoBehaviour
                 if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
                 {
                     // This is the node we have chosen.
-                    m_validRuinsInMission[i].IndicateThisRuin();
+                    m_validRuinsInMission[i].IndicateThisRuin(keysInMission[k]);
                     m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
                     RuinIndicated?.Invoke();
                     break;
@@ -249,12 +252,12 @@ public class ResourceManager : MonoBehaviour
                 lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
             }
         }
-        
+
         //for each ruin still in the valid list, replace them with a tree.
         foreach (RuinController ruin in m_validRuinsInMission)
         {
-            Vector3 pos = ruin.transform.position;
-            Transform parent = ruin.m_ruinIndicatorRoot.transform;
+            Transform parent = ruin.transform;
+            Vector3 pos = parent.position;
             GameObject obj = m_treePrefabs[Random.Range(0, m_treePrefabs.Count)];
             ResourceNode resourceNode = ObjectPoolManager.SpawnObject(obj, pos, quaternion.identity, parent, ObjectPoolManager.PoolType.GameObject).GetComponent<ResourceNode>();
             resourceNode.CreateResourceNode();
@@ -262,7 +265,7 @@ public class ResourceManager : MonoBehaviour
     }
 
 
-    public void RequestRuinIndicator()
+    /*public void RequestRuinIndicator()
     {
         //When a gatherer harvests a resource Node, and when the wave counter increments. Wave should be a target, and reset after indicating a ruin.
         if (GameplayManager.Instance.m_wave < m_resourceManagerData.m_minWaves)
@@ -344,27 +347,11 @@ public class ResourceManager : MonoBehaviour
 
             lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
         }
-    }
+    }*/
 
     public void StartDepositTimer()
     {
         m_depositTimer = 0f;
-    }
-
-    public GameObject RuinDiscovered()
-    {
-        // If this is the last allowed Ruins to be discovered, remove all other indicators present.
-        if (m_ruinDiscoveredCount == m_resourceManagerData.m_maxRuinDiscovered)
-        {
-            OnAllRuinsDiscovered?.Invoke();
-        }
-
-        GameObject discoveredRuin = m_resourceManagerData.m_ruinTypes[m_ruinDiscoveredCount % m_resourceManagerData.m_ruinTypes.Count].gameObject;
-
-        ++m_ruinDiscoveredCount;
-        --m_ruinIndicatedCount;
-
-        return discoveredRuin;
     }
 }
 

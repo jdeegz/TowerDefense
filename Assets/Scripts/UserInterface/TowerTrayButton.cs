@@ -19,9 +19,11 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private GameObject m_towerQTYobj;
     [SerializeField] private Image m_towerImage;
     [SerializeField] private UIEffect m_buttonUIEffect;
+    [SerializeField] private Color m_inStockColor;
+    [SerializeField] private Color m_outOfStockColor;
 
-    private bool m_canAffordWood;
-    private bool m_canAffordStone;
+    private bool m_canAffordWood = true;
+    private bool m_canAffordStone = true;
     private bool m_canAffordQty;
     private Button m_button;
     private int m_equippedTowerIndex;
@@ -35,9 +37,11 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             if (value != m_qty)
             {
+                Debug.Log($"Tray Button Quantity Updated.");
                 m_qty = value;
-                m_towerQTY.SetText("x{0}", m_qty);
                 m_canAffordQty = m_qty is > 0 or -1;
+                m_towerQTY.SetText("x{0}", m_qty);
+                m_towerQTY.color = m_canAffordQty ? m_inStockColor : m_outOfStockColor;
                 m_towerQTYobj.SetActive(m_qty != -1);
                 CanAffordToBuildTower();
             }
@@ -76,7 +80,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void TowerBuilt(TowerData towerData)
     {
         if (towerData != m_towerData) return;
-        
+
         if (GameplayManager.Instance.m_unlockedStructures.TryGetValue(towerData, out int currentValue))
         {
             Quantity = currentValue;
@@ -99,13 +103,22 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void CanAffordToBuildTower()
     {
+        //Debug.Log($"CanAffordToBuildTower: Wood - {m_canAffordWood}, Stone - {m_canAffordStone}, Quantity - {m_canAffordQty}.");
         if (m_canAffordWood && m_canAffordStone && m_canAffordQty)
         {
-            m_buttonUIEffect.toneFilter = ToneFilter.None;
+            if (m_buttonUIEffect.toneIntensity > 0)
+            {
+                DOTween.To(() => m_buttonUIEffect.toneIntensity, x => m_buttonUIEffect.toneIntensity = x, 0, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
+            }
         }
         else
         {
-            m_buttonUIEffect.toneFilter = ToneFilter.Grayscale;
+            if (m_buttonUIEffect.toneIntensity < 1)
+            {
+                DOTween.To(() => m_buttonUIEffect.toneIntensity, x => m_buttonUIEffect.toneIntensity = x, 1, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
+            }
         }
     }
 
@@ -116,6 +129,8 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         //Tower Cost
         string woodSprite = "<sprite name=ResourceWood>";
         m_towerCost.SetText(towerData.m_woodCost + woodSprite);
+        m_canAffordStone = ResourceManager.Instance.GetStoneAmount() >= m_towerData.m_stoneCost;
+        m_canAffordWood = ResourceManager.Instance.GetWoodAmount() >= m_towerData.m_woodCost;
 
         //Tower Image
         m_towerImage.sprite = towerData.m_uiIcon;
@@ -179,12 +194,12 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         Quantity = i;
     }
-    
+
     public void UpdateQuantity(int i)
     {
         Quantity += i;
     }
-    
+
     private void GameObjectSelected(GameObject obj)
     {
         TowerData data = GameplayManager.Instance.GetPreconTowerData();
@@ -199,6 +214,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (state != m_buttonState)
         {
             ToneFilter savedToneFilter = m_buttonUIEffect.toneFilter;
+            float savedToneIntensity = m_buttonUIEffect.toneIntensity;
 
             switch (state)
             {
@@ -222,6 +238,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             }
 
             m_buttonUIEffect.toneFilter = savedToneFilter;
+            m_buttonUIEffect.toneIntensity = savedToneIntensity;
         }
     }
 }

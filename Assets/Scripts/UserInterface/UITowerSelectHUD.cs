@@ -47,25 +47,32 @@ public class UITowerSelectHUD : MonoBehaviour
         m_curTower.RequestPlayAudio(m_curTowerData.m_audioSelectedClip);
         
         //Sell values
+        m_sellButton.gameObject.SetActive(false);
+        
         m_sellStoneValue = m_curTowerData.m_stoneSellCost;
         m_sellWoodValue = m_curTowerData.m_woodSellCost;
-        
-        //Sell Button Action
-        m_sellButton.onClick.RemoveAllListeners();
-        m_sellButton.onClick.AddListener(RequestSellTower);
-        
-        //Sell Button Text
-        string sellText;
-        if (m_sellStoneValue > 0)
+
+        if (m_sellStoneValue != -1 && m_sellWoodValue != -1)
         {
-            sellText = $"{m_sellStoneValue}<sprite name=\"ResourceStone\"><br>{m_sellWoodValue}<sprite name=\"ResourceWood\">";
+            //Sell Button Action
+            m_sellButton.onClick.RemoveAllListeners();
+            m_sellButton.onClick.AddListener(RequestSellTower);
+
+            //Sell Button Text
+            string sellText;
+            if (m_sellStoneValue > 0)
+            {
+                sellText = $"{m_sellStoneValue}<sprite name=\"ResourceStone\"><br>{m_sellWoodValue}<sprite name=\"ResourceWood\">";
+            }
+            else
+            {
+                sellText = $"{m_sellWoodValue}<sprite name=\"ResourceWood\">";
+            }
+
+            m_sellButtonlabel.SetText(sellText);
+            m_sellButton.gameObject.SetActive(true);
         }
-        else
-        {
-            sellText = $"{m_sellWoodValue}<sprite name=\"ResourceWood\">";
-        }
-        m_sellButtonlabel.SetText(sellText);
-        
+
         //Upgrade Buttons
         //Disable All Upgrade Button Objects
         foreach (UpgradeTowerButton button in m_upgradeButtons)

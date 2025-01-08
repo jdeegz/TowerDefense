@@ -37,7 +37,7 @@ public abstract class Tower : MonoBehaviour
 
     void Awake()
     {
-        GameplayManager.OnGameplayStateChanged += GameplayStatChanged;
+        GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
         m_towerRangeCircle.enabled = false;
@@ -47,7 +47,7 @@ public abstract class Tower : MonoBehaviour
         m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
     }
 
-    private void GameplayStatChanged(GameplayManager.GameplayState newState)
+    public virtual void GameplayStateChanged(GameplayManager.GameplayState newState)
     {
     }
 
@@ -166,24 +166,31 @@ public abstract class Tower : MonoBehaviour
         return isTargetInTargetRange;
     }
 
-    private void GameObjectSelected(GameObject obj)
+    private void ToggleTowerRangeCircle(bool value)
+    {
+        if (m_towerData.m_fireRange == -1) return;
+        if (value == m_towerRangeCircle.enabled) return;
+        m_towerRangeCircle.enabled = value;
+    }
+
+    public virtual void GameObjectSelected(GameObject obj)
     {
         if (obj == gameObject)
         {
-            m_towerRangeCircle.enabled = true;
+            ToggleTowerRangeCircle(true);
             m_animator.SetTrigger("Selected");
         }
         else
         {
-            m_towerRangeCircle.enabled = false;
+            ToggleTowerRangeCircle(false);
         }
     }
 
-    private void GameObjectDeselected(GameObject obj)
+    public virtual void GameObjectDeselected(GameObject obj)
     {
         if (obj == gameObject)
         {
-            m_towerRangeCircle.enabled = false;
+            ToggleTowerRangeCircle(false);
         }
     }
 
@@ -279,6 +286,7 @@ public abstract class Tower : MonoBehaviour
 
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
+        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
     }
 
     public virtual void RemoveTower()
@@ -289,6 +297,8 @@ public abstract class Tower : MonoBehaviour
 
     void SetupRangeCircle(int segments, float radius)
     {
+        if (radius == -1) return;
+        
         m_towerRangeCircle.positionCount = segments;
         m_towerRangeCircle.startWidth = 0.06f;
         m_towerRangeCircle.endWidth = 0.06f;

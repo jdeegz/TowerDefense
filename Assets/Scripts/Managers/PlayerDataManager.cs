@@ -11,7 +11,8 @@ public class PlayerDataManager
     public static event Action<ProgressionUnlockableData> OnUnlockableUnlocked;
     public static event Action<ProgressionUnlockableData> OnUnlockableLocked;
     public PlayerData m_playerData;
-    private ProgressionTable m_progressionTable;
+    public ProgressionTable m_progressionTable;
+    
     //private string m_path;
     private string m_persistantPath;
     private int m_buildNumber = 4; //Increment this to invalidate old save files. Updated Nov 4th 2024

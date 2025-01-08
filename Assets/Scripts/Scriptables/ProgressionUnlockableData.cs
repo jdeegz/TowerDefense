@@ -32,6 +32,11 @@ public class ProgressionUnlockableData : ScriptableObject
     {
         return m_unlockReward;
     }
+
+    public List<ProgressionKeyData> GetKeyData()
+    {
+        return m_unlockRequirementKeys;
+    }
     
     public void ResetProgression()
     {

@@ -279,15 +279,11 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    public void RequestIncrementGathererLevel(int i, bool hasCharge)
+    public void RequestIncrementGathererLevel(int i)
     {
-        //If the ruin has no power up to give, get outta here.
-        if (hasCharge)
-        {
-            IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
-            GathererLevel += i;
-            RequestPlayAudio(m_gathererData.m_levelUpClip);
-        }
+        IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
+        GathererLevel += i;
+        RequestPlayAudio(m_gathererData.m_levelUpClip);
     }
 
     void Start()
@@ -548,6 +544,7 @@ public class GathererController : MonoBehaviour
                 if (distanceToNextCellCenter <= 0.1f && IsMoving)
                 {
                     //Debug.Log($"We've reached the center point of our last cell.");
+                    SetAnimatorTrigger("Idle");
                     IsMoving = false;
                     return;
                 }
@@ -625,17 +622,23 @@ public class GathererController : MonoBehaviour
                 UpdateTask(GathererTask.Storing);
                 break;
             case GathererTask.TravelingToRuin:
-                m_curRuin.GathererArrivedAtRuin(this);
+                ClearHarvestVars();
                 
+                m_curRuin.GathererArrivedAtRuin(this);
+
                 // If we're carrying resources, resume delivering them.
                 if (ResourceCarried > 0)
                 {
-                    UpdateTask(GathererTask.TravelingToDeposit);
+                    PathToDepositCell();
                     break;
                 }
 
+                // If we're not carrying resources, go idle.
+                m_curCoroutine = StartCoroutine(IdleRotate());
+                UpdateTask(GathererTask.Idling);
+
                 // If we're not carrying resources, look for a node to go harvest.
-                RequestNextHarvestNode();
+                //RequestNextHarvestNode();
                 break;
             case GathererTask.TravelingToIdle:
                 m_curCoroutine = StartCoroutine(IdleRotate());
@@ -922,6 +925,7 @@ public class GathererController : MonoBehaviour
 
     private void SetAnimatorTrigger(string triggerName)
     {
+        Debug.Log($"Setting trigger {triggerName}");
         foreach (String trigger in m_triggerNames)
         {
             m_animator.ResetTrigger(trigger);
@@ -1192,10 +1196,10 @@ public class GathererController : MonoBehaviour
 
         Vector3 alertPosition = transform.position;
         alertPosition.y += .7f;
-        
+
         // AUDIO
         RequestPlayAudio(m_gathererData.m_woodDepositClips);
-        
+
         // ALERT
         if (storageAmount > 1) //Did we deposit a crit amount?
         {

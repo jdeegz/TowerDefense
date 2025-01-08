@@ -488,9 +488,14 @@ public class GameplayManager : MonoBehaviour
 
     private void Awake()
     {
+        m_unlockedStructures = new Dictionary<TowerData, int>();
         PlayerDataManager.Instance.SetProgressionTable(m_progressionTable);
         PlayerDataManager.OnUnlockableUnlocked += UnlockableUnlocked;
         PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
+        
+        // DELETE THIS
+        //PlayerDataManager.Instance.ResetProgressionTable();
+        
         m_unlockedStructures = PlayerDataManager.Instance.GetUnlockedStructures();
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
         Instance = this;
@@ -556,8 +561,6 @@ public class GameplayManager : MonoBehaviour
 
     private void UnlockableUnlocked(ProgressionUnlockableData unlockableData)
     {
-        if (m_unlockedStructures == null) m_unlockedStructures = new Dictionary<TowerData, int>();
-        
         ProgressionRewardData rewardData = unlockableData.GetRewardData();
 
         switch (rewardData.RewardType)
@@ -1404,6 +1407,13 @@ public class GameplayManager : MonoBehaviour
             RemoveTowerFromList(tower);
         }
 
+        //Handle Quantity
+        TowerData towerData = tower.GetTowerData();
+        if (m_unlockedStructures.ContainsKey(towerData))
+        {
+            m_unlockedStructures[towerData] += 1;
+        }
+        
         //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(woodValue);
@@ -1412,6 +1422,8 @@ public class GameplayManager : MonoBehaviour
         {
             IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, true, tower.transform.position);
         }
+        
+        
 
         //Remove the tower
         tower.RemoveTower();

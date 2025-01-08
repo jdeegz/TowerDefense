@@ -114,10 +114,15 @@ public class UIOptionsMenu : MonoBehaviour
         m_screenModeDropdown.value = m_dropdownIndex;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        if (GameManager.Instance)
+        if (!GameManager.Instance || GameManager.Instance.m_gameState != GameManager.GameState.Menus)
         {
-            m_cheatsGroup.SetActive(GameManager.Instance.m_gameState != GameManager.GameState.Menus);
+            m_cheatsGroup.SetActive(true);
         }
+        else
+        {
+            m_cheatsGroup.SetActive(false);
+        }
+
 #endif
     }
 
@@ -164,28 +169,28 @@ public class UIOptionsMenu : MonoBehaviour
     {
         Debug.Log("Surrendering Mission.");
         int wave = 0;
-        
+
         // Are we surrendering from an endless match, or normal?
         if (GameplayManager.Instance.IsEndlessModeActive())
         {
             wave = GameplayManager.Instance.m_wave;
         }
-        
-        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, wave);
+
+        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
         GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
     }
 
     private void OnRestartButtonClicked()
     {
         Debug.Log("Restarting Mission.");
-        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, 0);
+        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0);
         GameManager.Instance.RequestSceneRestart();
     }
 
     private void OnExitApplicationButtonClicked()
     {
         Debug.Log("Quitting Application.");
-        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name,1, 0);
+        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0);
         Application.Quit();
     }
 
@@ -227,7 +232,7 @@ public class UIOptionsMenu : MonoBehaviour
     public void ToggleMenu()
     {
         if (GameplayManager.Instance && GameplayManager.Instance.IsWatchingCutscene()) return;
-        
+
         m_canvasGroup.alpha = m_canvasGroup.alpha == 0 ? 1 : 0;
         m_canvasGroup.blocksRaycasts = !m_canvasGroup.blocksRaycasts;
 

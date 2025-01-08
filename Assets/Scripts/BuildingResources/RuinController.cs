@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,8 @@ using UnityEngine.Serialization;
 
 public class RuinController : MonoBehaviour
 {
+    public GameObject m_ruinIndicatorObj;
+    public GameObject m_ruinDiscoveredObj;
     public GameObject m_ruinIndicatorRoot;
     public GameObject m_ruinDiscoveredRoot;
     public LayerMask m_resourceNodeLayerMask;
@@ -32,10 +35,13 @@ public class RuinController : MonoBehaviour
     private Cell m_ruinCell;
     private GameObject m_indicatorObj;
     private Ruin m_ruinObj;
+    private ProgressionKeyData m_progressionKey;
 
     void Awake()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        m_ruinIndicatorRoot.SetActive(false);
+        m_ruinDiscoveredRoot.SetActive(false);
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
@@ -54,6 +60,27 @@ public class RuinController : MonoBehaviour
     {
         m_ruinState = newState;
 
+        switch (newState)
+        {
+            case RuinState.Idle:
+                m_ruinIndicatorRoot.SetActive(false);
+                m_ruinDiscoveredRoot.SetActive(false);
+                break;
+            case RuinState.Hidden:
+                break;
+            case RuinState.Indicated:
+                m_ruinIndicatorRoot.SetActive(true);
+                m_ruinDiscoveredRoot.SetActive(false);
+                break;
+            case RuinState.Discovered:
+                m_ruinDiscoveredRoot.SetActive(true);
+                break;
+            case RuinState.Activated:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
+        }
+
         //Debug.Log($"{gameObject.name}'s Ruin State is now {m_ruinState}");
     }
 
@@ -68,17 +95,23 @@ public class RuinController : MonoBehaviour
         return m_ruinCell.m_cellResourceNode; 
     }
 
-    public void IndicateThisRuin()
+    public void IndicateThisRuin(ProgressionKeyData key)
     {
         // Update ruin controller state.
         //Debug.Log($"This ruin has been indicated by Resource Manager.");
         UpdateRuinState(RuinState.Indicated);
-        
-        //Get the resource node in this cell and remove it.
         m_ruinCell = Util.GetCellFrom3DPos(transform.position);
         
+        // Check the state of the key, to determine if this is discovered previously.
+        m_progressionKey = key;
+        m_progressionKey.KeyChanged += OnKeyChanged;
+        if (m_progressionKey.ProgressionKeyEnabled)
+        {
+            UpdateRuinState(RuinState.Discovered);
+        }
+        
         // Spawn the indicator object at the desired corner.
-        GameObject indicatorObj = ResourceManager.Instance.m_resourceManagerData.m_ruinIndicatorObj;
+        GameObject indicatorObj = m_ruinIndicatorObj;
         m_indicatorObj = ObjectPoolManager.SpawnObject(indicatorObj, gameObject.transform.position, Quaternion.identity, m_ruinIndicatorRoot.transform, ObjectPoolManager.PoolType.GameObject);
         GridCellOccupantUtil.SetOccupant(m_indicatorObj, true, 1, 1);
         m_indicatorObj.GetComponent<RuinIndicator>().SetUpRuinIndicator(this);
@@ -102,16 +135,23 @@ public class RuinController : MonoBehaviour
         if (m_ruinState != RuinState.Indicated) return;
         
         // We've discovered the ruin.
-        UpdateRuinState(RuinState.Discovered);
-
-        GameObject ruinObj = ObjectPoolManager.SpawnObject(ResourceManager.Instance.RuinDiscovered(), transform.position, Quaternion.identity, m_ruinDiscoveredRoot.transform, ObjectPoolManager.PoolType.GameObject);
-        m_ruinObj = ruinObj.GetComponent<Ruin>();
         
-        ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
-        m_indicatorObj = null;
+        PlayerDataManager.Instance.RequestUnlockKey(m_progressionKey);
     }
 
-    private void ResourceNodeDepleted(ResourceNode obj)
+    void OnKeyChanged(bool value)
+    {
+        if (value)
+        {
+            UpdateRuinState(RuinState.Discovered);
+        }
+        else
+        {
+            UpdateRuinState(RuinState.Indicated);
+        }
+    }
+    
+    /*private void ResourceNodeDepleted(ResourceNode obj)
     {
         // The node was harvested, but we're not indicated so we're not discovered.
         if (m_ruinState != RuinState.Indicated) return;
@@ -124,12 +164,13 @@ public class RuinController : MonoBehaviour
         
         ObjectPoolManager.ReturnObjectToPool(m_indicatorObj, ObjectPoolManager.PoolType.GameObject);
         m_indicatorObj = null;
-    }
+    }*/
 
     void OnDestroy()
     {
         //m_ruinCell.m_cellResourceNode.OnResourceNodeDepletion -= ResourceNodeDepleted;
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         ResourceManager.OnAllRuinsDiscovered -= AllRuinsDiscovered;
+        if(m_progressionKey != null) m_progressionKey.KeyChanged -= OnKeyChanged;
     }
 }
