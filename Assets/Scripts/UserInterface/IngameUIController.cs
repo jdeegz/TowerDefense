@@ -22,12 +22,14 @@ public class IngameUIController : MonoBehaviour
     public UIAlert m_critCurrencyAlert;
     public UIAlert m_levelUpAlert;
     public UIAlert m_gathererIdleAlert;
+    public UIAlert m_ruinAlert;
     public RectTransform m_healthMeterBossRect;
     
     [Header("Colors")]
     [SerializeField] private Color m_currencyGoodcolor;
     [SerializeField] private Color m_currencyBadcolor;
     [SerializeField] private Color m_levelUpColor;
+    [SerializeField] private Color m_ruinColor;
     [SerializeField] private Color m_idleColor;
     private String m_stoneIcon = "<sprite name=\"ResourceStone\">";
     private String m_woodIcon = "<sprite name=\"ResourceWood\">";
@@ -133,6 +135,29 @@ public class IngameUIController : MonoBehaviour
         alert.SetupAlert(screenPos);
         
         alert.SetLabelText($"{alertString}", m_levelUpColor);
+    }
+    
+    public void SpawnRuinDiscoveredAlert(Vector3 worldPos, string unlockableName, int requirementTotal, int requirementsMet)
+    {
+        string alertString;
+        if (requirementsMet >= requirementTotal)
+        {
+            // unlockableName Unlocked!
+            string name = unlockableName.Replace("_ProgressionUnlockableData", "");
+            alertString = string.Format(m_uiStringData.m_unlockableUnlocked, name);
+        }
+        else
+        {
+            // 2 / 3 Ruins Discovered!
+            alertString = string.Format(m_uiStringData.m_ruinDiscovered, requirementsMet, requirementTotal);
+        }
+       
+        
+        UIAlert alert = Instantiate(m_ruinAlert, transform);
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetupAlert(screenPos);
+        
+        alert.SetLabelText($"{alertString}", m_ruinColor);
     }
 
     public void SpawnHealthAlert(int healthValue, Vector3 worldPos)

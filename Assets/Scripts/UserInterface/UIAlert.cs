@@ -34,7 +34,7 @@ public class UIAlert : MonoBehaviour
         Sequence sequence = DOTween.Sequence();
         sequence.SetUpdate(true);
         
-        Vector2 endPos = new Vector2(m_objRectTransform.anchoredPosition.x, m_objRectTransform.anchoredPosition.y + 30f);
+        Vector2 endPos = new Vector2(m_objRectTransform.anchoredPosition.x, m_objRectTransform.anchoredPosition.y + 60f);
         sequence.Append(m_objRectTransform.DOAnchorPos(endPos, m_lifeTime));
 
         sequence.AppendInterval(.5f);

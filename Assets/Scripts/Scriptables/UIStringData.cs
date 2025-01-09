@@ -25,6 +25,10 @@ public class UIStringData : ScriptableObject
     public string m_buildRestrictedRestricted;
     public string m_buildRestrictedBlocksPath;
     public string m_buildRestrictedQuantityNotMet;
+
+    [Header("Ruins Restriction Reasons")]
+    public string m_unlockableUnlocked = "{0} Unlocked!";
+    public string m_ruinDiscovered = "{0} / {1} Ruins Discovered!";
     
     [Header("End of Game Strings")]
     public string m_victory;
