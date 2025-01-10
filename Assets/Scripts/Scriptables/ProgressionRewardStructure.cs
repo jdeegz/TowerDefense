@@ -24,12 +24,12 @@ public class ProgressionRewardStructure : ProgressionRewardData
         // Do other stuff
     }
     
-    public TowerData GetStructureData()
+    public override TowerData GetReward()
     {
         return m_structureData;
     }
-    
-    public int GetStructureRewardQty()
+
+    public override int GetRewardQty()
     {
         return m_qty;
     }

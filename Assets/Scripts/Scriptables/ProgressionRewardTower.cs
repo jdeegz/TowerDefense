@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ProgressionRewardTower", menuName = "Scriptable Objects/ProgressionRewardTower")]
+[CreateAssetMenu(fileName = "ProgressionRewardTower", menuName = "ScriptableObjects/Progression/ProgressionRewardTower")]
 public class ProgressionRewardTower : ProgressionRewardData
 {
     [SerializeField] private TowerData m_towerData; // To refactor to structure data.
@@ -23,8 +23,13 @@ public class ProgressionRewardTower : ProgressionRewardData
         // Do other stuff
     }
 
-    public TowerData GetTowerData()
+    public override TowerData GetReward()
     {
         return m_towerData;
+    }
+
+    public override int GetRewardQty()
+    {
+        return -1;
     }
 }

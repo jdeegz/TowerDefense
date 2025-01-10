@@ -41,6 +41,7 @@ public class UIOptionsMenu : MonoBehaviour
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
     private float m_elapsedTime;
+    private ProgressionCheats m_progressionCheats;
 
     public event Action<bool> OnMenuToggle; // Used to let CombatView if it should disable hotkeys.
 
@@ -54,6 +55,7 @@ public class UIOptionsMenu : MonoBehaviour
         m_canvasGroup.blocksRaycasts = false;
         m_elapsedTime = 0;
         m_cheatsGroup.SetActive(false);
+        m_progressionCheats = m_cheatsGroup.GetComponent<ProgressionCheats>();
     }
 
     void OnDestroy()
@@ -243,6 +245,7 @@ public class UIOptionsMenu : MonoBehaviour
         {
             //Debug.Log($"Trying to pause game.");
             OnMenuToggle?.Invoke(true);
+            m_progressionCheats.UpdateState();
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
             GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Disabled);
         }

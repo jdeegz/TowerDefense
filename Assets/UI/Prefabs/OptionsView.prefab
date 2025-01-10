@@ -4209,7 +4209,6 @@ GameObject:
   - component: {fileID: 5086112839180116520}
   - component: {fileID: 6539785012644717381}
   - component: {fileID: 3487712834610794334}
-  - component: {fileID: 7706965771537807085}
   m_Layer: 0
   m_Name: CheatButtonList
   m_TagString: Untagged
@@ -4306,21 +4305,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7706965771537807085
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5227207320537659781}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a0c6a7b21db37c42bca71e54304d578, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_cheatToggleObj: {fileID: 3120450083038466325, guid: 24a3173ff0785694080522048c4c0d60, type: 3}
-  m_cheatButtonObj: {fileID: 1091930817817374590, guid: 36c7f2f00c5abd0498811746c2b2ce06, type: 3}
-  m_rootTransform: {fileID: 8954967858963851176}
 --- !u!1 &5423216368296719340
 GameObject:
   m_ObjectHideFlags: 0
@@ -6759,6 +6743,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7882908545953261520}
+  - component: {fileID: 4789735077752368918}
   m_Layer: 0
   m_Name: CheatsGroup
   m_TagString: Untagged
@@ -6787,6 +6772,21 @@ RectTransform:
   m_AnchoredPosition: {x: 20, y: 0}
   m_SizeDelta: {x: 740, y: 0}
   m_Pivot: {x: 0, y: 0.5}
+--- !u!114 &4789735077752368918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8351851375561322319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a0c6a7b21db37c42bca71e54304d578, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_cheatToggleObj: {fileID: 3120450083038466325, guid: 24a3173ff0785694080522048c4c0d60, type: 3}
+  m_cheatButtonObj: {fileID: 1091930817817374590, guid: 36c7f2f00c5abd0498811746c2b2ce06, type: 3}
+  m_rootTransform: {fileID: 8954967858963851176}
 --- !u!1 &8384947189420753124
 GameObject:
   m_ObjectHideFlags: 0

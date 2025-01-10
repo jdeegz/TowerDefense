@@ -46,12 +46,14 @@ public class GameplayManager : MonoBehaviour
     public static event Action<bool> OnDelayForQuestChanged;
     public static event Action<int> OnBlueprintCountChanged;
     public static event Action<TowerData, int> OnUnlockedStucturesUpdated;
+    public static event Action<TowerData, bool> OnUnlockedTowersUpdated;
 
 
     [Header("Progression")]
     [SerializeField] private ProgressionTable m_progressionTable;
     private int m_qty;
     public Dictionary<TowerData, int> m_unlockedStructures;
+    public List<TowerData> m_unlockedTowers;
 
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
@@ -496,7 +498,9 @@ public class GameplayManager : MonoBehaviour
         // DELETE THIS
         //PlayerDataManager.Instance.ResetProgressionTable();
         
-        m_unlockedStructures = PlayerDataManager.Instance.GetUnlockedStructures();
+        SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
+        m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
+        m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
         Instance = this;
         m_mainCamera = Camera.main;
@@ -527,19 +531,17 @@ public class GameplayManager : MonoBehaviour
         {
             // TOWERS
             case "Tower":
-                Debug.Log($"Towers not yet implemented.");
+                TowerData towerData = rewardData.GetReward();
+                m_unlockedTowers.Remove(towerData);
+                OnUnlockedTowersUpdated?.Invoke(towerData, false);
                 break;
             
             // STRUCTURES
             case "Structure":
-                
-                //Type specification
-                ProgressionRewardStructure structureRewardData = rewardData as ProgressionRewardStructure;
-                
                 // Define the data that has been revoked.
-                TowerData structureData = structureRewardData.GetStructureData();
+                TowerData structureData = rewardData.GetReward();
                 
-                int qty = structureRewardData.GetStructureRewardQty();
+                int qty = rewardData.GetRewardQty();
                 
                 //Remove the QTY.
                 if (m_unlockedStructures.ContainsKey(structureData))
@@ -569,9 +571,8 @@ public class GameplayManager : MonoBehaviour
             case "Tower":
                 
                 ProgressionRewardTower towerRewardData = rewardData as ProgressionRewardTower;
-                TowerData towerData = towerRewardData.GetTowerData();
-                //RequestTowerButton(towerData);
-                Debug.Log($"Tower Tray Building not yet implemented.");
+                TowerData towerData = towerRewardData.GetReward();
+                OnUnlockedTowersUpdated?.Invoke(towerData, true);
                 break;
             
             // STRUCTURES
@@ -581,10 +582,10 @@ public class GameplayManager : MonoBehaviour
                 ProgressionRewardStructure structureRewardData = rewardData as ProgressionRewardStructure;
                 
                 // Define the data that has been awarded.
-                TowerData structureData = structureRewardData.GetStructureData();
+                TowerData structureData = structureRewardData.GetReward();
                 
                 //Does Unlocked Stuctures already have an entry for this? If so, update the quantity. If not add it.
-                int qty = structureRewardData.GetStructureRewardQty();
+                int qty = structureRewardData.GetRewardQty();
                 if (m_unlockedStructures.ContainsKey(structureData))
                 {
                     m_unlockedStructures[structureData] += qty;

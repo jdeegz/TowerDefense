@@ -51,4 +51,7 @@ public abstract class ProgressionRewardData : ScriptableObject
         ProgressionRewardEnabled = false;
         Debug.Log($"REWARD: {name}'s value: {ProgressionRewardEnabled}");
     }
+
+    public abstract TowerData GetReward();
+    public abstract int GetRewardQty();
 }

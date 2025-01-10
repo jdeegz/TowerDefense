@@ -7,6 +7,7 @@ public class ProgressionUnlockableData : ScriptableObject
 {
     [SerializeField] private List<ProgressionKeyData> m_unlockRequirementKeys;
     [SerializeField] private ProgressionRewardData m_unlockReward;
+    [SerializeField] private RuinIndicator m_ruinIndicator;
     
     public bool RequirementsIncludesKey(ProgressionKeyData keyData)
     {
@@ -26,6 +27,11 @@ public class ProgressionUnlockableData : ScriptableObject
     public void LockUnlockable()
     {
         m_unlockReward.LockReward();
+    }
+    
+    public RuinIndicator GetRuinIndicator()
+    {
+        return m_ruinIndicator;
     }
 
     public ProgressionRewardData GetRewardData()

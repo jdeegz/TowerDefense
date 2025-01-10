@@ -4,6 +4,7 @@ public class RuinIndicator : Ruin
 {
     [SerializeField] private RuinData m_data;
     [SerializeField] private ProgressionKeyData m_unlockKeyData;
+    [SerializeField] private GameObject m_relic;
     private RuinController m_ruinController;
     
     public override RuinTooltipData GetTooltipData()
@@ -19,9 +20,15 @@ public class RuinIndicator : Ruin
     {
         m_ruinController = ruinController;
     }
+    
     public override void GathererArrivedAtRuin(GathererController gathererController)
     {
         Debug.Log($"Gatherer Arrived at undiscovered ruin! Requesting Unlock Key!");
         m_ruinController.GathererDiscoveredRuin();
+    }
+
+    public void ToggleRuinRelic(bool b)
+    {
+        m_relic.SetActive(b);
     }
 }

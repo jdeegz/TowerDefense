@@ -233,38 +233,63 @@ public class PlayerDataManager
         m_progressionTable = progressionTable;
     }
 
-    public Dictionary<TowerData, int> GetUnlockedStructures()
+    public SortedAndUnlocked GetSortedUnlocked()
     {
         Dictionary<TowerData, int> unlockedStructures = new Dictionary<TowerData, int>();
+        List<TowerData> unlockedTowers = new List<TowerData>();
         
         foreach (ProgressionUnlockableData unlockableData in m_progressionTable.GetListUnlockableData())
         {
-            ProgressionRewardStructure rewardData = unlockableData.GetRewardData() as ProgressionRewardStructure;
-            if (rewardData.RewardType != "Structure")
+            //If we're still locked, go next.
+            UnlockProgress unlockProgress = unlockableData.GetProgress();
+            if (!unlockProgress.m_isUnlocked)
             {
                 continue;
             }
             
-            UnlockProgress unlockProgress = unlockableData.GetProgress();
-            if (unlockProgress.m_isUnlocked)
+            // Get the reward so we can determine type, then get the tower data and pack it.
+            ProgressionRewardData rewardData = unlockableData.GetRewardData();
+            switch (rewardData.RewardType)
             {
-                TowerData towerData = rewardData.GetStructureData();
-                unlockedStructures[towerData] = unlockedStructures.GetValueOrDefault(towerData, 0) + rewardData.GetStructureRewardQty();
+                case "Structure":
+                    TowerData structureData = rewardData.GetReward();
+                    unlockedStructures[structureData] = unlockedStructures.GetValueOrDefault(structureData, 0) + rewardData.GetRewardQty();
+                    break;
+                case "Tower":
+                    TowerData towerData = rewardData.GetReward();
+                    if (unlockedTowers.Contains(towerData)) break;
+                    unlockedTowers.Add(towerData);
+                    break;
+                default:
+                    break;
             }
         }
 
-
-        Debug.Log($"Returning Unlockable Structures.");
+        /*Debug.Log($"Returning Unlockable Structures.");
         foreach (var kvp in unlockedStructures)
         {
             Debug.Log($"{kvp.Key.m_towerName} x{kvp.Value}");
-        }
-        return unlockedStructures;
+        }*/
+
+        SortedAndUnlocked sortedAndUnlocked = new SortedAndUnlocked(unlockedStructures, unlockedTowers);
+        return sortedAndUnlocked;
     }
 
     public void ResetProgressionTable()
     {
         m_progressionTable.ResetProgressionData();
+    }
+}
+
+public class SortedAndUnlocked
+{
+    public Dictionary<TowerData, int> m_unlockedStructures;
+    public List<TowerData> m_unlockedTowers;
+
+    public SortedAndUnlocked(Dictionary<TowerData, int> unlockedStructures, List<TowerData> unlockedTowers)
+    {
+        m_unlockedStructures = unlockedStructures;
+        m_unlockedTowers = unlockedTowers;
     }
 }
 

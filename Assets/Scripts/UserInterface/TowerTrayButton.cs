@@ -101,6 +101,11 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         CanAffordToBuildTower();
     }
 
+    public void UpdateHotkeyDisplay(int i)
+    {
+        m_towerHotkey.SetText(i.ToString());
+    }
+
     private void CanAffordToBuildTower()
     {
         //Debug.Log($"CanAffordToBuildTower: Wood - {m_canAffordWood}, Stone - {m_canAffordStone}, Quantity - {m_canAffordQty}.");

@@ -89,7 +89,6 @@ public class ResourceManager : MonoBehaviour
 
     void Start()
     {
-        
         m_validRuinsInMission = new List<RuinController>(m_ruinsInMission);
     }
 
@@ -217,40 +216,60 @@ public class ResourceManager : MonoBehaviour
     public void SetupRuinIndications()
     {
         if (m_resourceManagerData.m_missionUnlockables.Count == 0) return;
-        
-        List<ProgressionKeyData> keysInMission = new List<ProgressionKeyData>();
+
+        //List<ProgressionKeyData> keysInMission = new List<ProgressionKeyData>();
         foreach (ProgressionUnlockableData unlockableData in m_resourceManagerData.m_missionUnlockables)
         {
             foreach (ProgressionKeyData key in unlockableData.GetKeyData())
             {
-                keysInMission.Add(key);
-            }
-        }
-        
-        for (int k = 0; k < keysInMission.Count; ++k)
-        {
-            // Get the total weight, to then pick a random value from it.
-            int weightSum = 0;
-            for (int i = 0; i < m_validRuinsInMission.Count; ++i)
-            {
-                weightSum += m_validRuinsInMission[i].m_ruinWeight;
-            }
-
-            int chosenWeight = Random.Range(0, weightSum);
-            int lastTotalWeight = 0;
-            for (int i = 0; i < m_validRuinsInMission.Count; ++i) // increase lastTotalWeight until it's greater than the chosen (random) weight.
-            {
-                if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
+                // Get the total weight, to then pick a random value from it.
+                int weightSum = 0;
+                for (int i = 0; i < m_validRuinsInMission.Count; ++i)
                 {
-                    // This is the node we have chosen.
-                    m_validRuinsInMission[i].IndicateThisRuin(keysInMission[k]);
-                    m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
-                    RuinIndicated?.Invoke();
-                    break;
+                    weightSum += m_validRuinsInMission[i].m_ruinWeight;
                 }
 
-                lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
+                int chosenWeight = Random.Range(0, weightSum);
+                int lastTotalWeight = 0;
+                for (int i = 0; i < m_validRuinsInMission.Count; ++i) // increase lastTotalWeight until it's greater than the chosen (random) weight.
+                {
+                    if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
+                    {
+                        // This is the node we have chosen.
+                        m_validRuinsInMission[i].IndicateThisRuin(key, unlockableData.GetRuinIndicator());
+                        m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
+                        RuinIndicated?.Invoke();
+                        break;
+                    }
+
+                    lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
+                }
             }
+
+            /*for (int k = 0; k < keysInMission.Count; ++k)
+            {
+                // Get the total weight, to then pick a random value from it.
+                int weightSum = 0;
+                for (int i = 0; i < m_validRuinsInMission.Count; ++i)
+                {
+                    weightSum += m_validRuinsInMission[i].m_ruinWeight;
+                }
+
+                int chosenWeight = Random.Range(0, weightSum);
+                int lastTotalWeight = 0;
+                for (int i = 0; i < m_validRuinsInMission.Count; ++i) // increase lastTotalWeight until it's greater than the chosen (random) weight.
+                {
+                    if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
+                    {
+                        // This is the node we have chosen.
+                        m_validRuinsInMission[i].IndicateThisRuin(keysInMission[k]);
+                        m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
+                        RuinIndicated?.Invoke();
+                        break;
+                    }
+
+                    lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
+                }*/
         }
 
         //for each ruin still in the valid list, replace them with a tree.
