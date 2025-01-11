@@ -307,6 +307,8 @@ public class GathererController : MonoBehaviour
         m_curNodeQueueIndicators = new List<GameObject>();
     }
 
+
+
     void Update()
     {
         UpdateStatusEffects();
@@ -414,11 +416,11 @@ public class GathererController : MonoBehaviour
     void UpdateHarvestNodeIndicator()
     {
         // Return the current one, if there is one.
-        Debug.Log($"{m_gathererData.m_gathererName} updating Harvest Node indicator; Current indicator: {m_curHarvestNodeIndicator}. Current Node: {CurrentHarvestNode}");
+        //Debug.Log($"{m_gathererData.m_gathererName} updating Harvest Node indicator; Current indicator: {m_curHarvestNodeIndicator}. Current Node: {CurrentHarvestNode}");
 
         if (m_curHarvestNodeIndicator)
         {
-            Debug.Log($"Disabling {m_gathererData.m_gathererName}'s Current Harvest Node Indicator.");
+            //Debug.Log($"Disabling {m_gathererData.m_gathererName}'s Current Harvest Node Indicator.");
             GameObject oldIndicator = m_curHarvestNodeIndicator;
             m_curHarvestNodeIndicator = null;
             oldIndicator.transform.DOScale(0, 0.15f).SetEase(Ease.InBack).OnComplete(() => ObjectPoolManager.ReturnObjectToPool(oldIndicator, ObjectPoolManager.PoolType.GameObject));
@@ -427,7 +429,7 @@ public class GathererController : MonoBehaviour
         // Then if we have a node, spawn a new indicator at it.
         if (CurrentHarvestNode)
         {
-            Debug.Log($"Enabling a new indicator at {m_gathererData.m_gathererName}'s Harvest Node.");
+            //Debug.Log($"Enabling a new indicator at {m_gathererData.m_gathererName}'s Harvest Node.");
             m_curHarvestNodeIndicator = ObjectPoolManager.SpawnObject(m_harvestNodeIndicatorObj, CurrentHarvestNode.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.GameObject);
             m_curHarvestNodeIndicator.transform.localScale = Vector3.zero;
             m_curHarvestNodeIndicator.transform.DOScale(1, .15f).SetEase(Ease.OutBack).SetUpdate(true);
@@ -471,10 +473,12 @@ public class GathererController : MonoBehaviour
     private void CheckPathToGoal()
     {
         //Does the path reach the goal?
+        //Debug.Log($"Checking Path to Goal.");
         Vector2Int lastPathPos = m_gathererPath.Last();
         int distance = Math.Max(Math.Abs(lastPathPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(lastPathPos.y - CurrentGoalCell.m_cellPos.y));
         if (distance > 1)
         {
+            //Debug.Log($"The last cell {lastPathPos} is not reachable from {CurrentGoalCell}.");
             m_isBlockedFromGoal = true;
         }
         else
@@ -482,6 +486,7 @@ public class GathererController : MonoBehaviour
             if (m_isBlockedFromGoal)
             {
                 //If we were blocked, and now we're not. Let's move.
+                //Debug.Log($"The last cell {lastPathPos} is reachable from {CurrentGoalCell}!");
                 IsMoving = true;
             }
 
@@ -489,11 +494,19 @@ public class GathererController : MonoBehaviour
         }
     }
 
+    
+    private float m_unblockSearchTimer = .5f;
+    private float m_unblockSearchTimeElapsed = 0f;
     private void FindUnblockedPath()
     {
-        if (!m_isBlockedFromGoal) return;
-
-        GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
+        //if (!m_isBlockedFromGoal) return;
+        m_unblockSearchTimeElapsed += Time.deltaTime;
+        if (m_unblockSearchTimeElapsed > m_unblockSearchTimer && m_isBlockedFromGoal)
+        {
+            //Debug.Log($"Trying to find an unblocked path.");
+            GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
+            m_unblockSearchTimeElapsed = 0;
+        }
     }
 
     private Vector3 m_avoidanceDirection;
@@ -514,19 +527,19 @@ public class GathererController : MonoBehaviour
     private void HandleMovement()
     {
         if (!IsMoving) return;
-        //if (GathererPath == null || !IsMoving) return;
 
         // Get the cell-distance between our current cell and our goal cell.
         float remainingCellDistance = Math.Max(Math.Abs(m_curPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(m_curPos.y - CurrentGoalCell.m_cellPos.y));
 
         // Get the float distance of our current position and the halfway point.
         float distanceToGoalPoint = Vector3.Distance(transform.position, m_curGoalCellPos);
-        float distanceToNextCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
+        //float distanceToNextCellCenter = Vector3.Distance(transform.position, m_nextCellPosition);
+        float distanceBetweenCells = Vector3.Distance(m_nextCellPosition, m_curGoalCellPos);
 
         if (GathererPath == null || m_curPos == GathererPath.Last()) // We've arrived in the last cell of the path, are we next to the goal cell?
         {
             //Debug.Log($"We've reached the last cell of our path.");
-            if (remainingCellDistance <= 1) // We're adjacent to the goal cell.
+            if (!m_isBlockedFromGoal && remainingCellDistance <= 1) // We're adjacent to the goal cell.
             {
                 float stoppingDistance = Vector2Int.Distance(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos) / 2 + 0.15f;
                 //Debug.Log($"We're in a cell adjacent the current goal. Distance to border: {distanceToGoalPoint}, Stopping Distance: {stoppingDistance}");
@@ -540,8 +553,8 @@ public class GathererController : MonoBehaviour
             }
             else // We're at the last cell, but it's not adjacent, meaning we cannot access the Goal Cell to do our duty. Chill in the center of the cell
             {
-                //Debug.Log($"We're in a cell that is NOT adjacent the current goal. Distance to center: {distanceToNextCellCenter}");
-                if (distanceToNextCellCenter <= 0.1f && IsMoving)
+                //Debug.Log($"We're in a cell that is NOT adjacent the current goal. Distance Between Cells: {distanceBetweenCells}, Distance from Goal: {distanceToGoalPoint}");
+                if (distanceToGoalPoint <= distanceBetweenCells && IsMoving)
                 {
                     //Debug.Log($"We've reached the center point of our last cell.");
                     SetAnimatorTrigger("Idle");
@@ -555,30 +568,26 @@ public class GathererController : MonoBehaviour
         Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
         if (newPos != m_curPos)
         {
-            //Remove self from current cell.
+            // Remove self from current cell.
             if (m_curCell != null)
             {
                 m_curCell.UpdateActorCount(-1, gameObject.name);
             }
 
-            //Assign new position
+            // Assign new position
             m_curPos = newPos;
 
-            //Get new cell from new position.
+            // Get new cell from new position.
             m_curCell = Util.GetCellFromPos(m_curPos);
 
-            //Assign self to cell.
+            // Assign self to cell.
             m_curCell.UpdateActorCount(1, gameObject.name);
 
-            //Update my path towards my goal.
-            /*if (m_curPos != GathererPath.Last())
-            {
-                GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
-            }*/
+            // Update my path towards my goal.
             GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
         }
 
-        if (GathererPath == null || m_curPos == GathererPath.Last())
+        if (GathererPath == null || m_curPos == GathererPath.Last()) // If we have no path, or are at the last cell, AND we're not blocked, keep moving.
         {
             Vector2 stoppingPoint2d = Vector2.Lerp(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos, 0.45f);
             Vector3 stoppingPoint = new Vector3(stoppingPoint2d.x, 0, stoppingPoint2d.y);
@@ -623,7 +632,7 @@ public class GathererController : MonoBehaviour
                 break;
             case GathererTask.TravelingToRuin:
                 ClearHarvestVars();
-                
+
                 m_curRuin.GathererArrivedAtRuin(this);
 
                 // If we're carrying resources, resume delivering them.

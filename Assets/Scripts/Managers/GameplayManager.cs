@@ -35,6 +35,8 @@ public class GameplayManager : MonoBehaviour
     public static event Action<String> OnWaveCompleted;
     public static event Action<Vector2Int> OnPreconTowerMoved;
     public static event Action OnPreconstructedTowerClear;
+    public static event Action<List<Cell>> OnPreconBuildingMoved;
+    public static event Action OnPreconBuildingClear;
     public static event Action<TowerData> OnTowerBuild;
     public static event Action OnTowerSell;
     public static event Action OnTowerUpgrade;
@@ -925,7 +927,8 @@ public class GameplayManager : MonoBehaviour
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
         OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
 
-        Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
+        //DISABLING ALL OF THIS: Because we can track and update through other functions and reduce code.
+        /*Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
         {
             //Raycast has hit the ground, round that point to the nearest int.
@@ -951,8 +954,14 @@ public class GameplayManager : MonoBehaviour
             m_qty = -1;
         }
 
-        SetOutlineColor(m_canBuild);
+        SetOutlineColor(m_canBuild);*/
         //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
+    }
+
+    public void TriggerPreconBuildingMoved(List<Cell> cells)
+    {
+        //THIS SHOULD BE REMOVED OMG
+        OnPreconBuildingMoved?.Invoke(cells);
     }
 
     private void DrawPreconstructedTower()
@@ -1119,41 +1128,36 @@ public class GameplayManager : MonoBehaviour
 
         //TO DO : Optimization : Only check paths if the precon tower has moved.
         //Get neighbor cells.
-        Vector2Int[] neighbors =
-        {
-            new Vector2Int(m_preconstructedTowerPos.x, m_preconstructedTowerPos.y + 1), //North
-            new Vector2Int(m_preconstructedTowerPos.x + 1, m_preconstructedTowerPos.y), //East
-            new Vector2Int(m_preconstructedTowerPos.x, m_preconstructedTowerPos.y - 1), //South
-            new Vector2Int(m_preconstructedTowerPos.x - 1, m_preconstructedTowerPos.y) //West
-        };
+        Cell[] neighborCells = Util.GetNeighborCells(curCell, GridManager.Instance.m_gridCells);
 
         //Check the path from each neighbor to the goal.
-        for (int i = 0; i < neighbors.Length; ++i)
+        for (int i = 0; i < neighborCells.Length; ++i)
         {
             //Debug.Log("Pathing from Neighbor:" + i + " of: " + neighbors.Length);
-            Cell cell = Util.GetCellFromPos(neighbors[i]);
+            Cell neighborCell = neighborCells[i];
 
             //Assure we're not past the bound of the grid.
-            if (cell == null)
+            if (neighborCell == null)
             {
                 //Debug.Log("Neighbor not on Grid:" + neighbors[i]);
                 continue;
             }
 
             //Assure the neighbor cell is not occupied.
-            if (!cell.m_isOccupied)
+            if (!neighborCell.m_isOccupied)
             {
-                List<Vector2Int> testPath = AStar.FindExitPath(neighbors[i], m_goalPointPos, m_preconstructedTowerPos, new Vector2Int(-1, -1));
+                List<Vector2Int> testPath = AStar.FindExitPath(neighborCell.m_cellPos, m_goalPointPos, m_preconstructedTowerPos, new Vector2Int(-1, -1));
 
                 //If we found a path, this neighbor is OK. If not, we need to check if it creates an island.
                 if (testPath == null)
                 {
                     //Debug.Log($"No path found from neighbor {i}, checking for inhabited islands.");
                     //If we did not find a path, check islands for actors. If there are, we cannot build here.
-                    List<Vector2Int> islandCells = new List<Vector2Int>(AStar.FindIsland(neighbors[i], m_preconstructedTowerPos));
-                    foreach (Vector2Int cellPos in islandCells)
+                    List<Cell> preconTowerCells = new List<Cell>();
+                    preconTowerCells.Add(Util.GetCellFromPos(m_preconstructedTowerPos));
+                    List<Cell> islandCells = new List<Cell>(AStar.FindIsland(neighborCell, preconTowerCells));
+                    foreach (Cell islandCell in islandCells)
                     {
-                        Cell islandCell = Util.GetCellFromPos(cellPos);
                         if (islandCell.m_actorCount > 0)
                         {
                             //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
@@ -1239,6 +1243,7 @@ public class GameplayManager : MonoBehaviour
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
         OnPreconstructedTowerClear?.Invoke();
+        OnPreconBuildingClear?.Invoke();
     }
 
     public void BuildTower()

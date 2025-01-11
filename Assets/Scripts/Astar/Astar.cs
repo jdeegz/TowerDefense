@@ -211,36 +211,35 @@ public class AStar
         }
     }
 
-    public static List<Vector2Int> FindIsland(Vector2Int startCell, Vector2Int preconTowerCell)
+    public static List<Cell> FindIsland(Cell startCell, List<Cell> preconTowerCells)
     {
-        List<Vector2Int> islandCells = new List<Vector2Int>();
-        HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-        PerformDFS(startCell, islandCells, visited, preconTowerCell);
+        List<Cell> islandCells = new List<Cell>();
+        HashSet<Cell> visited = new HashSet<Cell>();
+        PerformDFS(startCell, islandCells, visited, preconTowerCells);
         return islandCells;
     }
 
-    private static void PerformDFS(Vector2Int currentCell, List<Vector2Int> islandCells, HashSet<Vector2Int> visited, Vector2Int preconTowerCell)
+    private static void PerformDFS(Cell curCell, List<Cell> islandCells, HashSet<Cell> visited, List<Cell> preconTowerCellsPos)
     {
-        // Check if the current cell is valid and not already visited
-        Cell curCell = Util.GetCellFromPos(new Vector2Int(currentCell.x, currentCell.y));
-
-        if (currentCell.x >= 0 && currentCell.x < GridManager.Instance.m_gridWidth &&
-            currentCell.y >= 0 && currentCell.y < GridManager.Instance.m_gridHeight &&
-            !visited.Contains(currentCell) &&
+        Vector2Int curCellPos = curCell.m_cellPos;
+        if (curCellPos.x >= 0 && curCellPos.x < GridManager.Instance.m_gridWidth &&
+            curCellPos.y >= 0 && curCellPos.y < GridManager.Instance.m_gridHeight &&
+            !visited.Contains(curCell) &&
             !curCell.m_isOccupied &&
-            currentCell != preconTowerCell)
+            !curCell.m_isTempOccupied &&
+            !preconTowerCellsPos.Contains(curCell))
         {
             // Mark the current cell as visited
-            visited.Add(currentCell);
+            visited.Add(curCell);
 
             // Add the current cell to the list of island cells
-            islandCells.Add(currentCell);
+            islandCells.Add(curCell);
 
             // Recursively explore the neighbors of the current cell
-            if (curCell.m_canPathNorth) PerformDFS(new Vector2Int(currentCell.x, currentCell.y + 1), islandCells, visited, preconTowerCell); // Up neighbor
-            if (curCell.m_canPathEast) PerformDFS(new Vector2Int(currentCell.x + 1, currentCell.y), islandCells, visited, preconTowerCell); // Right neighbor
-            if (curCell.m_canPathSouth) PerformDFS(new Vector2Int(currentCell.x, currentCell.y - 1), islandCells, visited, preconTowerCell); // Down neighbor
-            if (curCell.m_canPathWest) PerformDFS(new Vector2Int(currentCell.x - 1, currentCell.y), islandCells, visited, preconTowerCell); // Left neighbor
+            if (curCell.m_canPathNorth) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y + 1)), islandCells, visited, preconTowerCellsPos); // Up neighbor
+            if (curCell.m_canPathEast) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x + 1, curCellPos.y)), islandCells, visited, preconTowerCellsPos); // Right neighbor
+            if (curCell.m_canPathSouth) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y - 1)), islandCells, visited, preconTowerCellsPos); // Down neighbor
+            if (curCell.m_canPathWest) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x - 1, curCellPos.y)), islandCells, visited, preconTowerCellsPos); // Left neighbor
         }
     }
     
@@ -274,7 +273,11 @@ public class AStar
     {
         List<Vector2Int> path = new List<Vector2Int>();
 
-        if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied)
+        if (start == end 
+            || Util.GetCellFromPos(start).m_isOccupied 
+            || Util.GetCellFromPos(end).m_isOccupied
+            || Util.GetCellFromPos(start).m_isTempOccupied 
+            || Util.GetCellFromPos(end).m_isTempOccupied)
         {
             //Debug.Log("Start is End: " + (start == end));
             //Debug.Log("Start is occupied: " + Util.GetCellFromPos(start).m_isOccupied);
@@ -335,6 +338,7 @@ public class AStar
                     neighbor.y >= 0 &&
                     neighbor.y < GridManager.Instance.m_gridHeight &&
                     !Util.GetCellFromPos(neighbor).m_isOccupied &&
+                    !Util.GetCellFromPos(neighbor).m_isTempOccupied &&
                     neighbor != precon &&
                     neighbor != exit)
                 {
@@ -365,7 +369,7 @@ public class AStar
             Cell curCell = Util.GetCellFromPos(current);
 
             //If the current cell is occupied, we cannot find the exit, this is not a valid path.
-            if (curCell.m_isOccupied && curCell.m_isTempOccupied)
+            if (curCell.m_isOccupied || curCell.m_isTempOccupied)
             {
                 Debug.Log("GetExitPath did not find a path.");
                 return null;

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using JetBrains.Annotations;
 
 public static class Util
 {
@@ -456,6 +457,47 @@ public static class Util
         //Debug.Log("Request Cell at: " + x + "," + z + " Index of: " + index);
 
         return GridManager.Instance.m_gridCells[index];
+    }
+    
+    public static List<Cell> GetCellsFromPos(Vector2Int pos, int width, int height)
+    {
+        List<Cell> cellsFromPos = new List<Cell>();
+        Vector2Int bottomLeftCellPos = pos;
+        bottomLeftCellPos.x -= width / 2;
+        bottomLeftCellPos.y -= height / 2;
+
+        for (int x = 0; x < width; ++x)
+        {
+            for (int z = 0; z < height; ++z)
+            {
+                int xPos = bottomLeftCellPos.x + x;
+                int zPos = bottomLeftCellPos.y + z;
+                
+                //Check we're within the grid width
+                if (xPos < 0 || xPos >= GridManager.Instance.m_gridWidth)
+                {
+                    //Debug.Log("X not within grid bounds.");
+                    return null;
+                }
+
+                //Check we're within the grid height
+                if (zPos < 0 || zPos >= GridManager.Instance.m_gridHeight)
+                {
+                    //Debug.Log("Z not within grid bounds.");
+                    return null;
+                }
+                
+                Cell cell = GetCellFromPos(new Vector2Int(xPos, zPos));
+
+                if (cell.m_isOutOfBounds)
+                {
+                    return null;
+                }
+                cellsFromPos.Add(cell);
+            }
+        }
+
+        return cellsFromPos;
     }
 
     public static Cell GetCellFrom3DPos(Vector3 pos)

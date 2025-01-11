@@ -16,9 +16,6 @@ public class GridManager : MonoBehaviour
     public GameObject m_gridVisualizerObj;
     public GameObject m_gridCellObj;
     public GameObject[] m_gridcellObjects;
-
-    [FormerlySerializedAs("m_groundLayer")]
-    public LayerMask m_waterLayer;
     public LayerMask m_groundLayer;
 
     [Header("Tile Map Data")]
@@ -31,10 +28,9 @@ public class GridManager : MonoBehaviour
     private Vector2Int m_enemyGoalPos;
     private Vector2Int m_preconstructedTowerPos;
     private int m_previousPreconIndex;
+    private List<Cell> m_previousPreconCells;
     private bool m_previousPreconOccupancy;
     public bool m_spawnPointsAccessible;
-
-    public static event Action OnResourceNodeRemoved;
 
 
     void Awake()
@@ -42,9 +38,9 @@ public class GridManager : MonoBehaviour
         Instance = this;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
-        //GameplayManager.OnTowerBuild += TowerBuilt;
+        GameplayManager.OnPreconBuildingMoved += PreconBuildingMoved;
+        GameplayManager.OnPreconBuildingClear += PreconBuildingClear;
         GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
-        //GameplayManager.OnTowerSell += RefreshGrid;
         m_gridVisualizerObj.SetActive(false);
     }
 
@@ -52,9 +48,9 @@ public class GridManager : MonoBehaviour
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
-        //GameplayManager.OnTowerBuild -= TowerBuilt;
+        GameplayManager.OnPreconBuildingMoved -= PreconBuildingMoved;
+        GameplayManager.OnPreconBuildingClear -= PreconBuildingClear;
         GameplayManager.OnPreconstructedTowerClear -= PreconstructedTowerClear;
-        //GameplayManager.OnTowerSell -= RefreshGrid;
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
@@ -222,7 +218,7 @@ public class GridManager : MonoBehaviour
 
         //Debug.Log("Grid Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.PlaceObstacles);
-        
+
         //Debug.Log("Obstacles Placed.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.FloodFillGrid);
     }
@@ -250,11 +246,49 @@ public class GridManager : MonoBehaviour
         FloodFillGrid(m_gridCells, null);
     }
 
+    void PreconBuildingMoved(List<Cell> cells)
+    {
+        if (m_previousPreconCells == null) m_previousPreconCells = new List<Cell>();
+
+        foreach (Cell cell in m_previousPreconCells)
+        {
+            cell.UpdateTempOccupancyDisplay(false);
+        }
+        
+        foreach (Cell cell in cells)
+        {
+            // There could be cells that flip off then back on. Is that an optimization necessary?
+            cell.UpdateTempOccupancyDisplay(true);
+        }
+
+        m_previousPreconCells = cells;
+
+        //Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
+        FloodFillGrid(m_gridCells, null);
+    }
+
     void TowerBuilt()
     {
         SetCellDirections();
 
         //RevertPreconTempChanges();
+    }
+
+    void PreconBuildingClear()
+    {
+        RevertBuildingCellTempChanges();
+
+        FloodFillGrid(m_gridCells, null);
+    }
+
+    void RevertBuildingCellTempChanges()
+    {
+        if (m_previousPreconCells == null) return;
+        
+        foreach (Cell cell in m_previousPreconCells)
+        {
+            cell.UpdateTempOccupancyDisplay(false);
+        }
     }
 
     void PreconstructedTowerClear()
@@ -263,7 +297,7 @@ public class GridManager : MonoBehaviour
 
         FloodFillGrid(m_gridCells, null);
     }
-
+    
     void RevertPreconTempChanges()
     {
         //Set the values back to their original state if this is not our first iteration.
