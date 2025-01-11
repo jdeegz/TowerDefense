@@ -317,7 +317,7 @@ public class GameplayManager : MonoBehaviour
                 }
 
                 //Reset outline color. This will be overridden by Tower Precon functions.
-                SetOutlineColor(false);
+                SetOutlineColor(true);
                 BuildTower();
                 return;
             }
@@ -362,6 +362,8 @@ public class GameplayManager : MonoBehaviour
             if (!m_curSelectable || m_curSelectable.m_selectedObjectType != Selectable.SelectedObjectType.Gatherer) return;
 
             if (!m_hoveredSelectable || m_hoveredSelectable.m_selectedObjectType != Selectable.SelectedObjectType.ResourceWood) return;
+            
+            if (m_gameplayState == GameplayState.Setup) StartMission();
 
             m_curSelectable.GetComponent<GathererController>().AddNodeToHarvestQueue(m_hoveredSelectable.GetComponent<ResourceNode>());
         }
@@ -385,11 +387,7 @@ public class GameplayManager : MonoBehaviour
                         OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
                         break;
                     case InteractionState.PreconstructionTower:
-                        //Reset outline color. 
-                        SetOutlineColor(false);
-
-                        //Cancel tower preconstruction
-                        //OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
+                        SetOutlineColor(true);
                         ClearPreconstructedTower();
                         m_interactionState = InteractionState.Idle;
                         break;
@@ -1259,7 +1257,17 @@ public class GameplayManager : MonoBehaviour
         {
             if (i < m_preconstructedTowerCells.Count)
             {
-                m_invalidCellObjs[i].SetActive(!m_canBuild);
+                //Show the cell if we cannot path or afford.
+                if (!m_canAfford || !m_canPath)
+                {
+                    m_invalidCellObjs[i].SetActive(true);
+                }
+                else
+                {
+                    //Else show the cell if cell is occupied.
+                    m_invalidCellObjs[i].SetActive(m_preconstructedTowerCells[i].m_isOccupied || m_preconstructedTowerCells[i].m_isBuildRestricted);
+                }
+
                 Cell cell = m_preconstructedTowerCells[i];
 
                 Vector3 pos = new Vector3(cell.m_cellPos.x, 0, cell.m_cellPos.y);

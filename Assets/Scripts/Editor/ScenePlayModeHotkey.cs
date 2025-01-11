@@ -6,30 +6,41 @@ public class ScenePlayModeHotkey : EditorWindow
 {
     private const string menuPath = "MyGame/Enter Play Mode (Ctrl+G)";
     private const string scenePath = "Assets/Scenes/Initialize.unity"; // Replace with your scene path
+    private static KeyCode hotkey = KeyCode.G;
+    private static EventModifiers modifier = EventModifiers.Control;
 
     [MenuItem(menuPath)]
     private static void EnterPlayMode()
     {
+        // Save the current scene if there are unsaved changes
         EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+
+        // Open the specified scene
         EditorSceneManager.OpenScene(scenePath);
+
+        // Start Play Mode
         EditorApplication.isPlaying = true;
     }
 
     [InitializeOnLoadMethod]
     private static void Initialize()
     {
-        EditorApplication.update += CheckShortcut;
+        // Subscribe to the editor's global update event
+        SceneView.duringSceneGui += OnSceneGUI;
     }
 
-    private static void CheckShortcut()
+    private static void OnSceneGUI(SceneView sceneView)
     {
-        // Check for Ctrl+G only if the focused window is the scene view
-        if (EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.titleContent.text == "Scene")
+        Event currentEvent = Event.current;
+
+        // Check if the correct hotkey is pressed
+        if (currentEvent != null && currentEvent.type == EventType.KeyDown)
         {
-            if (Event.current != null && Event.current.type == EventType.KeyDown && Event.current.modifiers == EventModifiers.Control && Event.current.keyCode == KeyCode.G)
+            if (currentEvent.modifiers == modifier && currentEvent.keyCode == hotkey)
             {
+                Debug.Log("Hotkey pressed: " + hotkey); // Debug log for testing
                 EnterPlayMode();
-                Event.current.Use();
+                currentEvent.Use(); // Consume the event to prevent propagation
             }
         }
     }
