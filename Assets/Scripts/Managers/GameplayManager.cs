@@ -100,11 +100,13 @@ public class GameplayManager : MonoBehaviour
 
 // Precon Tower Info
     public GameObject m_invalidCellObj;
+    public List<GameObject> m_invalidCellObjs;
     public LayerMask m_buildSurface;
     public Vector2Int m_preconstructedTowerPos;
 
     [HideInInspector] public bool m_canAfford;
     [HideInInspector] public bool m_canPlace;
+    [HideInInspector] public bool m_canPath;
     [HideInInspector] public bool m_canBuild;
 
     private GameObject m_preconstructedTowerObj;
@@ -176,7 +178,7 @@ public class GameplayManager : MonoBehaviour
             Debug.Log($"P button pressed.");
             PlayerDataManager.Instance.ResetProgressionTable();
         }
-        
+
         //We do not want to update _anything_ while we're in a cutscene!
         if (m_watchingCutScene) return;
 
@@ -209,7 +211,9 @@ public class GameplayManager : MonoBehaviour
 
         if (m_interactionState == InteractionState.PreconstructionTower)
         {
-            DrawPreconstructedTower();
+            PreconPeriodicTimer();
+            PositionPrecon();
+            HandlePreconMousePosition();
         }
 
         if (m_delayForQuest == false && m_gameplayState == GameplayState.Build)
@@ -291,7 +295,7 @@ public class GameplayManager : MonoBehaviour
                 if (!m_canAfford)
                 {
                     //Debug.Log("Not Enough Resources.");
-                    OnAlertDisplayed?.Invoke(m_UIStringData.m_cannotAfford);
+                    OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
                     RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
                 }
@@ -303,16 +307,13 @@ public class GameplayManager : MonoBehaviour
                     RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
                 }
-
-                if (m_unlockedStructures.TryGetValue(m_preconstructedTowerData, out int quantity))
+                
+                if (!m_canPath)
                 {
-                    if (quantity == 0)
-                    {
-                        OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
-                        RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
-                        Debug.Log($"Out of {m_preconstructedTowerData.name}'s!");
-                        return;
-                    }
+                    //Debug.Log("Cannot build here.");
+                    OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
+                    RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
+                    return;
                 }
 
                 //Reset outline color. This will be overridden by Tower Precon functions.
@@ -483,10 +484,10 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    private void SetOutlineColor(bool isRestricted)
+    private void SetOutlineColor(bool canBuild)
     {
-        //Debug.Log($"Trying to change color: {isRestricted}");
-        Color color = isRestricted ? m_selectionColors.m_outlineRestrictedColor : m_selectionColors.m_outlineBaseColor;
+        //Debug.Log($"Trying to change color: {canBuild}");
+        Color color = canBuild ? m_selectionColors.m_outlineBaseColor: m_selectionColors.m_outlineRestrictedColor;
         m_selectedOutlineMaterial.SetColor("_Outline_Color", color);
     }
 
@@ -496,10 +497,10 @@ public class GameplayManager : MonoBehaviour
         PlayerDataManager.Instance.SetProgressionTable(m_progressionTable);
         PlayerDataManager.OnUnlockableUnlocked += UnlockableUnlocked;
         PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
-        
+
         // DELETE THIS
         //PlayerDataManager.Instance.ResetProgressionTable();
-        
+
         SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
         m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
         m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
@@ -537,26 +538,27 @@ public class GameplayManager : MonoBehaviour
                 m_unlockedTowers.Remove(towerData);
                 OnUnlockedTowersUpdated?.Invoke(towerData, false);
                 break;
-            
+
             // STRUCTURES
             case "Structure":
                 // Define the data that has been revoked.
                 TowerData structureData = rewardData.GetReward();
-                
+
                 int qty = rewardData.GetRewardQty();
-                
+
                 //Remove the QTY.
                 if (m_unlockedStructures.ContainsKey(structureData))
                 {
                     //Assure we don't go below 0 quantity, subtract the smallest of qty locked or current qty.
                     qty = Math.Min(qty, m_unlockedStructures.GetValueOrDefault(structureData, 0));
                     m_unlockedStructures[structureData] += -qty;
-                    
+
                     //Invoke the addition of type & stock
                     OnUnlockedStucturesUpdated?.Invoke(structureData, -qty);
                 }
+
                 break;
-            
+
             // TYPE NOT FOUND
             default:
                 break;
@@ -571,21 +573,21 @@ public class GameplayManager : MonoBehaviour
         {
             // TOWERS
             case "Tower":
-                
+
                 ProgressionRewardTower towerRewardData = rewardData as ProgressionRewardTower;
                 TowerData towerData = towerRewardData.GetReward();
                 OnUnlockedTowersUpdated?.Invoke(towerData, true);
                 break;
-            
+
             // STRUCTURES
             case "Structure":
-               
+
                 //Type specification
                 ProgressionRewardStructure structureRewardData = rewardData as ProgressionRewardStructure;
-                
+
                 // Define the data that has been awarded.
                 TowerData structureData = structureRewardData.GetReward();
-                
+
                 //Does Unlocked Stuctures already have an entry for this? If so, update the quantity. If not add it.
                 int qty = structureRewardData.GetRewardQty();
                 if (m_unlockedStructures.ContainsKey(structureData))
@@ -596,14 +598,14 @@ public class GameplayManager : MonoBehaviour
                 {
                     m_unlockedStructures[structureData] = m_unlockedStructures.GetValueOrDefault(structureData, 0) + qty;
                 }
-                
+
                 //Invoke the addition of type & stock
                 OnUnlockedStucturesUpdated?.Invoke(structureData, qty);
                 break;
-            
+
             // TYPE NOT FOUND
             default:
-                
+
                 Debug.Log($"No case for {rewardData.RewardType}.");
                 break;
         }
@@ -633,9 +635,7 @@ public class GameplayManager : MonoBehaviour
     {
         UpdateGameplayState(GameplayState.BuildGrid);
         m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
-        m_invalidCellObj = ObjectPoolManager.SpawnObject(m_invalidCellObj, Vector3.zero, quaternion.identity, transform);
-        m_invalidCellObj.SetActive(false);
-
+        
         /*var pipeline = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
         m_scriptableRenderer = pipeline.scriptableRenderer;
         m_scriptableRendererFeature = m_scriptableRenderer.supportedRenderingFeatures.Find(feature => feature is FullscreenEffect);*/
@@ -917,33 +917,17 @@ public class GameplayManager : MonoBehaviour
         OnGathererRemoved?.Invoke(gatherer);
     }
 
-    public void PreconstructTower(TowerData towerData)
+    public void CreatePreconBuilding(TowerData towerData)
     {
         ClearPreconstructedTower();
 
-        //Set up the objects
         m_preconstructedTowerData = towerData;
         m_preconstructedTowerObj = Instantiate(towerData.m_prefab, m_castleController.transform.position + Vector3.up, Quaternion.identity);
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
-        OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
-
-        //DISABLING ALL OF THIS: Because we can track and update through other functions and reduce code.
-        /*Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
-        {
-            //Raycast has hit the ground, round that point to the nearest int.
-            Vector3 gridPos = raycastHit.point;
-
-            //Convert hit point to 2d grid position
-            m_preconstructedTowerPos = Util.GetVector2IntFrom3DPos(gridPos);
-
-            OnPreconTowerMoved?.Invoke(m_preconstructedTowerPos);
-        }
-
-        //Set the bools to negative and let DrawPreconstructedTower flip them.
-        m_canAfford = false;
-        m_canBuild = false;
-        m_canPlace = false;
+        m_preconBuildingWidth = towerData.m_buildingSize.x;
+        m_preconBuildingHeight = towerData.m_buildingSize.y;
+        m_preconxOffset = m_preconBuildingWidth % 2 == 0 ? 0.5f : 0;
+        m_preconzOffset = m_preconBuildingHeight % 2 == 0 ? 0.5f : 0;
 
         if (m_unlockedStructures.TryGetValue(m_preconstructedTowerData, out int quantity))
         {
@@ -954,8 +938,11 @@ public class GameplayManager : MonoBehaviour
             m_qty = -1;
         }
 
-        SetOutlineColor(m_canBuild);*/
-        //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
+        OnGameObjectSelected?.Invoke(m_preconstructedTowerObj);
+
+        m_canAfford = false;
+        m_canBuild = false;
+        m_canPlace = false;
     }
 
     public void TriggerPreconBuildingMoved(List<Cell> cells)
@@ -964,9 +951,15 @@ public class GameplayManager : MonoBehaviour
         OnPreconBuildingMoved?.Invoke(cells);
     }
 
-    private void DrawPreconstructedTower()
+    private List<Cell> m_preconstructedTowerCells;
+    private List<Cell> m_preconNeighborCells;
+    private int m_preconBuildingWidth;
+    private int m_preconBuildingHeight;
+    private float m_preconxOffset;
+    private float m_preconzOffset;
+
+    private void HandlePreconMousePosition()
     {
-        //Position the objects
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
         {
@@ -974,49 +967,273 @@ public class GameplayManager : MonoBehaviour
             Vector3 gridPos = raycastHit.point;
 
             //Convert hit point to 2d grid position
+            gridPos.x += m_preconxOffset;
+            gridPos.z += m_preconzOffset;
+
             Vector2Int newPos = Util.GetVector2IntFrom3DPos(gridPos);
 
-            if (newPos != m_preconstructedTowerPos)
-            {
-                m_preconstructedTowerPos = newPos;
+            if (newPos == m_preconstructedTowerPos) return;
 
-                OnPreconTowerMoved?.Invoke(m_preconstructedTowerPos);
+            m_preconstructedTowerPos = newPos;
+
+            List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
+            if (newCells != null)
+            {
+                m_preconstructedTowerCells = newCells;
+                m_preconNeighborCells = GetNeighborCells(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
+                OnPreconBuildingMoved?.Invoke(m_preconstructedTowerCells);
+                CheckPreconRestrictions();
+            }
+        }
+    }
+
+    void CheckPreconRestrictions()
+    {
+        if (m_preconstructedTowerCells == null || m_preconNeighborCells == null) return;
+
+        m_canPlace = IsPlacementRestricted(m_preconstructedTowerCells);
+        m_canPath = IsPathingRestricted(m_preconNeighborCells);
+        m_canAfford = IsCurrencyRestricted();
+        m_canBuild = m_canAfford && m_canPlace && m_canPath;
+
+        SetOutlineColor(m_canBuild);
+    }
+
+    private bool IsCurrencyRestricted()
+    {
+        //Check cost & banks
+        int curStone = ResourceManager.Instance.GetStoneAmount();
+        int curWood = ResourceManager.Instance.GetWoodAmount();
+        ValueTuple<int, int> cost = m_preconstructedTower.GetTowercost();
+
+        if (curStone < cost.Item1)
+        {
+            m_pathRestrictedReason = m_UIStringData.m_stoneRequirementNotMet;
+            return false;
+        }
+
+        if (curWood < cost.Item2)
+        {
+            m_pathRestrictedReason = m_UIStringData.m_woodRequirmentNotMet;
+            return false;
+        }
+        
+        if (m_qty == 0)
+        {
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedQuantityNotMet;
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsPlacementRestricted(List<Cell> cells)
+    {
+        if (cells == null || cells.Count != m_preconBuildingWidth * m_preconBuildingHeight)
+        {
+            //Debug.Log($"Invalid Position.");
+            return false;
+        }
+
+        // Check the individual cells
+        for (int i = 0; i < cells.Count; ++i)
+        {
+            Cell curCell = cells[i];
+
+            if (curCell.m_actorCount > 0)
+            {
+                //Debug.Log($"Cannot Place: There are actors on this cell.");
+                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsOnCell;
+                return false;
             }
 
-            //Define the new destination of the Precon Tower Obj. Offset the tower on Y.
-            Vector3 moveToPosition = new Vector3(m_preconstructedTowerPos.x, 0.7f, m_preconstructedTowerPos.y);
+            //If we're hovering on the exit cell
+            if (m_preconstructedTowerPos == Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position))
+            {
+                //Debug.Log($"Cannot Place: This is the exit cell.");
+                return false;
+            }
 
-            //Position the precon Tower at the cursor position.
-            m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
-                moveToPosition, 20f * Time.unscaledDeltaTime);
+            if (curCell.m_isOccupied)
+            {
+                if (curCell.m_occupant != null && curCell.m_occupant.GetComponent<TowerBlueprint>() == null) // If we DO have a tower blueprint, we're ok placing here.
+                {
+                    //Debug.Log($"Cannot Place: This cell is already occupied.");
+                    m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOccupied;
+                    return false;
+                }
+            }
+
+            //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
+            if (curCell.m_isBuildRestricted)
+            {
+                //Debug.Log($"Cannot Place: This cell is build restricted.");
+                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedRestricted;
+                return false;
+            }
         }
 
-        //We want to rotate towers to they look away from the Castle.
-        // Calculate the direction vector from the target object to the current object.
-        Vector3 direction = m_enemyGoal.position - m_preconstructedTowerObj.transform.position;
+        return true;
+    }
 
-        // Calculate the rotation angle to make the new object face away from the target.
-        float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
-        m_preconstructedTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
+    bool IsPathingRestricted(List<Cell> cells)
+    {
+        if (cells == null) return false;
 
-
-        //Check Affordability & Pathing every frame. (Because you may be sitting waiting for units to move out of an island)
-        bool canAfford = CheckAffordability();
-        bool canPlace = CheckPathRestriction();
-
-
-        //If either values have changed, updated the canBuild and invoke ObjRestricted.
-        if (canAfford != m_canAfford || canPlace != m_canPlace)
+        for (int i = 0; i < cells.Count; ++i)
         {
-            m_canAfford = canAfford;
-            m_canPlace = canPlace;
-            m_canBuild = canAfford && canPlace && m_qty is -1 or > 0;
-            SetOutlineColor(!m_canBuild);
-            //OnObjRestricted?.Invoke(m_curSelectable.gameObject, m_canBuild);
-            //Debug.Log("Can Afford : " + m_canAfford + " Can Place: " + m_canPlace);
+            Cell cell = cells[i];
+            if (cell.m_isOccupied) continue;
+
+            //Debug.Log($"Neighbor cells {cell.m_cellPos} is unoccupied. Checking for path.");
+            List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
+
+            if (testPath != null) continue;
+
+            //Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
+            List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell, cells));
+
+            //Debug.Log($"Returning FALSE because an actor was found on a single-cell island.");
+            if (islandCells.Count == 0 && cell.m_actorCount > 0)
+            {
+                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
+                return false;
+            }
+
+            foreach (Cell islandCell in islandCells)
+            {
+                //Debug.Log($"Island Cell found: {islandCell.m_cellPos} and has actors: {islandCell.m_actorCount}.");
+                if (islandCell.m_actorCount > 0)
+                {
+                    //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {islandCell.m_cellPos} contains actors");
+                    m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
+                    return false;
+                }
+            }
         }
 
-        DrawPreconCellObj();
+        // EXITS AND SPAWNERS
+        //Check to see if any of our UnitPaths have no path.
+        if (!GridManager.Instance.m_spawnPointsAccessible)
+        {
+            //Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
+            return false;
+        }
+
+        // Check that the Grid to make sure exits can path to one another.
+        int exitsPathable = 0;
+        for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
+        {
+            bool startObjPathable = false;
+            GameObject startObj = m_castleController.m_castleEntrancePoints[x];
+            Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
+
+            //Define the end
+            for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
+            {
+                GameObject endObj = m_castleController.m_castleEntrancePoints[z];
+                Vector2Int endPos = Util.GetVector2IntFrom3DPos(endObj.transform.position);
+
+                //Go next if they're the same.
+                if (startObj == endObj)
+                {
+                    continue;
+                }
+
+                //Path from Start to End and exclude the Game's Goal cell.
+                List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
+                if (testPath != null)
+                {
+                    //If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
+                    ++exitsPathable;
+                    startObjPathable = true;
+                    break;
+                }
+            }
+
+            // We could not path to any other exit. So check to see if we can path to atleast one spawner.
+            if (!startObjPathable)
+            {
+                for (int y = 0; y < m_unitSpawners.Count; ++y)
+                {
+                    Vector2Int spawnerPos = Util.GetVector2IntFrom3DPos(m_unitSpawners[y].GetSpawnPointTransform().position);
+                    List<Vector2Int> testPath = AStar.FindExitPath(spawnerPos, startPos, m_preconstructedTowerPos, m_goalPointPos);
+                    if (testPath != null)
+                    {
+                        // If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
+                        //Debug.Log($"Castle Exit: {startPos} was able to path to Spawner: {spawnerPos}.");
+                        ++exitsPathable;
+                        break;
+                    }
+                }
+            }
+        }
+
+        //If the number of pathable exits is less than the number of exits, return false. One cannot path to another exit.
+        if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
+        {
+            //Debug.Log($"An exit cannot path to another exit or spawner.");
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
+            return false;
+        }
+
+        return true;
+    }
+
+    private void PositionPrecon()
+    {
+        //Define the new destination of the Precon Tower Obj. Offset the tower on Y.
+        Vector3 moveToPosition = new Vector3(m_preconstructedTowerPos.x - m_preconxOffset, 0.7f, m_preconstructedTowerPos.y - m_preconzOffset);
+
+        //Position the precon Tower at the cursor position.
+        m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
+            moveToPosition, 20f * Time.unscaledDeltaTime);
+        
+        DrawPreconCellObjs();
+    }
+
+    private float m_preconPeriodTimeElapsed;
+    private float m_preconPeriod = 0.1f;
+
+    void PreconPeriodicTimer()
+    {
+        m_preconPeriodTimeElapsed += Time.deltaTime;
+
+        if (m_preconPeriodTimeElapsed > m_preconPeriod)
+        {
+            CheckPreconRestrictions();
+            m_preconPeriodTimeElapsed = 0;
+        }
+    }
+
+    public List<Cell> GetNeighborCells(Vector2Int pos, int width, int height)
+    {
+        List<Cell> neighborCells = new List<Cell>();
+        Vector2Int bottomLeftCellPos = pos;
+        bottomLeftCellPos.x -= (width + 2) / 2;
+        bottomLeftCellPos.y -= (height + 2) / 2;
+
+        int index = 0;
+        for (int x = 0; x < width + 2; ++x)
+        {
+            for (int z = 0; z < height + 2; ++z)
+            {
+                // Skip the middle area and corners
+                if ((x > 0 && x < width + 1) && (z > 0 && z < height + 1)) continue; // Inside box
+                if (x == 0 && z == 0) continue; // SW corner
+                if (x == 0 && z == height + 1) continue; // NW corner
+                if (x == width + 1 && z == 0) continue; // SE corner
+                if (x == width + 1 && z == height + 1) continue; // NE corner
+
+                // Calculate position for this neighbor
+                Vector3 objPos = new Vector3(bottomLeftCellPos.x + x, 0, bottomLeftCellPos.y + z);
+                Cell neighborCell = Util.GetCellFrom3DPos(objPos);
+                if (neighborCell != null) neighborCells.Add(neighborCell);
+            }
+        }
+
+        return neighborCells;
     }
 
     public TowerData GetPreconTowerData()
@@ -1026,209 +1243,43 @@ public class GameplayManager : MonoBehaviour
 
     private Material m_drawCellMaterial;
 
-    private void DrawPreconCellObj()
+    private void DrawPreconCellObjs()
     {
-        // We want to draw this cell under the precon tower.
-        // What turns in on / off?
-        /*if (m_drawCellMaterial == null)
+        if (m_preconstructedTowerCells == null) return;
+        
+        // Make sure we have enough objs to display.
+        if (m_invalidCellObjs == null) m_invalidCellObjs = new List<GameObject>();
+
+        if (m_invalidCellObjs.Count < m_preconstructedTowerCells.Count)
         {
-            m_drawCellMaterial = m_invalidCellObj.GetComponent<Renderer>().material;
+            m_invalidCellObjs.Add(ObjectPoolManager.SpawnObject(m_invalidCellObj, Vector3.zero, quaternion.identity, transform));
         }
 
-        Color color = m_canPlace ? m_selectionColors.m_outlineRestrictedColor : m_selectionColors.m_outlineBaseColor;
-        m_drawCellMaterial.color = color;*/
-        //m_selectedOutlineMaterial.SetColor("_Outline_Color", color);
-        if (m_invalidCellObj.activeSelf != !m_canPlace)
+        for (int i = 0; i < m_invalidCellObjs.Count; ++i)
         {
-            m_invalidCellObj.SetActive(!m_canPlace);
-        }
+            if (i < m_preconstructedTowerCells.Count)
+            {
+                m_invalidCellObjs[i].SetActive(!m_canBuild);
+                Cell cell = m_preconstructedTowerCells[i];
 
-        Vector3 pos = m_preconstructedTowerObj.transform.position;
-        pos.y = 0;
-        m_invalidCellObj.transform.position = pos;
+                Vector3 pos = new Vector3(cell.m_cellPos.x, 0, cell.m_cellPos.y);
+                m_invalidCellObjs[i].transform.position = pos;
+                continue;
+            }
+            
+            m_invalidCellObjs[i].SetActive(false);
+        }
     }
 
-    bool CheckAffordability()
+    private void HidePreconCellObjs()
     {
-        //Check cost & banks
-        int curStone = ResourceManager.Instance.GetStoneAmount();
-        int curWood = ResourceManager.Instance.GetWoodAmount();
-        ValueTuple<int, int> cost = m_preconstructedTower.GetTowercost();
-        bool canAfford = curStone >= cost.Item1 && curWood >= cost.Item2;
-        return canAfford;
+        for (int i = 0; i < m_invalidCellObjs.Count; ++i)
+        {
+            m_invalidCellObjs[i].SetActive(false);
+        }
     }
 
     private string m_pathRestrictedReason;
-
-    bool CheckPathRestriction()
-    {
-        Cell curCell = Util.GetCellFromPos(m_preconstructedTowerPos);
-
-        m_pathRestrictedReason = m_UIStringData.m_buildRestrictedDefault;
-        //If the current cell is not apart of the grid, not a valid spot.
-        if (curCell == null)
-        {
-            //Debug.Log($"CannotPlace: Current Cell is Null");
-            return false;
-        }
-
-        if (curCell.m_isOutOfBounds)
-        {
-            return false;
-        }
-
-        //If we have actors on the cell.
-        if (curCell.m_actorCount > 0)
-        {
-            //Debug.Log($"Cannot Place: There are actors on this cell.");
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsOnCell;
-            return false;
-        }
-
-        //If we're hovering on the exit cell
-        if (m_preconstructedTowerPos == Util.GetVector2IntFrom3DPos(m_enemyGoal.position))
-        {
-            //Debug.Log($"Cannot Place: This is the exit cell.");
-            return false;
-        }
-
-        //If the current cell is occupied (by a structure), not a valid spot, unless it is a blueprint.
-        if (curCell.m_isOccupied)
-        {
-            if (curCell.m_occupant != null && curCell.m_occupant.GetComponent<TowerBlueprint>() == null) // If we DO have a tower blueprint, we're ok placing here.
-            {
-                //Debug.Log($"Cannot Place: This cell is already occupied.");
-                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOccupied;
-                return false;
-            }
-        }
-
-        //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
-        if (curCell.m_isBuildRestricted)
-        {
-            //Debug.Log($"Cannot Place: This cell is build restricted.");
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedRestricted;
-            return false;
-        }
-
-        //Check to see if any of our UnitPaths have no path.
-        if (!GridManager.Instance.m_spawnPointsAccessible)
-        {
-            //Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
-            return false;
-        }
-
-        //Do we have any of this structure in stock?
-        if (m_qty == 0)
-        {
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedQuantityNotMet;
-            return false;
-        }
-
-        //TO DO : Optimization : Only check paths if the precon tower has moved.
-        //Get neighbor cells.
-        Cell[] neighborCells = Util.GetNeighborCells(curCell, GridManager.Instance.m_gridCells);
-
-        //Check the path from each neighbor to the goal.
-        for (int i = 0; i < neighborCells.Length; ++i)
-        {
-            //Debug.Log("Pathing from Neighbor:" + i + " of: " + neighbors.Length);
-            Cell neighborCell = neighborCells[i];
-
-            //Assure we're not past the bound of the grid.
-            if (neighborCell == null)
-            {
-                //Debug.Log("Neighbor not on Grid:" + neighbors[i]);
-                continue;
-            }
-
-            //Assure the neighbor cell is not occupied.
-            if (!neighborCell.m_isOccupied)
-            {
-                List<Vector2Int> testPath = AStar.FindExitPath(neighborCell.m_cellPos, m_goalPointPos, m_preconstructedTowerPos, new Vector2Int(-1, -1));
-
-                //If we found a path, this neighbor is OK. If not, we need to check if it creates an island.
-                if (testPath == null)
-                {
-                    //Debug.Log($"No path found from neighbor {i}, checking for inhabited islands.");
-                    //If we did not find a path, check islands for actors. If there are, we cannot build here.
-                    List<Cell> preconTowerCells = new List<Cell>();
-                    preconTowerCells.Add(Util.GetCellFromPos(m_preconstructedTowerPos));
-                    List<Cell> islandCells = new List<Cell>(AStar.FindIsland(neighborCell, preconTowerCells));
-                    foreach (Cell islandCell in islandCells)
-                    {
-                        if (islandCell.m_actorCount > 0)
-                        {
-                            //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell:{islandCell.m_cellIndex} contains actors");
-                            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            //Check that the exits can path to one another.
-            int exitsPathable = 0;
-            //Define the start
-            for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
-            {
-                bool startObjPathable = false;
-                GameObject startObj = m_castleController.m_castleEntrancePoints[x];
-                Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
-
-                //Define the end
-                for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
-                {
-                    GameObject endObj = m_castleController.m_castleEntrancePoints[z];
-                    Vector2Int endPos = Util.GetVector2IntFrom3DPos(endObj.transform.position);
-
-                    //Go next if they're the same.
-                    if (startObj == endObj)
-                    {
-                        continue;
-                    }
-
-                    //Path from Start to End and exclude the Game's Goal cell.
-                    List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
-                    if (testPath != null)
-                    {
-                        //If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
-                        ++exitsPathable;
-                        startObjPathable = true;
-                        break;
-                    }
-                }
-
-                //We could not path to any other exit. So check to see if we can path to atleast one spawner.
-                if (!startObjPathable)
-                {
-                    for (int y = 0; y < m_unitSpawners.Count; ++y)
-                    {
-                        Vector2Int endPos = Util.GetVector2IntFrom3DPos(m_unitSpawners[y].GetSpawnPointTransform().position);
-                        List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
-                        if (testPath != null)
-                        {
-                            //If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
-                            ++exitsPathable;
-                            startObjPathable = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            //If the number of pathable exits is less than the number of exits, return false. One cannot path to another exit.
-            if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
-            {
-                //Debug.Log($"An exit cannot path to another exit or spawner.");
-                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     public void ClearPreconstructedTower()
     {
@@ -1238,6 +1289,7 @@ public class GameplayManager : MonoBehaviour
             Destroy(m_preconstructedTowerObj);
         }
 
+        HidePreconCellObjs();
         m_invalidCellObj.SetActive(false);
         m_preconstructedTowerData = null;
         m_preconstructedTowerObj = null;
@@ -1259,7 +1311,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        Vector3 gridPos = new Vector3(m_preconstructedTowerPos.x, 0, m_preconstructedTowerPos.y);
+        Vector3 gridPos = new Vector3(m_preconstructedTowerPos.x - m_preconxOffset, 0.0f, m_preconstructedTowerPos.y - m_preconzOffset);
 
         //We want to place towers to they look away from the Castle.
         // Calculate the direction vector from the target object to the current object.
@@ -1419,7 +1471,7 @@ public class GameplayManager : MonoBehaviour
         {
             m_unlockedStructures[towerData] += 1;
         }
-        
+
         //Handle currency
         ResourceManager.Instance.UpdateStoneAmount(stoneValue);
         ResourceManager.Instance.UpdateWoodAmount(woodValue);
@@ -1428,8 +1480,7 @@ public class GameplayManager : MonoBehaviour
         {
             IngameUIController.Instance.SpawnCurrencyAlert(woodValue, stoneValue, true, tower.transform.position);
         }
-        
-        
+
 
         //Remove the tower
         tower.RemoveTower();

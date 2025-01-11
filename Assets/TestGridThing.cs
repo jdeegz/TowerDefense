@@ -104,6 +104,9 @@ public class TestGridThing : MonoBehaviour
 
         canPlace = IsPlacementRestricted(m_preconstructedTowerCells);
         canPath = IsPathingRestricted(m_preconNeighborCells);
+        /*m_canAfford = canAfford;
+        m_canPlace = canPlace;
+        m_canBuild = canAfford && canPlace && m_qty is -1 or > 0;*/
         PositionCellVisuals(m_preconstructedTowerPos, m_width, m_height);
 
         m_material.color = canPlace && canPath ? Color.blue : Color.red;

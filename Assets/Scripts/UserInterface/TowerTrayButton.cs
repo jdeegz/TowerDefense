@@ -149,7 +149,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void SelectTowerButton()
     {
-        GameplayManager.Instance.PreconstructTower(m_towerData);
+        GameplayManager.Instance.CreatePreconBuilding(m_towerData);
     }
 
     void OnDestroy()

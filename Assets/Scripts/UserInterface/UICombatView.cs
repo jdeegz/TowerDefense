@@ -645,19 +645,19 @@ public class UICombatView : MonoBehaviour
 
                 if (kvp.Value == -1)
                 {
-                    GameplayManager.Instance.PreconstructTower(GameplayManager.Instance.m_gameplayData.m_blueprintTower);
+                    GameplayManager.Instance.CreatePreconBuilding(GameplayManager.Instance.m_gameplayData.m_blueprintTower);
                     return;
                 }
 
                 if (kvp.Value < m_towerButtons.Count)
                 {
                     //Tower buttons count is 5.
-                    GameplayManager.Instance.PreconstructTower(m_towerButtons[kvp.Value].GetTowerData());
+                    GameplayManager.Instance.CreatePreconBuilding(m_towerButtons[kvp.Value].GetTowerData());
                 }
                 else if (kvp.Value > 5 && kvp.Value < m_structureButtons.Count + 5)
                 {
                     //Pressing key 6 gives me value of 5. 5 - 
-                    GameplayManager.Instance.PreconstructTower(m_structureButtons[kvp.Value - 5].GetTowerData());
+                    GameplayManager.Instance.CreatePreconBuilding(m_structureButtons[kvp.Value - 5].GetTowerData());
                 }
             }
         }

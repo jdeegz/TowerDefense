@@ -19,6 +19,7 @@ public class TowerData : ScriptableObject
     public float m_fireRate;
     public float m_rotationSpeed;
     public float m_facingThreshold = 10f;
+    public Vector2Int m_buildingSize;
     
     [Header("Arc Cone")]
     public float m_fireConeAngle;
