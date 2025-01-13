@@ -15,11 +15,11 @@ namespace DevDunk.ShadowReceiver.EditorTools
 
             if (urpAsset != null)
             {
-                if (urpAsset.supportsSoftShadows)
+                /*if (urpAsset.supportsSoftShadows)
                 {
                     Debug.LogWarning("Soft Shadows are enabled in URP settings. This is not supported by the free version of Shadow Receiver URP\n" +
                         "Disable it or consider upgrading to the paid version of Shadow Receiver URP: <a href=\"https://assetstore.unity.com/packages/vfx/shaders/shadow-receiver-urp-directional-additional-light-shadows-228069?aid=1100ljSxt\">Shadow Receiver URP https://assetstore.unity.com/packages/vfx/shaders/shadow-receiver-urp-directional-additional-light-shadows-228069?aid=1100ljSxt</a> ");
-                }
+                }*/
 
                 if (urpAsset.shadowCascadeCount > 1)
                 {

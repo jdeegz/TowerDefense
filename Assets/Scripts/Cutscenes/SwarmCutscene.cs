@@ -1,136 +1,75 @@
 using System.Collections.Generic;
+using GameUtil;
 using UnityEngine;
 
 public class SwarmCutscene : MonoBehaviour
 {
     public List<EnemySwarmMember> m_swarmMembers;
-    public float m_baseMoveSpeed = 2f;
-    public float m_rotationSpeed = 2f;
-    public float m_neighborDistance = 0.3f;
-    public float m_separationDistance = 0.25f;
-    public float m_jitterAmount = 0.1f;
-    public float m_startingSpread = 1.5f;
-    public float m_maxDistanceFromTarget = 2f;
+    public float m_baseMoveSpeed;
+    public float m_rotationSpeed;
+    public float m_randomTargetRange;
     public Transform m_swarmMemberTarget;
-    
-    private float m_spreadTimer;
-    private float m_nextSpreadTime;
-    private float m_cumulativeMoveSpeed;
-    private float m_groundClampValue = 0.2f;
+    public bool m_isCutscene;
 
-    private List<TrailRenderer> m_trails;
+    private float m_deltaTime;
+    private bool m_allMembersReady = false;
+
     void Start()
     {
-        RandomizeMembers();
+        AssignRandomTargets();
     }
 
-    void RandomizeMembers()
+    void AssignRandomTargets()
     {
-        foreach (EnemySwarmMember member in m_swarmMembers)
+        for (var index = 0; index < m_swarmMembers.Count; index++)
         {
-            Vector3 randomPosition = Random.insideUnitSphere * m_startingSpread;
-            member.transform.position = m_swarmMemberTarget.position + randomPosition;
-            
-            if (member.transform.position.y < m_groundClampValue) // Make sure we dont spawn below the ground.
-            {
-                Vector3 clampedPosition = member.transform.position;
-                clampedPosition.y = m_groundClampValue;
-                member.transform.position = clampedPosition;
-            }
-
-            Quaternion randomRotation = Random.rotation;
-            member.transform.rotation = randomRotation;
+            var member = m_swarmMembers[index];
+            member.GetRandomTargetAround(m_swarmMemberTarget.position, m_randomTargetRange);
         }
+
+        Timer.DelayAction(0.1f, () => m_allMembersReady = true);
     }
 
     void Update()
     {
-        m_cumulativeMoveSpeed = m_baseMoveSpeed * Time.unscaledDeltaTime;
-        
+        if (!m_allMembersReady) return;
+
+        m_deltaTime = m_isCutscene ? Time.unscaledDeltaTime : m_deltaTime;
+
         foreach (EnemySwarmMember member in m_swarmMembers)
         {
-            Vector3 steering = CalculateSteering(member.gameObject);
-            steering += GetRandomJitter();
-            HandleSwarmMove(member.gameObject, steering);
-            ClampPosition(member.gameObject);
-        }
-    }
+            Vector3 targetPos = member.GetCurrentTarget();
 
-    void ClampPosition(GameObject member)
-    {
-        Vector3 directionToTarget = member.transform.position - m_swarmMemberTarget.position;
-        if (directionToTarget.magnitude > m_maxDistanceFromTarget)
-        {
-            member.transform.position = m_swarmMemberTarget.position + directionToTarget.normalized * m_maxDistanceFromTarget;
-        }
-        
-        if (member.transform.position.y < m_groundClampValue)
-        {
-            Vector3 clampedPosition = member.transform.position;
-            clampedPosition.y = m_groundClampValue;
-            member.transform.position = clampedPosition;
-        }
-    }
-
-    Vector3 CalculateSteering(GameObject member)
-    {
-        Vector3 steering = Vector3.zero;
-        Vector3 cohesion = Vector3.zero;
-        Vector3 separation = Vector3.zero;
-        Vector3 alignment = Vector3.zero;
-
-        int count = 0;
-
-        foreach (EnemySwarmMember otherMember in m_swarmMembers)
-        {
-            if (otherMember == member) continue;
-
-            float distance = Vector3.Distance(member.transform.position, otherMember.transform.position);
-
-            if (distance < m_neighborDistance)
+            if (HasReachedTarget(member, targetPos) || member.IsTargetTimedOut(m_deltaTime))
             {
-                cohesion += otherMember.transform.position;
-                alignment += otherMember.transform.forward;
-
-                if (distance < m_separationDistance)
-                {
-                    separation -= (otherMember.transform.position - member.transform.position);
-                }
-
-                ++count;
+                // If the member reaches the target or times out, assign a new target
+                member.GetRandomTargetAround(m_swarmMemberTarget.position, m_randomTargetRange);
             }
-        }
 
-        if (count > 0)
+            // Move the member towards the target
+            MoveMemberTowards(member, targetPos);
+        }
+    }
+
+    void MoveMemberTowards(EnemySwarmMember member, Vector3 target)
+    {
+        Vector3 direction = (target - member.transform.position).normalized;
+
+        // Rotate towards the target
+        if (direction != Vector3.zero)
         {
-            cohesion /= count;
-            cohesion = (cohesion - member.transform.position).normalized;
-
-            alignment /= count;
-            alignment = alignment.normalized;
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            member.transform.rotation = Quaternion.Slerp(member.transform.rotation, targetRotation, m_rotationSpeed * m_deltaTime);
         }
 
-        Vector3 seek = (m_swarmMemberTarget.position - member.transform.position).normalized;
-
-        steering = seek + cohesion + separation + alignment;
-        steering = steering.normalized;
-
-        return steering;
+        // Move 
+        float speed = m_baseMoveSpeed * m_deltaTime;
+        member.transform.position += member.transform.forward * speed;
     }
 
-    Vector3 GetRandomJitter()
+    bool HasReachedTarget(EnemySwarmMember member, Vector3 target)
     {
-        return new Vector3(
-            Random.Range(-m_jitterAmount, m_jitterAmount),
-            Random.Range(-m_jitterAmount, m_jitterAmount),
-            Random.Range(-m_jitterAmount, m_jitterAmount));
-    }
-
-    void HandleSwarmMove(GameObject member, Vector3 steering)
-    {
-        Quaternion rotation = Quaternion.LookRotation(steering);
-        float rotationSpeed = m_rotationSpeed * (m_cumulativeMoveSpeed / m_baseMoveSpeed);
-        member.transform.rotation = Quaternion.Slerp(member.transform.rotation, rotation, rotationSpeed);
-        member.transform.position += member.transform.forward * m_cumulativeMoveSpeed;
+        float distance = Vector3.Distance(member.transform.position, target);
+        return distance <= 0.1f; // Adjust threshold as needed
     }
 }

@@ -7,6 +7,9 @@ public class EnemySwarmMember : EnemyController
 {
     private EnemyController m_motherEnemyController;
     public bool m_returnToPool;
+    public float m_maxTimeToReachTarget = 3f; // Max time to try reaching a target
+    private Vector3 m_currentTarget;
+    private float m_timeSpentOnCurrentTarget;
     
     public void SetMother(EnemyController mother)
     {
@@ -72,6 +75,25 @@ public class EnemySwarmMember : EnemyController
         }
     }
     
+    
+    public bool IsTargetTimedOut(float deltaTime)
+    {
+        m_timeSpentOnCurrentTarget += deltaTime;
+        return m_timeSpentOnCurrentTarget >= m_maxTimeToReachTarget;
+    }
+
+    public void GetRandomTargetAround(Vector3 center, float targetRange)
+    {
+        Vector3 randomOffset = Random.insideUnitSphere * targetRange;
+        m_currentTarget = center + randomOffset;
+        m_timeSpentOnCurrentTarget = 0f;
+    }
+
+    public Vector3 GetCurrentTarget()
+    {
+        return m_currentTarget;
+    }
+    
     public override void AddToGameplayList()
     {
         //
@@ -85,6 +107,7 @@ public class EnemySwarmMember : EnemyController
     public override void HandleMovement()
     {
         //
+        
     }
     
     public virtual float GetCurrentHP()

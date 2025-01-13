@@ -218,13 +218,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
     void FixedUpdate()
     {
         if (!m_isActive) return;
-
+        
         HandleMovement();
     }
 
     //Movement
     //Functions
-    public virtual void HandleMovement()
+    public virtual void HandleMovement() 
     {
         //Update Cell occupancy
         Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
