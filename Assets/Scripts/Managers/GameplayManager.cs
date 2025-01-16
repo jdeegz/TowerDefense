@@ -501,6 +501,10 @@ public class GameplayManager : MonoBehaviour
 
         SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
         m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
+        foreach (var kvp in m_unlockedStructures)
+        {
+            Debug.Log($"Unlocked {kvp.Key.m_towerName}, Quantity of :{kvp.Value}");
+        }
         m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
         Instance = this;
@@ -831,6 +835,17 @@ public class GameplayManager : MonoBehaviour
             case Selectable.SelectedObjectType.ResourceStone:
                 break;
             case Selectable.SelectedObjectType.Tower:
+                if (m_preconstructedTowerObj)
+                {
+                    UpdateInteractionState(InteractionState.PreconstructionTower);
+                }
+                else
+                {
+                    UpdateInteractionState(InteractionState.SelectedTower);
+                }
+
+                break;
+            case Selectable.SelectedObjectType.Building:
                 if (m_preconstructedTowerObj)
                 {
                     UpdateInteractionState(InteractionState.PreconstructionTower);

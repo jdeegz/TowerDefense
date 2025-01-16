@@ -60,7 +60,7 @@ public class ProgressionUnlockableData : ScriptableObject
         
         foreach (ProgressionKeyData progressionKeyData in m_unlockRequirementKeys)
         {
-            Debug.Log($"KEY: {progressionKeyData.name}'s value: {progressionKeyData.ProgressionKeyEnabled}");
+            //Debug.Log($"KEY: {progressionKeyData.name}'s value: {progressionKeyData.ProgressionKeyEnabled}");
             
             if (progressionKeyData.ProgressionKeyEnabled)
             {
@@ -98,7 +98,7 @@ public class UnlockProgress
         List<ProgressionKeyData> m_progressionKeys = keys;
 
         m_isUnlocked = m_requirementsMet == m_requirementTotal;
-        Debug.Log($"{m_name}'s progress is {m_requirementsMet} / {m_requirementTotal}. Unlocked: {m_isUnlocked}");
+        //Debug.Log($"{m_name}'s progress is {m_requirementsMet} / {m_requirementTotal}. Unlocked: {m_isUnlocked}");
     }
 }
 

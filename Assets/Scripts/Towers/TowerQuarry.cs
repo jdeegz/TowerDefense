@@ -66,7 +66,9 @@ public class TowerQuarry : Tower
             return;
         }
 
-        if (m_curCharges >= m_maxCharges)
+        AutoGrant();
+
+        /*if (m_curCharges >= m_maxCharges)
         {
             // Remind the player to collect.
             RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
@@ -78,7 +80,7 @@ public class TowerQuarry : Tower
             // Increment curCharges -- This will increment only once. Change the above condition to have it catch up to missing charges / waves.
             m_lastChargeWave = GameplayManager.Instance.m_wave;
             IncrementCharges();
-        }
+        }*/
     }
 
     void IncrementCharges()
@@ -116,6 +118,19 @@ public class TowerQuarry : Tower
 
         // VISUAL UPDATES
         SetVisuals();
+    }
+
+    void AutoGrant()
+    {
+        // DATA
+        ResourceManager.Instance.UpdateStoneAmount(1);
+        
+        // UI
+        IngameUIController.Instance.SpawnCurrencyAlert(0, m_curCharges, true, transform.position);
+        
+        // AUDIO
+        RequestPlayAudio(m_towerData.m_audioSecondaryFireClips);
+        RequestStopAudioLoop();
     }
     
     public override TowerTooltipData GetTooltipData()

@@ -30,16 +30,27 @@ public class EnemyBannerman : MonoBehaviour
         m_enemyController = GetComponentInParent<EnemyController>();
         m_enemyController.UpdateHealth += OnUpdateHealth;
         m_enemyController.DestroyEnemy += OnEnemyDestroyed;
+    }
+
+    void OnEnable()
+    {
         m_triggeredThresholds = new HashSet<float>();
         m_nextHealTime = Time.time + m_healPeriod;
     }
 
     void OnEnemyDestroyed(Vector3 pos)
     {
+        m_nextHealTime = Mathf.Infinity;
+    }
+
+    void OnDestroy()
+    {
+        
         m_enemyController.UpdateHealth -= OnUpdateHealth;
         m_enemyController.DestroyEnemy -= OnEnemyDestroyed;
     }
 
+    
     void OnUpdateHealth(float i)
     {
         float maxHP = m_enemyController.GetMaxHP();

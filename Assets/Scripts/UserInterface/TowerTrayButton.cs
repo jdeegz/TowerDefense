@@ -37,7 +37,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             if (value != m_qty)
             {
-                Debug.Log($"Tray Button Quantity Updated.");
+                //Debug.Log($"Tray Button Quantity Updated.");
                 m_qty = value;
                 m_canAffordQty = m_qty is > 0 or -1;
                 m_towerQTY.SetText("x{0}", m_qty);

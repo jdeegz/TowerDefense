@@ -25,6 +25,7 @@ public class Selectable : MonoBehaviour
         Obelisk,
         Ruin,
         Tear,
+        Building,
         UIElement
     }
 

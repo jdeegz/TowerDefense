@@ -188,6 +188,12 @@ public class UITooltipController : MonoBehaviour
                 m_objectDescriptionString = towerTooltipData.m_towerDescription;
                 m_objectDetailsString = towerTooltipData.m_towerDetails;
                 break;
+            case Selectable.SelectedObjectType.Building:
+                TowerTooltipData buildingTooltipData = hoveredObj.GetComponent<Tower>().GetTooltipData();
+                m_objectNameString = buildingTooltipData.m_towerName;
+                m_objectDescriptionString = buildingTooltipData.m_towerDescription;
+                m_objectDetailsString = buildingTooltipData.m_towerDetails;
+                break;
             case Selectable.SelectedObjectType.Gatherer:
                 GathererTooltipData gathererData = hoveredObj.GetComponent<GathererController>().GetTooltipData();
 

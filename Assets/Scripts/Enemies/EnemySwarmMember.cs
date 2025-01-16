@@ -10,7 +10,7 @@ public class EnemySwarmMember : EnemyController
     public float m_maxTimeToReachTarget = 3f; // Max time to try reaching a target
     private Vector3 m_currentTarget;
     private float m_timeSpentOnCurrentTarget;
-    
+
     public void SetMother(EnemyController mother)
     {
         m_motherEnemyController = mother;
@@ -18,7 +18,7 @@ public class EnemySwarmMember : EnemyController
         m_motherEnemyController.UpdateHealth += MotherTakeDamage;
         SetupEnemy(true);
     }
-    
+
     public override void SetupEnemy(bool active)
     {
         m_isComplete = false;
@@ -47,9 +47,9 @@ public class EnemySwarmMember : EnemyController
 
         //Setup Status Effects
         //Debug.Log($"Clearing status effect lists.");
-        if(m_statusEffects != null) m_statusEffects.Clear();
-        if(m_expiredStatusEffects != null) m_expiredStatusEffects.Clear();
-        if(m_newStatusEffects != null) m_newStatusEffects.Clear();
+        if (m_statusEffects != null) m_statusEffects.Clear();
+        if (m_expiredStatusEffects != null) m_expiredStatusEffects.Clear();
+        if (m_newStatusEffects != null) m_newStatusEffects.Clear();
         m_statusEffects = new List<StatusEffect>();
 
         //Define AudioSource
@@ -74,8 +74,8 @@ public class EnemySwarmMember : EnemyController
             SetupEnemy(true);
         }
     }
-    
-    
+
+
     public bool IsTargetTimedOut(float deltaTime)
     {
         m_timeSpentOnCurrentTarget += deltaTime;
@@ -84,7 +84,13 @@ public class EnemySwarmMember : EnemyController
 
     public void GetRandomTargetAround(Vector3 center, float targetRange)
     {
-        Vector3 randomOffset = Random.insideUnitSphere * targetRange;
+        Vector3 randomOffset;
+        do
+        {
+            randomOffset = Random.insideUnitSphere;
+        } while (randomOffset.y < 0); 
+
+        randomOffset *= targetRange; 
         m_currentTarget = center + randomOffset;
         m_timeSpentOnCurrentTarget = 0f;
     }
@@ -93,7 +99,7 @@ public class EnemySwarmMember : EnemyController
     {
         return m_currentTarget;
     }
-    
+
     public override void AddToGameplayList()
     {
         //
@@ -107,9 +113,8 @@ public class EnemySwarmMember : EnemyController
     public override void HandleMovement()
     {
         //
-        
     }
-    
+
     public virtual float GetCurrentHP()
     {
         return m_motherEnemyController.GetCurrentHP();
@@ -119,12 +124,12 @@ public class EnemySwarmMember : EnemyController
     {
         return m_motherEnemyController.GetMaxHP();
     }
-    
+
     public virtual int GetCellCountToGoal()
     {
         return m_motherEnemyController.GetCellCountToGoal();
     }
-    
+
     public override void OnTakeDamage(float dmg)
     {
         m_motherEnemyController.OnTakeDamage(dmg);
@@ -140,7 +145,7 @@ public class EnemySwarmMember : EnemyController
 
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
     }
-    
+
     public override void OnHealed(float heal, bool percentage)
     {
         m_motherEnemyController.OnHealed(heal, percentage);
@@ -153,14 +158,14 @@ public class EnemySwarmMember : EnemyController
 
         //transform.SetParent(ObjectPoolManager.SetParentObject(ObjectPoolManager.PoolType.Enemy).transform);
         m_isComplete = true;
-        
+
         m_curHealth = 0;
-        
+
         if (m_deathVFX)
         {
             ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
-        
+
         //Return effects to pool.
         foreach (StatusEffect activeEffect in m_statusEffects)
         {
@@ -181,7 +186,7 @@ public class EnemySwarmMember : EnemyController
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
-        
+
         //m_motherEnemyController.DestroyEnemy -= OnEnemyDestroyed;
         if (m_returnToPool)
         {
@@ -190,10 +195,10 @@ public class EnemySwarmMember : EnemyController
             StartDissolve(RemoveObject);
             return;
         }
-        
+
         StartDissolve(null);
     }
-    
+
     public override void ApplyEffect(StatusEffect statusEffect)
     {
         //Add incoming status effects to a holding list. They will get added to the list then updated in UpdateStatusEffects.
@@ -204,7 +209,7 @@ public class EnemySwarmMember : EnemyController
         {
             return;
         }
-        
+
         m_newStatusEffects.Add(statusEffect);
     }
 }

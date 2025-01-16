@@ -249,15 +249,12 @@ MonoBehaviour:
   m_swarmMembers: []
   m_swarmSize: 8
   m_swarmMemberData: {fileID: 11400000, guid: db2fda94565687945ab3987d8f7b47cb, type: 2}
-  m_baseMoveSpeed: 2
-  m_rotationSpeed: 2
-  m_neighborDistance: 0.3
-  m_separationDistance: 0.25
-  m_jitterAmount: 1.5
-  m_startingSpread: 1.5
-  m_maxDistanceFromTarget: 2
+  m_baseMoveSpeed: 1
+  m_rotationSpeed: 3
   m_swarmMemberTarget: {fileID: 5385197571511292196}
   m_swarmMemberRoot: {fileID: 5188028944843154190}
+  m_randomTargetRange: 1
+  m_isCutscene: 0
 --- !u!1 &5665055874011916758
 GameObject:
   m_ObjectHideFlags: 0
@@ -268,6 +265,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5188028944843154190}
   - component: {fileID: 4134873745131875808}
+  - component: {fileID: 4705011398823646369}
   m_Layer: 10
   m_Name: SwarmMembers
   m_TagString: Untagged
@@ -302,6 +300,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 453545b785db3c54dad7acab742c4707, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4705011398823646369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5665055874011916758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d87f994248da94d48a5ecabcc880ac10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_swarmMembers: []
+  m_baseMoveSpeed: 0
+  m_rotationSpeed: 0
+  m_randomTargetRange: 0
+  m_swarmMemberTarget: {fileID: 0}
+  m_isCutscene: 0
 --- !u!1 &6499226114060676648
 GameObject:
   m_ObjectHideFlags: 0

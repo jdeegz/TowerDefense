@@ -63,13 +63,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4190306101048915190}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.18744147, y: 0.15457527, z: -0.26764452}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 611222204956064350}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!2083052967 &9206299952084703629
 VisualEffect:
   m_ObjectHideFlags: 0
@@ -88,19 +88,19 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 1
+      - m_Value: 0.2
         m_Name: PositionDampening
         m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
       m_Array:
-      - m_Value: {x: -0.18744147, y: 0.26764452, z: 0.15457532}
+      - m_Value: {x: 0, y: 0, z: 0}
         m_Name: TentaclePosition
         m_Overridden: 1
-      - m_Value: {x: 0, y: -0.1, z: 0}
+      - m_Value: {x: 0, y: 0, z: 0.05}
         m_Name: Offset
-        m_Overridden: 0
+        m_Overridden: 1
     m_Vector4f:
       m_Array: []
     m_Uint:
@@ -424,6 +424,10 @@ MonoBehaviour:
   m_targetPoint: {fileID: 4458750498422325715}
   m_enemyModelRoot: {fileID: 53887555045690902}
   m_animator: {fileID: 3882698766858158530}
+  m_sprinterTrailVFX:
+  - {fileID: 9206299952084703629}
+  - {fileID: 7271662812649877641}
+  - {fileID: 2355902167000048938}
 --- !u!1 &6743472611955522028
 GameObject:
   m_ObjectHideFlags: 0
@@ -452,13 +456,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6743472611955522028}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.35412574, z: -0.2873767}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 611222204956064350}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!2083052967 &2355902167000048938
 VisualEffect:
   m_ObjectHideFlags: 0
@@ -477,15 +481,18 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 1
+      - m_Value: 0.2
         m_Name: PositionDampening
         m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
       m_Array:
-      - m_Value: {x: -1.929491e-15, y: 0.2873767, z: 0.35412583}
+      - m_Value: {x: -1.929491e-15, y: 0, z: 0}
         m_Name: TentaclePosition
+        m_Overridden: 1
+      - m_Value: {x: 0, y: 0, z: 0.05}
+        m_Name: Offset
         m_Overridden: 1
     m_Vector4f:
       m_Array: []
@@ -606,13 +613,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8719775904712291322}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.18744147, y: 0.15457527, z: -0.26764452}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 611222204956064350}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!2083052967 &7271662812649877641
 VisualEffect:
   m_ObjectHideFlags: 0
@@ -631,15 +638,18 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 1
+      - m_Value: 0.2
         m_Name: PositionDampening
         m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
       m_Array:
-      - m_Value: {x: 0.18744147, y: 0.26764452, z: 0.15457532}
+      - m_Value: {x: 0, y: 0, z: 0}
         m_Name: TentaclePosition
+        m_Overridden: 1
+      - m_Value: {x: 0, y: 0, z: 0.05}
+        m_Name: Offset
         m_Overridden: 1
     m_Vector4f:
       m_Array: []

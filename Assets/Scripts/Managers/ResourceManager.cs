@@ -37,9 +37,6 @@ public class ResourceManager : MonoBehaviour
     public ResourceManagerData m_resourceManagerData;
     public List<RuinController> m_ruinsInMission;
     public List<RuinController> m_validRuinsInMission;
-    public int m_ruinDiscoveredCount;
-    public static event Action OnAllRuinsDiscovered;
-    public static event Action RuinIndicated;
 
     [Header("Tree Resource Node Prefabs")]
     public List<GameObject> m_treePrefabs;
@@ -238,38 +235,12 @@ public class ResourceManager : MonoBehaviour
                         // This is the node we have chosen.
                         m_validRuinsInMission[i].IndicateThisRuin(key, unlockableData.GetRuinIndicator());
                         m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
-                        RuinIndicated?.Invoke();
                         break;
                     }
 
                     lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
                 }
             }
-
-            /*for (int k = 0; k < keysInMission.Count; ++k)
-            {
-                // Get the total weight, to then pick a random value from it.
-                int weightSum = 0;
-                for (int i = 0; i < m_validRuinsInMission.Count; ++i)
-                {
-                    weightSum += m_validRuinsInMission[i].m_ruinWeight;
-                }
-
-                int chosenWeight = Random.Range(0, weightSum);
-                int lastTotalWeight = 0;
-                for (int i = 0; i < m_validRuinsInMission.Count; ++i) // increase lastTotalWeight until it's greater than the chosen (random) weight.
-                {
-                    if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
-                    {
-                        // This is the node we have chosen.
-                        m_validRuinsInMission[i].IndicateThisRuin(keysInMission[k]);
-                        m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
-                        RuinIndicated?.Invoke();
-                        break;
-                    }
-
-                    lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
-                }*/
         }
 
         //for each ruin still in the valid list, replace them with a tree.
@@ -283,90 +254,6 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
-
-    /*public void RequestRuinIndicator()
-    {
-        //When a gatherer harvests a resource Node, and when the wave counter increments. Wave should be a target, and reset after indicating a ruin.
-        if (GameplayManager.Instance.m_wave < m_resourceManagerData.m_minWaves)
-        {
-            return; // Too soon to show a ruin indicator.
-        }
-
-        if (GameplayManager.Instance.m_wave != m_resourceManagerData.m_minWaves) // If we're not the min valid wave, check if we're a factor
-        {
-            if ((GameplayManager.Instance.m_wave - m_resourceManagerData.m_minWaves) % m_resourceManagerData.m_indicatorFrequency != 0)
-            {
-                return; // Need to wait a little longer.
-            }
-        }
-
-        if (m_validRuinsInMission.Count == 0)
-        {
-            return;
-        }
-
-        // Ask the ResourceManager if there are enough ruins indicated already.
-        foreach (RuinController ruin in m_ruinsInMission)
-        {
-            if (ruin.m_ruinState == RuinController.RuinState.Indicated)
-            {
-                if (m_ruinIndicatedCount >= m_resourceManagerData.m_maxIndicators)
-                {
-                    return; // We should't indicate any more ruins.
-                }
-            }
-        }
-
-        // Validate the list of ruins. Has the tree on their cell been harvested? Does the ruin have 3 neighbor trees?
-        List<RuinController> invalidRuins = new List<RuinController>();
-        int weightSum = 0;
-
-        //Debug.Log($"Checking the Valid Ruins list for Invalid Ruins.");
-        for (int i = 0; i < m_validRuinsInMission.Count; ++i) // Loop through ruins, identifying if they are still covered by a forest, else add to invalid list and remove.
-        {
-            if (m_validRuinsInMission[i] == null)
-            {
-                invalidRuins.Add(m_validRuinsInMission[i]);
-                continue;
-            }
-
-            if (!m_validRuinsInMission[i].IsRuinCoveredByForest())
-            {
-                Debug.Log($"{m_validRuinsInMission[i].name} is not covered by a forest anymore, removing from Valid Ruins!");
-                invalidRuins.Add(m_validRuinsInMission[i]);
-            }
-            else
-            {
-                weightSum += m_validRuinsInMission[i].m_ruinWeight;
-            }
-        }
-
-        foreach (RuinController ruinController in invalidRuins) // Trim the invalid ruins from our list so we dont keep operating on it.
-        {
-            //Debug.Log($"{ruinController.gameObject.name} at {ruinController.transform.position} removed from Valid RequestRuinIndicator list.");
-            m_validRuinsInMission.Remove(ruinController);
-        }
-
-        int chosenWeight = Random.Range(0, weightSum);
-        //Debug.Log($"Weighting info( Sum: {weightSum}, Chosen: {chosenWeight}, Valid Ruin Count: {m_validRuinsInMission.Count}");
-
-        int lastTotalWeight = 0;
-        for (int i = 0; i < m_validRuinsInMission.Count; ++i)
-        {
-            if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
-            {
-                // This is the node we have chosen.
-                //Debug.Log($"{m_validRuinsInMission[i]} at {m_validRuinsInMission[i].transform.position} Chosen.");
-                m_validRuinsInMission[i].IndicateThisRuin();
-                m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
-                ++m_ruinIndicatedCount;
-                RuinIndicated?.Invoke();
-                break;
-            }
-
-            lastTotalWeight += m_validRuinsInMission[i].m_ruinWeight;
-        }
-    }*/
 
     public void StartDepositTimer()
     {

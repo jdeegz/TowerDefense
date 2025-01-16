@@ -102,6 +102,8 @@ MonoBehaviour:
   m_targetPoint: {fileID: 1290173936421682613}
   m_enemyModelRoot: {fileID: 8227575282673929360}
   m_animator: {fileID: 0}
+  m_returnToPool: 0
+  m_maxTimeToReachTarget: 3
 --- !u!1 &6254101476828058323
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,7 +158,10 @@ VisualEffect:
     m_Vector2f:
       m_Array: []
     m_Vector3f:
-      m_Array: []
+      m_Array:
+      - m_Value: {x: 2, y: 2, z: 2}
+        m_Name: ElectricityMeshScale
+        m_Overridden: 1
     m_Vector4f:
       m_Array: []
     m_Uint:

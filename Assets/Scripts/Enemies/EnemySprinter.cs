@@ -1,11 +1,15 @@
+using System.Collections.Generic;
 using Unity.Mathematics.Geometry;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.VFX;
 
 public class EnemySprinter : EnemyController
 {
     private float m_acceleratedSpeed;
     private float m_sprintSpeedMultiplier;
+    public List<VisualEffect> m_sprinterTrailVFX;
+    
     public override void HandleMovement() //Mostly the same as ordinary runner.
     {
         //Update Cell occupancy
@@ -114,5 +118,10 @@ public class EnemySprinter : EnemyController
         float posX = Mathf.Clamp(transform.position.x, m_minX, m_maxX);
         float posZ = Mathf.Clamp(transform.position.z, m_minZ, m_maxZ);
         transform.position = new Vector3(posX, transform.position.y, posZ);
+
+        foreach (VisualEffect visualEffect in m_sprinterTrailVFX)
+        {
+            visualEffect.SetFloat("MoveSpeed", speed);
+        }
     }
 }

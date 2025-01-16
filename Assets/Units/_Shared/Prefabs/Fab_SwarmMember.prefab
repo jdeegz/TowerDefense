@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2965467819977759238
+--- !u!1 &574890439410644332
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,40 +8,40 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4037214601134143997}
-  - component: {fileID: 3747326076849828314}
-  - component: {fileID: 8411865761781169452}
+  - component: {fileID: 1821570909634194429}
+  - component: {fileID: 945429490071060038}
+  - component: {fileID: 1591875233517423275}
   m_Layer: 14
-  m_Name: VFX_SwarmMember_Trail
+  m_Name: VFX_SwarmTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4037214601134143997
+--- !u!4 &1821570909634194429
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2965467819977759238}
+  m_GameObject: {fileID: 574890439410644332}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.2}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5164509962707860253}
+  m_Father: {fileID: 4955983092455844078}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!2083052967 &3747326076849828314
+--- !u!2083052967 &945429490071060038
 VisualEffect:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2965467819977759238}
+  m_GameObject: {fileID: 574890439410644332}
   m_Enabled: 1
-  m_Asset: {fileID: 8926484042661614526, guid: ccf85442389edaf4fbd095e442bbc0cf, type: 3}
+  m_Asset: {fileID: 8926484042661614526, guid: 2c89f8ac99cda4d4da78e0633982363d, type: 3}
   m_InitialEventName: OnPlay
   m_InitialEventNameOverriden: 0
   m_StartSeed: 0
@@ -50,11 +50,23 @@ VisualEffect:
   m_ResourceVersion: 1
   m_PropertySheet:
     m_Float:
-      m_Array: []
+      m_Array:
+      - m_Value: 1
+        m_Name: PositionDampening
+        m_Overridden: 1
+      - m_Value: 0.1
+        m_Name: Size
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Lifetime
+        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
-      m_Array: []
+      m_Array:
+      - m_Value: {x: 0, y: 0, z: 0}
+        m_Name: Offset
+        m_Overridden: 1
     m_Vector4f:
       m_Array: []
     m_Uint:
@@ -66,19 +78,51 @@ VisualEffect:
     m_AnimationCurve:
       m_Array: []
     m_Gradient:
-      m_Array: []
+      m_Array:
+      - m_Value:
+          serializedVersion: 2
+          key0: {r: 0.49693304, g: 0.22696589, b: 0.035601325, a: 0}
+          key1: {r: 0.2264151, g: 0.09095307, b: 0, a: 1}
+          key2: {r: 0, g: 0, b: 0, a: 0}
+          key3: {r: 0, g: 0, b: 0, a: 0}
+          key4: {r: 0, g: 0, b: 0, a: 0}
+          key5: {r: 0, g: 0, b: 0, a: 0}
+          key6: {r: 0, g: 0, b: 0, a: 0}
+          key7: {r: 0, g: 0, b: 0, a: 0}
+          ctime0: 0
+          ctime1: 65535
+          ctime2: 0
+          ctime3: 0
+          ctime4: 0
+          ctime5: 0
+          ctime6: 0
+          ctime7: 0
+          atime0: 0
+          atime1: 2313
+          atime2: 65535
+          atime3: 65535
+          atime4: 0
+          atime5: 0
+          atime6: 0
+          atime7: 0
+          m_Mode: 0
+          m_ColorSpace: 1
+          m_NumColorKeys: 2
+          m_NumAlphaKeys: 3
+        m_Name: TrailGradient
+        m_Overridden: 1
     m_NamedObject:
       m_Array: []
     m_Bool:
       m_Array: []
---- !u!73398921 &8411865761781169452
+--- !u!73398921 &1591875233517423275
 VFXRenderer:
   serializedVersion: 1
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2965467819977759238}
+  m_GameObject: {fileID: 574890439410644332}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -175,6 +219,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4948354978049318260}
+  - {fileID: 1821570909634194429}
   m_Father: {fileID: 5164509962707860253}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7072335464306672222
@@ -205,7 +250,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 0.075, y: 0.075, z: 0.075}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4955983092455844078}
@@ -290,14 +335,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7278520177741039504}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.8049913, y: 0.058686487, z: 0.109856814, w: 0.5800659}
-  m_LocalPosition: {x: 1009.18555, y: 1.8282186, z: 2.3393726}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4955983092455844078}
   - {fileID: 3843932840174111869}
-  - {fileID: 4037214601134143997}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4023660094981137763
@@ -317,6 +361,8 @@ MonoBehaviour:
   m_targetPoint: {fileID: 3843932840174111869}
   m_enemyModelRoot: {fileID: 5609474458108632209}
   m_animator: {fileID: 0}
+  m_returnToPool: 0
+  m_maxTimeToReachTarget: 1.5
 --- !u!65 &6171499823797594586
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -336,7 +382,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2, y: 0.2, z: 0.2}
+  m_Size: {x: 0.1, y: 0.1, z: 0.1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &4581207291412580054
 Rigidbody:

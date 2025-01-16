@@ -481,8 +481,34 @@ public class UICombatView : MonoBehaviour
         {
             foreach (var kvp in GameplayManager.Instance.m_unlockedStructures)
             {
+                Debug.Log($"building tray button for {kvp.Key.name} with {kvp.Value}");
                 BuildStructureTrayButton(kvp.Key, kvp.Value);
             }
+        }
+    }
+
+    void OrderTrayButtons()
+    {
+        m_towerButtons.Sort((a,b) => a.GetTowerData().m_woodCost.CompareTo(b.GetTowerData().m_woodCost));
+
+        for (int i = 0; i < m_towerButtons.Count; ++i)
+        {
+            m_towerButtons[i].transform.SetSiblingIndex(i);
+            m_towerButtons[i].UpdateHotkeyDisplay(i + 1);
+        }
+
+        if (m_structureButtons == null || m_structureButtons.Count <= 1) return;
+        Debug.Log($"m_structureButtons.Count: {m_structureButtons.Count}");
+        
+        m_structureButtons.Sort((a,b) => a.GetTowerData().m_woodCost.CompareTo(b.GetTowerData().m_woodCost));
+
+        for (int i = 0; i < m_structureButtons.Count; ++i)
+        {
+            
+            Debug.Log($"Expected button name: {m_structureButtons[i]?.name}");
+            
+            m_structureButtons[i].transform.SetSiblingIndex(i);
+            m_structureButtons[i].UpdateHotkeyDisplay(i + 5 + 1); // 5 is number of towers, 1 is starting at 6 instead of 5.
         }
     }
 
@@ -528,6 +554,8 @@ public class UICombatView : MonoBehaviour
 
         m_buttons.Add(buttonScript);
         m_towerButtons.Add(towerTrayButtonScript);
+        
+        OrderTrayButtons();
     }
 
     private void RemoveTowerTrayButton(TowerData towerData)
@@ -560,6 +588,8 @@ public class UICombatView : MonoBehaviour
 
         m_buttons.Add(buttonScript);
         m_structureButtons.Add(towerTrayButtonScript);
+        
+        OrderTrayButtons();
     }
 
     private void ToggleBlueprintButton(bool value)
@@ -654,7 +684,7 @@ public class UICombatView : MonoBehaviour
                     //Tower buttons count is 5.
                     GameplayManager.Instance.CreatePreconBuilding(m_towerButtons[kvp.Value].GetTowerData());
                 }
-                else if (kvp.Value > 5 && kvp.Value < m_structureButtons.Count + 5)
+                else if (kvp.Value >= 5 && kvp.Value < m_structureButtons.Count + 5)
                 {
                     //Pressing key 6 gives me value of 5. 5 - 
                     GameplayManager.Instance.CreatePreconBuilding(m_structureButtons[kvp.Value - 5].GetTowerData());

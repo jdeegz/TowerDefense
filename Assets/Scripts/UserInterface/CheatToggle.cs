@@ -32,6 +32,8 @@ public class CheatToggle : MonoBehaviour
 
     private void ToggleChangedValue(bool value)
     {
+        //if (m_toggle.isOn == value) return;
+        
         //Set the unlockable key and reward to this value.
         if (value)
         {
