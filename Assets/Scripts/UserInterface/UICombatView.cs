@@ -734,10 +734,17 @@ public class UICombatView : MonoBehaviour
         //Precon Tower Position
         Vector2Int preconTowerPos = GameplayManager.Instance.m_preconstructedTowerPos;
         Cell cell = Util.GetCellFromPos(preconTowerPos);
-        string actorCountString = cell.m_actorCount.ToString();
-        bool b = !cell.m_isOccupied;
-        string occupancyString = b.ToString();
-        string preconTowerPosString = "0,0";
+        string actorCountString = "";
+        string occupancyString = "";
+        string preconTowerPosString = "";
+        
+        if (cell != null)
+        {
+            actorCountString = cell.m_actorCount.ToString();
+            bool b = !cell.m_isOccupied;
+            occupancyString = b.ToString();
+            preconTowerPosString = "0,0";
+        }
 
 
         //Can Afford

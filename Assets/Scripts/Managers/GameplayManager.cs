@@ -958,6 +958,8 @@ public class GameplayManager : MonoBehaviour
         m_canAfford = false;
         m_canBuild = false;
         m_canPlace = false;
+
+        HandlePreconMousePosition();
     }
 
     public void TriggerPreconBuildingMoved(List<Cell> cells)
@@ -1095,6 +1097,9 @@ public class GameplayManager : MonoBehaviour
     {
         if (cells == null) return false;
 
+        // This is checking pathing from each neighbor of the precon building.
+        
+        Debug.Log($"---- Start Pathing Check. ----");
         for (int i = 0; i < cells.Count; ++i)
         {
             Cell cell = cells[i];
@@ -1103,10 +1108,17 @@ public class GameplayManager : MonoBehaviour
             //Debug.Log($"Neighbor cells {cell.m_cellPos} is unoccupied. Checking for path.");
             List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
 
-            if (testPath != null) continue;
+
+            if (testPath != null)
+            {
+                Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
+                continue;
+            }
 
             //Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
-            List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell, cells));
+            List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell, m_preconstructedTowerCells));
+
+            if (islandCells.Count >= 0) Debug.Log($"{cell.m_cellPos} has no path. Island Found of size: {islandCells.Count}");
 
             //Debug.Log($"Returning FALSE because an actor was found on a single-cell island.");
             if (islandCells.Count == 0 && cell.m_actorCount > 0)
@@ -1126,6 +1138,8 @@ public class GameplayManager : MonoBehaviour
                 }
             }
         }
+        
+        Debug.Log($"---- End Pathing Check. ----");
 
         // EXITS AND SPAWNERS
         //Check to see if any of our UnitPaths have no path.
@@ -1316,6 +1330,7 @@ public class GameplayManager : MonoBehaviour
 
         HidePreconCellObjs();
         m_invalidCellObj.SetActive(false);
+        m_preconstructedTowerPos = new Vector2Int(999,999);
         m_preconstructedTowerData = null;
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
@@ -1374,9 +1389,9 @@ public class GameplayManager : MonoBehaviour
             m_unlockedStructures[m_preconstructedTowerData] = Math.Max(0, m_unlockedStructures.GetValueOrDefault(m_preconstructedTowerData, 0) - 1);
             m_qty = m_unlockedStructures[m_preconstructedTowerData];
         }
-        
+
         OnTowerBuild?.Invoke(m_preconstructedTowerData);
-        
+
         //If this was the last of our stock, leave precon. (Emulate a mouse2 click while in precon state)
         if (m_qty == 0)
         {
@@ -1762,10 +1777,11 @@ public class GameplayManager : MonoBehaviour
     }
 
     private Light[] m_lights;
+
     public void WatchingCutScene()
     {
-        if(m_lights == null) m_lights = FindObjectsOfType<Light>();
-        
+        if (m_lights == null) m_lights = FindObjectsOfType<Light>();
+
         m_watchingCutScene = true;
 
         //Clear precon if we're precon
@@ -1783,9 +1799,9 @@ public class GameplayManager : MonoBehaviour
 
         //Set speed to paused
         UpdateGamePlayback(GameSpeed.Paused);
-        
+
         // Disable Lights
-        if(m_lights == null) m_lights = FindObjectsOfType<Light>();
+        if (m_lights == null) m_lights = FindObjectsOfType<Light>();
 
         // Loop through each light and disable it
         foreach (Light light in m_lights)
@@ -1803,7 +1819,7 @@ public class GameplayManager : MonoBehaviour
         UpdateGamePlayback(GameSpeed.Normal);
 
         m_watchingCutScene = false;
-        
+
         // Loop through each light and re-enable it
         foreach (Light light in m_lights)
         {

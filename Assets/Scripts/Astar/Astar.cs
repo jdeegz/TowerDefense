@@ -226,8 +226,7 @@ public class AStar
             curCellPos.y >= 0 && curCellPos.y < GridManager.Instance.m_gridHeight &&
             !visited.Contains(curCell) &&
             !curCell.m_isOccupied &&
-            !curCell.m_isTempOccupied &&
-            !preconTowerCellsPos.Contains(curCell))
+            !curCell.m_isTempOccupied) // && !preconTowerCellsPos.Contains(curCell) Disabling this 1/17/25, dont think its needed because IsTempOccupied should be true for all these cells.
         {
             // Mark the current cell as visited
             visited.Add(curCell);
