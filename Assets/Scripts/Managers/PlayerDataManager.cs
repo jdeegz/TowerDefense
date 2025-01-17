@@ -37,7 +37,7 @@ public class PlayerDataManager
         PlayerPrefs.SetString("PlayerData", json);
         PlayerPrefs.Save();
         
-        Debug.Log($"Handle Write Complete.");
+        //Debug.Log($"Handle Write Complete.");
     }
 
     
@@ -186,7 +186,7 @@ public class PlayerDataManager
         // Is the key already unlocked?
         if (keyData.ProgressionKeyEnabled)
         {
-            Debug.Log($"{keyData.name}'s value is already True.");
+            //Debug.Log($"{keyData.name}'s value is already True.");
             return;
         }
 
@@ -210,6 +210,12 @@ public class PlayerDataManager
 
     public void RequestLockKey(ProgressionKeyData keyData)
     {
+        if (!keyData.ProgressionKeyEnabled)
+        {
+            //Debug.Log($"{keyData.name}'s value is already False.");
+            return;
+        }
+        
         // Set the key to locked
         keyData.LockKey();
         

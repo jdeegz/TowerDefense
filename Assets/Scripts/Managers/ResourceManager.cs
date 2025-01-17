@@ -71,6 +71,11 @@ public class ResourceManager : MonoBehaviour
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
+    private void OnDestroy()
+    {
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+    }
+
     private void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
         /*if (newState == GameplayManager.GameplayState.Build)
@@ -233,7 +238,8 @@ public class ResourceManager : MonoBehaviour
                     if (chosenWeight < lastTotalWeight + m_validRuinsInMission[i].m_ruinWeight)
                     {
                         // This is the node we have chosen.
-                        m_validRuinsInMission[i].IndicateThisRuin(key, unlockableData.GetRuinIndicator());
+                        RuinIndicator indicatorToSpawn = unlockableData.GetRuinIndicator();
+                        m_validRuinsInMission[i].IndicateThisRuin(key, indicatorToSpawn);
                         m_validRuinsInMission.Remove(m_validRuinsInMission[i]);
                         break;
                     }

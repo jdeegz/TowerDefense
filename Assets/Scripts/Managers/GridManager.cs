@@ -228,21 +228,16 @@ public class GridManager : MonoBehaviour
     void PreconTowerMoved(Vector2Int preconTowerPos)
     {
         int preconTowerCellIndex = preconTowerPos.y * m_gridWidth + preconTowerPos.x;
-        //Debug.Log($"Precon Index: {preconTowerCellIndex}");
-
-        //Debug.Log($"GridManager: Updating Grid Cell {preconTowerCellIndex} temp occupancy to TRUE.");
         m_gridCells[preconTowerCellIndex].UpdateTempOccupancyDisplay(true);
 
         //Set the values back to their original state if this is not our first iteration.
         if (m_previousPreconIndex > 0 && m_previousPreconIndex != preconTowerCellIndex)
         {
-            //Debug.Log($"GridManager: Updating Grid Cell {m_previousPreconIndex} temp occupancy to FALSE.");
             m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
         }
 
         m_previousPreconIndex = preconTowerCellIndex;
 
-        //Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
         FloodFillGrid(m_gridCells, null);
     }
 
@@ -263,7 +258,6 @@ public class GridManager : MonoBehaviour
 
         m_previousPreconCells = cells;
 
-        //Debug.Log($"GridManager: Precon Tower Moved, now flood filling.");
         FloodFillGrid(m_gridCells, null);
     }
 
@@ -319,7 +313,7 @@ public class GridManager : MonoBehaviour
     {
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
-            Debug.Log($"Attempting to refresh grid, m_previousPreconIndex of: {m_previousPreconIndex}");
+            //Debug.Log($"Attempting to refresh grid, m_previousPreconIndex of: {m_previousPreconIndex}");
             int preconIndex = m_previousPreconIndex;
             RevertPreconTempChanges();
 
@@ -328,7 +322,7 @@ public class GridManager : MonoBehaviour
 
             //I think I could also cheat this by setting GameplayManagers m_preconstructedTowerPos to Vector2Int.zero, which will get flagged as the 'new pos' invoking its action.
             //Debug.Log($"GridManager: Returning to Precon Tower temp changes.");
-            Debug.Log($"Moving precon tower back to cell index: {preconIndex}");
+            //Debug.Log($"Moving precon tower back to cell index: {preconIndex}");
             PreconTowerMoved(m_gridCells[preconIndex].m_cellPos);
         }
         else
@@ -617,17 +611,14 @@ public class UnitPath
         {
             m_unitSpawner.OnActiveWaveSet += UnitSpawnActiveWaveSet;
             m_lineRenderer.lineRendererProperties = new TBLineRenderer();
-            //m_lineRenderer.lineRendererProperties.linePoints = m_path.Count;
             Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
             m_lineRenderer.lineRendererProperties.texture = instancedMaterial;
             m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
             ColorUtility.TryParseHtmlString("#eca816", out Color colorOn);
-            m_lineRendererColorOn = colorOn;
             ColorUtility.TryParseHtmlString("#9fa7af", out Color colorOff);
-            m_lineRendererColorOff = colorOff;
-            m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
             m_lineRenderer.lineRendererProperties.roundedCorners = true;
-            m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOff;
+            m_lineRenderer.lineRendererProperties.startColor = colorOn;
+            m_lineRenderer.lineRendererProperties.endColor = colorOff;
             m_lineRenderer.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
 
             //Assign the properties.
@@ -640,27 +631,14 @@ public class UnitPath
                 return;
             }
 
+            m_lineRenderer.SetSpawnerActive(false);
             m_lineRenderer.SetPoints(m_path);
         }
     }
 
     private void UnitSpawnActiveWaveSet(CreepWave activeWave)
     {
-        if (activeWave.m_creeps != null && activeWave.m_creeps.Count > 0)
-        {
-            //Debug.Log($"Setting Line Renderer to {m_lineRendererColorOn}");
-            m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOn;
-            m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOn;
-            //lineRenderer.sortingOrder = 1;
-            m_lineRenderer.SetLineRendererColors();
-        }
-        else
-        {
-            //Debug.Log($"Setting Line Renderer to {m_lineRendererColorOff}");
-            m_lineRenderer.lineRendererProperties.startColor = m_lineRendererColorOff;
-            m_lineRenderer.lineRendererProperties.endColor = m_lineRendererColorOff;
-            m_lineRenderer.SetLineRendererColors();
-        }
+        m_lineRenderer.SetSpawnerActive(activeWave.m_creeps != null && activeWave.m_creeps.Count > 0);
     }
 
     void PreconstructedTowerClear()
@@ -799,9 +777,6 @@ public class UnitPath
         {
             length += Vector2Int.Distance(path[i - 1], path[i]);
         }
-
-        length *= 2;
-        m_lineRenderer.lineRendererProperties.texture.SetFloat("_Tiling", length);
 
         m_path = path;
         m_lineRenderer.SetPoints(path);

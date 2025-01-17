@@ -13,7 +13,7 @@ public class ProgressionTable : ScriptableObject
             // Does the unlockable's list of keys contain the given key?
             if (unlockableData.RequirementsIncludesKey(keyData))
             {
-                Debug.Log($"Found {keyData.name} as a requirement of {unlockableData.name}.");
+                //Debug.Log($"Found {keyData.name} as a requirement of {unlockableData.name}.");
                 return unlockableData;
             }
         }

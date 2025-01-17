@@ -217,7 +217,7 @@ public abstract class Tower : MonoBehaviour
     public virtual void SetupTower()
     {
         //Grid
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        GridCellOccupantUtil.SetOccupant(gameObject, true, m_towerData.m_buildingSize.x, m_towerData.m_buildingSize.y);
         GameplayManager.Instance.AddTowerToList(this);
 
         //Operational

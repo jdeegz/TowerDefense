@@ -46,9 +46,8 @@ public class RuinController : MonoBehaviour
 
     public void IndicateThisRuin(ProgressionKeyData key, RuinIndicator ruinIndicator)
     {
-        
-        // Spawn the indicator object at the desired corner.
-        GameObject ruinIndicatorObj = ObjectPoolManager.SpawnObject(ruinIndicator.gameObject, gameObject.transform.position, Quaternion.identity, transform, ObjectPoolManager.PoolType.GameObject);
+        GameObject ruinObj = ruinIndicator.gameObject;
+        GameObject ruinIndicatorObj = ObjectPoolManager.SpawnObject(ruinObj, gameObject.transform.position, Quaternion.identity, transform, ObjectPoolManager.PoolType.GameObject);
         GridCellOccupantUtil.SetOccupant(ruinIndicatorObj, true, 1, 1);
         m_ruinIndicator = ruinIndicatorObj.GetComponent<RuinIndicator>();
         m_ruinIndicator.SetUpRuinIndicator(this);
@@ -98,6 +97,9 @@ public class RuinController : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_progressionKey != null) m_progressionKey.KeyChanged -= OnKeyChanged;
+        if (m_ruinIndicator != null)
+        {
+            m_progressionKey.KeyChanged -= OnKeyChanged;
+        }
     }
 }

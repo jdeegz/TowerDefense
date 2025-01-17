@@ -371,7 +371,7 @@ public class AStar
             //If the current cell is occupied, we cannot find the exit, this is not a valid path.
             if (curCell.m_isOccupied || curCell.m_isTempOccupied)
             {
-                Debug.Log("GetExitPath did not find a path.");
+                //Debug.Log("GetExitPath did not find a path.");
                 return null;
             }
 
@@ -380,7 +380,7 @@ public class AStar
 
             if (direction == Vector2Int.zero)
             {
-                Debug.Log("Cell has no direction value.");
+                //Debug.Log("Cell has no direction value.");
                 return null;
             }
 
@@ -389,7 +389,7 @@ public class AStar
             // Path goes out of bounds, return null
             if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth - 1 || current.y < 0 || current.y == GridManager.Instance.m_gridHeight - 1)
             {
-                Debug.LogError("Path goes out of bounds.");
+                //Debug.LogError("Path goes out of bounds.");
                 return null;
             }
         }

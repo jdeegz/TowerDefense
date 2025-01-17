@@ -17,6 +17,8 @@ public class CheatToggle : MonoBehaviour
     public void UpdateState()
     {
         UnlockProgress progress = m_unlockableData.GetProgress();
+        if (m_toggle.isOn == progress.m_isUnlocked) return;
+        
         m_toggle.isOn = progress.m_isUnlocked;
     }
 

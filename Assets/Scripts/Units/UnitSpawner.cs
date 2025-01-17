@@ -59,7 +59,7 @@ public class UnitSpawner : MonoBehaviour
             //If we have NO active creep spawners, disable this spawner.
             if (m_activeCreepSpawners.Count == 0)
             {
-                Debug.Log($"{gameObject.name} done spawning.");
+                //Debug.Log($"{gameObject.name} done spawning.");
                 m_isSpawnerActive = false;
                 GameplayManager.Instance.DisableSpawner();
 
@@ -95,7 +95,7 @@ public class UnitSpawner : MonoBehaviour
         audioSource.Play();
 
         if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
-        Debug.Log($"{gameObject.name} starting fade in coroutine");
+        //Debug.Log($"{gameObject.name} starting fade in coroutine");
         m_curCoroutine = StartCoroutine(FadeInAudio(4f, audioSource));
     }
 
@@ -114,7 +114,7 @@ public class UnitSpawner : MonoBehaviour
         }
 
         audioSource.volume = 1f;
-        Debug.Log($"{gameObject.name} fade in coroutine completed.");
+        //Debug.Log($"{gameObject.name} fade in coroutine completed.");
     }
 
     private IEnumerator FadeOutAudio(float duration, AudioSource audioSource)
@@ -131,13 +131,13 @@ public class UnitSpawner : MonoBehaviour
 
         audioSource.volume = 0f;
         audioSource.Stop();
-        Debug.Log($"{gameObject.name} fade out coroutine completed.");
+        //Debug.Log($"{gameObject.name} fade out coroutine completed.");
     }
 
     public void RequestStopAudioLoop(AudioSource audioSource = null)
     {
         if (audioSource == null) audioSource = m_audioSource;
-        Debug.Log($"starting fade out coroutine.");
+        //Debug.Log($"starting fade out coroutine.");
         if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
         m_curCoroutine = StartCoroutine(FadeOutAudio(3f, audioSource));
     }

@@ -725,6 +725,8 @@ public class GathererController : MonoBehaviour
                 break;
             case Selectable.SelectedObjectType.Tower:
                 break;
+            case Selectable.SelectedObjectType.Building:
+                break;
             case Selectable.SelectedObjectType.Gatherer:
                 break;
             case Selectable.SelectedObjectType.Castle:
@@ -934,7 +936,7 @@ public class GathererController : MonoBehaviour
 
     private void SetAnimatorTrigger(string triggerName)
     {
-        Debug.Log($"Setting trigger {triggerName}");
+        //Debug.Log($"Setting trigger {triggerName}");
         foreach (String trigger in m_triggerNames)
         {
             m_animator.ResetTrigger(trigger);
@@ -957,7 +959,7 @@ public class GathererController : MonoBehaviour
     {
         m_gathererTask = newTask;
 
-        Debug.Log($"{m_gathererData.m_gathererName}'s new task is {m_gathererTask}.");
+        //Debug.Log($"{m_gathererData.m_gathererName}'s new task is {m_gathererTask}.");
 
         switch (m_gathererTask)
         {

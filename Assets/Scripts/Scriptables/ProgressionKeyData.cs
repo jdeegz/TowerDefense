@@ -7,7 +7,7 @@ using UnityEngine;
 public class ProgressionKeyData : ScriptableObject
 {
     public event Action<bool> KeyChanged;
-    
+
     public bool ProgressionKeyEnabled
     {
         get
@@ -17,7 +17,7 @@ public class ProgressionKeyData : ScriptableObject
             // If this key does not exist return false
             if (kvp == null)
             {
-                Debug.Log($"No Key Found in PlayerDataManager with name: {name}.");
+                //Debug.Log($"No Key Found in PlayerDataManager with name: {name}.");
                 return false;
             }
 
@@ -29,12 +29,13 @@ public class ProgressionKeyData : ScriptableObject
 
             if (i != -1)
             {
-                Debug.Log($"KVP FOUND: updating to {value}.");
+                if (PlayerDataManager.Instance.m_playerData.m_progressionKeys[i].Value == value) return;
+                //Debug.Log($"KVP FOUND: {PlayerDataManager.Instance.m_playerData.m_progressionKeys[i].Key} updating to {value}.");
                 PlayerDataManager.Instance.m_playerData.m_progressionKeys[i].Value = value;
             }
             else
             {
-                Debug.Log($"KVP NOT FOUND: creating and setting to {value}.");
+                //Debug.Log($"KVP NOT FOUND: creating and setting to {value}.");
                 PlayerDataManager.Instance.m_playerData.m_progressionKeys.Add(new SerializedKVP(name, value));
             }
 

@@ -190,19 +190,10 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    private void TowerBuilt(GameObject obj)
-    {
-        //If this tower was built, reduce the quantity if quantity is not -1
-    }
-
-    public void SetQuantity(int i)
-    {
-        Quantity = i;
-    }
-
     public void UpdateQuantity(int i)
     {
         Quantity += i;
+        //Debug.Log($"{m_towerData.m_towerName}'s button now has {Quantity}.");
     }
 
     private void GameObjectSelected(GameObject obj)

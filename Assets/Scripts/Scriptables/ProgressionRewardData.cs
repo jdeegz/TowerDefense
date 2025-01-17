@@ -25,9 +25,11 @@ public abstract class ProgressionRewardData : ScriptableObject
         {
             int i = PlayerDataManager.Instance.m_playerData.m_progressionKeys.FindIndex(k => k.Key == name);
 
+
             if (i != -1)
             {
-                Debug.Log($"KVP FOUND: updating to {value}.");
+                if (PlayerDataManager.Instance.m_playerData.m_progressionKeys[i].Value == value) return;
+                Debug.Log($"KVP FOUND: {PlayerDataManager.Instance.m_playerData.m_progressionKeys[i].Key} updating to {value}.");
                 PlayerDataManager.Instance.m_playerData.m_progressionKeys[i].Value = value;
             }
             else

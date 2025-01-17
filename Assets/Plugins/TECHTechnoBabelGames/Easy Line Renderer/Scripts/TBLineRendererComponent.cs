@@ -23,21 +23,22 @@ namespace TechnoBabelGames
             UpdateLineRendererLineWidth();
             UpdateLineRendererLoop();
             lineRenderer.positionCount = lineRendererProperties.linePoints;
-            lineRenderer.startColor = lineRendererProperties.startColor;
-            lineRenderer.endColor = lineRendererProperties.endColor;
+            m_onColor = lineRendererProperties.startColor;
+            m_offColor = lineRendererProperties.endColor;
 
+            lineRenderer.material = lineRendererProperties.texture;
+            lineRenderer.material.color = lineRendererProperties.startColor;
+            
             switch (lineRendererProperties.textureMode)
             {
                 case TBLineRenderer.TextureMode.None:
-                    lineRenderer.material = lineRendererProperties.texture;
+                    //
                     break;
                 case TBLineRenderer.TextureMode.Stretch:
                     lineRenderer.textureMode = LineTextureMode.Stretch;
-                    lineRenderer.material = lineRendererProperties.texture;
                     break;
                 case TBLineRenderer.TextureMode.Tile:
                     lineRenderer.textureMode = LineTextureMode.Tile;
-                    lineRenderer.material = lineRendererProperties.texture;
                     break;
                 default:
                     break;
@@ -72,12 +73,21 @@ namespace TechnoBabelGames
             }
         }
 
+        private Color m_onColor;
+        private Color m_offColor;
+        
         public void SetLineRendererColors()
         {
             if (lineRenderer == null)
                 lineRenderer = GetComponent<LineRenderer>();
-            lineRenderer.startColor = lineRendererProperties.startColor;
-            lineRenderer.endColor = lineRendererProperties.endColor;
+            lineRenderer.material.color = lineRendererProperties.startColor;
+        }
+
+        public void SetSpawnerActive(bool isOn)
+        {
+            if (lineRenderer == null) lineRenderer = GetComponent<LineRenderer>();
+            lineRenderer.material.color = isOn ? m_onColor : m_offColor;
+            lineRenderer.sortingOrder = isOn ? 1 : 0;
         }
 
         public void DrawBasicShape()
@@ -103,8 +113,9 @@ namespace TechnoBabelGames
             lineRenderer.positionCount = points.Count;
             for (int i = 0; i < points.Count; ++i)
             {
-                Vector3 pos = new Vector3(points[i].x, 0.1f, points[i].y);
+                Vector3 pos = new Vector3(points[i].x, 0.05f, points[i].y);
                 lineRenderer.SetPosition(i, pos);
+                lineRenderer.material.SetFloat("_Tiling", (int)(points.Count * 1.5));
             }
             
             /*if (lineRenderer == null)

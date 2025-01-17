@@ -307,7 +307,7 @@ public class GameplayManager : MonoBehaviour
                     RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
                 }
-                
+
                 if (!m_canPath)
                 {
                     //Debug.Log("Cannot build here.");
@@ -362,7 +362,7 @@ public class GameplayManager : MonoBehaviour
             if (!m_curSelectable || m_curSelectable.m_selectedObjectType != Selectable.SelectedObjectType.Gatherer) return;
 
             if (!m_hoveredSelectable || m_hoveredSelectable.m_selectedObjectType != Selectable.SelectedObjectType.ResourceWood) return;
-            
+
             if (m_gameplayState == GameplayState.Setup) StartMission();
 
             m_curSelectable.GetComponent<GathererController>().AddNodeToHarvestQueue(m_hoveredSelectable.GetComponent<ResourceNode>());
@@ -485,7 +485,7 @@ public class GameplayManager : MonoBehaviour
     private void SetOutlineColor(bool canBuild)
     {
         //Debug.Log($"Trying to change color: {canBuild}");
-        Color color = canBuild ? m_selectionColors.m_outlineBaseColor: m_selectionColors.m_outlineRestrictedColor;
+        Color color = canBuild ? m_selectionColors.m_outlineBaseColor : m_selectionColors.m_outlineRestrictedColor;
         m_selectedOutlineMaterial.SetColor("_Outline_Color", color);
     }
 
@@ -501,10 +501,12 @@ public class GameplayManager : MonoBehaviour
 
         SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
         m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
-        foreach (var kvp in m_unlockedStructures)
+
+        /*foreach (var kvp in m_unlockedStructures)
         {
             Debug.Log($"Unlocked {kvp.Key.m_towerName}, Quantity of :{kvp.Value}");
-        }
+        }*/
+
         m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
         Instance = this;
@@ -637,7 +639,7 @@ public class GameplayManager : MonoBehaviour
     {
         UpdateGameplayState(GameplayState.BuildGrid);
         m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
-        
+
         /*var pipeline = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
         m_scriptableRenderer = pipeline.scriptableRenderer;
         m_scriptableRendererFeature = m_scriptableRenderer.supportedRenderingFeatures.Find(feature => feature is FullscreenEffect);*/
@@ -730,7 +732,7 @@ public class GameplayManager : MonoBehaviour
     public void UpdateGameplayState(GameplayState newState)
     {
         m_gameplayState = newState;
-        Debug.Log($"Game state is now: {m_gameplayState}");
+        //Debug.Log($"Game state is now: {m_gameplayState}");
 
         switch (m_gameplayState)
         {
@@ -1030,7 +1032,7 @@ public class GameplayManager : MonoBehaviour
             m_pathRestrictedReason = m_UIStringData.m_woodRequirmentNotMet;
             return false;
         }
-        
+
         if (m_qty == 0)
         {
             m_pathRestrictedReason = m_UIStringData.m_buildRestrictedQuantityNotMet;
@@ -1202,7 +1204,7 @@ public class GameplayManager : MonoBehaviour
         //Position the precon Tower at the cursor position.
         m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
             moveToPosition, 20f * Time.unscaledDeltaTime);
-        
+
         DrawPreconCellObjs();
     }
 
@@ -1259,7 +1261,7 @@ public class GameplayManager : MonoBehaviour
     private void DrawPreconCellObjs()
     {
         if (m_preconstructedTowerCells == null) return;
-        
+
         // Make sure we have enough objs to display.
         if (m_invalidCellObjs == null) m_invalidCellObjs = new List<GameObject>();
 
@@ -1289,7 +1291,7 @@ public class GameplayManager : MonoBehaviour
                 m_invalidCellObjs[i].transform.position = pos;
                 continue;
             }
-            
+
             m_invalidCellObjs[i].SetActive(false);
         }
     }
@@ -1365,14 +1367,23 @@ public class GameplayManager : MonoBehaviour
             IngameUIController.Instance.SpawnCurrencyAlert(cost.Item2, cost.Item1, false, newTowerObj.transform.position);
         }
 
+
         //Update Quantities
         if (m_qty != -1 && m_unlockedStructures.ContainsKey(m_preconstructedTowerData))
         {
             m_unlockedStructures[m_preconstructedTowerData] = Math.Max(0, m_unlockedStructures.GetValueOrDefault(m_preconstructedTowerData, 0) - 1);
             m_qty = m_unlockedStructures[m_preconstructedTowerData];
         }
-
+        
         OnTowerBuild?.Invoke(m_preconstructedTowerData);
+        
+        //If this was the last of our stock, leave precon. (Emulate a mouse2 click while in precon state)
+        if (m_qty == 0)
+        {
+            SetOutlineColor(true);
+            ClearPreconstructedTower();
+            UpdateInteractionState(InteractionState.Idle);
+        }
     }
 
     // Clear Blueprint Tower Models -- Called via CombatView button.

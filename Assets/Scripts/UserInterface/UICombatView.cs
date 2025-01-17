@@ -481,7 +481,7 @@ public class UICombatView : MonoBehaviour
         {
             foreach (var kvp in GameplayManager.Instance.m_unlockedStructures)
             {
-                Debug.Log($"building tray button for {kvp.Key.name} with {kvp.Value}");
+                //Debug.Log($"building tray button for {kvp.Key.name} with {kvp.Value}");
                 BuildStructureTrayButton(kvp.Key, kvp.Value);
             }
         }
@@ -498,15 +498,11 @@ public class UICombatView : MonoBehaviour
         }
 
         if (m_structureButtons == null || m_structureButtons.Count <= 1) return;
-        Debug.Log($"m_structureButtons.Count: {m_structureButtons.Count}");
         
         m_structureButtons.Sort((a,b) => a.GetTowerData().m_woodCost.CompareTo(b.GetTowerData().m_woodCost));
 
         for (int i = 0; i < m_structureButtons.Count; ++i)
         {
-            
-            Debug.Log($"Expected button name: {m_structureButtons[i]?.name}");
-            
             m_structureButtons[i].transform.SetSiblingIndex(i);
             m_structureButtons[i].UpdateHotkeyDisplay(i + 5 + 1); // 5 is number of towers, 1 is starting at 6 instead of 5.
         }
