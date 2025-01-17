@@ -260,7 +260,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: cbef5d4ef22bff645815d40db1f32228, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -359,7 +359,7 @@ MonoBehaviour:
   id: 
   isRelative: 1
   isFrom: 0
-  isIndependentUpdate: 0
+  isIndependentUpdate: 1
   autoKill: 1
   autoGenerate: 1
   isActive: 1
@@ -500,7 +500,7 @@ MonoBehaviour:
   id: 
   isRelative: 1
   isFrom: 1
-  isIndependentUpdate: 0
+  isIndependentUpdate: 1
   autoKill: 1
   autoGenerate: 1
   isActive: 1
@@ -927,52 +927,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!28 &257892775
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: VFX_Dragon_Spine_PositionMap
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 3
-  m_Width: 5
-  m_Height: 1
-  m_CompleteImageSize: 80
-  m_MipsStripped: 0
-  m_TextureFormat: 20
-  m_MipCount: 1
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 0
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_LightmapFormat: 0
-  m_ColorSpace: 1
-  m_PlatformBlob: 
-  image data: 80
-  _typelessdata: 8f0a7a443b27ac3e60833dbe0000803ff6187a4449148f3ed04a4d3e0000803f5c277a449a02643e6206163f0000803fc2357a44a1dc293e13ba783f0000803f29447a444a6ddf3de4b6ad3f0000803f
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1001 &381421827
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1100,7 +1054,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: cbef5d4ef22bff645815d40db1f32228, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -1199,7 +1153,7 @@ MonoBehaviour:
   id: 
   isRelative: 1
   isFrom: 0
-  isIndependentUpdate: 0
+  isIndependentUpdate: 1
   autoKill: 1
   autoGenerate: 1
   isActive: 1
@@ -1230,6 +1184,52 @@ MonoBehaviour:
   optionalScrambleMode: 0
   optionalShakeRandomnessMode: 0
   optionalString: 
+--- !u!28 &729200836
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: VFX_Dragon_Spine_PositionMap
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 3
+  m_Width: 5
+  m_Height: 1
+  m_CompleteImageSize: 80
+  m_MipsStripped: 0
+  m_TextureFormat: 20
+  m_MipCount: 1
+  m_IsReadable: 1
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 1
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 0
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 0
+    m_WrapV: 0
+    m_WrapW: 0
+  m_LightmapFormat: 0
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 80
+  _typelessdata: 8f0a7a443b27ac3e60833dbe0000803ff6187a4449148f3ed04a4d3e0000803f5c277a449a02643e6206163f0000803fc2357a44a1dc293e13ba783f0000803f29447a444a6ddf3de4b6ad3f0000803f
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &908571238
 GameObject:
   m_ObjectHideFlags: 0
@@ -1390,7 +1390,7 @@ MonoBehaviour:
   id: 
   isRelative: 1
   isFrom: 0
-  isIndependentUpdate: 0
+  isIndependentUpdate: 1
   autoKill: 1
   autoGenerate: 1
   isActive: 1
@@ -1433,7 +1433,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: cbef5d4ef22bff645815d40db1f32228, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -1691,7 +1691,7 @@ VFXRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1207481205}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -1782,7 +1782,7 @@ VisualEffect:
       m_Array: []
     m_NamedObject:
       m_Array:
-      - m_Value: {fileID: 0}
+      - m_Value: {fileID: 729200836}
         m_Name: PositionMap
         m_Overridden: 1
     m_Bool:
@@ -2088,7 +2088,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: cbef5d4ef22bff645815d40db1f32228, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -2420,7 +2420,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: cbef5d4ef22bff645815d40db1f32228, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -2519,7 +2519,7 @@ MonoBehaviour:
   id: 
   isRelative: 1
   isFrom: 0
-  isIndependentUpdate: 0
+  isIndependentUpdate: 1
   autoKill: 1
   autoGenerate: 1
   isActive: 1

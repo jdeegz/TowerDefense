@@ -30,6 +30,8 @@ public class UITowerSelectHUD : MonoBehaviour
     {
         gameObject.SetActive(b);
 
+        if(m_rect == null) m_rect = GetComponent<RectTransform>();
+        
         if (b)
         {
             m_rect.DOScale(1.0f, .15f).From(0.6f).SetEase(Ease.OutBack);

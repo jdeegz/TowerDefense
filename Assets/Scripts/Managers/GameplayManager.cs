@@ -1761,8 +1761,11 @@ public class GameplayManager : MonoBehaviour
         return m_curSelectable;
     }
 
+    private Light[] m_lights;
     public void WatchingCutScene()
     {
+        if(m_lights == null) m_lights = FindObjectsOfType<Light>();
+        
         m_watchingCutScene = true;
 
         //Clear precon if we're precon
@@ -1780,6 +1783,15 @@ public class GameplayManager : MonoBehaviour
 
         //Set speed to paused
         UpdateGamePlayback(GameSpeed.Paused);
+        
+        // Disable Lights
+        if(m_lights == null) m_lights = FindObjectsOfType<Light>();
+
+        // Loop through each light and disable it
+        foreach (Light light in m_lights)
+        {
+            light.enabled = false;
+        }
     }
 
     public void DoneWatchingLeaveCutScene()
@@ -1791,6 +1803,12 @@ public class GameplayManager : MonoBehaviour
         UpdateGamePlayback(GameSpeed.Normal);
 
         m_watchingCutScene = false;
+        
+        // Loop through each light and re-enable it
+        foreach (Light light in m_lights)
+        {
+            light.enabled = true;
+        }
 
         OnCutSceneEnd?.Invoke();
     }
