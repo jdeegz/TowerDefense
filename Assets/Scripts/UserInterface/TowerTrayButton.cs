@@ -158,6 +158,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         ResourceManager.UpdateWoodBank -= CheckWoodCost;
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
+        GameplayManager.OnTowerBuild -= TowerBuilt;
     }
 
     private bool m_isHovered;

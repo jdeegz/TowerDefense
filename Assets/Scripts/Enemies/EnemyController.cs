@@ -532,25 +532,48 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     private Obelisk FindObelisk()
     {
-        float closestDistance = Mathf.Infinity;
-        Obelisk closestObelisk = null;
+        float closestUnchargedDistance = Mathf.Infinity;
+        float closestChargedDistance = Mathf.Infinity;
+
+        Obelisk closestUnchargedObelisk = null;
+        Obelisk closestChargedObelisk = null;
+
+        // Loop through all obelisks in the mission.
         foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
         {
+            // Calculate the distance from the current object to the obelisk.
             float distance = Vector3.Distance(transform.position, obelisk.transform.position);
+
+            // Skip obelisks outside their effective range.
             if (distance > obelisk.m_obeliskData.m_obeliskRange)
             {
-                continue; // Enemy is too far from this obelisk.
+                continue;
             }
-            
-            if (distance < closestDistance)
+
+            // Check if the obelisk is charged and update the closest charged obelisk if needed.
+            if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charged)
             {
-                closestDistance = distance;
-                closestObelisk = obelisk;
+                if (distance < closestChargedDistance)
+                {
+                    closestChargedDistance = distance;
+                    closestChargedObelisk = obelisk;
+                }
+            }
+            // Otherwise, treat it as an uncharged obelisk.
+            else
+            {
+                if (distance < closestUnchargedDistance)
+                {
+                    closestUnchargedDistance = distance;
+                    closestUnchargedObelisk = obelisk;
+                }
             }
         }
 
-        return closestObelisk;
+        // Return the closest uncharged obelisk, or the closest charged obelisk if none are uncharged.
+        return closestUnchargedObelisk ?? closestChargedObelisk;
     }
+
 
     public void HandleTrojanSpawn(Vector3 startPos, Vector3 endPos)
     {

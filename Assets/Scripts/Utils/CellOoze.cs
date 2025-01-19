@@ -24,7 +24,6 @@ public class CellOoze : MonoBehaviour
     void Awake()
     {
         m_collider.enabled = false;
-        GameplayManager.OnGameplayStateChanged += RemoveOoze;
     }
     
     void OnEnable()
@@ -32,6 +31,7 @@ public class CellOoze : MonoBehaviour
         m_curDissolve = 1f;
         m_cellOozeVFX.SetFloat("Dissolve", m_curDissolve);
         m_towerDisableVFX.SetFloat("Dissolve", m_curDissolve);
+        GameplayManager.OnGameplayStateChanged += RemoveOoze;
     }
 
     public void SetOozeCell(Cell cell)

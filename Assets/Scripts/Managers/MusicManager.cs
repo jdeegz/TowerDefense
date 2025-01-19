@@ -26,37 +26,17 @@ public class MusicManager : MonoBehaviour
                 StopCoroutine(m_curCoroutine);
                 if (m_isBossWave)
                 {
-                    StartCoroutine(PlayAndCrossfade(m_bossMusicTracks));
+                    m_curCoroutine = StartCoroutine(PlayAndCrossfade(m_bossMusicTracks));
                 }
                 else
                 {
-                    StartCoroutine(PlayAndCrossfade(m_defaultMusicTracks));
+                    m_curCoroutine = StartCoroutine(PlayAndCrossfade(m_defaultMusicTracks));
                 }
             }
         }
     }
 
     private bool m_testBossWave;
-    public bool TestBossWave
-    {
-        get { return m_testBossWave; }
-        set
-        {
-            if (value != m_testBossWave)
-            {
-                m_testBossWave = value;
-                StopCoroutine(m_curCoroutine);
-                if (m_testBossWave)
-                {
-                    StartCoroutine(PlayAndCrossfade(m_bossMusicTracks));
-                }
-                else
-                {
-                    StartCoroutine(PlayAndCrossfade(m_defaultMusicTracks));
-                }
-            }
-        }
-    }
 
 
     void Awake()

@@ -54,17 +54,6 @@ public class IngameUIController : MonoBehaviour
         m_screenWidth = Screen.width / m_canvas.scaleFactor;
         m_screenHeight = Screen.height / m_canvas.scaleFactor;
     }
-    
-    public void SpawnIdleAlert(GameObject obj, Vector3 worldPos)
-    {
-        UIAlert uiAlert = Instantiate(m_gathererIdleAlert, transform);
-        RectTransform rectTransform = uiAlert.GetComponent<RectTransform>();
-        
-        Vector2 screenPos = GetScreenPosition(worldPos);
-        rectTransform.anchoredPosition = new Vector2(screenPos.x, screenPos.y);
-        string alertString = string.Format(m_uiStringData.m_gathererIdle, obj.name);
-        uiAlert.SetLabelText($"{alertString}", m_idleColor);
-    }
 
     public void SpawnCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)
     {
@@ -73,8 +62,8 @@ public class IngameUIController : MonoBehaviour
         //Build the alert.
         UIAlert alert = ObjectPoolManager.SpawnObject(m_currencyAlert.gameObject, transform).GetComponent<UIAlert>();
         Vector2 screenPos = GetScreenPosition(worldPos);
-        alert.SetupAlert(screenPos);
         alert.SetLabelText($"{values.Item1}", values.Item2);
+        alert.SetupAlert(screenPos);
     }
     
     public void SpawnCritCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)
@@ -84,8 +73,8 @@ public class IngameUIController : MonoBehaviour
         //Build the alert.
         UIAlert alert = ObjectPoolManager.SpawnObject(m_critCurrencyAlert.gameObject, transform).GetComponent<UIAlert>();
         Vector2 screenPos = GetScreenPosition(worldPos);
-        alert.SetupAlert(screenPos);
         alert.SetLabelText($"{values.Item1}", values.Item2);
+        alert.SetupAlert(screenPos);
     }
     
     public (string, Color) SetCurrencyAlertValues(int woodValue, int stoneValue, bool isGood)
@@ -106,7 +95,11 @@ public class IngameUIController : MonoBehaviour
             stoneMagnitude = stoneValue > 0 ? m_negativeValue : m_positiveValue;
         }
         
-        string alertString = "Something Broke.";
+        string alertString = $"Something Broke. Wood Value {woodValue}, Stone Value {stoneValue}.";
+        /*if (woodValue <= 0 || stoneValue <= 0)
+        {
+            Debug.Log($"Wood Value {woodValue}, Stone Value {stoneValue}");
+        }*/
         
         if (woodValue > 0 && stoneValue > 0)
         {
@@ -132,9 +125,9 @@ public class IngameUIController : MonoBehaviour
         
         UIAlert alert = Instantiate(m_levelUpAlert, transform);
         Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetLabelText($"{alertString}", m_levelUpColor);
         alert.SetupAlert(screenPos);
         
-        alert.SetLabelText($"{alertString}", m_levelUpColor);
     }
     
     public void SpawnRuinDiscoveredAlert(Vector3 worldPos, string unlockableName, int requirementTotal, int requirementsMet)
@@ -155,9 +148,9 @@ public class IngameUIController : MonoBehaviour
         
         UIAlert alert = Instantiate(m_ruinAlert, transform);
         Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetLabelText($"{alertString}", m_ruinColor);
         alert.SetupAlert(screenPos);
         
-        alert.SetLabelText($"{alertString}", m_ruinColor);
     }
 
     public void SpawnHealthAlert(int healthValue, Vector3 worldPos)
@@ -166,9 +159,9 @@ public class IngameUIController : MonoBehaviour
         
         UIAlert alert = Instantiate(m_currencyAlert, transform);
         Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetLabelText($"{alertString}", m_currencyBadcolor);
         alert.SetupAlert(screenPos);
         
-        alert.SetLabelText($"{alertString}", m_currencyBadcolor);
     }
     
     public void SpawnMaxHealthAlert(int healthValue, Vector3 worldPos)
@@ -177,9 +170,9 @@ public class IngameUIController : MonoBehaviour
         
         UIAlert alert = Instantiate(m_currencyAlert, transform);
         Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetLabelText($"{alertString}", m_currencyBadcolor);
         alert.SetupAlert(screenPos);
         
-        alert.SetLabelText($"{alertString}", m_currencyBadcolor);
     }
 
     private Vector2 GetScreenPosition(Vector3 pos)

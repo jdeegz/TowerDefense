@@ -33,8 +33,6 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
     public static event Action<String> OnWaveCompleted;
-    public static event Action<Vector2Int> OnPreconTowerMoved;
-    public static event Action OnPreconstructedTowerClear;
     public static event Action<List<Cell>> OnPreconBuildingMoved;
     public static event Action OnPreconBuildingClear;
     public static event Action<TowerData> OnTowerBuild;
@@ -1099,7 +1097,7 @@ public class GameplayManager : MonoBehaviour
 
         // This is checking pathing from each neighbor of the precon building.
         
-        Debug.Log($"---- Start Pathing Check. ----");
+        //Debug.Log($"---- Start Pathing Check. ----");
         for (int i = 0; i < cells.Count; ++i)
         {
             Cell cell = cells[i];
@@ -1111,14 +1109,14 @@ public class GameplayManager : MonoBehaviour
 
             if (testPath != null)
             {
-                Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
+                //Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
                 continue;
             }
 
             //Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
-            List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell, m_preconstructedTowerCells));
+            List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell));
 
-            if (islandCells.Count >= 0) Debug.Log($"{cell.m_cellPos} has no path. Island Found of size: {islandCells.Count}");
+            //if (islandCells.Count >= 0) Debug.Log($"{cell.m_cellPos} has no path. Island Found of size: {islandCells.Count}");
 
             //Debug.Log($"Returning FALSE because an actor was found on a single-cell island.");
             if (islandCells.Count == 0 && cell.m_actorCount > 0)
@@ -1139,7 +1137,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"---- End Pathing Check. ----");
+        //Debug.Log($"---- End Pathing Check. ----");
 
         // EXITS AND SPAWNERS
         //Check to see if any of our UnitPaths have no path.
@@ -1334,7 +1332,6 @@ public class GameplayManager : MonoBehaviour
         m_preconstructedTowerData = null;
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
-        OnPreconstructedTowerClear?.Invoke();
         OnPreconBuildingClear?.Invoke();
     }
 

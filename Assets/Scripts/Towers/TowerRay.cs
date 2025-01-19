@@ -270,7 +270,7 @@ public class TowerRay : Tower
             mesh.material.SetColor("_EmissionColor", color);
         }
         
-        Debug.Log($"{gameObject.name}'s Material Color: {color} at stacks: {CurStacks}.");
+        //Debug.Log($"{gameObject.name}'s Material Color: {color} at stacks: {CurStacks}.");
 
         // AUDIO - TOWER AMBIENT 
         m_audioSource.pitch = Mathf.Lerp(m_audioPitchMin, m_audioPitchMax, normalizedTime);

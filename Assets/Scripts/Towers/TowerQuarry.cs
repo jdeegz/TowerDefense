@@ -31,32 +31,6 @@ public class TowerQuarry : Tower
 
         m_lastChargeWave = GameplayManager.Instance.m_wave;
 
-        SetVisuals();
-    }
-
-    private void SetVisuals()
-    {
-        foreach (GameObject obj in m_chargeObjs)
-        {
-            obj.SetActive(false);
-        }
-
-        if (m_curCharges == 0) return;
-        
-        m_chargeObjs[m_curCharges - 1].SetActive(true);
-    }
-
-    public override void GameObjectSelected(GameObject obj)
-    {
-        base.GameObjectSelected(obj);
-
-        if (!m_isBuilt) return;
-        
-        if (obj != gameObject) return;
-        
-        if (m_curCharges < m_maxCharges) return;
-
-        GrantCharges();
     }
 
     public override void GameplayStateChanged(GameplayManager.GameplayState newState)
@@ -66,64 +40,15 @@ public class TowerQuarry : Tower
             return;
         }
 
+        if (!m_isBuilt) return;
+        
         AutoGrant();
-
-        /*if (m_curCharges >= m_maxCharges)
-        {
-            // Remind the player to collect.
-            RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
-            return;
-        }
-
-        if (m_curCharges < m_maxCharges && GameplayManager.Instance.m_wave - m_lastChargeWave <= m_intervalLength)
-        {
-            // Increment curCharges -- This will increment only once. Change the above condition to have it catch up to missing charges / waves.
-            m_lastChargeWave = GameplayManager.Instance.m_wave;
-            IncrementCharges();
-        }*/
-    }
-
-    void IncrementCharges()
-    {
-        // DATA UPDATES
-        int newChargesToAdd = Math.Min(m_chargesPerInterval, m_maxCharges - m_curCharges);
-        m_curCharges += newChargesToAdd;
-        SetVisuals();
-
-        // VISUAL UPDATES
-
-        // AUDIO
-        RequestPlayAudio(m_towerData.m_audioFireClips);
-    }
-
-    void GrantCharges()
-    {
-        IngameUIController.Instance.SpawnCurrencyAlert(0, m_curCharges, true, transform.position);
-
-        // Spawn VFX
-        foreach (GameObject obj in m_chargeObjs)
-        {
-            ObjectPoolManager.SpawnObject(m_claimVFX, obj.transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-        }
-
-        // AUDIO
-        RequestPlayAudio(m_towerData.m_audioSecondaryFireClips);
-        RequestStopAudioLoop();
-
-        // DATA RESET
-        ResourceManager.Instance.UpdateStoneAmount(m_curCharges);
-        m_curCharges = 0;
-
-        GameplayManager.Instance.DeselectObject(gameObject.GetComponent<Selectable>());
-
-        // VISUAL UPDATES
-        SetVisuals();
     }
 
     void AutoGrant()
     {
         // DATA
-        ResourceManager.Instance.UpdateStoneAmount(1);
+        ResourceManager.Instance.UpdateStoneAmount(m_curCharges);
         
         // UI
         IngameUIController.Instance.SpawnCurrencyAlert(0, m_curCharges, true, transform.position);

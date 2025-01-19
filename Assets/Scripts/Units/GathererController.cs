@@ -55,7 +55,7 @@ public class GathererController : MonoBehaviour
                     m_targetObjPosition = newGoalPosition;
                 }
 
-                Debug.Log($"New Current Goal Cell assigned. Now finding path to goal cell.");
+                Debug.Log($"New Current Goal Cell assigned. Now finding path to goal cell. {m_curGoalCell} cur {m_curCell}.");
 
                 GathererPath = AStar.FindPathToGoal(m_curGoalCell, m_curCell);
             }
@@ -86,6 +86,7 @@ public class GathererController : MonoBehaviour
         {
             m_gathererPath = value;
 
+            Debug.Log($"GathererPath is null: {m_gathererPath == null}");
             if (m_gathererPath != null)
             {
                 if (m_gathererPath.Count > 1)
@@ -302,11 +303,10 @@ public class GathererController : MonoBehaviour
                 throw new ArgumentOutOfRangeException();
         }
 
-        ResourceManager.Instance.AddGathererLineRenderer(this);
+        // ResourceManager.Instance.AddGathererLineRenderer(this);
         m_resourceNodesToRemoveFromHarvestQueue = new List<ResourceNode>();
         m_curNodeQueueIndicators = new List<GameObject>();
     }
-
 
 
     void Update()
@@ -474,7 +474,7 @@ public class GathererController : MonoBehaviour
     {
         //Does the path reach the goal?
         //Debug.Log($"Checking Path to Goal.");
-        Vector2Int lastPathPos = m_gathererPath.Last();
+        Vector2Int lastPathPos = GathererPath.Last();
         int distance = Math.Max(Math.Abs(lastPathPos.x - CurrentGoalCell.m_cellPos.x), Math.Abs(lastPathPos.y - CurrentGoalCell.m_cellPos.y));
         if (distance > 1)
         {
@@ -494,9 +494,10 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    
+
     private float m_unblockSearchTimer = .5f;
     private float m_unblockSearchTimeElapsed = 0f;
+
     private void FindUnblockedPath()
     {
         //if (!m_isBlockedFromGoal) return;
@@ -517,7 +518,7 @@ public class GathererController : MonoBehaviour
         if (other.CompareTag("Gatherer") && other.gameObject != this.gameObject)
 
         {
-            Debug.Log($"avoiding {other.gameObject.name}");
+            //Debug.Log($"avoiding {other.gameObject.name}");
             // Logic to adjust movement for avoidance
             Vector3 directionToOther = transform.position - other.transform.position;
             m_avoidanceDirection = directionToOther.normalized / directionToOther.magnitude;
@@ -538,7 +539,6 @@ public class GathererController : MonoBehaviour
 
         if (GathererPath == null || m_curPos == GathererPath.Last()) // We've arrived in the last cell of the path, are we next to the goal cell?
         {
-            //Debug.Log($"We've reached the last cell of our path.");
             if (!m_isBlockedFromGoal && remainingCellDistance <= 1) // We're adjacent to the goal cell.
             {
                 float stoppingDistance = Vector2Int.Distance(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos) / 2 + 0.15f;
@@ -547,7 +547,7 @@ public class GathererController : MonoBehaviour
                 {
                     //Debug.Log($"We've reached the border between the two cells.");
                     DestinationReached();
-                    GathererPath = null;
+                    //GathererPath = null;
                     return;
                 }
             }
@@ -638,8 +638,10 @@ public class GathererController : MonoBehaviour
                 // If we're carrying resources, resume delivering them.
                 if (ResourceCarried > 0)
                 {
+                    SetAnimatorTrigger("Idle");
+                    IsMoving = false;
                     PathToDepositCell();
-                    break;
+                    return;
                 }
 
                 // If we're not carrying resources, go idle.
@@ -720,6 +722,7 @@ public class GathererController : MonoBehaviour
                     ClearHarvestingQueue();
 
                     CurrentHarvestNode = node;
+                    PathToDepositCell();
                 }
 
                 break;
@@ -731,12 +734,14 @@ public class GathererController : MonoBehaviour
                 break;
             case Selectable.SelectedObjectType.Castle:
                 if (ResourceCarried == 0) RequestedIdle();
+                if (ResourceCarried > 0) PathToDepositCell();
                 break;
             case Selectable.SelectedObjectType.Ruin:
                 if (m_gathererTask != GathererTask.Storing) RequestTravelToRuin(requestObj);
                 break;
             case Selectable.SelectedObjectType.Obelisk:
                 if (ResourceCarried == 0) RequestedIdle();
+                if (ResourceCarried > 0) PathToDepositCell();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -903,7 +908,6 @@ public class GathererController : MonoBehaviour
 
     void PathToDepositCell()
     {
-        Debug.Log($"Finding shortest path to a deposit location.");
         List<Vector2Int> shortestPath = null;
         Cell closestGoalCell = null;
         foreach (Vector2Int depositLocation in m_depositLocations)
@@ -959,7 +963,7 @@ public class GathererController : MonoBehaviour
     {
         m_gathererTask = newTask;
 
-        //Debug.Log($"{m_gathererData.m_gathererName}'s new task is {m_gathererTask}.");
+        Debug.Log($"{m_gathererData.m_gathererName}'s new task is {m_gathererTask}.");
 
         switch (m_gathererTask)
         {
@@ -1117,6 +1121,8 @@ public class GathererController : MonoBehaviour
                 // Add cells with a resource node in them to the list.
                 Cell cell = Util.GetCellFromPos(currentPos);
 
+                if (cell == null) continue;
+                
                 if (cell.m_isOutOfBounds) continue;
 
                 if (cell.m_isOccupied)
@@ -1200,7 +1206,7 @@ public class GathererController : MonoBehaviour
         // When storing, the gatherer has 33% per additional m_gathererLevel to store 1 extra wood.
         int storageAmount;
         int random = Random.Range(0, 100);
-        int bonusAmount = random < (GathererLevel - 1) * 33 ? 1 : 0; //Change 33 if we want different percentage change per m_gathererLevel.
+        int bonusAmount = random < (GathererLevel - 1) * 25 ? 1 : 0; //Change 33 if we want different percentage change per m_gathererLevel.
         storageAmount = m_carryCapacity + bonusAmount;
 
         ResourceManager.Instance.UpdateWoodAmount(storageAmount, this);

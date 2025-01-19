@@ -22,16 +22,16 @@ public class AStar
                 ++searchDistance;
                 continue;
             }
-            
+
             List<Vector2Int> emptyCellPositions = new List<Vector2Int>();
-            
+
             foreach (Cell cell in emptyCells)
             {
                 emptyCellPositions.Add(cell.m_cellPos);
             }
 
             path = FindShortestPath(currentCell.m_cellPos, emptyCellPositions);
-            
+
             if (path == null)
             {
                 ++searchDistance; // We found no pathable empty cells, expand range.
@@ -40,8 +40,8 @@ public class AStar
 
         return path;
     }
-    
-    
+
+
     public static List<Vector2Int> FindShortestPath(Vector2Int start, List<Vector2Int> endPositions)
     {
         List<Vector2Int> shortestPath = null;
@@ -53,9 +53,9 @@ public class AStar
             {
                 continue;
             }
-            
-            //Debug.Log($"Path to {end} is {path.Count} long.");
-            
+
+            Debug.Log($"Path to {end} is {path.Count} long.");
+
             if (shortestPath == null)
             {
                 shortestPath = path;
@@ -68,7 +68,7 @@ public class AStar
 
         return shortestPath;
     }
-    
+
     public static Cell PickClosestPathableCell(Vector2Int start, List<Vector2Int> endPositions)
     {
         List<Vector2Int> shortestPath = null;
@@ -81,9 +81,9 @@ public class AStar
             {
                 continue;
             }
-            
+
             //Debug.Log($"Path to {end} is {path.Count} long.");
-            
+
             if (shortestPath == null)
             {
                 shortestPath = path;
@@ -211,22 +211,22 @@ public class AStar
         }
     }
 
-    public static List<Cell> FindIsland(Cell startCell, List<Cell> preconTowerCells)
+    public static List<Cell> FindIsland(Cell startCell)
     {
         List<Cell> islandCells = new List<Cell>();
         HashSet<Cell> visited = new HashSet<Cell>();
-        PerformDFS(startCell, islandCells, visited, preconTowerCells);
+        PerformDFS(startCell, islandCells, visited);
         return islandCells;
     }
 
-    private static void PerformDFS(Cell curCell, List<Cell> islandCells, HashSet<Cell> visited, List<Cell> preconTowerCellsPos)
+    private static void PerformDFS(Cell curCell, List<Cell> islandCells, HashSet<Cell> visited)
     {
         Vector2Int curCellPos = curCell.m_cellPos;
         if (curCellPos.x >= 0 && curCellPos.x < GridManager.Instance.m_gridWidth &&
             curCellPos.y >= 0 && curCellPos.y < GridManager.Instance.m_gridHeight &&
             !visited.Contains(curCell) &&
             !curCell.m_isOccupied &&
-            !curCell.m_isTempOccupied) // && !preconTowerCellsPos.Contains(curCell) Disabling this 1/17/25, dont think its needed because IsTempOccupied should be true for all these cells.
+            !curCell.m_isTempOccupied)
         {
             // Mark the current cell as visited
             visited.Add(curCell);
@@ -235,13 +235,24 @@ public class AStar
             islandCells.Add(curCell);
 
             // Recursively explore the neighbors of the current cell
-            if (curCell.m_canPathNorth) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y + 1)), islandCells, visited, preconTowerCellsPos); // Up neighbor
-            if (curCell.m_canPathEast) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x + 1, curCellPos.y)), islandCells, visited, preconTowerCellsPos); // Right neighbor
-            if (curCell.m_canPathSouth) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y - 1)), islandCells, visited, preconTowerCellsPos); // Down neighbor
-            if (curCell.m_canPathWest) PerformDFS(Util.GetCellFromPos(new Vector2Int(curCellPos.x - 1, curCellPos.y)), islandCells, visited, preconTowerCellsPos); // Left neighbor
+            // Up neighbor
+            Cell northNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y + 1));
+            if (curCell.m_canPathNorth && northNeighborCell != null) PerformDFS(northNeighborCell, islandCells, visited);
+            
+            // Right neighbor
+            Cell eastNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x + 1, curCellPos.y));
+            if (curCell.m_canPathEast && eastNeighborCell != null) PerformDFS(eastNeighborCell, islandCells, visited); 
+            
+            // Down neighbor
+            Cell southNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y - 1));
+            if (curCell.m_canPathSouth && southNeighborCell != null) PerformDFS(southNeighborCell, islandCells, visited);
+            
+            // Left neighbor
+            Cell westNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x - 1, curCellPos.y));
+            if (curCell.m_canPathWest && westNeighborCell != null) PerformDFS(westNeighborCell, islandCells, visited);
         }
     }
-    
+
     public static int CalculateGridDistance(Vector2Int unitCellPosition, Vector2Int goalCellPos)
     {
         int cellCount = 0;
@@ -252,7 +263,7 @@ public class AStar
         {
             Vector3 directionToNextCell = Util.GetCellFromPos(currentPosition).m_directionToNextCell;
             Vector2Int direction = new Vector2Int((int)directionToNextCell.x, (int)directionToNextCell.z);
-            
+
             // Move to the next cell position
             currentPosition += direction;
             cellCount++;
@@ -272,10 +283,10 @@ public class AStar
     {
         List<Vector2Int> path = new List<Vector2Int>();
 
-        if (start == end 
-            || Util.GetCellFromPos(start).m_isOccupied 
+        if (start == end
+            || Util.GetCellFromPos(start).m_isOccupied
             || Util.GetCellFromPos(end).m_isOccupied
-            || Util.GetCellFromPos(start).m_isTempOccupied 
+            || Util.GetCellFromPos(start).m_isTempOccupied
             || Util.GetCellFromPos(end).m_isTempOccupied)
         {
             //Debug.Log("Start is End: " + (start == end));
@@ -386,7 +397,7 @@ public class AStar
             current += direction;
 
             // Path goes out of bounds, return null
-            if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth - 1 || current.y < 0 || current.y == GridManager.Instance.m_gridHeight - 1)
+            if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth  || current.y < 0 || current.y == GridManager.Instance.m_gridHeight)
             {
                 //Debug.LogError("Path goes out of bounds.");
                 return null;

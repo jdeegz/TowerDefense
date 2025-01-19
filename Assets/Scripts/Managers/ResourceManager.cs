@@ -78,11 +78,6 @@ public class ResourceManager : MonoBehaviour
 
     private void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        /*if (newState == GameplayManager.GameplayState.Build)
-        {
-            RequestRuinIndicator();
-        }*/
-
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
             SetupRuinIndications();
@@ -91,7 +86,7 @@ public class ResourceManager : MonoBehaviour
 
     void Start()
     {
-        m_validRuinsInMission = new List<RuinController>(m_ruinsInMission);
+        
     }
 
     public void AddGathererLineRenderer(GathererController gatherer)
@@ -106,7 +101,7 @@ public class ResourceManager : MonoBehaviour
 
     void Update()
     {
-        if (m_gathererLineRendererObjs == null) return; // Dont do this in the TEST WORLD.
+        /*if (m_gathererLineRendererObjs == null) return; // Dont do this in the TEST WORLD.
         foreach (GathererLineRendererObject line in m_gathererLineRendererObjs)
         {
             if (line.m_lineRenderer.positionCount > 1)
@@ -119,7 +114,7 @@ public class ResourceManager : MonoBehaviour
                     line.UpdateLineRendererProgress();
                 }
             }
-        }
+        }*/
     }
 
     public void UpdateWoodAmount(int amount, GathererController gatherer = null)
@@ -217,6 +212,8 @@ public class ResourceManager : MonoBehaviour
 
     public void SetupRuinIndications()
     {
+        m_validRuinsInMission = new List<RuinController>(m_ruinsInMission);
+        
         if (m_resourceManagerData.m_missionUnlockables.Count == 0) return;
 
         //List<ProgressionKeyData> keysInMission = new List<ProgressionKeyData>();

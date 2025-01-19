@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Coffee.UIEffects;
 using GameUtil;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ public class SwarmCutscene : MonoBehaviour
             member.GetRandomTargetAround(m_swarmMemberTarget.position, m_randomTargetRange);
         }
 
-        Timer.DelayAction(0.1f, () => m_allMembersReady = true);
+        Timer.DelayAction(0.1f, () => m_allMembersReady = true, null, Timer.UpdateMode.UnscaledGameTime, null);
     }
 
     void Update()

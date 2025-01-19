@@ -13,7 +13,7 @@ public class ShrineOrbController : MonoBehaviour
     
     public float m_moveSpeed = 1f;
     public float m_turnSpeed = 1f;
-    public float m_radius = 2.5f;                // Define the size of the box.
+    public float m_radius = 1.5f;                // Define the size of the box.
     
     private Vector3 m_spawnPoint;               // Where we spawned. Referenced to get new destination.
     private Vector3 m_curDestination;           // Where we're currently heading.

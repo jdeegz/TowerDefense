@@ -21,19 +21,23 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BossBreath
-  m_Shader: {fileID: -6465566751694194690, guid: 66310f25ed11ea34ab651530bf83b204, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 9d7efe3e6381fd041954518bd2f0b5a1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _ALBEIDO_BLEND_MODE_OVERLAY
+  - _ALPHA_BLEND_MODE_OVERLAY
+  - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
+  m_CustomRenderQueue: 3000
   stringTagMap:
-    RenderType: Opaque
+    RenderType: Transparent
   disabledShaderPasses:
   - MOTIONVECTORS
+  - DepthOnly
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -150,6 +154,22 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _b_Albeido_Texture:
+        m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _b_Alpha_Texture:
+        m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _s_Albeido_Texture:
+        m_Texture: {fileID: 2800000, guid: 01aee75173e1cc648b391b04b351d97d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _s_Alpha_Texture:
+        m_Texture: {fileID: 2800000, guid: be48d0ddd0ea89c4c8758409699c0ee4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -164,6 +184,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ALBEIDO_BLEND_MODE: 0
+    - _ALPHA_BLEND_MODE: 0
     - _AlphaClip: 0
     - _AlphaClipThreshold: 0
     - _AlphaToMask: 0
@@ -175,12 +197,12 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DIssolveFade: 0.257
+    - _DIssolveFade: 0.287
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DissolveOutlineThickness: 0
-    - _DissolveValue: 0.476
-    - _DstBlend: 0
+    - _DissolveValue: 0.442
+    - _DstBlend: 1
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
@@ -196,20 +218,24 @@ Material:
     - _ReceiveShadows: 1
     - _SPECULAR_IOR: 1.5
     - _SPECULAR_ROUGHNESS: 0
-    - _Smoothness: 0.5
+    - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _SrcBlendAlpha: 1
-    - _Surface: 0
+    - _Surface: 1
     - _WobbleAmount: 0.5
     - _WobbleDistance: 0.5
     - _WobbleFrequency: 0.5
     - _WobbleSpeed: 0.5
     - _WorkflowMode: 0
     - _ZTest: 4
-    - _ZWrite: 1
+    - _ZWrite: 0
     - _ZWriteControl: 0
+    - _b_Albeido_Rotation: 0
+    - _b_Alpha_Rotation: 0
+    - _s_Albeido_Rotation: 0
+    - _s_Alpha_Rotation: 0
     m_Colors:
     - _Alpha_Multiplier: {r: 1, g: 1, b: 1, a: 1}
     - _Alpha_Texture_Scroll_Speed: {r: 0.1, g: -0.1, b: 0, a: 0}
@@ -221,7 +247,7 @@ Material:
     - _BaseSecondaryTiling: {r: 1, g: 1, b: 0, a: 0}
     - _BaseTiling: {r: 1, g: 1, b: 0, a: 0}
     - _BaseTint: {r: 5.656854, g: 1.414214, b: 0, a: 1}
-    - _Bottom_Color: {r: 0, g: 0, b: 0, a: 0}
+    - _Bottom_Color: {r: 0.9622642, g: 0.23003936, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Diffuse_Color: {r: 0.54626465, g: 0.22813724, b: 3.2243402, a: 0}
     - _Diffuse_Scroll_Speed: {r: 0, g: 1, b: 0, a: 0}
@@ -239,6 +265,12 @@ Material:
     - _Tiling: {r: 1, g: 1, b: 0, a: 0}
     - _Top_Color: {r: 5.656854, g: 1.414214, b: 0, a: 1}
     - _UVOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _b_Albeido_Scroll_Speed: {r: 0, g: -0.3, b: 0, a: 0}
+    - _b_Albeido_Tiling: {r: 1, g: 1, b: 0, a: 0}
+    - _b_Alpha_Scroll_Speed: {r: 0, g: -1, b: 0, a: 0}
+    - _b_Alpha_Tiling: {r: 1, g: 1, b: 0, a: 0}
+    - _s_Albeido_Scroll_Speed: {r: 0, g: -0.6, b: 0, a: 0}
+    - _s_Albeido_Tiling: {r: 1, g: 1, b: 0, a: 0}
     - m_scrollSpeed: {r: 1, g: 10, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

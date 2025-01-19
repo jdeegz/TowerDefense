@@ -37,6 +37,9 @@ public class UIOptionsMenu : MonoBehaviour
     [SerializeField] private TMP_Dropdown m_screenModeDropdown;
     [SerializeField] private UIStringData m_uiStrings;
 
+    [Header("Labels")]
+    [SerializeField] private TextMeshProUGUI m_missionNameLabel;
+    
     private int m_dropdownIndex;
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
@@ -56,6 +59,11 @@ public class UIOptionsMenu : MonoBehaviour
         m_elapsedTime = 0;
         m_cheatsGroup.SetActive(false);
         m_progressionCheats = m_cheatsGroup.GetComponent<ProgressionCheats>();
+        
+        if (GameManager.Instance != null && GameManager.Instance.m_curMission != null)
+        {
+            m_missionNameLabel.SetText($"Mission {GameManager.Instance.m_curMission.m_missionName}");
+        }
     }
 
     void OnDestroy()
@@ -98,6 +106,7 @@ public class UIOptionsMenu : MonoBehaviour
             {
                 m_surrenderButton.gameObject.SetActive(false);
                 m_restartButton.gameObject.SetActive(false);
+                m_missionNameLabel.gameObject.SetActive(false);
             }
 
             if (GameManager.Instance.m_gameState != GameManager.GameState.Menus)

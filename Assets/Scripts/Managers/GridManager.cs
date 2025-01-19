@@ -37,20 +37,16 @@ public class GridManager : MonoBehaviour
     {
         Instance = this;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
-        GameplayManager.OnPreconTowerMoved += PreconTowerMoved;
         GameplayManager.OnPreconBuildingMoved += PreconBuildingMoved;
         GameplayManager.OnPreconBuildingClear += PreconBuildingClear;
-        GameplayManager.OnPreconstructedTowerClear += PreconstructedTowerClear;
         m_gridVisualizerObj.SetActive(false);
     }
 
     void OnDestroy()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
-        GameplayManager.OnPreconTowerMoved -= PreconTowerMoved;
         GameplayManager.OnPreconBuildingMoved -= PreconBuildingMoved;
         GameplayManager.OnPreconBuildingClear -= PreconBuildingClear;
-        GameplayManager.OnPreconstructedTowerClear -= PreconstructedTowerClear;
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
@@ -205,7 +201,7 @@ public class GridManager : MonoBehaviour
                 //If we're a cell on the perimeter, mark it as occupied, else we hit test it.
                 if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
                 {
-                    cell.UpdateOccupancyDisplay(true);
+                    //cell.UpdateOccupancyDisplay(true);
                 }
                 else
                 {
@@ -221,24 +217,6 @@ public class GridManager : MonoBehaviour
 
         //Debug.Log("Obstacles Placed.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.FloodFillGrid);
-    }
-
-    //Get the index of the precon Tower cell position. We will flip this cell to Occupied in our temp grid.
-    //This function is invoked by the event 'PreconTowerMoved' in the GameplayManager.
-    void PreconTowerMoved(Vector2Int preconTowerPos)
-    {
-        int preconTowerCellIndex = preconTowerPos.y * m_gridWidth + preconTowerPos.x;
-        m_gridCells[preconTowerCellIndex].UpdateTempOccupancyDisplay(true);
-
-        //Set the values back to their original state if this is not our first iteration.
-        if (m_previousPreconIndex > 0 && m_previousPreconIndex != preconTowerCellIndex)
-        {
-            m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
-        }
-
-        m_previousPreconIndex = preconTowerCellIndex;
-
-        FloodFillGrid(m_gridCells, null);
     }
 
     void PreconBuildingMoved(List<Cell> cells)
@@ -261,13 +239,6 @@ public class GridManager : MonoBehaviour
         FloodFillGrid(m_gridCells, null);
     }
 
-    void TowerBuilt()
-    {
-        SetCellDirections();
-
-        //RevertPreconTempChanges();
-    }
-
     void PreconBuildingClear()
     {
         RevertBuildingCellTempChanges();
@@ -285,24 +256,6 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void PreconstructedTowerClear()
-    {
-        RevertPreconTempChanges();
-
-        FloodFillGrid(m_gridCells, null);
-    }
-    
-    void RevertPreconTempChanges()
-    {
-        //Set the values back to their original state if this is not our first iteration.
-        if (m_previousPreconIndex > 0)
-        {
-            //Debug.Log($"Reverting precon temp changes. Current index: {m_previousPreconIndex} new index: -1.");
-            m_gridCells[m_previousPreconIndex].UpdateTempOccupancyDisplay(false);
-            m_previousPreconIndex = -1;
-        }
-    }
-
     public void ToggleTileMap(Vector3Int pos, bool isOccupied)
     {
         TileBase tile = isOccupied ? m_ruleTile : null;
@@ -313,9 +266,9 @@ public class GridManager : MonoBehaviour
     {
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
-            //Debug.Log($"Attempting to refresh grid, m_previousPreconIndex of: {m_previousPreconIndex}");
-            int preconIndex = m_previousPreconIndex;
-            RevertPreconTempChanges();
+            
+            List<Cell> previousPreconCells = new List<Cell>(m_previousPreconCells);
+            RevertBuildingCellTempChanges();
 
             //Debug.Log($"GridManager: Flood Filling and Setting directions.");
             FloodFillGrid(m_gridCells, SetCellDirections);
@@ -323,7 +276,8 @@ public class GridManager : MonoBehaviour
             //I think I could also cheat this by setting GameplayManagers m_preconstructedTowerPos to Vector2Int.zero, which will get flagged as the 'new pos' invoking its action.
             //Debug.Log($"GridManager: Returning to Precon Tower temp changes.");
             //Debug.Log($"Moving precon tower back to cell index: {preconIndex}");
-            PreconTowerMoved(m_gridCells[preconIndex].m_cellPos);
+            PreconBuildingMoved(previousPreconCells);
+            //PreconTowerMoved(m_gridCells[preconIndex].m_cellPos);
         }
         else
         {

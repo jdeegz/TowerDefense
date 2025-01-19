@@ -64,17 +64,6 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1, this);
-
-            //Make list of neighbor positions
-            ValueTuple<List<Cell>, List<Vector2Int>> vars = Util.GetNeighborHarvestPointCells(Util.GetVector2IntFrom3DPos(transform.position));
-            for (var i = 0; i < vars.Item1.Count; ++i)
-            {
-                var cell = vars.Item1[i];
-                HarvestPoint harvestPoint = new HarvestPoint();
-                harvestPoint.m_harvestPointCell = cell;
-                harvestPoint.m_harvestPointPos = vars.Item2[i];
-                m_harvestPoints.Add(harvestPoint);
-            }
         }
     }
 

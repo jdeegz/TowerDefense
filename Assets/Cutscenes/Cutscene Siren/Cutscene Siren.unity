@@ -357,6 +357,16 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a3f00b5f9acca594db6ab60dfc68f6e1, type: 3}
+--- !u!95 &81852881 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 4219150509169334719, guid: a3f00b5f9acca594db6ab60dfc68f6e1, type: 3}
+  m_PrefabInstance: {fileID: 81852880}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &81852882 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5664931972053943072, guid: a3f00b5f9acca594db6ab60dfc68f6e1, type: 3}
+  m_PrefabInstance: {fileID: 81852880}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &111975356
 GameObject:
   m_ObjectHideFlags: 0
@@ -963,6 +973,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3147671720078072871, guid: a8f3c1e3b8360774b8ff012d99b5411a, type: 3}
+      propertyPath: m_SceneBindings.Array.data[10].value
+      value: 
+      objectReference: {fileID: 81852882}
+    - target: {fileID: 3147671720078072871, guid: a8f3c1e3b8360774b8ff012d99b5411a, type: 3}
+      propertyPath: m_SceneBindings.Array.data[11].value
+      value: 
+      objectReference: {fileID: 81852881}
     - target: {fileID: 4549083885033495470, guid: a8f3c1e3b8360774b8ff012d99b5411a, type: 3}
       propertyPath: m_Name
       value: Cutscene Setup
@@ -1594,7 +1612,7 @@ VisualEffect:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8389297913142236657}
   m_Enabled: 1
-  m_Asset: {fileID: 8926484042661614526, guid: 595b35ffcfaebd040a227c4c504ec86f, type: 3}
+  m_Asset: {fileID: 8926484042661614526, guid: 6f85319a7dd919d44b7fce221448856e, type: 3}
   m_InitialEventName: OnPlay
   m_InitialEventNameOverriden: 0
   m_StartSeed: 0
