@@ -10,10 +10,16 @@ public class CheatManager : MonoBehaviour
     void Update()
     {
         //Give Wood
-        if (Input.GetKeyDown(KeyCode.O))
+        if (!Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.O))
         {
             GiveWood();
             GiveStone();
+        }
+        
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.O))
+        {
+            SetWood();
+            SetStone();
         }
         
         //Set Max Life & Give life
@@ -75,9 +81,19 @@ public class CheatManager : MonoBehaviour
         ResourceManager.Instance.UpdateWoodAmount(500);
     }
     
+    void SetWood()
+    {
+        ResourceManager.Instance.SetWoodAmount(Random.Range(5,20));
+    }
+    
     void GiveStone()
     {
         ResourceManager.Instance.UpdateStoneAmount(500);
+    }
+    
+    void SetStone()
+    {
+        ResourceManager.Instance.SetStoneAmount(Random.Range(0, 8));
     }
 
     void GiveMaxHealth()
@@ -101,7 +117,7 @@ public class CheatManager : MonoBehaviour
         foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
         {
             if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charged) continue;
-            obelisk.IncreaseObeliskCharge(Random.Range(249, 251));
+            obelisk.IncreaseObeliskCharge(Random.Range(340, 345));
         }
     }
 #endif

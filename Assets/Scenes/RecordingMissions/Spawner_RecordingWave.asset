@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ecac5781f4942d286bc188f12e8139f, type: 3}
+  m_Name: Spawner_RecordingWave
+  m_EditorClassIdentifier: 
+  m_introWaves: []
+  m_loopingWaves:
+  - m_creeps:
+    - m_enemy: {fileID: 11400000, guid: cc88e70735f63964894ec42a938d4c81, type: 2}
+      m_unitsToSpawn: 4
+      m_spawnDelay: 0
+      m_spawnInterval: 8
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 12
+      m_spawnDelay: 5
+      m_spawnInterval: 4
+    - m_enemy: {fileID: 11400000, guid: e22f802cf3600bf49bc993e19e46ab8a, type: 2}
+      m_unitsToSpawn: 12
+      m_spawnDelay: 5.5
+      m_spawnInterval: 4
+    - m_enemy: {fileID: 11400000, guid: 9fb91d404a6116b4fa1cede1bfb0454b, type: 2}
+      m_unitsToSpawn: 14
+      m_spawnDelay: 6
+      m_spawnInterval: 4
+    m_challengeRating: 308
+  m_challengingWaves: []
+  m_newEnemyTypeWaves: []

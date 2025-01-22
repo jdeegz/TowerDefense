@@ -223,7 +223,7 @@ public class FullscreenEffectController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Z))
+        /*if (Input.GetKeyDown(KeyCode.Z))
         {
             CastleDamaged(0);
         }
@@ -241,7 +241,7 @@ public class FullscreenEffectController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.V))
         {
             ObeliskCompleted(1, 1);
-        }
+        }*/
     }
 
     private void OnDestroy()

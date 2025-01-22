@@ -176,6 +176,19 @@ public class ResourceManager : MonoBehaviour
         m_stoneBank += amount;
         UpdateStoneBank?.Invoke(m_stoneBank, amount);
     }
+    
+    public void SetStoneAmount(int amount)
+    {
+        m_stoneBank = amount;
+        UpdateStoneBank?.Invoke(m_stoneBank, amount);
+        Debug.Log($"Set Stone Amount: {amount} new Bank {m_stoneBank}");
+    }
+    
+    public void SetWoodAmount(int amount)
+    {
+        m_woodBank = amount;
+        UpdateWoodBank?.Invoke(m_woodBank, amount);
+    }
 
     public int GetStoneAmount()
     {

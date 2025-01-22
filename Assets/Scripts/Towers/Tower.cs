@@ -229,7 +229,7 @@ public abstract class Tower : MonoBehaviour
         m_animator.SetTrigger("Construct");
 
         //Audio
-        m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
+        if(GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles) m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
 
         //VFX
         ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);

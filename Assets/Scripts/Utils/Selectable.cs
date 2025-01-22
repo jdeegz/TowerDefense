@@ -115,6 +115,9 @@ public class Selectable : MonoBehaviour
     public void ToggleHoveredOutline(bool enabled)
     {
         string layerName = enabled ? m_hoveredLayerString : m_defaultLayerString;
+
+        if (m_meshRenderers == null || m_meshRenderers.Length == 0) return;
+        
         foreach (Renderer meshRenderer in m_meshRenderers)
         {
             meshRenderer.gameObject.layer = LayerMask.NameToLayer(layerName);
