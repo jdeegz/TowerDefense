@@ -564,6 +564,79 @@ public static class Util
         string formattedPercentage = percentageValue.ToString("0") + "%";
         return formattedPercentage;
     }
+    
+    public static List<Cell> FindEdgeCells(List<Cell> islandCells)
+    {
+        HashSet<Cell> islandSet = new HashSet<Cell>(islandCells); // For quick lookup
+        List<Cell> edgeCells = new List<Cell>();
+        
+        // Define 4-connectivity (use diagonals for 8-connectivity)
+        Vector2Int[] directions = {
+            new Vector2Int(-1, 0), // Left
+            new Vector2Int(1, 0),  // Right
+            new Vector2Int(0, -1), // Down
+            new Vector2Int(0, 1)   // Up
+        };
+
+        // Loop through each cell in the island
+        foreach (Cell cell in islandCells)
+        {
+            Vector2Int cellPos = cell.m_cellPos;
+            foreach (Vector2Int direction in directions)
+            {
+                Cell neighborCell = GetCellFromPos(cellPos + direction);
+                // If the neighbor is not part of the island, mark the current cell as an edge
+                if (!islandSet.Contains(neighborCell))
+                {
+                    edgeCells.Add(cell);
+                    break; // No need to check further directions for this cell
+                }
+            }
+        }
+
+        return edgeCells;
+    }
+    
+    public static List<Cell> FindInteriorCells(List<Cell> islandCells)
+    {
+        HashSet<Cell> islandSet = new HashSet<Cell>(islandCells); // For quick lookup
+        List<Cell> interiorCells = new List<Cell>(); 
+
+        Vector2Int[] directions = {
+            new Vector2Int(-1, 0), // Left
+            new Vector2Int(1, 0),  // Right
+            new Vector2Int(0, -1), // Down
+            new Vector2Int(0, 1)   // Up
+        };
+
+        foreach (Cell cell in islandCells)
+        {
+            Vector2Int cellPos = cell.m_cellPos;
+            bool isEdge = false;
+
+            foreach (Vector2Int direction in directions)
+            {
+                Vector2Int neighborPos = cellPos + direction;
+                Cell neighborCell = GetCellFromPos(neighborPos);
+
+                // If the neighbor is not part of the island, mark this cell as an edge
+                if (!islandSet.Contains(neighborCell))
+                {
+                    isEdge = true;
+                    break; 
+                }
+            }
+
+            if (!isEdge)
+            {
+                interiorCells.Add(cell);
+            }
+        }
+
+        return interiorCells;
+    }
+
+    
 
     public static Cell[] GetNeighborCells(Cell startCell, Cell[] gridCells)
     {

@@ -310,7 +310,7 @@ public class EnemyDragon : EnemyController
 
         cellPos = m_bossGridCellPositions[goalIndex];
         goalPos = new Vector3(cellPos.x, 0, cellPos.y);
-        Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos}");
+        //Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos}");
         return (goalIndex, goalPos);
     }
 
@@ -592,7 +592,7 @@ public class EnemyDragon : EnemyController
     public override void RemoveObject()
     {
         //Disabling the Status Effect application to spawners. Movespeed after maze destruction too punishing.
-        /*foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        /*foreach (StandardSpawner spawner in GameplayManager.Instance.m_enemySpawners)
         {
             GameObject bossShardObj = Instantiate(((BossEnemyData)m_enemyData).m_bossShard, transform.position, quaternion.identity);
 

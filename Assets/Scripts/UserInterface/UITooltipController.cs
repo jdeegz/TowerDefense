@@ -251,7 +251,7 @@ public class UITooltipController : MonoBehaviour
             case Selectable.SelectedObjectType.Tear: // This is gross.
                 //Is it a unit spawner or a trojan spawner?
                 TearTooltipData tearData;
-                UnitSpawner spawner = hoveredObj.GetComponent<UnitSpawner>();
+                StandardSpawner spawner = hoveredObj.GetComponent<StandardSpawner>();
                 if (spawner)
                 {
                     tearData = spawner.GetTooltipData();

@@ -75,9 +75,8 @@ public class GameplayManager : MonoBehaviour
     [FormerlySerializedAs("m_activeObelisks")]
     public List<Obelisk> m_obelisksInMission;
 
-    [Header("Unit Spawners")]
-    public List<UnitSpawner> m_unitSpawners;
-    private int m_activeSpawners;
+    [FormerlySerializedAs("m_unitSpawners")] [Header("Unit Spawners")]
+    public List<EnemySpawner> m_enemySpawners;
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
@@ -96,7 +95,7 @@ public class GameplayManager : MonoBehaviour
     private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
 
-// Precon Tower Info
+    // Precon Tower Info
     public GameObject m_invalidCellObj;
     public List<GameObject> m_invalidCellObjs;
     public LayerMask m_buildSurface;
@@ -111,14 +110,14 @@ public class GameplayManager : MonoBehaviour
     private Tower m_preconstructedTower;
     private TowerData m_preconstructedTowerData;
 
-//Boss Testing Ground
+    //Boss Testing Ground
     [Header("Boss Wave Info")]
     public List<int> m_bossWaves; // What wave does this mission spawn a boss
     public BossSequenceController m_bossSequenceController; // What boss does this mission spawn
     private BossSequenceController m_activeBossSequenceController; // Assigned by the BossSequence Controller
     private bool m_watchingCutScene;
 
-//Ooze Cell Info
+    //Ooze Cell Info
     public OozeManager m_oozeManager;
 
     [Header("Strings")]
@@ -170,18 +169,111 @@ public class GameplayManager : MonoBehaviour
 
     void Update()
     {
-        //TEMPORARY TEST STUFF
-        if (Input.GetKeyUp(KeyCode.G))
-        {
-            Debug.Log($"P button pressed.");
-            PlayerDataManager.Instance.ResetProgressionTable();
-        }
-
-        //We do not want to update _anything_ while we're in a cutscene!
+        // Do not run while in Cutscenes.
         if (m_watchingCutScene) return;
 
+        // Input updates.
         HandleHotkeys();
+        HandleMouseInput();
 
+        // Preconstructed Building updates.
+        PreconPeriodicTimer();
+        PositionPrecon();
+        HandlePreconMousePosition();
+
+        NextWaveTimer();
+    }
+
+    void NextWaveTimer()
+    {
+        if (m_delayForQuest) return;
+        
+        // When should we be counting
+        switch(m_gameplayData.m_gameMode)
+        {
+            case MissionGameplayData.GameMode.Standard:
+                if (m_gameplayState != GameplayState.Build) return;
+                break;
+            case MissionGameplayData.GameMode.Survival:
+                if(m_gameplayState != GameplayState.SpawnEnemies && m_gameplayState != GameplayState.Build) return;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        // Update time
+        m_timeToNextWave -= Time.deltaTime;
+
+        // Trigger next wave
+        if (m_timeToNextWave <= 0)
+        {
+            ++m_wave;
+            StartNextWave();
+        }
+    }
+
+    void StartNextWave()
+    {
+        switch(m_gameplayData.m_gameMode)
+        {
+            case MissionGameplayData.GameMode.Standard:
+                
+                // Is this a boss wave?
+                if (m_bossWaves.Contains(m_wave) && m_bossSequenceController)
+                {
+                    Debug.Log($"BOSS Wave {m_wave} Chosen.");
+                    UpdateGameplayState(GameplayState.BossWave);
+                    return;
+                }
+                
+                // Does a spawner have a cutscene request?
+                string cutsceneName = null;
+                foreach (StandardSpawner spawner in m_enemySpawners)
+                {
+                    spawner.SetNextCreepWave();
+                    
+                    if (GameManager.Instance && spawner.GetNextCreepWave() is NewTypeCreepWave newTypeWave && !string.IsNullOrEmpty(newTypeWave.m_waveCutscene))
+                    {
+                        cutsceneName = newTypeWave.m_waveCutscene;
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(cutsceneName))
+                {
+                    UpdateGameplayState(GameplayState.CutScene);
+                    OnCutSceneEnd += ResumeSpawnWave;
+                    GameManager.Instance.RequestAdditiveSceneLoad(cutsceneName);
+                    return;
+                }
+                
+                // Else just spawn enemies.
+                UpdateGameplayState(GameplayState.SpawnEnemies);
+                break;
+            
+            
+            case MissionGameplayData.GameMode.Survival:
+                foreach (EnemySpawner spawner in m_enemySpawners)
+                {
+                    spawner.UpdateCreepSpawners();
+                }
+                
+                UpdateGameplayState(GameplayState.SpawnEnemies);
+                break;
+            
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+    
+    
+    void ResumeSpawnWave()
+    {
+        OnCutSceneEnd -= ResumeSpawnWave;
+        UpdateGameplayState(GameplayState.SpawnEnemies);
+    }
+
+    void HandleMouseInput()
+    {
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
@@ -206,59 +298,6 @@ public class GameplayManager : MonoBehaviour
                 Mouse2Interaction();
             }
         }
-
-        if (m_interactionState == InteractionState.PreconstructionTower)
-        {
-            PreconPeriodicTimer();
-            PositionPrecon();
-            HandlePreconMousePosition();
-        }
-
-        if (m_delayForQuest == false && m_gameplayState == GameplayState.Build)
-        {
-            m_timeToNextWave -= Time.deltaTime;
-        }
-
-        if (m_timeToNextWave <= 0 && m_gameplayState == GameplayState.Build)
-        {
-            ++m_wave;
-            if (m_bossWaves.Contains(m_wave) && m_bossSequenceController)
-            {
-                UpdateGameplayState(GameplayState.BossWave);
-            }
-            else
-            {
-                //Does a spawner have a cutscene request?
-                string cutsceneName = null;
-                foreach (UnitSpawner spawner in m_unitSpawners)
-                {
-                    //Check for Unit Cutscene.
-                    if (GameManager.Instance && spawner.GetActiveWave() is NewTypeCreepWave newTypeWave && !string.IsNullOrEmpty(newTypeWave.m_waveCutscene))
-                    {
-                        cutsceneName = newTypeWave.m_waveCutscene;
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(cutsceneName))
-                {
-                    Debug.Log($"Cutscene named: {cutsceneName} found for this wave.");
-
-                    UpdateGameplayState(GameplayState.CutScene);
-                    OnCutSceneEnd += ResumeSpawnWave;
-                    GameManager.Instance.RequestAdditiveSceneLoad(cutsceneName);
-                }
-                else
-                {
-                    UpdateGameplayState(GameplayState.SpawnEnemies);
-                }
-            }
-        }
-    }
-
-    void ResumeSpawnWave()
-    {
-        OnCutSceneEnd -= ResumeSpawnWave;
-        UpdateGameplayState(GameplayState.SpawnEnemies);
     }
 
     void HandleHotkeys()
@@ -377,7 +416,7 @@ public class GameplayManager : MonoBehaviour
                     case InteractionState.Idle:
                         break;
                     case InteractionState.SelectedGatherer:
-                        Debug.Log("Command Requested on Gatherer.");
+                        //Debug.Log("Command Requested on Gatherer.");
                         if (m_gameplayState == GameplayState.Setup) StartMission();
                         OnCommandRequested?.Invoke(m_hoveredSelectable.gameObject, m_hoveredSelectable.m_selectedObjectType);
                         break;
@@ -748,8 +787,19 @@ public class GameplayManager : MonoBehaviour
                 UpdateGamePlayback(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
-                RequestPlayAudio(m_gameplayAudioData.m_waveStartClip);
-                m_timeToNextWave = m_gameplayData.m_buildDuration;
+                switch (m_gameplayData.m_gameMode)
+                {
+                    case MissionGameplayData.GameMode.Standard:
+                        RequestPlayAudio(m_gameplayAudioData.m_waveStartClip);
+                        m_timeToNextWave = m_gameplayData.m_buildDuration;
+                        break;
+                    case MissionGameplayData.GameMode.Survival:
+                        m_timeToNextWave = m_gameplayData.m_survivalWaveDuration;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
                 break;
             case GameplayState.BossWave:
                 m_timeToNextWave = m_gameplayData.m_afterBossBuildDuration;
@@ -960,12 +1010,6 @@ public class GameplayManager : MonoBehaviour
         HandlePreconMousePosition();
     }
 
-    public void TriggerPreconBuildingMoved(List<Cell> cells)
-    {
-        //THIS SHOULD BE REMOVED OMG
-        OnPreconBuildingMoved?.Invoke(cells);
-    }
-
     private List<Cell> m_preconstructedTowerCells;
     private List<Cell> m_preconNeighborCells;
     private int m_preconBuildingWidth;
@@ -975,6 +1019,8 @@ public class GameplayManager : MonoBehaviour
 
     private void HandlePreconMousePosition()
     {
+        if (m_interactionState != InteractionState.PreconstructionTower) return;
+
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
         {
@@ -1096,7 +1142,7 @@ public class GameplayManager : MonoBehaviour
         if (cells == null) return false;
 
         // This is checking pathing from each neighbor of the precon building.
-        
+
         //Debug.Log($"---- Start Pathing Check. ----");
         for (int i = 0; i < cells.Count; ++i)
         {
@@ -1136,7 +1182,7 @@ public class GameplayManager : MonoBehaviour
                 }
             }
         }
-        
+
         //Debug.Log($"---- End Pathing Check. ----");
 
         // EXITS AND SPAWNERS
@@ -1182,9 +1228,9 @@ public class GameplayManager : MonoBehaviour
             // We could not path to any other exit. So check to see if we can path to atleast one spawner.
             if (!startObjPathable)
             {
-                for (int y = 0; y < m_unitSpawners.Count; ++y)
+                for (int y = 0; y < m_enemySpawners.Count; ++y)
                 {
-                    Vector2Int spawnerPos = Util.GetVector2IntFrom3DPos(m_unitSpawners[y].GetSpawnPointTransform().position);
+                    Vector2Int spawnerPos = Util.GetVector2IntFrom3DPos(m_enemySpawners[y].GetSpawnPointTransform().position);
                     List<Vector2Int> testPath = AStar.FindExitPath(spawnerPos, startPos, m_preconstructedTowerPos, m_goalPointPos);
                     if (testPath != null)
                     {
@@ -1210,6 +1256,8 @@ public class GameplayManager : MonoBehaviour
 
     private void PositionPrecon()
     {
+        if (m_interactionState != InteractionState.PreconstructionTower) return;
+
         //Define the new destination of the Precon Tower Obj. Offset the tower on Y.
         Vector3 moveToPosition = new Vector3(m_preconstructedTowerPos.x - m_preconxOffset, 0.7f, m_preconstructedTowerPos.y - m_preconzOffset);
 
@@ -1225,6 +1273,8 @@ public class GameplayManager : MonoBehaviour
 
     void PreconPeriodicTimer()
     {
+        if (m_interactionState != InteractionState.PreconstructionTower) return;
+
         m_preconPeriodTimeElapsed += Time.deltaTime;
 
         if (m_preconPeriodTimeElapsed > m_preconPeriod)
@@ -1328,7 +1378,7 @@ public class GameplayManager : MonoBehaviour
 
         HidePreconCellObjs();
         m_invalidCellObj.SetActive(false);
-        m_preconstructedTowerPos = new Vector2Int(999,999);
+        m_preconstructedTowerPos = new Vector2Int(999, 999);
         m_preconstructedTowerData = null;
         m_preconstructedTowerObj = null;
         m_preconstructedTower = null;
@@ -1593,9 +1643,11 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        if (m_activeSpawners == 0 && m_enemyList.Count == 0 && m_gameplayState != GameplayState.Defeat)
+        // Dont check for win in Survival.
+        if (m_gameplayData.m_gameMode == MissionGameplayData.GameMode.Survival) return;
+        
+        if (m_enemyList.Count == 0 && m_gameplayState != GameplayState.Defeat)
         {
-            Debug.Log($"Check for win.");
             CheckForWin();
         }
     }
@@ -1617,35 +1669,9 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    public void AddSpawnerToList(UnitSpawner unitSpawner)
+    public void AddSpawnerToList(EnemySpawner standardSpawner)
     {
-        m_unitSpawners.Add(unitSpawner);
-    }
-
-    public void ActivateSpawner()
-    {
-        ++m_activeSpawners;
-    }
-
-    public void DisableSpawner()
-    {
-        --m_activeSpawners;
-
-        if (m_activeSpawners == 0)
-        {
-            UpdateGameplayState(GameplayState.Combat);
-        }
-    }
-
-    public void RemoveSpawnerFromList(UnitSpawner unitSpawner)
-    {
-        for (int i = 0; i < m_unitSpawners.Count; ++i)
-        {
-            if (m_unitSpawners[i] == unitSpawner)
-            {
-                m_unitSpawners.RemoveAt(i);
-            }
-        }
+        m_enemySpawners.Add(standardSpawner);
     }
 
     [HideInInspector]
@@ -1706,13 +1732,6 @@ public class GameplayManager : MonoBehaviour
                 return;
             }
         }
-
-        //Total Waves Win Condition. OLD, removed the total Waves field 10/7/2024
-        /*if (m_wave >= m_totalWaves - 1)
-        {
-            UpdateGameplayState(GameplayState.Victory);
-            return;
-        }*/
 
         if (m_gameplayState == GameplayState.BossWave)
         {

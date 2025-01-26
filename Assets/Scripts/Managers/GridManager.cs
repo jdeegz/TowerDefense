@@ -31,6 +31,7 @@ public class GridManager : MonoBehaviour
     private List<Cell> m_previousPreconCells;
     private bool m_previousPreconOccupancy;
     public bool m_spawnPointsAccessible;
+    private List<Cell> m_outOfBoundsSpawnCells;
 
 
     void Awake()
@@ -85,6 +86,11 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    public List<Cell> GetOutOfBoundsSpawnCells()
+    {
+        return m_outOfBoundsSpawnCells;
+    }
+
     public void FloodFillGrid(Cell[] gridCells, Action callback)
     {
         int goalCellIndex = Util.GetCellIndex(GameplayManager.Instance.m_enemyGoal.position);
@@ -95,7 +101,7 @@ public class GridManager : MonoBehaviour
 
         //How many spawners are in the game? What are their spawnPoint cells?
         List<Cell> spawnPointCells = new List<Cell>();
-        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        foreach (EnemySpawner spawner in GameplayManager.Instance.m_enemySpawners)
         {
             spawnPointCells.Add(Util.GetCellFrom3DPos(spawner.GetSpawnPointTransform().position));
         }
@@ -198,15 +204,17 @@ public class GridManager : MonoBehaviour
                 m_gridCells[index] = cell;
                 cell.m_gridCellObj = m_gridcellObjects[index];
 
+                HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
+                
                 //If we're a cell on the perimeter, mark it as occupied, else we hit test it.
-                if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
+                /*if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
                 {
                     //cell.UpdateOccupancyDisplay(true);
                 }
                 else
                 {
                     HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
-                }
+                }*/
             }
         }
 
@@ -227,7 +235,7 @@ public class GridManager : MonoBehaviour
         {
             cell.UpdateTempOccupancyDisplay(false);
         }
-        
+
         foreach (Cell cell in cells)
         {
             // There could be cells that flip off then back on. Is that an optimization necessary?
@@ -249,7 +257,7 @@ public class GridManager : MonoBehaviour
     void RevertBuildingCellTempChanges()
     {
         if (m_previousPreconCells == null) return;
-        
+
         foreach (Cell cell in m_previousPreconCells)
         {
             cell.UpdateTempOccupancyDisplay(false);
@@ -266,7 +274,6 @@ public class GridManager : MonoBehaviour
     {
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
         {
-            
             List<Cell> previousPreconCells = new List<Cell>(m_previousPreconCells);
             RevertBuildingCellTempChanges();
 
@@ -310,6 +317,14 @@ public class GridManager : MonoBehaviour
         {
             // Ray hit something on the specified layer
             //Debug.Log("Hit object: " + hit.collider.gameObject.name);
+
+            if (hit.collider.gameObject.CompareTag("Enemy"))
+            {
+                if (m_outOfBoundsSpawnCells == null) m_outOfBoundsSpawnCells = new List<Cell>();
+                cell.UpdateBuildRestrictedValue(true);
+                m_outOfBoundsSpawnCells.Add(cell);
+                //Debug.Log($"and it's an enemy object.");
+            }
         }
         else
         {
@@ -337,7 +352,7 @@ public class GridManager : MonoBehaviour
 
         //Build Spawners Position List
         m_spawners = new List<Vector2Int>();
-        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        foreach (EnemySpawner spawner in GameplayManager.Instance.m_enemySpawners)
         {
             m_spawners.Add(Util.GetVector2IntFrom3DPos(spawner.GetSpawnPointTransform().position));
         }
@@ -359,27 +374,30 @@ public class GridManager : MonoBehaviour
             //Debug.Log($"Added Unit Path for {obj.name}");
         }
 
-        //Create Spawners UnitPaths
-        foreach (UnitSpawner spawner in GameplayManager.Instance.m_unitSpawners)
+        // Dont make paths for survival mode.
+        if (GameplayManager.Instance.m_gameplayData.m_gameMode == MissionGameplayData.GameMode.Standard)
         {
-            Vector2Int start = Util.GetVector2IntFrom3DPos(spawner.GetSpawnPointTransform().position);
-            UnitPath unitPath = new UnitPath();
-            unitPath.m_unitSpawner = spawner;
-            unitPath.m_startPos = start;
-            unitPath.m_isExit = false;
-            unitPath.m_exits = m_exits;
-            unitPath.m_spawners = m_spawners;
-            unitPath.m_enemyGoalPos = m_enemyGoalPos;
-            GameObject lineObj = new GameObject("Line");
-            lineObj.transform.SetParent(spawner.gameObject.transform);
-            //Debug.Log($"Line Renderer Made.");
-            unitPath.m_lineRenderer = lineObj.AddComponent<TBLineRendererComponent>();
-            unitPath.Setup();
-            m_unitPaths.Add(unitPath);
-            //Debug.Log($"Added Unit Path for {spawner.gameObject.name}");
+            //Create Spawners UnitPaths
+            foreach (StandardSpawner spawner in GameplayManager.Instance.m_enemySpawners)
+            {
+                Vector2Int start = Util.GetVector2IntFrom3DPos(spawner.GetSpawnPointTransform().position);
+                UnitPath unitPath = new UnitPath();
+                unitPath.m_standardSpawner = spawner;
+                unitPath.m_startPos = start;
+                unitPath.m_isExit = false;
+                unitPath.m_exits = m_exits;
+                unitPath.m_spawners = m_spawners;
+                unitPath.m_enemyGoalPos = m_enemyGoalPos;
+                GameObject lineObj = new GameObject("Line");
+                lineObj.transform.SetParent(spawner.gameObject.transform);
+                //Debug.Log($"Line Renderer Made.");
+                unitPath.m_lineRenderer = lineObj.AddComponent<TBLineRendererComponent>();
+                unitPath.Setup();
+                m_unitPaths.Add(unitPath);
+                //Debug.Log($"Added Unit Path for {spawner.gameObject.name}");
+            }
         }
 
-        //Debug.Log("Path List Built.");
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Setup);
     }
 }
@@ -536,7 +554,7 @@ public class Cell
 [System.Serializable]
 public class UnitPath
 {
-    public UnitSpawner m_unitSpawner;
+    public StandardSpawner m_standardSpawner;
     public GameObject m_sourceObj;
     public Vector2Int m_startPos;
     public Vector2Int m_endPos;
@@ -563,7 +581,7 @@ public class UnitPath
         //Define desired properties of the line.
         if (m_lineRenderer != null)
         {
-            m_unitSpawner.OnActiveWaveSet += UnitSpawnActiveWaveSet;
+            m_standardSpawner.OnActiveWaveSet += StandardSpawnActiveWaveSet;
             m_lineRenderer.lineRendererProperties = new TBLineRenderer();
             Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
             m_lineRenderer.lineRendererProperties.texture = instancedMaterial;
@@ -590,7 +608,7 @@ public class UnitPath
         }
     }
 
-    private void UnitSpawnActiveWaveSet(CreepWave activeWave)
+    private void StandardSpawnActiveWaveSet(CreepWave activeWave)
     {
         m_lineRenderer.SetSpawnerActive(activeWave.m_creeps != null && activeWave.m_creeps.Count > 0);
     }

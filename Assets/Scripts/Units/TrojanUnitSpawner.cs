@@ -19,8 +19,6 @@ public class TrojanUnitSpawner : MonoBehaviour
     {
         m_isSpawnerActive = false;
         
-        //Add this spawner to the list of active spawners to keep the current wave active while it spawns.
-        GameplayManager.Instance.ActivateSpawner();
         RequestPlayAudio(m_data.m_audioSpawnerCreated, m_audioSource);
         StartCoroutine(CreateSpawner());
     }
@@ -73,7 +71,6 @@ public class TrojanUnitSpawner : MonoBehaviour
             {
                 RequestStopAudioLoop(m_audioSource);
                 m_isSpawnerActive = false;
-                GameplayManager.Instance.DisableSpawner();
                 RemoveTrojanUnitSpawner();
             }
         }

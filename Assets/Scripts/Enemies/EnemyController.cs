@@ -96,10 +96,10 @@ public abstract class EnemyController : Dissolvable, IEffectable
         m_curPos = Vector2Int.zero;
 
         //Get new cell from new position.
-        //m_curCell = Util.GetCellFromPos(m_curPos);
+        m_curCell = Util.GetCellFromPos(m_curPos);
 
         //Assign self to cell.
-        //m_curCell.UpdateActorCount(1, gameObject.name);
+        m_curCell.UpdateActorCount(1, gameObject.name);
 
         //Setup Data
         m_baseMoveSpeed = m_enemyData.m_moveSpeed;
@@ -259,6 +259,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 ++m_cellsTravelled;
             }
 
+            if(m_curCell == null) Debug.Log($"curCell is null.");
+            if(m_goalCell == null) Debug.Log($"goal cell is null.");
             m_cellsToGoal = AStar.CalculateGridDistance(m_curCell.m_cellPos, m_goalCell.m_cellPos);
             
             float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;

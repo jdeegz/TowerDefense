@@ -54,7 +54,7 @@ public class AStar
                 continue;
             }
 
-            Debug.Log($"Path to {end} is {path.Count} long.");
+            //Debug.Log($"Path to {end} is {path.Count} long.");
 
             if (shortestPath == null)
             {

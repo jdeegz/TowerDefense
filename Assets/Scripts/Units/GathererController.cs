@@ -55,7 +55,7 @@ public class GathererController : MonoBehaviour
                     m_targetObjPosition = newGoalPosition;
                 }
 
-                Debug.Log($"New Current Goal Cell assigned. Now finding path to goal cell. {m_curGoalCell} cur {m_curCell}.");
+                //Debug.Log($"New Current Goal Cell assigned. Now finding path to goal cell. {m_curGoalCell} cur {m_curCell}.");
 
                 GathererPath = AStar.FindPathToGoal(m_curGoalCell, m_curCell);
             }
@@ -86,7 +86,7 @@ public class GathererController : MonoBehaviour
         {
             m_gathererPath = value;
 
-            Debug.Log($"GathererPath is null: {m_gathererPath == null}");
+            //Debug.Log($"GathererPath is null: {m_gathererPath == null}");
             if (m_gathererPath != null)
             {
                 if (m_gathererPath.Count > 1)
@@ -129,7 +129,7 @@ public class GathererController : MonoBehaviour
 
                 m_curHarvestNode = value;
 
-                Debug.Log($"Gatherer {m_gathererData.m_gathererName}'s current harvest node is now {m_curHarvestNode}.");
+                //Debug.Log($"Gatherer {m_gathererData.m_gathererName}'s current harvest node is now {m_curHarvestNode}.");
 
                 UpdateHarvestNodeIndicator();
 
@@ -397,7 +397,7 @@ public class GathererController : MonoBehaviour
 
     private void OnQueuedNodeDepleted(ResourceNode depletedNode)
     {
-        Debug.Log($"{m_gathererData.m_gathererName}'s QUEUED node DEPLETED.");
+        //Debug.Log($"{m_gathererData.m_gathererName}'s QUEUED node DEPLETED.");
 
         m_resourceNodesToRemoveFromHarvestQueue.Add(depletedNode);
         depletedNode.OnResourceNodeDepletion -= OnQueuedNodeDepleted;
@@ -963,7 +963,7 @@ public class GathererController : MonoBehaviour
     {
         m_gathererTask = newTask;
 
-        Debug.Log($"{m_gathererData.m_gathererName}'s new task is {m_gathererTask}.");
+        //Debug.Log($"{m_gathererData.m_gathererName}'s new task is {m_gathererTask}.");
 
         switch (m_gathererTask)
         {
@@ -1055,7 +1055,7 @@ public class GathererController : MonoBehaviour
         {
             if (m_gathererTask == GathererTask.Harvesting)
             {
-                Debug.Log($"setting tree harvesting value -1");
+                //Debug.Log($"setting tree harvesting value -1");
                 CurrentHarvestNode.SetIsHarvesting(-1); // We only want to do this if we've started harvesting, which increments the value.
             }
 
@@ -1086,7 +1086,7 @@ public class GathererController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"{m_gathererData.m_gathererName}'s CURRENT node DEPLETED.");
+        //Debug.Log($"{m_gathererData.m_gathererName}'s CURRENT node DEPLETED.");
 
         ClearHarvestVars();
 

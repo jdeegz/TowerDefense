@@ -18,11 +18,11 @@ public class EnemyHost : EnemyController
         SetSequenceController(GameplayManager.Instance.GetActiveBossController());
         
         //Get the spawners in the scene.
-        var spawners = GameplayManager.Instance.m_unitSpawners;
+        var spawners = GameplayManager.Instance.m_enemySpawners;
         
         //Spawn a thrall at reach spawner.
         m_livingThralls = new List<EnemyThrall>();
-        foreach (UnitSpawner spawner in spawners)
+        foreach (StandardSpawner spawner in spawners)
         {
             Vector3 spawnPoint = spawner.GetSpawnPointTransform().position;
             Cell cell = Util.GetCellFrom3DPos(spawner.transform.position);

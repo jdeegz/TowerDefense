@@ -55,6 +55,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private RectTransform m_woodGathererDisplay;
     [SerializeField] private RectTransform m_stoneGathererDisplay;
     [SerializeField] private Image m_castleRepairFill;
+    [SerializeField] private Image m_survivalWaveDurationFill;
 
     [Header("Scene References")]
     [SerializeField] private UIOptionsMenu m_menuObj;
@@ -76,13 +77,14 @@ public class UICombatView : MonoBehaviour
     private Dictionary<KeyCode, int> m_gathererKeyMap;
     private Dictionary<KeyCode, int> m_towerKeyMap;
     private int m_blueprintTowerKey;
-    private int m_wave;
+    private int m_wave = 0;
 
     void Awake()
     {
         m_canvasGroup.alpha = 0;
 
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
+        GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed += Alert;
@@ -280,6 +282,12 @@ public class UICombatView : MonoBehaviour
                 m_canvasGroup.alpha = 1;
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
+                m_wave = GameplayManager.Instance.m_wave;
+                m_waveLabel.SetText($"Wave: {m_wave}");
+                break;
+            case GameplayManager.GameplayState.BossWave:
+                m_wave = GameplayManager.Instance.m_wave;
+                m_waveLabel.SetText($"Wave: {m_wave}");
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
@@ -379,6 +387,8 @@ public class UICombatView : MonoBehaviour
 
         BuildTowerTrayDisplay();
         m_clearBlueprintsButton.gameObject.SetActive(false);
+        
+        m_waveLabel.SetText($"Wave: {m_wave}");
     }
 
     private void UnlockableLocked(ProgressionUnlockableData unlockableData)
@@ -641,12 +651,8 @@ public class UICombatView : MonoBehaviour
     {
         HandleSpawnClock();
 
-        if (m_wave != GameplayManager.Instance.m_wave)
-        {
-            m_wave = GameplayManager.Instance.m_wave;
-            m_waveLabel.SetText($"Wave: {m_wave + 1}");
-        }
-
+        HandleSurvivalWaveTimer();
+        
         if (m_castleRepairDisplayObj.activeSelf)
         {
             m_castleRepairFill.fillAmount = m_castleController.RepairProgress();
@@ -695,6 +701,14 @@ public class UICombatView : MonoBehaviour
                 GameplayManager.Instance.RequestSelectGatherer(kvp.Value);
             }
         }
+    }
+
+    private void HandleSurvivalWaveTimer()
+    {
+        if (GameplayManager.Instance.m_gameplayData.m_gameMode != MissionGameplayData.GameMode.Survival) return;
+        
+        float normalizedTime = Mathf.Clamp01(GameplayManager.Instance.m_timeToNextWave / GameplayManager.Instance.m_gameplayData.m_survivalWaveDuration);
+        m_survivalWaveDurationFill.fillAmount = 1 - normalizedTime;
     }
 
     void HandleSpawnClock()

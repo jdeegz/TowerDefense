@@ -5,6 +5,15 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MissionGameplayData", menuName = "ScriptableObjects/MissionGameplayData")]
 public class MissionGameplayData : ScriptableObject
 {
+    [Header("Game Mode")]
+    public GameMode m_gameMode = GameMode.Standard;
+
+    public enum GameMode
+    {
+        Standard,
+        Survival
+    }
+    
     [Header("Early Game Health Scaling")]
     public float m_earlyGameFactor = 0.05f;         // % Of health gained in early waves.
     public float m_earlyGameCycleFactor = 0.2f;     // % Of health gained in each early-game cycle.
@@ -30,7 +39,8 @@ public class MissionGameplayData : ScriptableObject
     public bool m_allowEndlessMode = true;          // Does this mission allow an endless mode?
     public float m_firstBuildDuraction = 15;        // The first build phase length in seconds.
     public float m_buildDuration = 6;               // Subsequent build phase lengths in seconds.
-    public float m_afterBossBuildDuration = 30;              // Subsequent build phase lengths in seconds.
+    public float m_afterBossBuildDuration = 30;     // Subsequent build phase lengths in seconds.
+    public float m_survivalWaveDuration = 45f;      // The time between changing the enemy types in survival mode.
     
     [Header("Equipped Towers")]
     public List<TowerData> m_equippedTowers;        // The towers available to the player in this mission.
