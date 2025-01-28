@@ -18,10 +18,6 @@ public class GridManager : MonoBehaviour
     public GameObject[] m_gridcellObjects;
     public LayerMask m_groundLayer;
 
-    [Header("Tile Map Data")]
-    [SerializeField] private Tilemap m_tileMap;
-    [SerializeField] private RuleTile m_ruleTile;
-
     public List<UnitPath> m_unitPaths;
     private List<Vector2Int> m_exits;
     private List<Vector2Int> m_spawners;
@@ -262,12 +258,6 @@ public class GridManager : MonoBehaviour
         {
             cell.UpdateTempOccupancyDisplay(false);
         }
-    }
-
-    public void ToggleTileMap(Vector3Int pos, bool isOccupied)
-    {
-        TileBase tile = isOccupied ? m_ruleTile : null;
-        m_tileMap.SetTile(pos, tile);
     }
 
     public void RefreshGrid()
