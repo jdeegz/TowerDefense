@@ -1726,7 +1726,7 @@ public class GameplayManager : MonoBehaviour
                 ++m_obelisksChargedCount;
             }
         }
-        
+
         if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
         {
             RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
@@ -1766,6 +1766,8 @@ public class GameplayManager : MonoBehaviour
             ClearPreconstructedTower();
         }
 
+        SetOutlineColor(true);
+
         OnGameObjectSelected?.Invoke(obj);
     }
 
@@ -1780,17 +1782,29 @@ public class GameplayManager : MonoBehaviour
             ClearPreconstructedTower();
         }
 
+        SetOutlineColor(true);
+
         OnGameObjectSelected?.Invoke(obj);
     }
 
     public void KillAllEnemies()
     {
-        if (m_enemyList.Count <= 0) return;
-
-        List<EnemyController> livingEnemies = new List<EnemyController>(m_enemyList);
-        foreach (EnemyController enemy in livingEnemies)
+        if (m_enemyList.Count > 0)
         {
-            enemy.OnTakeDamage(999999);
+            List<EnemyController> livingEnemies = new List<EnemyController>(m_enemyList);
+            foreach (EnemyController enemy in livingEnemies)
+            {
+                enemy.OnTakeDamage(999999);
+            }
+        }
+
+        if (m_enemyBossList.Count > 0)
+        {
+            List<EnemyController> livingBossEnemies = new List<EnemyController>(m_enemyBossList);
+            foreach (EnemyController enemy in livingBossEnemies)
+            {
+                enemy.OnTakeDamage(999999);
+            }
         }
     }
 
