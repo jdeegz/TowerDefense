@@ -78,6 +78,11 @@ public class UICombatView : MonoBehaviour
     private Dictionary<KeyCode, int> m_towerKeyMap;
     private int m_blueprintTowerKey;
     private int m_wave = 0;
+    
+    private float m_doubleTapTimer = 0f;
+    private float m_doubleTapThreshold = 0.5f;
+    private bool m_isFirstTap = false;
+    private KeyCode m_lastKey = KeyCode.None;
 
     void Awake()
     {
@@ -705,12 +710,40 @@ public class UICombatView : MonoBehaviour
                 }
             }
         }
+        
+        // DOUBLE TAP tracking for Gatherer Buttons (among others if we need it.)
+        if (m_isFirstTap)
+        {
+            m_doubleTapTimer += Time.unscaledDeltaTime;
 
+            // Reset if time exceeds threshold
+            if (m_doubleTapTimer > m_doubleTapThreshold)
+            {
+                m_isFirstTap = false;
+                m_doubleTapTimer = 0f;
+                m_lastKey = KeyCode.None; // Reset last key
+            }
+        }
+        
         foreach (var kvp in m_gathererKeyMap)
         {
             if (Input.GetKeyDown(kvp.Key) && !m_menusOpen)
             {
-                GameplayManager.Instance.RequestSelectGatherer(kvp.Value);
+                if (m_isFirstTap && m_lastKey == kvp.Key && m_doubleTapTimer <= m_doubleTapThreshold)
+                {
+                    // THIS IS A DOUBLE TAP
+                    m_isFirstTap = false;
+                    GathererController gathererToFocus = GameplayManager.Instance.m_woodGathererList[kvp.Value];
+                    CameraController.Instance.RequestOnRailsMove(gathererToFocus.transform.position);
+                }
+                else
+                {
+                    // THIS IS A FIRST TAP
+                    GameplayManager.Instance.RequestSelectGatherer(kvp.Value);
+                    m_isFirstTap = true;
+                    m_doubleTapTimer = 0f;
+                    m_lastKey = kvp.Key;
+                }
             }
         }
     }

@@ -67,7 +67,7 @@ public abstract class EnemySpawner : MonoBehaviour
         {
             creepWave = m_spawnerWaves.m_introWaves[gameplayWave];
 
-            Debug.Log($"Intro Wave {gameplayWave} Chosen.");
+            //Debug.Log($"Intro Wave {gameplayWave} Chosen.");
             
             m_nextCreepWave = creepWave;
             OnActiveWaveSet?.Invoke(m_nextCreepWave);
@@ -79,14 +79,14 @@ public abstract class EnemySpawner : MonoBehaviour
         if (isChallengingWave)
         {
             creepWave = m_spawnerWaves.m_challengingWaves[challengingWaveIndex];
-            Debug.Log($"CHALLENGING Wave {challengingWaveIndex} Chosen.");
+            //Debug.Log($"CHALLENGING Wave {challengingWaveIndex} Chosen.");
         }
         else
         {
             //Subtract the number of training ways so that we start at wave 0 in the new lists.
             int wave = (gameplayWave - m_spawnerWaves.m_introWaves.Count) % m_spawnerWaves.m_loopingWaves.Count;
             creepWave = m_spawnerWaves.m_loopingWaves[wave];
-            Debug.Log($"LOOPING Wave {wave} Chosen.");
+            //Debug.Log($"LOOPING Wave {wave} Chosen.");
         }
         
         m_nextCreepWave = creepWave;
