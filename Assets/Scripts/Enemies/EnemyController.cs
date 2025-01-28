@@ -197,7 +197,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     public virtual void CheckAtGoal()
     {
-        if (Vector3.Distance(transform.position, m_goal.position) <= 1.5f)
+        if (Vector3.Distance(transform.position, m_goal.position) <= 0.5f)
         {
             ReachedCastle();
         }
@@ -813,7 +813,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
             case StatusEffectData.EffectType.DecreaseHealth:
                 if (m_decreaseHealthVFXOjb)
                 {
-                    Debug.Log($"Trying to remove DoT Visual Effect from {gameObject.name}");
+                    //Debug.Log($"Trying to remove DoT Visual Effect from {gameObject.name}");
                     visualEffect = m_decreaseHealthVFXOjb.GetComponent<VisualEffect>();
                     if (visualEffect)
                     {

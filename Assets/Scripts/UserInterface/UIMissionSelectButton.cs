@@ -15,11 +15,12 @@ public class UIMissionSelectButton : MonoBehaviour
     private int m_completetionRank;
     private int m_attempts;
 
-    public void SetData(MissionData data, int completionRank)
+    public void SetData(MissionData data, int completionRank, int missionListNumber)
     {
         m_missionData = data;
         m_missionScene = data.m_missionScene;
-        m_titleLabel.SetText(data.m_missionName);
+        //m_titleLabel.SetText(data.m_missionName);
+        m_titleLabel.SetText(missionListNumber.ToString());
         m_completetionRank = completionRank;
         m_progressionDisplayObj.SetActive(false);
         m_buttonScript = GetComponent<Button>();

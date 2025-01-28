@@ -23,8 +23,8 @@ public class CreepWaveDataEditor : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
-        
-        // Add button to expand/collapse all foldouts recursively
+
+        // Expand/Collapse all button
         if (GUILayout.Button(foldoutsExpanded ? "Collapse All" : "Expand All"))
         {
             foldoutsExpanded = !foldoutsExpanded;
@@ -34,7 +34,7 @@ public class CreepWaveDataEditor : Editor
             SetFoldoutState(m_newEnemyTypeWaves, foldoutsExpanded);
         }
 
-        // Draw lists without the max height restriction
+        // Use the updated DrawListWithoutMaxHeight
         DrawListWithoutMaxHeight(m_introWaves, "Intro Waves", Color.cyan);
         DrawListWithoutMaxHeight(m_loopingWaves, "Looping Waves", Color.green);
         DrawListWithoutMaxHeight(m_challengingWaves, "Challenge Waves", Color.yellow);
@@ -42,7 +42,7 @@ public class CreepWaveDataEditor : Editor
 
         serializedObject.ApplyModifiedProperties();
     }
-    
+
     // Recursively sets the foldout state of all elements in the property
     private void SetFoldoutState(SerializedProperty property, bool state)
     {
@@ -65,32 +65,11 @@ public class CreepWaveDataEditor : Editor
     {
         // Set the GUI color for the background
         GUI.backgroundColor = color;
-        
-        //EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
-        listProperty.isExpanded = EditorGUILayout.Foldout(listProperty.isExpanded, label);
 
-        if (listProperty.isExpanded)
-        {
-            EditorGUI.indentLevel++;
-            for (int i = 0; i < listProperty.arraySize; i++)
-            {
-                SerializedProperty element = listProperty.GetArrayElementAtIndex(i);
-                EditorGUILayout.PropertyField(element, new GUIContent($"Wave {i + 1}"));
-            }
+        // Draw the property with Unity's default handling
+        EditorGUILayout.PropertyField(listProperty, new GUIContent(label), true);
 
-            // Buttons to add/remove elements
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Add Wave"))
-            {
-                listProperty.arraySize++;
-            }
-            if (listProperty.arraySize > 0 && GUILayout.Button("Remove Last Wave"))
-            {
-                listProperty.arraySize--;
-            }
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUI.indentLevel--;
-        }
+        // Reset the GUI color
+        GUI.backgroundColor = Color.white;
     }
 }

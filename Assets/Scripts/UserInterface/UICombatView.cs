@@ -85,7 +85,6 @@ public class UICombatView : MonoBehaviour
 
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
-        GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed += Alert;
         GameplayManager.OnObelisksCharged += UpdateObeliskDisplay;
@@ -97,6 +96,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnBlueprintCountChanged += BlueprintCountChanged;
         GameplayManager.OnUnlockedStucturesUpdated += UnlockedStructuresUpdated;
         GameplayManager.OnUnlockedTowersUpdated += UnlockedTowersUpdated;
+        GameplayManager.OnWaveChanged += UpdateWaveDisplay;
 
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
@@ -136,6 +136,13 @@ public class UICombatView : MonoBehaviour
         };
 
         m_highScoreLabel.gameObject.SetActive(false);
+        m_survivalWaveDurationFill.fillAmount = 0;
+    }
+
+    private void UpdateWaveDisplay(int value)
+    {
+        m_wave = value;
+        m_waveLabel.SetText($"Wave: {m_wave}");
     }
 
 
@@ -257,6 +264,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnBlueprintCountChanged -= BlueprintCountChanged;
         GameplayManager.OnUnlockedStucturesUpdated -= UnlockedStructuresUpdated;
         GameplayManager.OnUnlockedTowersUpdated -= UnlockedTowersUpdated;
+        GameplayManager.OnWaveChanged -= UpdateWaveDisplay;
 
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
@@ -267,6 +275,7 @@ public class UICombatView : MonoBehaviour
 
         m_castleController.UpdateHealth -= UpdateCastleHealthDisplay;
         m_castleController.UpdateMaxHealth -= UpdateCastleMaxHealthDisplay;
+        m_castleController.OnIsRepairingUpdated -= IsRepairingUpdated;
     }
 
     private void UpdateObeliskDisplay(int x, int y)
@@ -282,12 +291,9 @@ public class UICombatView : MonoBehaviour
                 m_canvasGroup.alpha = 1;
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
-                m_wave = GameplayManager.Instance.m_wave;
-                m_waveLabel.SetText($"Wave: {m_wave}");
                 break;
             case GameplayManager.GameplayState.BossWave:
-                m_wave = GameplayManager.Instance.m_wave;
-                m_waveLabel.SetText($"Wave: {m_wave}");
+                
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
@@ -373,6 +379,7 @@ public class UICombatView : MonoBehaviour
         m_castleController = GameplayManager.Instance.m_castleController;
         m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
         m_castleController.UpdateMaxHealth += UpdateCastleMaxHealthDisplay;
+        m_castleController.OnIsRepairingUpdated += IsRepairingUpdated;
         m_maxCastleHealth = GameplayManager.Instance.m_castleController.m_castleData.m_maxHealth;
         m_curCastleHealth = m_maxCastleHealth;
         m_castleHealthLabel.SetText($"{m_curCastleHealth}/{m_maxCastleHealth}<sprite name=\"ResourceHealth\">");
@@ -389,6 +396,11 @@ public class UICombatView : MonoBehaviour
         m_clearBlueprintsButton.gameObject.SetActive(false);
         
         m_waveLabel.SetText($"Wave: {m_wave}");
+    }
+
+    private void IsRepairingUpdated(bool value)
+    {
+        m_castleRepairDisplayObj.SetActive(value);
     }
 
     private void UnlockableLocked(ProgressionUnlockableData unlockableData)
@@ -651,7 +663,7 @@ public class UICombatView : MonoBehaviour
     {
         HandleSpawnClock();
 
-        HandleSurvivalWaveTimer();
+        if(GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.SpawnEnemies) HandleSurvivalWaveTimer();
         
         if (m_castleRepairDisplayObj.activeSelf)
         {

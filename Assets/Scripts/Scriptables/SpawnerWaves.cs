@@ -81,5 +81,13 @@ public class Creep
     public int m_unitsToSpawn;
     public float m_spawnDelay;
     public float m_spawnInterval;
+
+    public Creep(EnemyData enemy, int unitsToSpawn, float spawnDelay, float spawnInterval)
+    {
+        m_enemy = enemy;
+        m_unitsToSpawn = unitsToSpawn;
+        m_spawnDelay = spawnDelay;
+        m_spawnInterval = spawnInterval;
+    }
 }
 

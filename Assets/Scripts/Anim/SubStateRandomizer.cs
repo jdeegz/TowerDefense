@@ -36,7 +36,7 @@ public class TestStateMachineBehavior : StateMachineBehaviour
         }
         
         animator.SetInteger(m_parameterName, newClipIndex);
-        Debug.Log($"New Clip Idex: {newClipIndex}, Array Length: {m_clipArrayLength}"); 
+        //Debug.Log($"New Clip Idex: {newClipIndex}, Array Length: {m_clipArrayLength}"); 
     }
 
     // OnStateMove is called before OnStateMove is called on any state inside this state machine

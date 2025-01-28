@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -13,11 +14,12 @@ public class UIMissionSelectView : MonoBehaviour
     [SerializeField] private UIMissionSelectButton m_missionButtonPrefab;
 
     private List<UIMissionSelectButton> m_curMissionButtons;
-    
+
     void Awake()
     {
         MenuManager.OnMenuStateChanged += MenuManagerStateChanged;
     }
+
     void OnDestroy()
     {
         MenuManager.OnMenuStateChanged -= MenuManagerStateChanged;
@@ -36,44 +38,66 @@ public class UIMissionSelectView : MonoBehaviour
 
         BuildMissionList();
     }
-    
+
     private void BuildMissionList()
     {
         if (!GameManager.Instance) return;
-        
+
         int numberOfMissions;
-        
+
         numberOfMissions = GameManager.Instance.m_missionTable.m_MissionList.Length;
 
         if (m_curMissionButtons == null) m_curMissionButtons = new List<UIMissionSelectButton>();
-        
+
         for (int i = m_curMissionButtons.Count; i < numberOfMissions; i++)
         {
             m_curMissionButtons.Add(null);
         }
-        
+
         for (int i = 0; i < numberOfMissions; i++)
         {
             UIMissionSelectButton button;
-            
+
             if (m_curMissionButtons[i] != null)
             {
                 button = m_curMissionButtons[i];
             }
             else
             {
-              button = Instantiate(m_missionButtonPrefab, m_missionButtonRoot.transform);
-              m_curMissionButtons[i] = button;
-            } 
-            
+                button = Instantiate(m_missionButtonPrefab, m_missionButtonRoot.transform);
+                m_curMissionButtons[i] = button;
+            }
+
             MissionData data = GameManager.Instance.m_missionTable.m_MissionList[i];
-            
+
             //Read from player data for this mission.
-            MissionSaveData missionSaveData = PlayerDataManager.Instance.m_playerData.m_missions[i];
-            button.SetData(data, missionSaveData.m_missionCompletionRank);
+            int missionCompletionRank = 0; //0 - lock, 1 - unlocked, 2 - defeated
+            MissionSaveData missionSaveData = null;
+            
+            
+            
+            // Make sure we have a mission at this index.
+            if (i < PlayerDataManager.Instance.m_playerData.m_missions.Count - 1)
+            {
+                missionSaveData = PlayerDataManager.Instance.m_playerData.m_missions[i];
+            }
+
+            // If we do, assign the completion rank.
+            if (missionSaveData != null)
+            {
+                missionCompletionRank = missionSaveData.m_missionCompletionRank;
+            }
+            
+            // Assure testing missions are unlocked by default, overwrite if there's defeated.
+            if (data.m_isUnlockedByDefault)
+            {
+                missionCompletionRank = Math.Max(1, missionCompletionRank);
+            }
+
+            button.SetData(data, missionCompletionRank, i + 1);
         }
     }
-    
+
     private void OnBackButtonClick()
     {
         MenuManager.Instance.UpdateMenuState(MenuManager.MenuState.StartMenu);

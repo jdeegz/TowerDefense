@@ -7,51 +7,33 @@ public class TowerQuarry : Tower
     [Header("Quarry Fields")]
     public List<GameObject> m_chargeObjs;
     public GameObject m_claimVFX;
-
-    private int m_curCharges;
-    private int m_maxCharges;
-    private int m_chargesPerInterval;
-    private int m_lastChargeWave;
-    private int m_intervalLength;
+    public int m_grantAmount = 1;
     
     public override void SetupTower()
     {
         base.SetupTower();
-
-        TriggerQuarry();
+        GameplayManager.OnWaveChanged += WaveChanged;
     }
 
-    public void TriggerQuarry()
+    void OnDestroy()
     {
-
-        m_maxCharges = (int)m_towerData.m_secondaryfireRate;
-        m_chargesPerInterval = (int)m_towerData.m_burstSize;
-        m_intervalLength = (int)m_towerData.m_fireRate;
-        m_curCharges = (int)m_towerData.m_burstFireRate;
-
-        m_lastChargeWave = GameplayManager.Instance.m_wave;
-
+        base.OnDestroy();
+        GameplayManager.OnWaveChanged -= WaveChanged;
     }
-
-    public override void GameplayStateChanged(GameplayManager.GameplayState newState)
+    
+    private void WaveChanged(int obj)
     {
-        if (newState != GameplayManager.GameplayState.Build)
-        {
-            return;
-        }
-
         if (!m_isBuilt) return;
-        
         AutoGrant();
     }
-
+    
     void AutoGrant()
     {
         // DATA
-        ResourceManager.Instance.UpdateStoneAmount(m_curCharges);
+        ResourceManager.Instance.UpdateStoneAmount(m_grantAmount);
         
         // UI
-        IngameUIController.Instance.SpawnCurrencyAlert(0, m_curCharges, true, transform.position);
+        IngameUIController.Instance.SpawnCurrencyAlert(0, m_grantAmount, true, transform.position);
         
         // AUDIO
         RequestPlayAudio(m_towerData.m_audioSecondaryFireClips);
@@ -62,7 +44,7 @@ public class TowerQuarry : Tower
     {
         TowerTooltipData data = new TowerTooltipData();
         data.m_towerName = m_towerData.m_towerName;
-        string description = string.Format(m_towerData.m_towerDescription, m_curCharges);
+        string description = string.Format(m_towerData.m_towerDescription, m_grantAmount);
         data.m_towerDescription = description;
         return data;
     }

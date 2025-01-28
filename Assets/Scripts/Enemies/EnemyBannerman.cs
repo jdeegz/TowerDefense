@@ -4,6 +4,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.VFX;
+using Random = UnityEngine.Random;
 
 public class EnemyBannerman : MonoBehaviour
 {
@@ -35,7 +36,7 @@ public class EnemyBannerman : MonoBehaviour
     void OnEnable()
     {
         m_triggeredThresholds = new HashSet<float>();
-        m_nextHealTime = Time.time + m_healPeriod;
+        m_nextHealTime = Time.time + m_healPeriod + Random.Range(0, m_healPeriod);
     }
 
     void OnEnemyDestroyed(Vector3 pos)
@@ -96,7 +97,7 @@ public class EnemyBannerman : MonoBehaviour
 
         if (colliders.Length <= 0) return; //No one found to heal.
 
-        Debug.Log($"Found {colliders.Length} enemies to heal.");
+        //Debug.Log($"Found {colliders.Length} enemies to heal.");
         foreach (Collider col in colliders)
         {
             EnemyController enemyController = col.GetComponent<EnemyController>();

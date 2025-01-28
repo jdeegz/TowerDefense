@@ -365,7 +365,7 @@ public class GathererController : MonoBehaviour
         {
             node.RequestPlayAudio(m_gathererData.m_queueingClips);
 
-            if (CurrentHarvestNode == null)
+            if (CurrentHarvestNode == null && m_resourceCarried == 0)
             {
                 RequestedHarvest(node);
                 return;

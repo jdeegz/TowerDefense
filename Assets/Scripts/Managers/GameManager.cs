@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
 
     public static event Action<GameState> OnGameStateChanged;
     public MissionContainerData m_missionTable;
-    public ProgressionTable m_progressionTable;
     public MissionData m_curMission;
     private String m_curScene;
     private String m_curCutScene;

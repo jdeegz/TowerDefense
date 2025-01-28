@@ -25,7 +25,7 @@ public class GridCellOccupantUtil
                 {
                     if (pos.x != 0 && pos.x != GridManager.Instance.m_gridWidth - 1 && pos.y != 0 && pos.y != GridManager.Instance.m_gridHeight - 1)
                     {
-                        //Debug.Log($"Cell is being double occupied at {pos} by First:{cell.m_occupant.name} Second:{obj.name}!");
+                        Debug.Log($"Cell is being double occupied at {pos} by First:{cell.m_occupant.name} Second:{obj.name}!");
                         Debug.Log($"{pos}");
                         Debug.Log($"{cell.m_occupant.name}");
                         Debug.Log($"{obj.name}");

@@ -12,7 +12,6 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHATEST_ON
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -47,7 +46,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaClip: 1
+    - _AlphaClip: 0
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
@@ -55,16 +54,19 @@ Material:
     - _CoreBrightness: 0.33
     - _CoreScale: 0.16
     - _Cull: 2
-    - _DistortIntensity: 0.221
-    - _DistortScale: 3
+    - _DistortIntensity: 0.365
+    - _DistortScale: 10
     - _DstBlend: 10
-    - _NoiseScale: 50
-    - _Padding: 0.491
-    - _PortalCenterOffset: 0.367
+    - _EdgeNoiseScale: 100
+    - _EdgePadding: 0.87
+    - _EdgeSoftness: 0.1
+    - _NoiseScale: 100
+    - _Padding: 1
+    - _PortalCenterOffset: 0.5
     - _QueueControl: 0
     - _QueueOffset: 2
     - _ReceiveShadows: 1
-    - _Softness: 0.818
+    - _Softness: 0.15
     - _SrcBlend: 5
     - _Surface: 1
     - _WorkflowMode: 0
@@ -73,8 +75,12 @@ Material:
     - _ZWriteControl: 0
     m_Colors:
     - _Color: {r: 0, g: 0, b: 0, a: 0}
-    - _PortalDistortScrollSpeed: {r: -0.015, g: 0, b: 0, a: 0}
-    - _PortalScrollSpeed: {r: -0.015, g: -0.015, b: 0, a: 0}
+    - _DiffuseScale: {r: 6, g: 6, b: 0, a: 0}
+    - _DiffuseScrollSpeed: {r: -0.01, g: -0.01, b: 0, a: 0}
+    - _DistortScrollSpeed: {r: 0.01, g: 0.01, b: 0, a: 0}
+    - _EdgeScrollSpeed: {r: -1, g: 1, b: 0, a: 0}
+    - _PortalDistortScrollSpeed: {r: 1, g: 1, b: 0, a: 0}
+    - _PortalScrollSpeed: {r: -1, g: -1, b: 0, a: 0}
     - _PortalScrollSpeed_1: {r: -0.05, g: 0, b: 0, a: 0}
     - _ScrollSpeed: {r: -0.01, g: 0, b: 0, a: 0}
     - _ScrollSpeed_1: {r: -0.1, g: 0, b: 0, a: 0}

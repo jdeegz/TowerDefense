@@ -13,7 +13,8 @@ public class CameraController : MonoBehaviour
     public float m_scrollZone = 50f;
 
     public float m_xPadding;
-    public float m_zPadding;
+    public float m_zPaddingTop = 1;
+    public float m_zPaddingBot = 1;
 
     public float m_zoomSpeed = 2f;
     public float m_maxZoomIn = 5f;
@@ -85,8 +86,8 @@ public class CameraController : MonoBehaviour
         m_minXBounds = transform.position.x - m_cameraNorthWest.x - m_xPadding;
         m_maxXBounds = transform.position.x + (GridManager.Instance.m_gridWidth - m_cameraNorthEast.x) + m_xPadding;
 
-        m_minZBounds = transform.position.z - m_cameraSouthWest.z - m_zPadding;
-        m_maxZBounds = transform.position.z + (GridManager.Instance.m_gridHeight - m_cameraNorthEast.z) + m_zPadding;
+        m_minZBounds = transform.position.z - m_cameraSouthWest.z - m_zPaddingBot;
+        m_maxZBounds = transform.position.z + (GridManager.Instance.m_gridHeight - m_cameraNorthEast.z) + m_zPaddingTop;
 
         m_camera = Camera.main;
         m_startZoom = m_camera.gameObject.transform.localPosition.z;

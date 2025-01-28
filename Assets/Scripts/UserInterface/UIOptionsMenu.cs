@@ -62,7 +62,7 @@ public class UIOptionsMenu : MonoBehaviour
         
         if (GameManager.Instance != null && GameManager.Instance.m_curMission != null)
         {
-            m_missionNameLabel.SetText($"Mission {GameManager.Instance.m_curMission.m_missionName}");
+            m_missionNameLabel.SetText($"{GameManager.Instance.m_curMission.m_missionName}");
         }
     }
 

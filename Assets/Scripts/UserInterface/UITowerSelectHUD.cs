@@ -34,7 +34,7 @@ public class UITowerSelectHUD : MonoBehaviour
         
         if (b)
         {
-            m_rect.DOScale(1.0f, .15f).From(0.6f).SetEase(Ease.OutBack);
+            m_rect.DOScale(1.0f, .15f).From(0.6f).SetEase(Ease.OutBack).SetUpdate(true);
         }
     }
 

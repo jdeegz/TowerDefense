@@ -25,6 +25,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameplayState> OnGameplayStateChanged;
     public static event Action<GameSpeed> OnGamePlaybackChanged;
     public static event Action<int> OnGameSpeedChanged;
+    public static event Action<int> OnWaveChanged;
     public static event Action<GameObject> OnGameObjectSelected;
     public static event Action<GameObject> OnGameObjectDeselected;
     public static event Action<GameObject> OnGameObjectHoveredEnter;
@@ -61,6 +62,17 @@ public class GameplayManager : MonoBehaviour
     public AudioSource m_audioSource;
 
     public int m_wave;
+
+    public int Wave
+    {
+        get { return m_wave; }
+        set
+        {
+            m_wave = value;
+            OnWaveChanged?.Invoke(m_wave);
+        }
+    }
+
     [HideInInspector] public float m_timeToNextWave;
     [HideInInspector] public bool delayForQuest;
 
@@ -187,37 +199,37 @@ public class GameplayManager : MonoBehaviour
     void NextWaveTimer()
     {
         if (m_delayForQuest) return;
-        
+
         // When should we be counting
-        switch(m_gameplayData.m_gameMode)
+        switch (m_gameplayData.m_gameMode)
         {
             case MissionGameplayData.GameMode.Standard:
                 if (m_gameplayState != GameplayState.Build) return;
                 break;
             case MissionGameplayData.GameMode.Survival:
-                if(m_gameplayState != GameplayState.SpawnEnemies && m_gameplayState != GameplayState.Build) return;
+                if (m_gameplayState != GameplayState.SpawnEnemies && m_gameplayState != GameplayState.Build) return;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+
         // Update time
         m_timeToNextWave -= Time.deltaTime;
 
         // Trigger next wave
         if (m_timeToNextWave <= 0)
         {
-            ++m_wave;
+            ++Wave;
             StartNextWave();
         }
     }
 
     void StartNextWave()
     {
-        switch(m_gameplayData.m_gameMode)
+        switch (m_gameplayData.m_gameMode)
         {
             case MissionGameplayData.GameMode.Standard:
-                
+
                 // Is this a boss wave?
                 if (m_bossWaves.Contains(m_wave) && m_bossSequenceController)
                 {
@@ -225,19 +237,19 @@ public class GameplayManager : MonoBehaviour
                     UpdateGameplayState(GameplayState.BossWave);
                     return;
                 }
-                
+
                 // Does a spawner have a cutscene request?
                 string cutsceneName = null;
                 foreach (StandardSpawner spawner in m_enemySpawners)
                 {
                     spawner.SetNextCreepWave();
-                    
+
                     if (GameManager.Instance && spawner.GetNextCreepWave() is NewTypeCreepWave newTypeWave && !string.IsNullOrEmpty(newTypeWave.m_waveCutscene))
                     {
                         cutsceneName = newTypeWave.m_waveCutscene;
                     }
                 }
-                
+
                 if (!string.IsNullOrEmpty(cutsceneName))
                 {
                     UpdateGameplayState(GameplayState.CutScene);
@@ -245,27 +257,29 @@ public class GameplayManager : MonoBehaviour
                     GameManager.Instance.RequestAdditiveSceneLoad(cutsceneName);
                     return;
                 }
-                
+
                 // Else just spawn enemies.
                 UpdateGameplayState(GameplayState.SpawnEnemies);
                 break;
-            
-            
+
+
             case MissionGameplayData.GameMode.Survival:
                 foreach (EnemySpawner spawner in m_enemySpawners)
                 {
                     spawner.UpdateCreepSpawners();
                 }
-                
+
                 UpdateGameplayState(GameplayState.SpawnEnemies);
+
+                m_castleController.RepairCastle();
                 break;
-            
+
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
-    
+
+
     void ResumeSpawnWave()
     {
         OnCutSceneEnd -= ResumeSpawnWave;
@@ -1645,11 +1659,24 @@ public class GameplayManager : MonoBehaviour
 
         // Dont check for win in Survival.
         if (m_gameplayData.m_gameMode == MissionGameplayData.GameMode.Survival) return;
-        
-        if (m_enemyList.Count == 0 && m_gameplayState != GameplayState.Defeat)
+
+        // Are there enemies remaining?
+        if (m_enemyList.Count > 0) return;
+
+        if (m_gameplayState == GameplayState.Defeat) return;
+
+        if (m_gameplayState == GameplayState.BossWave)
         {
-            CheckForWin();
+            OnWaveCompleted?.Invoke(m_UIStringData.m_bossWaveComplete);
         }
+        else
+        {
+            OnWaveCompleted?.Invoke(m_UIStringData.m_waveComplete);
+        }
+
+        RequestPlayAudio(m_gameplayAudioData.m_audioWaveEndClips);
+
+        UpdateGameplayState(GameplayState.Build);
     }
 
     public void AddBossToList(EnemyController enemy)
@@ -1676,8 +1703,8 @@ public class GameplayManager : MonoBehaviour
 
     [HideInInspector]
     public int m_obeliskCount;
-
     private int m_obelisksChargedCount;
+    private GameplayState m_preVictoryState;
 
     public void AddObeliskToList(Obelisk obelisk)
     {
@@ -1690,7 +1717,6 @@ public class GameplayManager : MonoBehaviour
     public void CheckObeliskStatus()
     {
         m_obelisksChargedCount = 0;
-        bool charging = false;
 
         //Identify if there are any obelisks still charging.
         foreach (Obelisk obelisk in m_obelisksInMission)
@@ -1699,6 +1725,14 @@ public class GameplayManager : MonoBehaviour
             {
                 ++m_obelisksChargedCount;
             }
+        }
+        
+        if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
+        {
+            RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
+            m_preVictoryState = m_gameplayState;
+            UpdateGameplayState(GameplayState.Victory);
+            return;
         }
 
         OnObelisksCharged?.Invoke(m_obelisksChargedCount, m_obeliskCount);
@@ -1710,7 +1744,7 @@ public class GameplayManager : MonoBehaviour
     {
         RequestPlayAudio(m_gameplayAudioData.m_endlessModeStartedClip);
         m_endlessModeActive = true;
-        UpdateGameplayState(GameplayState.Build);
+        m_gameplayState = m_preVictoryState; // Resume the previous state from where victory / endless came from
         UpdateGamePlayback(GameSpeed.Normal);
         UpdateInteractionState(InteractionState.Idle);
     }
@@ -1718,33 +1752,6 @@ public class GameplayManager : MonoBehaviour
     public bool IsEndlessModeActive()
     {
         return m_endlessModeActive;
-    }
-
-    public void CheckForWin()
-    {
-        //Obelisk Win Condition.
-        if (!m_endlessModeActive)
-        {
-            if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
-            {
-                RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
-                UpdateGameplayState(GameplayState.Victory);
-                return;
-            }
-        }
-
-        if (m_gameplayState == GameplayState.BossWave)
-        {
-            OnWaveCompleted?.Invoke(m_UIStringData.m_bossWaveComplete);
-        }
-        else
-        {
-            OnWaveCompleted?.Invoke(m_UIStringData.m_waveComplete);
-        }
-
-        RequestPlayAudio(m_gameplayAudioData.m_audioWaveEndClips);
-
-        UpdateGameplayState(GameplayState.Build);
     }
 
     public bool IsWatchingCutscene()

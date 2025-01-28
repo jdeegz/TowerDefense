@@ -118,36 +118,53 @@ public class CastleController : MonoBehaviour
     }
 
     private bool m_isRepairing;
+    public event Action<bool> OnIsRepairingUpdated;
 
-    void RepairCastle()
+    private bool IsRepairing
+    {
+        get { return m_isRepairing; }
+        set
+        {
+            if (value != m_isRepairing)
+            {
+                m_isRepairing = value;
+                OnIsRepairingUpdated?.Invoke(m_isRepairing);
+            }
+        }
+    }
+
+    private Coroutine m_curRepairCoroutine;
+
+    public void RepairCastle()
     {
         if (m_curHealth >= m_maxHealth) return;
-        StartCoroutine(RepairCoroutine());
+        m_curRepairCoroutine = StartCoroutine(RepairCoroutine());
     }
 
 
     private IEnumerator RepairCoroutine()
     {
         int amountToRepair = Math.Min(m_maxHealth - m_curHealth, m_repairFrequency);
-        m_isRepairing = true;
+        IsRepairing = true;
         while (m_healthRepaired < amountToRepair)
         {
             PlayScheduledClip(m_castleData.m_repairingClip);
             m_repairElapsedTime = 0;
-            
+
             while (m_repairElapsedTime < GameplayManager.Instance.m_gameplayData.m_buildDuration / m_repairFrequency)
             {
                 m_repairElapsedTime += Time.deltaTime;
                 yield return null;
             }
-            
+
             ++m_healthRepaired;
             UpdateHealth?.Invoke(m_repairHealthAmount);
             StopScheduledClip();
         }
 
         m_healthRepaired = 0;
-        m_isRepairing = false;
+        IsRepairing = false;
+        m_curRepairCoroutine = null;
     }
 
     public int GetCastleMaxHealth()
@@ -212,6 +229,13 @@ public class CastleController : MonoBehaviour
 
         if (m_curHealth <= 0)
         {
+            //Exit out a repair if we've hit 0 (Survival Mode)
+            if (m_curRepairCoroutine != null)
+            {
+                StopCoroutine(m_curRepairCoroutine);
+                IsRepairing = false;
+            }
+
             DestroyCastle?.Invoke();
         }
     }

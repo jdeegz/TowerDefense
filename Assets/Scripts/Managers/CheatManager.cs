@@ -103,7 +103,7 @@ public class CheatManager : MonoBehaviour
 
     void ModifyWave(int i)
     {
-        GameplayManager.Instance.m_wave += i;
+        GameplayManager.Instance.Wave += i;
         Debug.Log($"Wave adjusted to: {GameplayManager.Instance.m_wave}");
     }
     

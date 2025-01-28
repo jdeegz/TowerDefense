@@ -156,7 +156,11 @@ public class UIVictoryView : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            Debug.Log("Endless Mode Activated.");
+            // Close this view and resume playing in Endless Mode.
+            m_canvasGroup.alpha = 0;
+            m_canvasGroup.blocksRaycasts = false;
+            
+            //Debug.Log("Endless Mode Activated.");
             GameplayManager.Instance.StartEndlessMode();
         }
     }
