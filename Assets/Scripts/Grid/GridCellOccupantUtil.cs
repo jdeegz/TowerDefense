@@ -33,7 +33,7 @@ public class GridCellOccupantUtil
                     }
                 }
 
-                cell.UpdateOccupancyDisplay(isOccupied);
+                cell.UpdateOccupancy(isOccupied);
 
                 cell.m_occupant = isOccupied ? obj : null;
                 cell.m_cellResourceNode = isOccupied ? resourceNode : null;

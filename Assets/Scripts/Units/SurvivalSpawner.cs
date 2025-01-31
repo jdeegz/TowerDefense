@@ -17,6 +17,8 @@ public class SurvivalSpawner : EnemySpawner
     {
         if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.SpawnEnemies) return;
 
+        if (m_activeCreepSpawners == null || m_activeCreepSpawners.Count == 0) return;
+
         for (int i = 0; i < m_activeCreepSpawners.Count; ++i)
         {
             if (m_activeCreepSpawners[i].IsCreepSpawning())
@@ -35,9 +37,9 @@ public class SurvivalSpawner : EnemySpawner
     public override void UpdateCreepSpawners()
     {
         SetNextCreepWave();
-        
+
         if (m_nextCreepWave == null) return;
-        
+
         m_activeCreepSpawners = new List<CreepSpawner>();
         for (int i = 0; i < m_nextCreepWave.m_creeps.Count; ++i)
         {
@@ -59,13 +61,15 @@ public class SurvivalSpawner : EnemySpawner
 
     public void SetNextCreepWave()
     {
+        if (m_spawnerWaves == null) return;
+
         int gameplayWave = GameplayManager.Instance.m_wave;
-        
+
         //Debug.Log($"Getting wave {GameplayManager.Instance.m_wave}");
 
         CreepWave creepWave = new CreepWave();
 
-        
+
         //NEW UNIT TYPE WAVES
         if (m_spawnerWaves.m_newEnemyTypeWaves.Count != 0)
         {
@@ -83,7 +87,7 @@ public class SurvivalSpawner : EnemySpawner
 
         // Now subtracting 1 for accurate indexing.
         gameplayWave -= 1;
-        
+
         //INTRO WAVES
         if (gameplayWave < m_spawnerWaves.m_introWaves.Count)
         {
@@ -97,7 +101,7 @@ public class SurvivalSpawner : EnemySpawner
 
         //Calculate challenging wave BEFORE subtracting intro waves, to assure player see multiple of 5 and gets a hard wave.
         int challengingWave = (gameplayWave + 1) % 5;
-        
+
         //Subtract the number of training ways so that we start at wave 0 in the new lists.
         gameplayWave -= m_spawnerWaves.m_introWaves.Count;
 
@@ -115,21 +119,36 @@ public class SurvivalSpawner : EnemySpawner
             creepWave = m_spawnerWaves.m_loopingWaves[wave];
             //Debug.Log($"LOOPING Wave {wave} Chosen.");
         }
+
         m_nextCreepWave = creepWave;
     }
 
     private void GetValidSpawnCells()
     {
         List<Cell> outofBoundsCells = GridManager.Instance.GetOutOfBoundsSpawnCells();
-        
-        //m_validSpawnCells = Util.FindInteriorCells(outofBoundsCells);
+
+        /*foreach (Cell cell in outofBoundsCells)
+        {
+            Vector3 pos = new Vector3(cell.m_cellPos.x, .5f, cell.m_cellPos.y);
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.position = pos;
+            cube.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+        }*/
+
         List<Cell> interiorCells = Util.FindInteriorCells(outofBoundsCells);
 
         // Remove occupied cells.
         List<Cell> unoccupiedCell = new List<Cell>();
         foreach (Cell cell in interiorCells)
         {
-            if(!cell.m_isOccupied) unoccupiedCell.Add(cell);
+            if (!cell.m_isOccupied)
+            {
+                unoccupiedCell.Add(cell);
+                /*Vector3 pos = new Vector3(cell.m_cellPos.x, .5f, cell.m_cellPos.y);
+                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.transform.position = pos;
+                sphere.transform.localScale = new Vector3(0.33f, 0.33f, 0.33f);*/
+            }
         }
 
         m_validSpawnCells = unoccupiedCell;

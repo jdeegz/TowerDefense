@@ -379,7 +379,7 @@ public class AStar
             Cell curCell = Util.GetCellFromPos(current);
 
             //If the current cell is occupied, we cannot find the exit, this is not a valid path.
-            if (curCell.m_isOccupied || curCell.m_isTempOccupied)
+            if ((curCell.m_isOccupied && !curCell.m_isUpForSale) || curCell.m_isTempOccupied)
             {
                 //Debug.Log("GetExitPath did not find a path.");
                 return null;

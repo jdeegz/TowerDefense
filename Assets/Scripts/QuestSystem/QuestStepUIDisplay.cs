@@ -81,7 +81,7 @@ public class QuestStepUIDisplay : MonoBehaviour
 
     public void HandleAnim(string clipName)
     {
-        Debug.Log($"Animator playing: {clipName}");
+        //Debug.Log($"Animator playing: {clipName}");
         m_animator.Play($"{clipName}");
     }
 

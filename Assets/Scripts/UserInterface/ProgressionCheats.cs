@@ -21,6 +21,7 @@ public class ProgressionCheats : MonoBehaviour
         // Unlock All
         GameObject buttonObj = Instantiate(m_cheatButtonObj, m_rootTransform);
         CheatButton cheatButton = buttonObj.GetComponent<CheatButton>();
+        
         cheatButton.SetupButton("Unlock All", PlayerDataManager.Instance.m_progressionTable.CheatProgressionData, UpdateState);
         
         buttonObj = Instantiate(m_cheatButtonObj, m_rootTransform);

@@ -15,7 +15,7 @@ public class PlayerDataManager
     
     //private string m_path;
     private string m_persistantPath;
-    private int m_buildNumber = 5; //Increment this to invalidate old save files. Updated Jan 18th 2025
+    private int m_buildNumber = 6; //Increment this to invalidate old save files. Updated Jan 30th 2025
 
     //Constructor
     private PlayerDataManager()

@@ -207,8 +207,9 @@ public class WaveDataGenerator : ScriptableObject
         List<CreepWave> creepWaves = new List<CreepWave>();
         for (int i = 0; i < waveCount; i++)
         {
-            int targetMin = (i + 1) * 20;
-            int targetMax = targetMin + 10;
+            
+            int targetMin = (i + 1) * 14;
+            int targetMax = targetMin + 14;
             creepWaves.Add(GenerateCreepWave(enemyDatas, targetMin, targetMax));
         }
 

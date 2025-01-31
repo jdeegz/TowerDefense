@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class UITowerSelectHUD : MonoBehaviour
+public class UITowerSelectHUD : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Track3dObject m_track3dObject;
     [SerializeField] private Button m_sellButton;
@@ -101,6 +102,7 @@ public class UITowerSelectHUD : MonoBehaviour
 
     private void RequestSellTower()
     {
+        GridManager.Instance.SellBuildingClear();
         m_curTower.RequestPlayAudio(m_curTowerData.m_audioDestroyClip);
         GameplayManager.Instance.SellTower(m_curTower, m_sellStoneValue, m_sellWoodValue);
         DeselectTower();
@@ -111,5 +113,58 @@ public class UITowerSelectHUD : MonoBehaviour
         m_track3dObject.StopTracking();
         m_curTower = null;
         ToggleTowerSelectHUD(false);
+        GridManager.Instance.SellBuildingClear();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        //Debug.Log($"On pointer enter {eventData.pointerEnter.name}");
+
+        Button enteredButton = FindButtonInHierarchy(eventData.pointerEnter);
+        
+        if (enteredButton == m_sellButton)
+        {
+            OnSellButtonEnter();
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        Button exitedButton = FindButtonInHierarchy(eventData.pointerEnter);
+        
+        if (exitedButton == m_sellButton)
+        {
+            OnSellButtonExit();
+        }
+    }
+
+    public void OnSellButtonEnter()
+    {
+        List<Cell> occupiedCells = Util.GetCellsFromPos(m_curTower.transform.position, m_curTowerData.m_buildingSize.x, m_curTowerData.m_buildingSize.y);
+        GridManager.Instance.PreviewSellBuildingTempChanges(occupiedCells);
+    }
+
+    public void OnSellButtonExit()
+    {
+        GridManager.Instance.SellBuildingClear();
+    }
+    
+    private Button FindButtonInHierarchy(GameObject startObject)
+    {
+        Transform current = startObject?.transform;
+
+        // Traverse up the hierarchy
+        while (current != null)
+        {
+            Button button = current.GetComponent<Button>();
+            if (button != null)
+            {
+                return button; // Return the first Button found
+            }
+
+            current = current.parent; // Move up the hierarchy
+        }
+
+        return null; // No Button found
     }
 }

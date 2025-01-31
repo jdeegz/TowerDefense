@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Coffee.UIEffects;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,17 +24,19 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         Hovered,
     }
     
-    private int m_upgradeStoneValue = 0;
-    private int m_upgradeWoodValue = 0;
+    private int m_upgradeStoneValue = 999;
+    private int m_upgradeWoodValue = 999;
     private bool m_canAffordWood;
     private bool m_canAffordStone;
     private TowerData m_towerData;
     private Tower m_tower;
+    private UIEffect m_upgradeCostLabelUIEffect;
 
     void Start()
     {
         ResourceManager.UpdateStoneBank += CheckStoneCost;
         ResourceManager.UpdateWoodBank += CheckWoodCost;
+        m_upgradeCostLabelUIEffect = m_upgradeCostLabel.GetComponent<UIEffect>();
     }
 
     void OnEnable()
@@ -44,14 +47,14 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     private void CheckStoneCost(int total, int delta)
     {
         m_canAffordStone = total >= m_upgradeStoneValue;
-        //Debug.Log("Check stone cost: " + i);
+        //Debug.Log($"Upgrade Stone Cost: {m_upgradeStoneValue}, Current total: {total}.");
         CanAffordToBuildTower();
     }
 
     private void CheckWoodCost(int total, int delta)
     {
         m_canAffordWood = total >= m_upgradeWoodValue;
-        //Debug.Log("Check wood cost: " + i);
+        //Debug.Log($"Upgrade Wood Cost: {m_upgradeWoodValue}, Current total: {total}.");
         CanAffordToBuildTower();
     }
 
@@ -59,11 +62,25 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         if (m_canAffordWood && m_canAffordStone)
         {
-            m_buttonUIEffect.toneFilter = ToneFilter.None;
+            if (m_buttonUIEffect.toneIntensity > 0)
+            {
+                DOTween.To(() => m_buttonUIEffect.toneIntensity, x => m_buttonUIEffect.toneIntensity = x, 0, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
+
+                DOTween.To(() => m_upgradeCostLabelUIEffect.toneIntensity, x => m_upgradeCostLabelUIEffect.toneIntensity = x, 0, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
+            }
         }
         else
         {
-            m_buttonUIEffect.toneFilter = ToneFilter.Grayscale;
+            if (m_buttonUIEffect.toneIntensity < 1)
+            {
+                DOTween.To(() => m_buttonUIEffect.toneIntensity, x => m_buttonUIEffect.toneIntensity = x, 1, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
+
+                DOTween.To(() => m_upgradeCostLabelUIEffect.toneIntensity, x => m_upgradeCostLabelUIEffect.toneIntensity = x, 1, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
+            }
         }
     }
     
@@ -80,7 +97,6 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         m_upgradeWoodValue = upgradeData.m_woodCost;
         CheckStoneCost(ResourceManager.Instance.GetStoneAmount(), 0);
         CheckWoodCost(ResourceManager.Instance.GetWoodAmount(), 0);
-        CanAffordToBuildTower();
         
         //Cost Label
         string sellText;
@@ -134,11 +150,12 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         if (state != m_buttonState)
         {
             ToneFilter savedToneFilter = m_buttonUIEffect.toneFilter;
-            
+            float savedToneIntensity = m_buttonUIEffect.toneIntensity;
+
             switch (state)
             {
                 case ButtonState.Normal:
-                    m_buttonState = ButtonState.Normal;
+                    m_buttonState = state;
                     m_buttonUIEffect.LoadPreset("UIEffect_Normal");
                     break;
                 case ButtonState.Selected:
@@ -146,18 +163,16 @@ public class UpgradeTowerButton : MonoBehaviour, IPointerEnterHandler, IPointerE
                     m_buttonUIEffect.LoadPreset("UIEffect_Selected");
                     break;
                 case ButtonState.Hovered:
-                    if (m_buttonState != ButtonState.Selected)
-                    {
-                        m_buttonState = state;
-                        m_buttonUIEffect.LoadPreset("UIEffect_Hovered");
-                    }
-
+                    m_buttonState = state;
+                    m_buttonUIEffect.LoadPreset("UIEffect_Hovered");
                     break;
                 default:
                     Debug.Log($"Not state.");
                     break;
             }
+
             m_buttonUIEffect.toneFilter = savedToneFilter;
+            m_buttonUIEffect.toneIntensity = savedToneIntensity;
         }
     }
 }

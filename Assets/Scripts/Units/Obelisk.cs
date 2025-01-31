@@ -85,7 +85,7 @@ public class Obelisk : MonoBehaviour
         {
             //Set occupancy
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
-            GridCellOccupantUtil.SetBuildRestricted(m_blockObj, true, 1, 1);
+            if(m_blockObj != null) GridCellOccupantUtil.SetBuildRestricted(m_blockObj, true, 1, 1);
             //GridCellOccupantUtil.SetBuildRestricted(gameObject, true, 1, 3);
             
             

@@ -384,34 +384,25 @@ public abstract class EnemyController : Dissolvable, IEffectable
         //VFX
 
         //Hit Flash
-        if (m_allRenderers == null) return;
-        if (m_hitFlashCoroutine != null)
-        {
-            StopCoroutine(m_hitFlashCoroutine);
-        }
-
-        if(gameObject.activeSelf) m_hitFlashCoroutine = StartCoroutine(HitFlash());
+        if(gameObject.activeSelf) HitFlash();
     }
 
-    public IEnumerator HitFlash()
+    public void HitFlash()
     {
-        //Set the color
         for (int i = 0; i < m_allRenderers.Count; ++i)
         {
             foreach (Material material in m_allRenderers[i].materials)
             {
-                material.SetColor("_EmissionColor", Color.red);
-            }
-        }
+                if (material != null)
+                {
+                    material.EnableKeyword("_EMISSION");
 
-        yield return new WaitForSeconds(.15f);
-
-        //Return to original colors.
-        for (int i = 0; i < m_allRenderers.Count; ++i)
-        {
-            foreach (Material material in m_allRenderers[i].materials)
-            {
-                material.SetColor("_EmissionColor", m_allOrigColors[i]);
+                    Color startColor = new Color(130f / 255f, 50f / 255f, 50f / 255f); // Convert to 0-1 range
+                    material.SetColor("_EmissionColor", startColor);
+                    
+                    Color endColor = Color.black;
+                    material.DOColor(endColor, "_EmissionColor", 0.15f);
+                }
             }
         }
     }
@@ -427,7 +418,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
             StopCoroutine(m_hitFlashCoroutine);
         }
 
-        m_hitFlashCoroutine = StartCoroutine(HitFlash());
+        HitFlash();
 
         //Calculate Damage
         if (percentage) heal = m_curMaxHealth * heal; //If the heal is sent as percent, calculate based on max HP

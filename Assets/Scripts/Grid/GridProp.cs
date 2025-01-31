@@ -51,7 +51,7 @@ public class GridProp : MonoBehaviour
                 return;
             }
 
-            m_cell.UpdateOccupancyDisplay(false);
+            //m_cell.UpdateOccupancy(false);
 
             m_cell.UpdateBuildRestrictedValue(!m_isBuildable);
 

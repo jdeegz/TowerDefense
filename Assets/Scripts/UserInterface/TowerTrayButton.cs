@@ -19,8 +19,6 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private GameObject m_towerQTYobj;
     [SerializeField] private Image m_towerImage;
     [SerializeField] private UIEffect m_buttonUIEffect;
-    [SerializeField] private Color m_inStockColor;
-    [SerializeField] private Color m_outOfStockColor;
 
     private bool m_canAffordWood = true;
     private bool m_canAffordStone = true;
@@ -29,6 +27,8 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private int m_equippedTowerIndex;
     private int m_blueprintTowerIndex;
     private int m_qty;
+    private UIEffect m_costLabelUIEffect;
+    private UIEffect m_qtyLabelUIEffect;
 
     private int Quantity
     {
@@ -39,9 +39,22 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             {
                 //Debug.Log($"Tray Button Quantity Updated.");
                 m_qty = value;
-                m_canAffordQty = m_qty is > 0 or -1;
+                bool canAffordQty = m_qty is > 0 or -1;
                 m_towerQTY.SetText("x{0}", m_qty);
-                m_towerQTY.color = m_canAffordQty ? m_inStockColor : m_outOfStockColor;
+                if (canAffordQty != m_canAffordQty)
+                {
+                    if (canAffordQty)
+                    {
+                        DOTween.To(() => m_qtyLabelUIEffect.toneIntensity, x => m_qtyLabelUIEffect.toneIntensity = x, 0, .1f)
+                            .SetEase(Ease.Linear).SetUpdate(true);
+                    }
+                    else
+                    {
+                        DOTween.To(() => m_qtyLabelUIEffect.toneIntensity, x => m_qtyLabelUIEffect.toneIntensity = x, 1, .1f)
+                            .SetEase(Ease.Linear).SetUpdate(true);
+                    }
+                }
+                m_canAffordQty = canAffordQty;
                 m_towerQTYobj.SetActive(m_qty != -1);
                 CanAffordToBuildTower();
             }
@@ -75,6 +88,8 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         CheckWoodCost(ResourceManager.Instance.GetWoodAmount(), 0);
 
         m_button.onClick.AddListener(SelectTowerButton);
+        m_costLabelUIEffect = m_towerCost.GetComponent<UIEffect>();
+        m_qtyLabelUIEffect = m_towerQTY.GetComponent<UIEffect>();
     }
 
     private void TowerBuilt(TowerData towerData)
@@ -115,6 +130,9 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             {
                 DOTween.To(() => m_buttonUIEffect.toneIntensity, x => m_buttonUIEffect.toneIntensity = x, 0, .1f)
                     .SetEase(Ease.Linear).SetUpdate(true);
+
+                DOTween.To(() => m_costLabelUIEffect.toneIntensity, x => m_costLabelUIEffect.toneIntensity = x, 0, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
             }
         }
         else
@@ -122,6 +140,9 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             if (m_buttonUIEffect.toneIntensity < 1)
             {
                 DOTween.To(() => m_buttonUIEffect.toneIntensity, x => m_buttonUIEffect.toneIntensity = x, 1, .1f)
+                    .SetEase(Ease.Linear).SetUpdate(true);
+
+                DOTween.To(() => m_costLabelUIEffect.toneIntensity, x => m_costLabelUIEffect.toneIntensity = x, 1, .1f)
                     .SetEase(Ease.Linear).SetUpdate(true);
             }
         }
@@ -226,8 +247,6 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 case ButtonState.Hovered:
                     m_buttonState = state;
                     m_buttonUIEffect.LoadPreset("UIEffect_Hovered");
-
-
                     break;
                 default:
                     Debug.Log($"Not state.");

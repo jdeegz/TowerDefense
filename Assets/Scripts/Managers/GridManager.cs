@@ -119,10 +119,9 @@ public class GridManager : MonoBehaviour
                 var neighbor = neighborCells[i];
                 if (visited.Contains(neighbor) == false && frontier.Contains(neighbor) == false)
                 {
-                    if (!neighbor.m_isOccupied && !neighbor.m_isTempOccupied)
+                    if (!neighbor.m_isOccupied && !neighbor.m_isTempOccupied || neighbor.m_isUpForSale)
                     {
                         //Get the direction of the neighbor to the curCell.
-                        neighbor.UpdateOccupancyDisplay(false);
                         neighbor.UpdateTempDirection(i);
                         frontier.Enqueue(neighbor);
                         nextTileToGoal[neighbor] = curCell;
@@ -199,13 +198,14 @@ public class GridManager : MonoBehaviour
                 cell.m_cellIndex = index;
                 m_gridCells[index] = cell;
                 cell.m_gridCellObj = m_gridcellObjects[index];
+                cell.UpdateOccupancy(false);
 
                 HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
                 
                 //If we're a cell on the perimeter, mark it as occupied, else we hit test it.
                 /*if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
                 {
-                    //cell.UpdateOccupancyDisplay(true);
+                    //cell.UpdateOccupancy(true);
                 }
                 else
                 {
@@ -260,6 +260,37 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    public void PreviewSellBuildingTempChanges(List<Cell> cells)
+    {
+        if (m_previousPreconCells == null) m_previousPreconCells = new List<Cell>();
+
+        foreach (Cell cell in cells)
+        {
+            cell.m_isUpForSale = true;
+        }
+
+        m_previousPreconCells = cells;
+
+        FloodFillGrid(m_gridCells, null);
+    }
+    
+    void RevertPreviewSellBuildingCellTempChanges()
+    {
+        if (m_previousPreconCells == null) return;
+
+        foreach (Cell cell in m_previousPreconCells)
+        {
+            cell.m_isUpForSale = false;
+        }
+    }
+
+    public void SellBuildingClear()
+    {
+        RevertPreviewSellBuildingCellTempChanges();
+
+        FloodFillGrid(m_gridCells, null);
+    }
+
     public void RefreshGrid()
     {
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.PreconstructionTower)
@@ -297,7 +328,7 @@ public class GridManager : MonoBehaviour
         //If we received hits, check to see if water was the last one hit.
         if (IsLayerInMask(hits[0].transform.gameObject.layer, m_waterLayer))
         {
-            cell.UpdateOccupancyDisplay(true);
+            cell.UpdateOccupancy(true);
         }*/
 
         RaycastHit hit;
@@ -398,10 +429,10 @@ public class Cell
     //Cell Data
     public bool m_isGoal;
     public bool m_isOccupied;
-    [FormerlySerializedAs("m_isInPlayspace")]
     public bool m_isOutOfBounds;
     public GameObject m_occupant;
     public bool m_isTempOccupied;
+    public bool m_isUpForSale;
     public bool m_isBuildRestricted;
     public ResourceNode m_cellResourceNode;
     public int m_actorCount;
@@ -448,7 +479,7 @@ public class Cell
         m_isBuildRestricted = value;
     }
 
-    public void UpdateOccupancyDisplay(bool b)
+    public void UpdateOccupancy(bool b)
     {
         m_isOccupied = b;
         if (m_isOccupied)
@@ -460,11 +491,11 @@ public class Cell
             UpdateGridCellColor(m_pathableColor);
         }
     }
-
+    
     public void SetIsOutOfBounds(bool b)
     {
         m_isOutOfBounds = b;
-        UpdateOccupancyDisplay(b);
+        UpdateOccupancy(b);
     }
 
     public void UpdateTempOccupancyDisplay(bool b)
@@ -477,7 +508,7 @@ public class Cell
         else
         {
             //To easily get the last known color.
-            UpdateOccupancyDisplay(m_isOccupied);
+            UpdateOccupancy(m_isOccupied);
         }
     }
 

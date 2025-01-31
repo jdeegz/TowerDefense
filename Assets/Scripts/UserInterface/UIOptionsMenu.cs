@@ -39,7 +39,7 @@ public class UIOptionsMenu : MonoBehaviour
 
     [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_missionNameLabel;
-    
+
     private int m_dropdownIndex;
     private AudioSource m_audioSource;
     private CanvasGroup m_canvasGroup;
@@ -59,7 +59,7 @@ public class UIOptionsMenu : MonoBehaviour
         m_elapsedTime = 0;
         m_cheatsGroup.SetActive(false);
         m_progressionCheats = m_cheatsGroup.GetComponent<ProgressionCheats>();
-        
+
         if (GameManager.Instance != null && GameManager.Instance.m_curMission != null)
         {
             m_missionNameLabel.SetText($"{GameManager.Instance.m_curMission.m_missionName}");
@@ -242,7 +242,15 @@ public class UIOptionsMenu : MonoBehaviour
 
     public void ToggleMenu()
     {
-        if (GameplayManager.Instance && GameplayManager.Instance.IsWatchingCutscene()) return;
+        if (GameplayManager.Instance)
+        {
+            if (GameplayManager.Instance.IsWatchingCutscene()) return;
+
+            //Dont allow the menu to OPEN if we're in victory/defeat states and the menu is currently closed.
+            if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Victory && m_canvasGroup.alpha == 0) return;
+
+            if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Defeat && m_canvasGroup.alpha == 0) return;
+        }
 
         m_canvasGroup.alpha = m_canvasGroup.alpha == 0 ? 1 : 0;
         m_canvasGroup.blocksRaycasts = !m_canvasGroup.blocksRaycasts;

@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
 
     public static event Action<GameState> OnGameStateChanged;
     public MissionContainerData m_missionTable;
+    public ProgressionTable m_progressionTable;
     public MissionData m_curMission;
     private String m_curScene;
     private String m_curCutScene;
@@ -28,7 +29,10 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+#if !UNITY_EDITOR
         Cursor.lockState = CursorLockMode.Confined;
+#endif
+        PlayerDataManager.Instance.SetProgressionTable(m_progressionTable);
     }
 
     public void UpdateGameState(GameState newState)

@@ -143,7 +143,7 @@ public class EnemySwarmMember : EnemyController
             StopCoroutine(m_hitFlashCoroutine);
         }
 
-        m_hitFlashCoroutine = StartCoroutine(HitFlash());
+        HitFlash();
     }
 
     public override void OnHealed(float heal, bool percentage)

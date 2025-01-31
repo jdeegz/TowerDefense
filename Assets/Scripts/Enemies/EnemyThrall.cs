@@ -187,13 +187,7 @@ public class EnemyThrall : EnemyController
 
     public void HostHit()
     {
-        //Hit Flash
-        if (m_allRenderers == null || !gameObject.activeInHierarchy) return;
-        if (m_hitFlashCoroutine != null)
-        {
-            StopCoroutine(m_hitFlashCoroutine);
-        }
-        m_hitFlashCoroutine = StartCoroutine(HitFlash());
+        HitFlash();
     }
 
     public override void OnEnemyDestroyed(Vector3 pos)

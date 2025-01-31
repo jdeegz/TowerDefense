@@ -106,14 +106,14 @@ public class QuestUIDisplay : MonoBehaviour
 
     private void FinishQuest(string id)
     {
-        Debug.Log($"Quest {id} has finished. Attempting to destroy quest list.");
+        //Debug.Log($"Quest {id} has finished. Attempting to destroy quest list.");
         //Compare the string ID with the quests in our QuestsInProgress list.
         //We want to remove the matching quest step UI displays.
         foreach (QuestStepGroup questInProgress in m_questsInProgress)
         {
             if (questInProgress.m_quest.m_info.m_id == id)
             {
-                Debug.Log($"Quest found. Deleting quest list.");
+                //Debug.Log($"Quest found. Deleting quest list.");
                 //We found the quest that finished in our list of quests In Progress.
                 foreach (QuestStepUIDisplay display in questInProgress.m_questStepUIDisplays)
                 {
@@ -133,7 +133,7 @@ public class QuestUIDisplay : MonoBehaviour
 
     private void StartQuest(string id)
     {
-        Debug.Log($"Starting a new quest. Should I rebuild my layout?");
+        //Debug.Log($"Starting a new quest. Should I rebuild my layout?");
     }
 }
 

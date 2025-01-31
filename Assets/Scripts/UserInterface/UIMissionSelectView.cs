@@ -9,7 +9,9 @@ public class UIMissionSelectView : MonoBehaviour
 {
     [SerializeField] private Button m_backButton;
     [SerializeField] private Button m_resetSaveDataButton;
+    [SerializeField] private Button m_unlockAllButton;
     [SerializeField] private GameObject m_missionButtonRoot;
+    [SerializeField] private GameObject m_experimentalMissionButtonRoot;
     [SerializeField] private CanvasGroup m_dataResetToast;
     [SerializeField] private UIMissionSelectButton m_missionButtonPrefab;
 
@@ -35,6 +37,7 @@ public class UIMissionSelectView : MonoBehaviour
     {
         m_backButton.onClick.AddListener(OnBackButtonClick);
         m_resetSaveDataButton.onClick.AddListener(OnResetButtonClick);
+        m_unlockAllButton.onClick.AddListener(OnUnlockAllButtonClick);
 
         BuildMissionList();
     }
@@ -48,7 +51,9 @@ public class UIMissionSelectView : MonoBehaviour
         numberOfMissions = GameManager.Instance.m_missionTable.m_MissionList.Length;
 
         if (m_curMissionButtons == null) m_curMissionButtons = new List<UIMissionSelectButton>();
-
+        
+        // Build Standard Missions
+        int standardMissionCount = 6;
         for (int i = m_curMissionButtons.Count; i < numberOfMissions; i++)
         {
             m_curMissionButtons.Add(null);
@@ -58,13 +63,15 @@ public class UIMissionSelectView : MonoBehaviour
         {
             UIMissionSelectButton button;
 
+            Transform buttonRoot = i < standardMissionCount ? m_missionButtonRoot.transform : m_experimentalMissionButtonRoot.transform;
+            
             if (m_curMissionButtons[i] != null)
             {
                 button = m_curMissionButtons[i];
             }
             else
             {
-                button = Instantiate(m_missionButtonPrefab, m_missionButtonRoot.transform);
+                button = Instantiate(m_missionButtonPrefab, buttonRoot);
                 m_curMissionButtons[i] = button;
             }
 
@@ -73,8 +80,6 @@ public class UIMissionSelectView : MonoBehaviour
             //Read from player data for this mission.
             int missionCompletionRank = 0; //0 - lock, 1 - unlocked, 2 - defeated
             MissionSaveData missionSaveData = null;
-            
-            
             
             // Make sure we have a mission at this index.
             if (i < PlayerDataManager.Instance.m_playerData.m_missions.Count - 1)
@@ -110,5 +115,21 @@ public class UIMissionSelectView : MonoBehaviour
         BuildMissionList();
         m_dataResetToast.alpha = 1;
         m_dataResetToast.DOFade(0, 3f);
+    }
+
+    private void OnUnlockAllButtonClick()
+    {
+        // Object Unlocks
+        PlayerDataManager.Instance.m_progressionTable.CheatProgressionData();
+        
+        // Mission Unlocks
+        for (int i = 0; i < PlayerDataManager.Instance.m_playerData.m_missions.Count; ++i)
+        {
+            int curRank = PlayerDataManager.Instance.m_playerData.m_missions[i].m_missionCompletionRank;
+            int newRank = Math.Max(1, curRank);
+            PlayerDataManager.Instance.m_playerData.m_missions[i].m_missionCompletionRank = newRank;
+        }
+        
+        BuildMissionList();
     }
 }

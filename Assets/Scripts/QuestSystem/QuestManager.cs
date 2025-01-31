@@ -74,7 +74,7 @@ public class QuestManager : MonoBehaviour
         Quest quest = GetQuestById(id);
         quest.m_questState = questState;
         m_questEvents.QuestStateChange(quest);
-        Debug.Log($"Quest State Change for ");
+        //Debug.Log($"Quest State Change for ");
     }
 
     private bool CheckRequirementsMet(Quest quest)
@@ -94,7 +94,7 @@ public class QuestManager : MonoBehaviour
 
     private void StartQuest(string id)
     {
-        Debug.Log($"Start Quest {id}");
+        //Debug.Log($"Start Quest {id}");
         Quest quest = GetQuestById(id);
         QuestStep newStep = quest.InstantiateCurrentQuestStep(transform);
         ChangeQuestState(quest.m_info.m_id, QuestState.IN_PROGRESS);
@@ -103,7 +103,7 @@ public class QuestManager : MonoBehaviour
 
     private void AdvanceQuest(string id)
     {
-        Debug.Log($"Advance Quest {id}");
+        //Debug.Log($"Advance Quest {id}");
         Quest quest = GetQuestById(id);
         quest.MoveToNextStep();
 
@@ -122,7 +122,7 @@ public class QuestManager : MonoBehaviour
 
     private void FinishQuest(string id)
     {
-        Debug.Log($"Finish Quest {id}");
+        //Debug.Log($"Finish Quest {id}");
         Quest quest = GetQuestById(id);
         quest.m_questState = QuestState.FINISHED;
         
@@ -143,7 +143,7 @@ public class QuestManager : MonoBehaviour
         {
             if (idToQuestMap.ContainsKey(questInfo.m_id))
             {
-                Debug.Log($"Duplicate ID Found when creating quest map: {questInfo.m_id}");
+               // Debug.Log($"Duplicate ID Found when creating quest map: {questInfo.m_id}");
             }
 
             idToQuestMap.Add(questInfo.m_id, new Quest(questInfo));
@@ -157,7 +157,7 @@ public class QuestManager : MonoBehaviour
         Quest quest = m_questMap[id];
         if (quest == null)
         {
-            Debug.Log($"ID not found in the Quest Map: {id}");
+           // Debug.Log($"ID not found in the Quest Map: {id}");
         }
 
         return quest;

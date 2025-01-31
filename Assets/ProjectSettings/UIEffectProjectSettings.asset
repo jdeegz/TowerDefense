@@ -17,9 +17,14 @@ MonoBehaviour:
   - {fileID: 4098280710436803551, guid: 1d8e1467886d30d46ba834a18fc4a9a7, type: 3}
   - {fileID: 7518812959939862397, guid: be059d6207e359540b45969777b4d326, type: 3}
   - {fileID: 1799662465753689171, guid: c6a06a73063ead1448da8bb5586803b9, type: 3}
-  m_FallbackVariantBehaviour: 0
-  m_UnregisteredShaderVariants: []
+  - {fileID: 6299193315184122102, guid: b133b970b98e2ac45b3457613a6c19c4, type: 3}
+  m_UseHDRColorPicker: 1
   m_ShaderVariantCollection: {fileID: 4641431112105763802}
+  m_ShaderVariantRegistry:
+    m_OptionalShaders: []
+    m_Asset: {fileID: 4641431112105763802}
+    m_ErrorOnUnregisteredVariant: 0
+    m_UnregisteredVariants: []
 --- !u!200 &4641431112105763802
 ShaderVariantCollection:
   m_ObjectHideFlags: 0
@@ -34,6 +39,8 @@ ShaderVariantCollection:
       - keywords: 
         passType: 0
       - keywords: COLOR_ADDITIVE
+        passType: 0
+      - keywords: COLOR_ADDITIVE SHADOW_COLOR_REPLACE
         passType: 0
       - keywords: COLOR_ADDITIVE TONE_GRAYSCALE
         passType: 0
@@ -52,7 +59,19 @@ ShaderVariantCollection:
         passType: 0
       - keywords: COLOR_MULTIPLY
         passType: 0
+      - keywords: COLOR_MULTIPLY_ADDITIVE SHADOW_COLOR_REPLACE
+        passType: 0
+      - keywords: COLOR_MULTIPLY_ADDITIVE SHADOW_COLOR_REPLACE TONE_GRAYSCALE
+        passType: 0
       - keywords: COLOR_REPLACE
+        passType: 0
+      - keywords: COLOR_REPLACE SAMPLING_BLUR_FAST
+        passType: 0
+      - keywords: COLOR_REPLACE SAMPLING_BLUR_FAST TONE_GRAYSCALE
+        passType: 0
+      - keywords: COLOR_REPLACE SHADOW_COLOR_REPLACE
+        passType: 0
+      - keywords: COLOR_REPLACE SHADOW_COLOR_REPLACE TONE_GRAYSCALE
         passType: 0
       - keywords: COLOR_REPLACE TARGET_HUE
         passType: 0
@@ -66,23 +85,54 @@ ShaderVariantCollection:
         passType: 0
       - keywords: COLOR_REPLACE TONE_SEPIA
         passType: 0
+      - keywords: COLOR_REPLACE TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_SHINY
+        passType: 0
       - keywords: SAMPLING_BLUR_DETAIL
         passType: 0
       - keywords: SAMPLING_BLUR_FAST
         passType: 0
       - keywords: SAMPLING_BLUR_MEDIUM
         passType: 0
+      - keywords: SAMPLING_BLUR_MEDIUM TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_SHINY
+        passType: 0
+      - keywords: SHADOW_COLOR_REPLACE
+        passType: 0
+      - keywords: SHADOW_COLOR_REPLACE TONE_GRAYSCALE
+        passType: 0
+      - keywords: SHADOW_COLOR_REPLACE TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_SHINY
+        passType: 0
       - keywords: TONE_GRAYSCALE
         passType: 0
       - keywords: TONE_GRAYSCALE TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_DISSOLVE
+        passType: 0
+      - keywords: TONE_GRAYSCALE TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_SHINY
         passType: 0
       - keywords: TONE_SEPIA
         passType: 0
       - keywords: TONE_SEPIA TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_DISSOLVE
         passType: 0
+      - keywords: TRANSITION_BURN TRANSITION_COLOR_REPLACE
+        passType: 0
+      - keywords: TRANSITION_COLOR_ADDITIVE TRANSITION_SHINY
+        passType: 0
       - keywords: TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_DISSOLVE
         passType: 0
       - keywords: TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_SHINY
         passType: 0
+      - keywords: TRANSITION_COLOR_REPLACE TRANSITION_MASK
+        passType: 0
+      - keywords: TRANSITION_COLOR_REPLACE TRANSITION_MELT
+        passType: 0
+      - keywords: TRANSITION_CUTOFF
+        passType: 0
       - keywords: TRANSITION_DISSOLVE
+        passType: 0
+      - keywords: TRANSITION_FADE
+        passType: 0
+  - first: {fileID: 4800000, guid: c67f821adbb6348a3a21573a25b55de0, type: 3}
+    second:
+      variants:
+      - keywords: TONE_GRAYSCALE UNDERLAY_ON
+        passType: 0
+      - keywords: UNDERLAY_ON
         passType: 0

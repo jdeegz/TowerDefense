@@ -895,13 +895,13 @@ public class GathererController : MonoBehaviour
                 continue;
             }
             
-            Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is {path.Count} long.");
-            Debug.Log($"The last cell in the path is {path.Last()}.");
+            //Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is {path.Count} long.");
+            //Debug.Log($"The last cell in the path is {path.Last()}.");
             float remainingCellDistance = Math.Max(Math.Abs(nodeCell.m_cellPos.x - path.Last().x), Math.Abs(nodeCell.m_cellPos.y - path.Last().y));
 
             if (remainingCellDistance > 1) continue;
             
-            Debug.Log($"The last cell in the path is {remainingCellDistance} away from the Resource Node.");
+            //Debug.Log($"The last cell in the path is {remainingCellDistance} away from the Resource Node.");
             
             if (shortestPath == null || path.Count < shortestPath.Count)
             {
