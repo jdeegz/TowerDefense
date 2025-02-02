@@ -124,15 +124,10 @@ public class GridManager : MonoBehaviour
                 var neighbor = neighborCells[i];
                 if (visited.Contains(neighbor) == false && frontier.Contains(neighbor) == false)
                 {
-                    /*//If the neighbor is occupied but is not up for sale, we do not set a direction.
-                    if (neighbor.m_isOccupied && !neighbor.m_isUpForSale) continue;
-                    
-                    //If the neighbor is temp occupied (precon), set a direction.
-                    if (neighbor.m_isTempOccupied) return;*/
-                    
                     if (!neighbor.m_isOccupied && !neighbor.m_isTempOccupied || neighbor.m_isUpForSale)
                     {
                         //Get the direction of the neighbor to the curCell.
+                        
                         neighbor.UpdateTempDirection(curCell.m_cellPos);
                         frontier.Enqueue(neighbor);
                         nextTileToGoal[neighbor] = curCell;
@@ -157,7 +152,7 @@ public class GridManager : MonoBehaviour
         
         if (!m_spawnPointsAccessible)
         {
-            Debug.Log($"We did not find all spawn points when flood filling from the exit.");
+            //Debug.Log($"We did not find all spawn points when flood filling from the exit.");
             return;
         }
 
@@ -173,7 +168,7 @@ public class GridManager : MonoBehaviour
     {
         if (m_unitPaths == null || m_unitPaths.Count == 0) return;
 
-        Debug.Log($"Updating Unit Paths");
+        //Debug.Log($"Updating Unit Paths");
         
         foreach (UnitPath unitPath in m_unitPaths)
         {
@@ -190,7 +185,7 @@ public class GridManager : MonoBehaviour
             cell.SetDirection();
         }
 
-        Debug.Log($"Cell Directions Set.");
+        //Debug.Log($"Cell Directions Set.");
     }
 
     void BuildGrid()
@@ -213,16 +208,6 @@ public class GridManager : MonoBehaviour
                 cell.UpdateOccupancy(false);
 
                 HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
-
-                //If we're a cell on the perimeter, mark it as occupied, else we hit test it.
-                /*if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
-                {
-                    //cell.UpdateOccupancy(true);
-                }
-                else
-                {
-                    HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
-                }*/
             }
         }
 
@@ -373,7 +358,6 @@ public class GridManager : MonoBehaviour
 
     public void BuildPathList()
     {
-        Debug.Log($"Building Path List.");
         m_unitPaths = new List<UnitPath>();
         CastleController castleController = GameplayManager.Instance.m_castleController;
         m_enemyGoalPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
@@ -428,8 +412,6 @@ public class GridManager : MonoBehaviour
                 //Debug.Log($"Added Unit Path for {spawner.gameObject.name}");
             }
         }
-
-        Debug.Log($"Building Paths Completed. Built {m_unitPaths.Count} paths.");
     }
 }
 
@@ -452,7 +434,6 @@ public class Cell
     public int m_cellIndex;
     public Vector2Int m_cellPos;
     public Cell m_portalConnectionCell;
-    public bool m_isPortalEntrance;
 
     public bool m_canPathNorth = true;
     public bool m_canPathEast = true;
@@ -575,6 +556,7 @@ public class Cell
     public void UpdateGoalDisplay(bool b)
     {
         m_isGoal = b;
+        
         if (m_isGoal) UpdateGridCellColor(m_goalColor);
     }
 
@@ -594,7 +576,6 @@ public class Cell
         Vector2Int directionPos = destinationCellPos - m_cellPos;
 
         Direction direction = Direction.Unset;
-        
         
         if (directionPos == new Vector2Int(0, 1))
         {
@@ -620,7 +601,7 @@ public class Cell
             m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 90);
             direction = Direction.West;
         }
-        else if (Math.Abs(directionPos.x + directionPos.y) > 1)
+        else if (Math.Abs(directionPos.x) + Math.Abs(directionPos.y) > 1)
         {
             direction = Direction.Portal;
         }
@@ -852,7 +833,7 @@ public class UnitPath
     {
         if (!m_displayThisPath) return;
 
-        Debug.Log($"Drawing Exit Path Line from {m_startPos} - {m_enemyGoalPos}.");
+        //Debug.Log($"Drawing Exit Path Line from {m_startPos} - {m_enemyGoalPos}.");
 
         List<Vector2Int> path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
 
@@ -866,14 +847,9 @@ public class UnitPath
             curPath.Add(path[i]);
             Cell curCell = Util.GetCellFromPos(path[i]);
             m_lineRenderers[pathCount].gameObject.SetActive(true);
-            if (curCell.m_portalConnectionCell != null && curCell.m_isPortalEntrance) // Trying isPortalEntrance false because i believe the path starts from the castle.
+            if (curCell.m_portalConnectionCell != null && curCell.m_tempDirectionToNextCell == Cell.Direction.Portal) 
             {
-                //Debug.Log($"Found Portal entrance cell. Inserting new position into path.");
-
-                //Stop adding to this current list of path positions, and send them to a line renderer to display.
-                //Debug.Log($"Enabling the Line Renderer Component {pathCount} of {m_lineRenderers.Count}");
                 m_lineRenderers[pathCount].SetPoints(curPath);
-                //Debug.Log($"Setting the paths points.");
                 ++pathCount;
 
                 //Create a new list to start adding positions to. If there are no line renderers to use, add one to the game ojbect, and then add it to the pool.

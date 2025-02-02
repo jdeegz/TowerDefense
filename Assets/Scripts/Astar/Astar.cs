@@ -234,11 +234,11 @@ public class AStar
             // Add the current cell to the list of island cells
             islandCells.Add(curCell);
 
-            // If the current cell we're checking is a portal, the the neighbors of the connected cell instead.
-            /*if (curCell.m_portalConnectionCell != null)
+            if (curCell.m_portalConnectionCell != null && curCell.m_tempDirectionToNextCell != Cell.Direction.Portal)
             {
-                curCell = curCell.m_portalConnectionCell;
-            }*/
+                // We've crawled to this tile, we want to include it in the island, but not add any of its neighbors.
+                return;
+            }
             
             // Recursively explore the neighbors of the current cell
             // Up neighbor
@@ -268,7 +268,7 @@ public class AStar
         while (currentPosition != goalCellPos)
         {
             Cell curCell = Util.GetCellFromPos(currentPosition);
-            Vector2Int direction = currentPosition + curCell.GetDirectionVector(curCell.m_directionToNextCell);
+            Vector2Int direction = curCell.GetDirectionVector(curCell.m_directionToNextCell);
 
             // Move to the next cell position
             currentPosition += direction;
@@ -395,12 +395,19 @@ public class AStar
 
             path.Add(current);
 
-            if (curCell.m_portalConnectionCell != null && curCell.m_isPortalEntrance)
+            if (curCell.m_portalConnectionCell != null)
             {
-                Debug.Log($"Found a portal connection.");
-                if (curCell.m_portalConnectionCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
+                //Debug.Log($"Found a portal connection.");
+                
+                if (curCell.m_tempDirectionToNextCell == Cell.Direction.Portal && curCell.m_directionToNextCell != Cell.Direction.Portal && curCell.m_actorCount > 0)
                 {
-                    Debug.Log($"Portal exit has direction, stepping into it.");
+                    Debug.Log($"{curCell.m_cellPos} is a portal with {curCell.m_actorCount} actors in it.");
+                    return null;
+                }
+                
+                if (curCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
+                {
+                    //Debug.Log($"Portal exit has direction, stepping into it.");
                     curCell = curCell.m_portalConnectionCell;
                     current = curCell.m_cellPos;
                     //Add the portal exit cell

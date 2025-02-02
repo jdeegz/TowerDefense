@@ -696,16 +696,13 @@ public static class Util
         // Is this portal a cell?
         if (curCell.m_portalConnectionCell != null)
         {
-            /*// This cell has no direction. If the destination cell has no direction, we're in the entrance, work normally.
-            if (curCell.m_tempDirectionToNextCell != Vector3.zero)
+            if (curCell.m_tempDirectionToNextCell != Cell.Direction.Portal) // We're at an exit.
             {
                 // Only send the portal cell. as a neighbor. This assures no cells point into the exit cell.
-                curCell.m_portalConnectionCell.m_isPortalEntrance = true;
-                curCell.m_isPortalEntrance = false;
                 neighbors = new List<Vector2Int>();
                 neighbors.Add(curCell.m_portalConnectionCell.m_cellPos);
                 Debug.Log($"Cell {curCell.m_cellPos} is a portal cell. Setting it's connection {curCell.m_portalConnectionCell} as the entrance.");
-            }*/
+            }
         }
 
         List<Cell> neighborCells = new List<Cell>();

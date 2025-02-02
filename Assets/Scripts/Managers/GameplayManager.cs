@@ -1156,7 +1156,7 @@ public class GameplayManager : MonoBehaviour
 
         // This is checking pathing from each neighbor of the precon building.
 
-        //Debug.Log($"---- Start Pathing Check. ----");
+        Debug.Log($"---- Start Pathing Check. ----");
         for (int i = 0; i < cells.Count; ++i)
         {
             Cell cell = cells[i];
@@ -1168,7 +1168,7 @@ public class GameplayManager : MonoBehaviour
 
             if (testPath != null)
             {
-                //Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
+                Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
                 continue;
             }
 
@@ -1196,7 +1196,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
-        //Debug.Log($"---- End Pathing Check. ----");
+        Debug.Log($"---- End Pathing Check. ----");
 
         // EXITS AND SPAWNERS
         //Check to see if any of our UnitPaths have no path.
