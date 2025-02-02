@@ -26,7 +26,8 @@ public class EnemyHost : EnemyController
         {
             Vector3 spawnPoint = spawner.GetSpawnPointTransform().position;
             Cell cell = Util.GetCellFrom3DPos(spawner.transform.position);
-            Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
+            Vector2Int directionToNextCell = cell.GetDirectionVector(cell.m_directionToNextCell);
+            Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(directionToNextCell.x, 0, directionToNextCell.y));
             float xOffset = Random.Range(-0.4f, 0.4f);
             float zOffset = Random.Range(-0.4f, 0.4f);
 

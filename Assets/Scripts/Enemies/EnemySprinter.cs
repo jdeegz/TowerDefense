@@ -43,11 +43,9 @@ public class EnemySprinter : EnemyController
             }
             
 
-            //Convert saved cell pos from Vector2 to Vector3
-            Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
-            
             //Most common path
-            m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x, 0, m_curCell.m_directionToNextCell.z);
+            Vector2Int directionToNextCell = m_curCell.GetDirectionVector(m_curCell.m_directionToNextCell);
+            m_nextCellPosition = new Vector3(directionToNextCell.x + m_curCell.m_cellPos.x, 0, directionToNextCell.y + m_curCell.m_cellPos.y);
             
             //Clamp saftey net.
             m_maxX = m_curCell.m_cellPos.x + .45f;
@@ -56,23 +54,23 @@ public class EnemySprinter : EnemyController
             m_maxZ = m_curCell.m_cellPos.y + .45f;
             m_minZ = m_curCell.m_cellPos.y - .45f;
             
-            if (m_curCell.m_directionToNextCell.x < 0)
+            if (directionToNextCell.x < 0)
             {
                 //We're going left.
                 m_minX += -1;
             }
-            else if (m_curCell.m_directionToNextCell.x > 0)
+            else if (directionToNextCell.x > 0)
             {
                 //we're going right.
                 m_maxX += 1;
             }
         
-            if (m_curCell.m_directionToNextCell.z < 0)
+            if (directionToNextCell.y < 0)
             {
                 //We're going down.
                 m_minZ += -1;
             }
-            else if (m_curCell.m_directionToNextCell.z > 0)
+            else if (directionToNextCell.y > 0)
             {
                 //we're going up.
                 m_maxZ += 1;

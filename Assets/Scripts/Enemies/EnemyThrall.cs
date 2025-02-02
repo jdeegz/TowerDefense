@@ -110,7 +110,8 @@ public class EnemyThrall : EnemyController
         float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
         Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
         Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
-        m_nextCellPosition = m_curCell3dPos + new Vector3(m_curCell.m_directionToNextCell.x + nextCellPosOffset.x, 0, m_curCell.m_directionToNextCell.z + nextCellPosOffset.y);
+        Vector2Int directionToNextCell = m_curCell.GetDirectionVector(m_curCell.m_directionToNextCell);
+        m_nextCellPosition = m_curCell3dPos + new Vector3(directionToNextCell.x + nextCellPosOffset.x, 0, directionToNextCell.y + nextCellPosOffset.y);
         //Clamp saftey net. This was .45, but changed to .49 when I saw units hitch forward after new cell subscriptions combined with low velocity.
         m_maxX = m_curCell.m_cellPos.x + .49f;
         m_minX = m_curCell.m_cellPos.x - .49f;
@@ -118,23 +119,23 @@ public class EnemyThrall : EnemyController
         m_maxZ = m_curCell.m_cellPos.y + .49f;
         m_minZ = m_curCell.m_cellPos.y - .49f;
 
-        if (m_curCell.m_directionToNextCell.x < 0)
+        if (directionToNextCell.x < 0)
         {
             //We're going left.
             m_minX += -1;
         }
-        else if (m_curCell.m_directionToNextCell.x > 0)
+        else if (directionToNextCell.x > 0)
         {
             //we're going right.
             m_maxX += 1;
         }
 
-        if (m_curCell.m_directionToNextCell.z < 0)
+        if (directionToNextCell.y < 0)
         {
             //We're going down.
             m_minZ += -1;
         }
-        else if (m_curCell.m_directionToNextCell.z > 0)
+        else if (directionToNextCell.y > 0)
         {
             //we're going up.
             m_maxZ += 1;

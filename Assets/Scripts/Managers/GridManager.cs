@@ -30,7 +30,6 @@ public class GridManager : MonoBehaviour
     public bool m_spawnPointsAccessible;
     private List<Cell> m_outOfBoundsSpawnCells;
 
-    public event Action OnFloodFillCompleted;
 
 
     void Awake()
@@ -125,10 +124,16 @@ public class GridManager : MonoBehaviour
                 var neighbor = neighborCells[i];
                 if (visited.Contains(neighbor) == false && frontier.Contains(neighbor) == false)
                 {
+                    /*//If the neighbor is occupied but is not up for sale, we do not set a direction.
+                    if (neighbor.m_isOccupied && !neighbor.m_isUpForSale) continue;
+                    
+                    //If the neighbor is temp occupied (precon), set a direction.
+                    if (neighbor.m_isTempOccupied) return;*/
+                    
                     if (!neighbor.m_isOccupied && !neighbor.m_isTempOccupied || neighbor.m_isUpForSale)
                     {
                         //Get the direction of the neighbor to the curCell.
-                        neighbor.UpdateTempDirection(i);
+                        neighbor.UpdateTempDirection(curCell.m_cellPos);
                         frontier.Enqueue(neighbor);
                         nextTileToGoal[neighbor] = curCell;
 
@@ -456,14 +461,51 @@ public class Cell
 
     //Visualizer
     public GameObject m_gridCellObj;
-    public Vector3 m_directionToNextCell;
-    public Vector3 m_tempDirectionToNextCell;
     private Material m_gridCellObjMaterial;
     private Color m_pathableColor = Color.cyan;
     private Color m_occupiedColor = Color.yellow;
     private Color m_tempOccupiedColor = Color.magenta;
     private Color m_goalColor = Color.green;
+    
+    public Direction m_directionToNextCell = Direction.Unset;
+    public Direction m_tempDirectionToNextCell = Direction.Unset;
 
+    public enum Direction
+    {
+        Unset,
+        North,
+        East,
+        South,
+        West,
+        Portal
+    }
+    
+    public Vector2Int GetDirectionVector(Direction direction)
+    {
+        switch (direction)
+        {
+            case Direction.Unset:
+                return new Vector2Int(0,0);
+            
+            case Direction.North:
+                return new Vector2Int(0,1);
+            
+            case Direction.East:
+                return new Vector2Int(1,0);
+            
+            case Direction.South:
+                return new Vector2Int(0,-1);
+            
+            case Direction.West:
+                return new Vector2Int(-1,0);
+            
+            case Direction.Portal:
+                return new Vector2Int(0,0);
+            
+            default:
+                return new Vector2Int(99,99);
+        }
+    }
 
     public void UpdateActorCount(int i, string name)
     {
@@ -492,6 +534,7 @@ public class Cell
     public void UpdateOccupancy(bool b)
     {
         m_isOccupied = b;
+        
         if (m_isOccupied)
         {
             UpdateGridCellColor(m_occupiedColor);
@@ -510,12 +553,14 @@ public class Cell
     public void SetIsOutOfBounds(bool b)
     {
         m_isOutOfBounds = b;
+        
         UpdateOccupancy(b);
     }
 
     public void UpdateTempOccupancyDisplay(bool b)
     {
         m_isTempOccupied = b;
+        
         if (m_isTempOccupied)
         {
             UpdateGridCellColor(m_tempOccupiedColor);
@@ -543,38 +588,41 @@ public class Cell
         m_gridCellObjMaterial.color = color;
     }
 
-    public void UpdateTempDirection(int i)
+    public void UpdateTempDirection(Vector2Int destinationCellPos)
     {
-        Vector3 direction = new Vector3();
+        // Subtract our position from the cell we wish to direct towards.
+        Vector2Int directionPos = destinationCellPos - m_cellPos;
 
-        switch (i)
+        Direction direction = Direction.Unset;
+        
+        
+        if (directionPos == new Vector2Int(0, 1))
         {
-            case 0:
-                //Tile is north, face south.
-                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 180);
-                //Run south
-                direction = new Vector3(0, 0, -1);
-                break;
-            case 1:
-                //Tile is east, face west.
-                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 90);
-                //Run west
-                direction = new Vector3(-1, 0, 0);
-                break;
-            case 2:
-                //Tile is south, face north.
-                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 0);
-                //Run north
-                direction = new Vector3(0, 0, 1);
-                break;
-            case 3:
-                //Tile is west, face east.
-                m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 270);
-                //Run east
-                direction = new Vector3(1, 0, 0);
-                break;
-            default:
-                break;
+            //Tile is north, face south.
+            m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 0);
+            direction = Direction.North;
+        }
+        else if (directionPos == new Vector2Int(1, 0))
+        {
+            //Tile is east, face west.
+            m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 270);
+            direction = Direction.East;
+        }
+        else if (directionPos == new Vector2Int(0, -1))
+        {
+            //Tile is south, face north.
+            m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 180);
+            direction = Direction.South;
+        }
+        else if (directionPos == new Vector2Int(-1, 0))
+        {
+            //Tile is west, face east.
+            m_gridCellObj.transform.rotation = Quaternion.Euler(90, 0, 90);
+            direction = Direction.West;
+        }
+        else if (Math.Abs(directionPos.x + directionPos.y) > 1)
+        {
+            direction = Direction.Portal;
         }
 
         m_tempDirectionToNextCell = direction;
@@ -584,7 +632,7 @@ public class Cell
     public void SetDirection()
     {
         m_directionToNextCell = m_tempDirectionToNextCell;
-        m_tempDirectionToNextCell = Vector3.zero;
+        m_tempDirectionToNextCell = Direction.Unset;
     }
 }
 

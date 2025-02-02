@@ -267,8 +267,8 @@ public class AStar
         // Continue moving along each cell's direction until we reach the goal
         while (currentPosition != goalCellPos)
         {
-            Vector3 directionToNextCell = Util.GetCellFromPos(currentPosition).m_directionToNextCell;
-            Vector2Int direction = new Vector2Int((int)directionToNextCell.x, (int)directionToNextCell.z);
+            Cell curCell = Util.GetCellFromPos(currentPosition);
+            Vector2Int direction = currentPosition + curCell.GetDirectionVector(curCell.m_directionToNextCell);
 
             // Move to the next cell position
             currentPosition += direction;
@@ -397,10 +397,10 @@ public class AStar
 
             if (curCell.m_portalConnectionCell != null && curCell.m_isPortalEntrance)
             {
-                //Debug.Log($"Found a portal connection.");
-                if (curCell.m_portalConnectionCell.m_tempDirectionToNextCell != Vector3.zero)
+                Debug.Log($"Found a portal connection.");
+                if (curCell.m_portalConnectionCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
                 {
-                    //Debug.Log($"Portal exit has direction, stepping into it.");
+                    Debug.Log($"Portal exit has direction, stepping into it.");
                     curCell = curCell.m_portalConnectionCell;
                     current = curCell.m_cellPos;
                     //Add the portal exit cell
@@ -409,15 +409,15 @@ public class AStar
             }
 
             
-            Vector2Int direction = Util.GetVector2IntFrom3DPos(curCell.m_tempDirectionToNextCell);
+            Cell.Direction direction = curCell.m_tempDirectionToNextCell;
 
-            if (direction == Vector2Int.zero)
+            if (direction == Cell.Direction.Unset)
             {
                 Debug.Log($"{curCell.m_cellPos} Cell has no direction value. Temp Direction to Cell {curCell.m_tempDirectionToNextCell}");
                 return null;
             }
 
-            current += direction;
+            current += curCell.GetDirectionVector(curCell.m_tempDirectionToNextCell);
 
             // Path goes out of bounds, return null
             if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth || current.y < 0 || current.y == GridManager.Instance.m_gridHeight)

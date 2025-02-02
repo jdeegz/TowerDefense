@@ -249,7 +249,10 @@ public class CreepSpawner
         {
             Vector3 spawnPoint = m_creepSpawnPoint.position;
             Cell cell = Util.GetCellFrom3DPos(m_creepSpawnPoint.position);
-            Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
+            
+            Vector2Int directionToNextCell = cell.GetDirectionVector(cell.m_directionToNextCell);
+            Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(directionToNextCell.x, 0, directionToNextCell.y));
+            
             float xOffset = Random.Range(-0.2f, 0.2f);
             float zOffset = Random.Range(-0.2f, 0.2f);
 
@@ -335,7 +338,9 @@ public class CreepSpawner
         Vector3 spawnPoint = new Vector3();
         spawnPoint = new Vector3(cellPos.x, 0, cellPos.y);
 
-        Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
+        Vector2Int directionToNextCell = cell.GetDirectionVector(cell.m_directionToNextCell);
+        Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(directionToNextCell.x, 0, directionToNextCell.y));
+        
         float xOffset = Random.Range(-0.2f, 0.2f);
         float zOffset = Random.Range(-0.2f, 0.2f);
 
@@ -358,7 +363,9 @@ public class CreepSpawner
             Vector3 spawnPoint = new Vector3();
             spawnPoint = new Vector3(cellPos.x, 0, cellPos.y);
 
-            Quaternion spawnRotation = Quaternion.LookRotation(cell.m_directionToNextCell);
+            Vector2Int directionToNextCell = cell.GetDirectionVector(cell.m_directionToNextCell);
+            Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(directionToNextCell.x, 0, directionToNextCell.y));
+            
             float xOffset = Random.Range(-0.2f, 0.2f);
             float zOffset = Random.Range(-0.2f, 0.2f);
 
