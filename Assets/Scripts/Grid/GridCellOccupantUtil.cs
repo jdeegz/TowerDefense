@@ -25,10 +25,6 @@ public class GridCellOccupantUtil
                 {
                     if (pos.x != 0 && pos.x != GridManager.Instance.m_gridWidth - 1 && pos.y != 0 && pos.y != GridManager.Instance.m_gridHeight - 1)
                     {
-                        Debug.Log($"Cell is being double occupied at {pos} by First:{cell.m_occupant.name} Second:{obj.name}!");
-                        Debug.Log($"{pos}");
-                        Debug.Log($"{cell.m_occupant.name}");
-                        Debug.Log($"{obj.name}");
                         obj.SetActive(false);
                     }
                 }
@@ -67,6 +63,11 @@ public class GridCellOccupantUtil
         }
     }
 
+    public static void SetActor(GameObject obj, int i, Cell cell)
+    {
+        cell.UpdateActorCount(i, obj.name);
+    }
+
     public static void SetBuildRestricted(GameObject obj, bool value, int width, int height)
     {
         //Get the bottom left cell.
@@ -85,5 +86,19 @@ public class GridCellOccupantUtil
                 cell.UpdateBuildRestrictedValue(value);
             }
         }
+    }
+
+    public static void SetPortalConnectionCell(GameObject portalEntranceObj, GameObject portalExitObj)
+    {
+        //Get the cell we need to update
+        Cell cellEntrance = Util.GetCellFrom3DPos(portalEntranceObj.transform.position);
+        Cell cellExit = Util.GetCellFrom3DPos(portalExitObj.transform.position);
+
+        //Debug.Log($"{cellEntrance.m_cellPos} connected to {cellExit.m_cellPos} by a portal!");
+        cellEntrance.m_portalConnectionCell = cellExit;
+        SetBuildRestricted(portalEntranceObj, true, 1, 1);
+        
+        cellExit.m_portalConnectionCell = cellEntrance;
+        SetBuildRestricted(portalExitObj, true, 1, 1);
     }
 }

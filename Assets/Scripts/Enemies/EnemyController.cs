@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using DG.Tweening;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.VFX;
 using Random = UnityEngine.Random;
+using Timer = System.Timers.Timer;
 
 public abstract class EnemyController : Dissolvable, IEffectable
 {
@@ -81,7 +83,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void SetupEnemy(bool active)
     {
         m_isComplete = false;
-        
+
         m_cellsTravelled = -1;
 
         if (GameplayManager.Instance)
@@ -150,11 +152,11 @@ public abstract class EnemyController : Dissolvable, IEffectable
         UIHealthMeter lifeMeter = ObjectPoolManager.SpawnObject(IngameUIController.Instance.m_healthMeter.gameObject, IngameUIController.Instance.transform).GetComponent<UIHealthMeter>();
         lifeMeter.SetEnemy(this, m_curMaxHealth, m_enemyData.m_healthMeterOffset, m_enemyData.m_healthMeterScale);
     }
-    
+
     public void RequestPlayAudio(AudioClip clip, AudioSource audioSource = null)
     {
         if (clip == null) return;
-        
+
         if (audioSource == null) audioSource = m_audioSource;
         audioSource.PlayOneShot(clip);
     }
@@ -162,12 +164,12 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public void RequestPlayAudio(List<AudioClip> clips, AudioSource audioSource = null)
     {
         if (clips[0] == null) return;
-        
+
         if (audioSource == null) audioSource = m_audioSource;
         int i = Random.Range(0, clips.Count);
         audioSource.PlayOneShot(clips[i]);
     }
-    
+
     public void RequestPlayAudioLoop(AudioClip clip, AudioSource audioSource = null)
     {
         if (audioSource == null) audioSource = m_audioSource;
@@ -175,7 +177,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         audioSource.clip = clip;
         audioSource.Play();
     }
-    
+
     public void RequestStopAudioLoop(AudioSource audioSource = null)
     {
         if (audioSource == null) audioSource = m_audioSource;
@@ -218,13 +220,39 @@ public abstract class EnemyController : Dissolvable, IEffectable
     void FixedUpdate()
     {
         if (!m_isActive) return;
+
+        if (m_isTeleporting) return;
         
         HandleMovement();
     }
 
+    public bool m_isTeleporting;
+
+    public void BeginTeleport(Cell newCell)
+    {
+        m_isTeleporting = true; // This will null m_enemy in all projectiles.
+        
+        transform.position = new Vector3(-500, 0, 0); // This will null targets in all towers.
+
+        Debug.Log($"Unit at {m_curPos} has begun teleporting from {newCell.m_cellPos} to {newCell.m_portalConnectionCell.m_cellPos}.");
+        // Begin a timer, then appear at the destination and re-enable.
+        GameUtil.DelayTimer.DelayAction(2f, () => CompleteTeleport(newCell));
+    }
+
+    private void CompleteTeleport(Cell newCell)
+    {
+        Vector2Int portalPos2D = newCell.m_portalConnectionCell.m_cellPos;
+        Vector3 pos = new Vector3(portalPos2D.x, 0, portalPos2D.y);
+        transform.position = pos;
+        
+        m_animator.SetTrigger("Birth");
+        
+        m_isTeleporting = false;
+    }
+
     //Movement
     //Functions
-    public virtual void HandleMovement() 
+    public virtual void HandleMovement()
     {
         //Update Cell occupancy
         Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
@@ -247,6 +275,14 @@ public abstract class EnemyController : Dissolvable, IEffectable
                     m_curCell.UpdateActorCount(-1, gameObject.name);
                 }
 
+                // Is the new cell a portal? Is it also a portal entrance?
+                if (newCell.m_portalConnectionCell != null && newCell.m_isPortalEntrance)
+                {
+                    // Begin teleportation sequence, send the destination with the call.
+                    BeginTeleport(newCell);
+                    return;
+                }
+
                 //Assign new position, we are now in a new cell.
                 m_curPos = newPos;
 
@@ -259,10 +295,10 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 ++m_cellsTravelled;
             }
 
-            if(m_curCell == null) Debug.Log($"curCell is null.");
-            if(m_goalCell == null) Debug.Log($"goal cell is null.");
+            if (m_curCell == null) Debug.Log($"curCell is null.");
+            if (m_goalCell == null) Debug.Log($"goal cell is null.");
             m_cellsToGoal = AStar.CalculateGridDistance(m_curCell.m_cellPos, m_goalCell.m_cellPos);
-            
+
             float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
             Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
 
@@ -373,18 +409,18 @@ public abstract class EnemyController : Dissolvable, IEffectable
         float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
         m_curHealth -= cumDamage;
         UpdateHealth?.Invoke(-cumDamage);
-        
+
         //If we're dead, destroy.
         if (m_curHealth <= 0)
         {
             OnEnemyDestroyed(transform.position);
             return;
         }
-        
+
         //VFX
 
         //Hit Flash
-        if(gameObject.activeSelf) HitFlash();
+        if (gameObject.activeSelf) HitFlash();
     }
 
     public void HitFlash()
@@ -399,7 +435,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
                     Color startColor = new Color(130f / 255f, 50f / 255f, 50f / 255f); // Convert to 0-1 range
                     material.SetColor("_EmissionColor", startColor);
-                    
+
                     Color endColor = Color.black;
                     material.DOColor(endColor, "_EmissionColor", 0.15f);
                 }
@@ -432,7 +468,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_isComplete) return;
-        
+
         RequestPlayAudio(m_enemyData.m_audioDeathClips);
         RequestStopAudioLoop(m_audioSource);
 
@@ -512,7 +548,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     {
         return m_curMaxHealth;
     }
-    
+
     public virtual int GetCellCountToGoal()
     {
         return m_cellsToGoal;
@@ -641,7 +677,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public void HandleEffect(StatusEffect statusEffect)
     {
         statusEffect.m_elapsedTime += Time.deltaTime;
-        
+
         if (statusEffect.m_elapsedTime > statusEffect.m_data.m_lifeTime)
         {
             //Debug.Log($"Removing effect from {statusEffect.m_sender}. Elapsed time {statusEffect.m_elapsedTime} is greater than Life Time {statusEffect.m_data.m_lifeTime}.");
@@ -659,7 +695,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 if (!m_decreaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
                     m_decreaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
-                    
+
                     statusEffectSource = m_decreaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
@@ -672,7 +708,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 if (!m_increaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
                     m_increaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
-                    
+
                     statusEffectSource = m_increaseMoveSpeedVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
@@ -685,7 +721,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 if (!m_decreaseHealthVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
                     m_decreaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
-                    
+
                     statusEffectSource = m_decreaseHealthVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
@@ -698,7 +734,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 if (!m_increaseHealthVFXOjb && statusEffect.m_data.m_effectVFX)
                 {
                     m_increaseHealthVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
-                    
+
                     statusEffectSource = m_increaseHealthVFXOjb.GetComponent<StatusEffectSource>();
                     if (statusEffectSource)
                     {
@@ -874,7 +910,7 @@ public class StatusEffect
         m_sender = sender;
         m_data = data;
     }
-    
+
     /*public void SetSender(GameObject obj)
     {
         m_sender = obj;

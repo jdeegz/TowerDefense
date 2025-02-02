@@ -234,19 +234,25 @@ public class AStar
             // Add the current cell to the list of island cells
             islandCells.Add(curCell);
 
+            // If the current cell we're checking is a portal, the the neighbors of the connected cell instead.
+            /*if (curCell.m_portalConnectionCell != null)
+            {
+                curCell = curCell.m_portalConnectionCell;
+            }*/
+            
             // Recursively explore the neighbors of the current cell
             // Up neighbor
             Cell northNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y + 1));
             if (curCell.m_canPathNorth && northNeighborCell != null) PerformDFS(northNeighborCell, islandCells, visited);
-            
+
             // Right neighbor
             Cell eastNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x + 1, curCellPos.y));
-            if (curCell.m_canPathEast && eastNeighborCell != null) PerformDFS(eastNeighborCell, islandCells, visited); 
-            
+            if (curCell.m_canPathEast && eastNeighborCell != null) PerformDFS(eastNeighborCell, islandCells, visited);
+
             // Down neighbor
             Cell southNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y - 1));
             if (curCell.m_canPathSouth && southNeighborCell != null) PerformDFS(southNeighborCell, islandCells, visited);
-            
+
             // Left neighbor
             Cell westNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x - 1, curCellPos.y));
             if (curCell.m_canPathWest && westNeighborCell != null) PerformDFS(westNeighborCell, islandCells, visited);
@@ -281,6 +287,7 @@ public class AStar
 
     public static List<Vector2Int> FindExitPath(Vector2Int start, Vector2Int end, Vector2Int precon, Vector2Int exit)
     {
+        //Debug.Log($"Finding Exit Path from {start} - {end}");
         List<Vector2Int> path = new List<Vector2Int>();
 
         if (start == end
@@ -365,12 +372,13 @@ public class AStar
         }
 
         // No path found
-        // Debug.Log($"No Path Found. {start} - {end}");
+        //Debug.Log($"No Path Found. {start} - {end}");
         return null;
     }
 
     public static List<Vector2Int> GetExitPath(Vector2Int startPos, Vector2Int endPos)
     {
+        //Debug.Log($"Getting Exit Path from {startPos} - {endPos}");
         List<Vector2Int> path = new List<Vector2Int>();
         Vector2Int current = startPos;
 
@@ -381,25 +389,40 @@ public class AStar
             //If the current cell is occupied, we cannot find the exit, this is not a valid path.
             if ((curCell.m_isOccupied && !curCell.m_isUpForSale) || curCell.m_isTempOccupied)
             {
-                //Debug.Log("GetExitPath did not find a path.");
+                Debug.Log($"GetExitPath did not find a path, {curCell.m_cellPos} is occupied.");
                 return null;
             }
 
             path.Add(current);
+
+            if (curCell.m_portalConnectionCell != null && curCell.m_isPortalEntrance)
+            {
+                //Debug.Log($"Found a portal connection.");
+                if (curCell.m_portalConnectionCell.m_tempDirectionToNextCell != Vector3.zero)
+                {
+                    //Debug.Log($"Portal exit has direction, stepping into it.");
+                    curCell = curCell.m_portalConnectionCell;
+                    current = curCell.m_cellPos;
+                    //Add the portal exit cell
+                    path.Add(current);
+                }
+            }
+
+            
             Vector2Int direction = Util.GetVector2IntFrom3DPos(curCell.m_tempDirectionToNextCell);
 
             if (direction == Vector2Int.zero)
             {
-                //Debug.Log("Cell has no direction value.");
+                Debug.Log($"{curCell.m_cellPos} Cell has no direction value. Temp Direction to Cell {curCell.m_tempDirectionToNextCell}");
                 return null;
             }
 
             current += direction;
 
             // Path goes out of bounds, return null
-            if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth  || current.y < 0 || current.y == GridManager.Instance.m_gridHeight)
+            if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth || current.y < 0 || current.y == GridManager.Instance.m_gridHeight)
             {
-                //Debug.LogError("Path goes out of bounds.");
+                Debug.LogError("Path goes out of bounds.");
                 return null;
             }
         }

@@ -24,7 +24,7 @@ public class ProjectileBullet : Projectile
         {
             m_targetPos = m_enemy.m_targetPoint.position;
             
-            if (m_enemy.GetCurrentHP() <= 0)
+            if (m_enemy.GetCurrentHP() <= 0 || m_enemy.m_isTeleporting)
             {
                 m_enemy = null;
             }

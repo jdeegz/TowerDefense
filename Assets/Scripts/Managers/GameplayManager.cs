@@ -794,7 +794,6 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.FloodFillGrid:
                 break;
             case GameplayState.CreatePaths:
-                //Test to open player save data and read from it.
                 break;
             case GameplayState.Setup:
                 UpdateInteractionState(InteractionState.Idle);
@@ -1163,7 +1162,7 @@ public class GameplayManager : MonoBehaviour
             Cell cell = cells[i];
             if (cell.m_isOccupied) continue;
 
-            //Debug.Log($"Neighbor cells {cell.m_cellPos} is unoccupied. Checking for path.");
+            Debug.Log($"Neighbor cells {cell.m_cellPos} is unoccupied. Checking for path.");
             List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
 
 
@@ -1173,14 +1172,14 @@ public class GameplayManager : MonoBehaviour
                 continue;
             }
 
-            //Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
+            Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
             List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell));
 
             //if (islandCells.Count >= 0) Debug.Log($"{cell.m_cellPos} has no path. Island Found of size: {islandCells.Count}");
 
-            //Debug.Log($"Returning FALSE because an actor was found on a single-cell island.");
             if (islandCells.Count == 0 && cell.m_actorCount > 0)
             {
+                Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {cell} contains {cell.m_actorCount} actors");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                 return false;
             }
@@ -1190,7 +1189,7 @@ public class GameplayManager : MonoBehaviour
                 //Debug.Log($"Island Cell found: {islandCell.m_cellPos} and has actors: {islandCell.m_actorCount}.");
                 if (islandCell.m_actorCount > 0)
                 {
-                    //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {islandCell.m_cellPos} contains actors");
+                    Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {islandCell.m_cellPos} contains actors");
                     m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                     return false;
                 }
@@ -1203,7 +1202,7 @@ public class GameplayManager : MonoBehaviour
         //Check to see if any of our UnitPaths have no path.
         if (!GridManager.Instance.m_spawnPointsAccessible)
         {
-            //Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
+            Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
             m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
             return false;
         }

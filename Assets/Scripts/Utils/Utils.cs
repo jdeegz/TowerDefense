@@ -57,7 +57,7 @@ public static class Util
 
                 // Skip this cell if it's not in the gamefield.
                 if (!IsWithinBounds(currentPos.x, currentPos.y)) continue;
-                
+
                 // Skip the inner grid
                 if (Mathf.Abs(x) < distance && Mathf.Abs(z) < distance) continue;
 
@@ -458,7 +458,7 @@ public static class Util
 
         return GridManager.Instance.m_gridCells[index];
     }
-    
+
     public static List<Cell> GetCellsFromPos(Vector2Int pos, int width, int height)
     {
         List<Cell> cellsFromPos = new List<Cell>();
@@ -472,7 +472,7 @@ public static class Util
             {
                 int xPos = bottomLeftCellPos.x + x;
                 int zPos = bottomLeftCellPos.y + z;
-                
+
                 //Check we're within the grid width
                 if (xPos < 0 || xPos >= GridManager.Instance.m_gridWidth)
                 {
@@ -486,13 +486,14 @@ public static class Util
                     //Debug.Log("Z not within grid bounds.");
                     return null;
                 }
-                
+
                 Cell cell = GetCellFromPos(new Vector2Int(xPos, zPos));
 
                 if (cell.m_isOutOfBounds)
                 {
                     return null;
                 }
+
                 cellsFromPos.Add(cell);
             }
         }
@@ -514,7 +515,7 @@ public static class Util
             {
                 int xPos = bottomLeftCellPos.x + x;
                 int zPos = bottomLeftCellPos.y + z;
-                
+
                 //Check we're within the grid width
                 if (xPos < 0 || xPos >= GridManager.Instance.m_gridWidth)
                 {
@@ -528,20 +529,21 @@ public static class Util
                     //Debug.Log("Z not within grid bounds.");
                     return null;
                 }
-                
+
                 Cell cell = GetCellFromPos(new Vector2Int(xPos, zPos));
 
                 if (cell.m_isOutOfBounds)
                 {
                     return null;
                 }
+
                 cellsFromPos.Add(cell);
             }
         }
 
         return cellsFromPos;
     }
-    
+
     public static Cell GetCellFrom3DPos(Vector3 pos)
     {
         //Debug.Log($"Getting cell from {pos}");
@@ -606,18 +608,19 @@ public static class Util
         string formattedPercentage = percentageValue.ToString("0") + "%";
         return formattedPercentage;
     }
-    
+
     public static List<Cell> FindEdgeCells(List<Cell> islandCells)
     {
         HashSet<Cell> islandSet = new HashSet<Cell>(islandCells); // For quick lookup
         List<Cell> edgeCells = new List<Cell>();
-        
+
         // Define 4-connectivity (use diagonals for 8-connectivity)
-        Vector2Int[] directions = {
+        Vector2Int[] directions =
+        {
             new Vector2Int(-1, 0), // Left
-            new Vector2Int(1, 0),  // Right
+            new Vector2Int(1, 0), // Right
             new Vector2Int(0, -1), // Down
-            new Vector2Int(0, 1)   // Up
+            new Vector2Int(0, 1) // Up
         };
 
         // Loop through each cell in the island
@@ -638,17 +641,18 @@ public static class Util
 
         return edgeCells;
     }
-    
+
     public static List<Cell> FindInteriorCells(List<Cell> islandCells)
     {
         HashSet<Cell> islandSet = new HashSet<Cell>(islandCells); // For quick lookup
-        List<Cell> interiorCells = new List<Cell>(); 
+        List<Cell> interiorCells = new List<Cell>();
 
-        Vector2Int[] directions = {
+        Vector2Int[] directions =
+        {
             new Vector2Int(-1, 0), // Left
-            new Vector2Int(1, 0),  // Right
+            new Vector2Int(1, 0), // Right
             new Vector2Int(0, -1), // Down
-            new Vector2Int(0, 1)   // Up
+            new Vector2Int(0, 1) // Up
         };
 
         foreach (Cell cell in islandCells)
@@ -665,7 +669,7 @@ public static class Util
                 if (!islandSet.Contains(neighborCell))
                 {
                     isEdge = true;
-                    break; 
+                    break;
                 }
             }
 
@@ -678,26 +682,38 @@ public static class Util
         return interiorCells;
     }
 
-    
-
-    public static Cell[] GetNeighborCells(Cell startCell, Cell[] gridCells)
+    public static List<Cell> GetNeighborCells(Cell startCell, Cell[] gridCells)
     {
         // Get the neighboring cells (North, East, South, and West)
-        Vector2Int[] neighbors = new Vector2Int[4];
+        List<Vector2Int> neighbors = new List<Vector2Int>();
 
         Cell curCell = GetCellFromPos(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y));
-        if (curCell.m_canPathNorth) neighbors[0] = new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1);
-        if (curCell.m_canPathEast) neighbors[1] = new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y);
-        if (curCell.m_canPathSouth) neighbors[2] = new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1);
-        if (curCell.m_canPathWest) neighbors[3] = new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y);
+        if (curCell.m_canPathNorth) neighbors.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1));
+        if (curCell.m_canPathEast) neighbors.Add(new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y));
+        if (curCell.m_canPathSouth) neighbors.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1));
+        if (curCell.m_canPathWest) neighbors.Add(new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y));
 
-        Cell[] neighborCells = new Cell[4];
+        // Is this portal a cell?
+        if (curCell.m_portalConnectionCell != null)
+        {
+            // This cell has no direction. If the destination cell has no direction, we're in the entrance, work normally.
+            if (curCell.m_portalConnectionCell.m_tempDirectionToNextCell == Vector3.zero)
+            {
+                // Only send the portal cell. as a neighbor.
+                curCell.m_portalConnectionCell.m_isPortalEntrance = true;
+                neighbors = new List<Vector2Int>();
+                neighbors.Add(curCell.m_portalConnectionCell.m_cellPos);
+                //Debug.Log($"Cell {curCell.m_cellPos} is a portal cell. Setting it's connection {curCell.m_portalConnectionCell} as the entrance.");
+            }
+        }
 
-        for (int i = 0; i < neighbors.Length; i++)
+        List<Cell> neighborCells = new List<Cell>();
+
+        for (int i = 0; i < neighbors.Count; i++)
         {
             if (IsWithinBounds(neighbors[i].x, neighbors[i].y))
             {
-                neighborCells[i] = (gridCells[GetCellIndex(neighbors[i])]);
+                neighborCells.Add(gridCells[GetCellIndex(neighbors[i])]);
             }
         }
 

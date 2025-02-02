@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TechnoBabelGames;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -18,7 +19,7 @@ public class GridManager : MonoBehaviour
     public GameObject[] m_gridcellObjects;
     public LayerMask m_groundLayer;
 
-    public List<UnitPath> m_unitPaths;
+    private List<UnitPath> m_unitPaths;
     private List<Vector2Int> m_exits;
     private List<Vector2Int> m_spawners;
     private Vector2Int m_enemyGoalPos;
@@ -28,6 +29,8 @@ public class GridManager : MonoBehaviour
     private bool m_previousPreconOccupancy;
     public bool m_spawnPointsAccessible;
     private List<Cell> m_outOfBoundsSpawnCells;
+
+    public event Action OnFloodFillCompleted;
 
 
     void Awake()
@@ -56,10 +59,12 @@ public class GridManager : MonoBehaviour
             case GameplayManager.GameplayState.PlaceObstacles:
                 break;
             case GameplayManager.GameplayState.FloodFillGrid:
-                FloodFillGrid(m_gridCells, null);
+                FloodFillGrid(m_gridCells, () => GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths));
                 break;
             case GameplayManager.GameplayState.CreatePaths:
                 BuildPathList();
+                SetCellDirections();
+                GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Setup);
                 break;
             case GameplayManager.GameplayState.Setup:
                 break;
@@ -89,6 +94,7 @@ public class GridManager : MonoBehaviour
 
     public void FloodFillGrid(Cell[] gridCells, Action callback)
     {
+        Debug.Log($"Begin Flood Fill.");
         int goalCellIndex = Util.GetCellIndex(GameplayManager.Instance.m_enemyGoal.position);
         Cell goalCell = gridCells[goalCellIndex];
         Dictionary<Cell, Cell> nextTileToGoal = new Dictionary<Cell, Cell>();
@@ -110,8 +116,8 @@ public class GridManager : MonoBehaviour
         {
             Cell curCell = frontier.Dequeue();
 
-            Cell[] neighborCells = Util.GetNeighborCells(curCell, gridCells);
-            for (var i = 0; i < neighborCells.Length; i++)
+            List<Cell> neighborCells = Util.GetNeighborCells(curCell, gridCells);
+            for (var i = 0; i < neighborCells.Count; i++)
             {
                 //Break out if the array entry for this neighbor is null
                 if (neighborCells[i] == null) continue;
@@ -141,34 +147,33 @@ public class GridManager : MonoBehaviour
             visited.Add(curCell);
         }
 
-        //Debug.Log($"{spawnPointCellsFound} of {spawnPointCells.Count} spawners found during FloodFill.");
-
         //If we've found all the spawn points, this is good, we can update each path.
-        if (m_spawnPointsAccessible = spawnPointCellsFound == spawnPointCells.Count)
+        m_spawnPointsAccessible = spawnPointCellsFound == spawnPointCells.Count;
+        
+        if (!m_spawnPointsAccessible)
         {
-            //If we're setting up the game, continue doing so.
-            if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.FloodFillGrid)
-            {
-                SetCellDirections();
-                //Debug.Log("Grid has been Flood Filled.");
-                GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.CreatePaths);
-            }
+            Debug.Log($"We did not find all spawn points when flood filling from the exit.");
+            return;
+        }
 
-            //Debug.Log($"GridManager: Drawing new Unit Paths");
-            foreach (UnitPath unitPath in m_unitPaths)
-            {
-                //Break this into its own function outside of flood fill.
-                unitPath.DrawExitPathLine();
-            }
-        }
-        else
-        {
-            //Debug.Log($"We did not find all exit paths.");
-        }
+        UpdateUnitPaths();
 
         if (callback != null)
         {
             callback.Invoke();
+        }
+    }
+
+    private void UpdateUnitPaths()
+    {
+        if (m_unitPaths == null || m_unitPaths.Count == 0) return;
+
+        Debug.Log($"Updating Unit Paths");
+        
+        foreach (UnitPath unitPath in m_unitPaths)
+        {
+            //Break this into its own function outside of flood fill.
+            unitPath.DrawExitPathLine();
         }
     }
 
@@ -179,6 +184,8 @@ public class GridManager : MonoBehaviour
         {
             cell.SetDirection();
         }
+
+        Debug.Log($"Cell Directions Set.");
     }
 
     void BuildGrid()
@@ -201,7 +208,7 @@ public class GridManager : MonoBehaviour
                 cell.UpdateOccupancy(false);
 
                 HitTestCellForGround(m_gridcellObjects[index].transform.position, cell);
-                
+
                 //If we're a cell on the perimeter, mark it as occupied, else we hit test it.
                 /*if (x == 0 || x == m_gridWidth - 1 || z == 0 || z == m_gridHeight - 1)
                 {
@@ -273,7 +280,7 @@ public class GridManager : MonoBehaviour
 
         FloodFillGrid(m_gridCells, null);
     }
-    
+
     void RevertPreviewSellBuildingCellTempChanges()
     {
         if (m_previousPreconCells == null) return;
@@ -361,6 +368,8 @@ public class GridManager : MonoBehaviour
 
     public void BuildPathList()
     {
+        Debug.Log($"Building Path List.");
+        m_unitPaths = new List<UnitPath>();
         CastleController castleController = GameplayManager.Instance.m_castleController;
         m_enemyGoalPos = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_enemyGoal.position);
 
@@ -389,7 +398,6 @@ public class GridManager : MonoBehaviour
             unitPath.m_exits = m_exits;
             unitPath.m_spawners = m_spawners;
             unitPath.m_enemyGoalPos = m_enemyGoalPos;
-            unitPath.m_lineRenderer = null;
             unitPath.Setup();
             m_unitPaths.Add(unitPath);
             //Debug.Log($"Added Unit Path for {obj.name}");
@@ -409,17 +417,14 @@ public class GridManager : MonoBehaviour
                 unitPath.m_exits = m_exits;
                 unitPath.m_spawners = m_spawners;
                 unitPath.m_enemyGoalPos = m_enemyGoalPos;
-                GameObject lineObj = new GameObject("Line");
-                lineObj.transform.SetParent(spawner.gameObject.transform);
-                //Debug.Log($"Line Renderer Made.");
-                unitPath.m_lineRenderer = lineObj.AddComponent<TBLineRendererComponent>();
+                unitPath.m_displayThisPath = true;
                 unitPath.Setup();
                 m_unitPaths.Add(unitPath);
                 //Debug.Log($"Added Unit Path for {spawner.gameObject.name}");
             }
         }
 
-        GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Setup);
+        Debug.Log($"Building Paths Completed. Built {m_unitPaths.Count} paths.");
     }
 }
 
@@ -430,15 +435,20 @@ public class Cell
     public bool m_isGoal;
     public bool m_isOccupied;
     public bool m_isOutOfBounds;
-    public GameObject m_occupant;
     public bool m_isTempOccupied;
     public bool m_isUpForSale;
     public bool m_isBuildRestricted;
+
+    public GameObject m_occupant;
     public ResourceNode m_cellResourceNode;
-    public int m_actorCount;
     public List<string> m_actorsList;
+
+    public int m_actorCount;
     public int m_cellIndex;
     public Vector2Int m_cellPos;
+    public Cell m_portalConnectionCell;
+    public bool m_isPortalEntrance;
+
     public bool m_canPathNorth = true;
     public bool m_canPathEast = true;
     public bool m_canPathSouth = true;
@@ -491,7 +501,12 @@ public class Cell
             UpdateGridCellColor(m_pathableColor);
         }
     }
-    
+
+    public void SetPortalConnectionCell(Cell cell)
+    {
+        m_portalConnectionCell = cell;
+    }
+
     public void SetIsOutOfBounds(bool b)
     {
         m_isOutOfBounds = b;
@@ -569,6 +584,7 @@ public class Cell
     public void SetDirection()
     {
         m_directionToNextCell = m_tempDirectionToNextCell;
+        m_tempDirectionToNextCell = Vector3.zero;
     }
 }
 
@@ -590,48 +606,71 @@ public class UnitPath
     public bool m_isExit;
     public bool m_preconState;
     public bool m_pathDirty;
+    public bool m_displayThisPath;
 
     private Color m_lineRendererColorOn;
     private Color m_lineRendererColorOff;
-
+    private List<TBLineRendererComponent> m_lineRenderers;
 
     public void Setup()
     {
         m_path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
-
-        //Define desired properties of the line.
-        if (m_lineRenderer != null)
+        //UpdateExitPath();
+        if (m_path == null)
         {
+            //Debug.Log("Unit Path could not path to exit.");
+            return;
+        }
+
+        if (m_displayThisPath)
+        {
+            // We want to display this path.
             m_standardSpawner.OnActiveWaveSet += StandardSpawnActiveWaveSet;
-            m_lineRenderer.lineRendererProperties = new TBLineRenderer();
-            Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
-            m_lineRenderer.lineRendererProperties.texture = instancedMaterial;
-            m_lineRenderer.lineRendererProperties.lineWidth = 0.1f;
-            ColorUtility.TryParseHtmlString("#eca816", out Color colorOn);
-            ColorUtility.TryParseHtmlString("#9fa7af", out Color colorOff);
-            m_lineRenderer.lineRendererProperties.roundedCorners = true;
-            m_lineRenderer.lineRendererProperties.startColor = colorOn;
-            m_lineRenderer.lineRendererProperties.endColor = colorOff;
-            m_lineRenderer.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
+            CreateLineRenderer();
+            DrawExitPathLine();
+            DisplayAsSpawnerActive(false);
+        }
+    }
 
-            //Assign the properties.
-            m_lineRenderer.SetLineRendererProperties();
+    private void CreateLineRenderer()
+    {
+        if (m_lineRenderers == null)
+        {
+            m_lineRenderers = new List<TBLineRendererComponent>();
+            Debug.Log($"Liner Renderers created.");
+        }
 
-            //UpdateExitPath();
-            if (m_path == null)
-            {
-                //Debug.Log("Unit Path could not path to exit.");
-                return;
-            }
+        TBLineRendererComponent newLine = new GameObject("Line Segment").AddComponent<TBLineRendererComponent>();
+        m_lineRenderers.Add(newLine);
 
-            m_lineRenderer.SetSpawnerActive(false);
-            m_lineRenderer.SetPoints(m_path);
+        Debug.Log($"New Line added to Line Renderers.");
+
+        newLine.lineRendererProperties = new TBLineRenderer();
+        Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
+        newLine.lineRendererProperties.texture = instancedMaterial;
+        newLine.lineRendererProperties.lineWidth = 0.1f;
+        ColorUtility.TryParseHtmlString("#eca816", out Color colorOn);
+        ColorUtility.TryParseHtmlString("#9fa7af", out Color colorOff);
+        newLine.lineRendererProperties.roundedCorners = true;
+        newLine.lineRendererProperties.startColor = colorOn;
+        newLine.lineRendererProperties.endColor = colorOff;
+        newLine.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
+
+        //Assign the properties.
+        newLine.SetLineRendererProperties();
+    }
+
+    private void DisplayAsSpawnerActive(bool value)
+    {
+        foreach (TBLineRendererComponent lineRenderer in m_lineRenderers)
+        {
+            lineRenderer.SetSpawnerActive(value);
         }
     }
 
     private void StandardSpawnActiveWaveSet(CreepWave activeWave)
     {
-        m_lineRenderer.SetSpawnerActive(activeWave.m_creeps != null && activeWave.m_creeps.Count > 0);
+        DisplayAsSpawnerActive(activeWave.m_creeps != null && activeWave.m_creeps.Count > 0);
     }
 
     void PreconstructedTowerClear()
@@ -642,9 +681,10 @@ public class UnitPath
             m_preconState = false;
             m_path = new List<Vector2Int>(m_lastGoodPath);
 
-            if (m_lineRenderer != null)
+            if (m_displayThisPath)
             {
-                m_lineRenderer.SetPoints(m_path);
+                // We want to display this path.
+                DrawExitPathLine();
             }
         }
     }
@@ -762,16 +802,57 @@ public class UnitPath
 
     public void DrawExitPathLine()
     {
-        if (m_lineRenderer == null) return;
+        if (!m_displayThisPath) return;
+
+        Debug.Log($"Drawing Exit Path Line from {m_startPos} - {m_enemyGoalPos}.");
+
         List<Vector2Int> path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
 
-        float length = 0;
+        /*Debug.Log($"Got an exit path of count: {path.Count}");
+        Debug.Log($"Drawing Path from {path[0]} to {path.Last()}");*/
+
+        int pathCount = 0;
+        List<Vector2Int> curPath = new List<Vector2Int>();
         for (int i = 1; i < path.Count; i++)
         {
-            length += Vector2Int.Distance(path[i - 1], path[i]);
+            curPath.Add(path[i]);
+            Cell curCell = Util.GetCellFromPos(path[i]);
+            m_lineRenderers[pathCount].gameObject.SetActive(true);
+            if (curCell.m_portalConnectionCell != null && curCell.m_isPortalEntrance) // Trying isPortalEntrance false because i believe the path starts from the castle.
+            {
+                //Debug.Log($"Found Portal entrance cell. Inserting new position into path.");
+
+                //Stop adding to this current list of path positions, and send them to a line renderer to display.
+                //Debug.Log($"Enabling the Line Renderer Component {pathCount} of {m_lineRenderers.Count}");
+                m_lineRenderers[pathCount].SetPoints(curPath);
+                //Debug.Log($"Setting the paths points.");
+                ++pathCount;
+
+                //Create a new list to start adding positions to. If there are no line renderers to use, add one to the game ojbect, and then add it to the pool.
+                if (pathCount == m_lineRenderers.Count)
+                {
+                    //Debug.Log($"Preparing a new Line Renderer.");
+                    CreateLineRenderer();
+                }
+
+                curPath = new List<Vector2Int>();
+            }
         }
 
+
+        m_lineRenderers[pathCount].SetPoints(curPath);
+        ++pathCount;
+
+        //If we're done, and there are active linerenderers, disable them.
+        //Debug.Log($"Line Renderers list is null: {m_lineRenderers == null}");
+
+        for (int i = pathCount; i < m_lineRenderers.Count; ++i)
+        {
+            m_lineRenderers[i].gameObject.SetActive(false);
+            //Debug.Log($"Disabling the Line Renderer Component {pathCount} of {m_lineRenderers.Count}");
+        }
+
+
         m_path = path;
-        m_lineRenderer.SetPoints(path);
     }
 }
