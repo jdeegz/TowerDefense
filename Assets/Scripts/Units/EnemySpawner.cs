@@ -86,8 +86,15 @@ public abstract class EnemySpawner : MonoBehaviour
         else
         {
             //Subtract the number of training ways so that we start at wave 0 in the new lists.
-            int wave = (gameplayWave - m_spawnerWaves.m_introWaves.Count) % m_spawnerWaves.m_loopingWaves.Count;
-            creepWave = m_spawnerWaves.m_loopingWaves[wave];
+            if (m_spawnerWaves.m_loopingWaves.Count == 1)
+            {
+                creepWave = m_spawnerWaves.m_loopingWaves[0];
+            }
+            else
+            {
+                int wave = (gameplayWave - m_spawnerWaves.m_introWaves.Count) % m_spawnerWaves.m_loopingWaves.Count;
+                creepWave = m_spawnerWaves.m_loopingWaves[wave];
+            }
             //Debug.Log($"LOOPING Wave {wave} Chosen.");
         }
 
@@ -249,10 +256,10 @@ public class CreepSpawner
         {
             Vector3 spawnPoint = m_creepSpawnPoint.position;
             Cell cell = Util.GetCellFrom3DPos(m_creepSpawnPoint.position);
-            
+
             Vector2Int directionToNextCell = cell.GetDirectionVector(cell.m_directionToNextCell);
             Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(directionToNextCell.x, 0, directionToNextCell.y));
-            
+
             float xOffset = Random.Range(-0.2f, 0.2f);
             float zOffset = Random.Range(-0.2f, 0.2f);
 
@@ -288,7 +295,7 @@ public class CreepSpawner
             Debug.Log($"ERROR, EXPECTING CELLS, HAVE NONE.");
             return;
         }
-        
+
         m_elapsedTime += Time.deltaTime;
 
         // Wait for defined delay.
@@ -305,7 +312,7 @@ public class CreepSpawner
             m_unitsSpawned = 0;
             m_nextIndividualEnemySpawn = 0;
         }
-        
+
         // Check to see if we've spawned all the enemies for this interval.
         if (m_unitsSpawned >= m_unitsToSpawn)
         {
@@ -340,7 +347,7 @@ public class CreepSpawner
 
         Vector2Int directionToNextCell = cell.GetDirectionVector(cell.m_directionToNextCell);
         Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(directionToNextCell.x, 0, directionToNextCell.y));
-        
+
         float xOffset = Random.Range(-0.2f, 0.2f);
         float zOffset = Random.Range(-0.2f, 0.2f);
 
@@ -365,7 +372,7 @@ public class CreepSpawner
 
             Vector2Int directionToNextCell = cell.GetDirectionVector(cell.m_directionToNextCell);
             Quaternion spawnRotation = Quaternion.LookRotation(new Vector3(directionToNextCell.x, 0, directionToNextCell.y));
-            
+
             float xOffset = Random.Range(-0.2f, 0.2f);
             float zOffset = Random.Range(-0.2f, 0.2f);
 

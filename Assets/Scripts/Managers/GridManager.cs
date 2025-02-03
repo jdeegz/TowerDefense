@@ -93,7 +93,7 @@ public class GridManager : MonoBehaviour
 
     public void FloodFillGrid(Cell[] gridCells, Action callback)
     {
-        Debug.Log($"Begin Flood Fill.");
+        //Debug.Log($"Begin Flood Fill.");
         int goalCellIndex = Util.GetCellIndex(GameplayManager.Instance.m_enemyGoal.position);
         Cell goalCell = gridCells[goalCellIndex];
         Dictionary<Cell, Cell> nextTileToGoal = new Dictionary<Cell, Cell>();
@@ -666,13 +666,12 @@ public class UnitPath
         if (m_lineRenderers == null)
         {
             m_lineRenderers = new List<TBLineRendererComponent>();
-            Debug.Log($"Liner Renderers created.");
         }
 
         TBLineRendererComponent newLine = new GameObject("Line Segment").AddComponent<TBLineRendererComponent>();
         m_lineRenderers.Add(newLine);
 
-        Debug.Log($"New Line added to Line Renderers.");
+        
 
         newLine.lineRendererProperties = new TBLineRenderer();
         Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);

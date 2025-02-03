@@ -701,7 +701,7 @@ public static class Util
                 // Only send the portal cell. as a neighbor. This assures no cells point into the exit cell.
                 neighbors = new List<Vector2Int>();
                 neighbors.Add(curCell.m_portalConnectionCell.m_cellPos);
-                Debug.Log($"Cell {curCell.m_cellPos} is a portal cell. Setting it's connection {curCell.m_portalConnectionCell} as the entrance.");
+                //Debug.Log($"Cell {curCell.m_cellPos} is a portal cell. Setting it's connection {curCell.m_portalConnectionCell} as the entrance.");
             }
         }
 

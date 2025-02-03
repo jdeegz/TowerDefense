@@ -228,27 +228,29 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     public bool m_isTeleporting;
 
-    public void BeginTeleport(Cell portalEntranceCell)
+    public void BeginTeleport(Cell portalDestinationCell)
     {
+        ObjectPoolManager.SpawnObject(m_enemyData.m_teleportDepartureVFX, m_targetPoint.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+       
         m_isTeleporting = true; // This will null m_enemy in all projectiles.
         
-        Cell portalDestinationCell = portalEntranceCell.m_portalConnectionCell;
-        Vector3 pos = new Vector3(portalDestinationCell.m_cellPos.x, -50, portalDestinationCell.m_cellPos.y);
-        transform.position = pos; // -50y will null targets in all towers.
+        Vector2Int newPos = portalDestinationCell.m_cellPos;
+
+        transform.position = new Vector3(newPos.x, -50, newPos.y);
         
-        Debug.Log($"Begin Teleport from : {portalEntranceCell.m_cellPos} to {portalDestinationCell.m_cellPos}");
-        
-        // Begin a timer, then appear at the destination and re-enable.
         GameUtil.DelayTimer.DelayAction(2f, () => CompleteTeleport());
     }
 
     private void CompleteTeleport()
     {
-        Vector3 curPos = transform.position;
-        curPos.y = 0;
-        transform.position = curPos;
+        Vector3 arrivalPos = transform.position;
+        arrivalPos.y = 0;
         
-        m_animator.SetTrigger("Birth");
+        transform.position = arrivalPos;
+        
+        ObjectPoolManager.SpawnObject(m_enemyData.m_teleportArrivalVFX, m_targetPoint.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        
+        //m_animator.SetTrigger("Birth");
         
         m_isTeleporting = false;
         Debug.Log($"Completed Teleport to : {m_curPos}, position is now {transform.position}.");
@@ -263,8 +265,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
         if (newPos != m_curPos)
         {
-            Debug.Log($"New position: {newPos}, Old position: {m_curPos}");
-            
             Cell newCell = Util.GetCellFromPos(newPos);
 
             //Check new cells occupancy.
@@ -283,16 +283,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 // Is the new cell a portal? Is it also a portal entrance?
                 if (newCell.m_directionToNextCell == Cell.Direction.Portal)
                 {
-                    // Begin teleportation sequence, send the destination with the call.
                     Debug.Log($"{newCell.m_cellPos} is trying to teleport to {newCell.m_portalConnectionCell.m_cellPos}.");
                     Cell portalDestinationCell = newCell.m_portalConnectionCell;
-
+   
+                    BeginTeleport(portalDestinationCell);
+                    
                     newPos = portalDestinationCell.m_cellPos;
                     newCell = portalDestinationCell;
-
-                    transform.position = new Vector3(newPos.x, 0, newPos.y);
-                    
-                    //BeginTeleport(newCell);
                 }
 
                 //Assign new position, we are now in a new cell.
