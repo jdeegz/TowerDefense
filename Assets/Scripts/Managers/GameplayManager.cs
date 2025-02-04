@@ -843,8 +843,8 @@ public class GameplayManager : MonoBehaviour
                 break;
             case GameplayState.Victory:
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
-                UpdateGamePlayback(GameSpeed.Paused);
-                UpdateInteractionState(InteractionState.Disabled);
+                
+                UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
                 break;
             case GameplayState.Defeat:
                 RequestPlayAudio(m_gameplayAudioData.m_defeatClip);
@@ -853,8 +853,7 @@ public class GameplayManager : MonoBehaviour
                 if (m_endlessModeActive) wave = m_wave - 1;
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
 
-                UpdateGamePlayback(GameSpeed.Paused);
-                UpdateInteractionState(InteractionState.Disabled);
+                UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

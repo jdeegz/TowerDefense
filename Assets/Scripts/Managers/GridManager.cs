@@ -669,6 +669,7 @@ public class UnitPath
         }
 
         TBLineRendererComponent newLine = new GameObject("Line Segment").AddComponent<TBLineRendererComponent>();
+        newLine.transform.parent = m_standardSpawner.transform;
         m_lineRenderers.Add(newLine);
 
         

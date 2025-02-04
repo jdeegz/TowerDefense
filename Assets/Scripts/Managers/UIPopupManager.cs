@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class UIPopupManager : MonoBehaviour
 {
-    public TowerData m_testTowerData;
     [SerializeField] private UIPopupTable m_uiPopupTable;
     private readonly Dictionary<string, UIPopup> m_popupPool = new Dictionary<string, UIPopup>();
     private readonly List<UIPopup> m_activePopups = new List<UIPopup>();
@@ -26,11 +25,6 @@ public class UIPopupManager : MonoBehaviour
             RequestOptionsPopup();
             return;
         }
-    }
-
-    public void TestShowPopup()
-    {
-        UIPopupManager.Instance.ShowPopup<UITowerUnlockedPopup>("ObjectUnlocked", m_testTowerData);
     }
     
     public T ShowPopup<T>(string UIPopupID, object data = null) where T : UIPopup
@@ -126,13 +120,16 @@ public class UIPopupManager : MonoBehaviour
 
     private void RequestOptionsPopup()
     {
-        if (GameplayManager.Instance.IsWatchingCutscene()) return;
+        if (GameplayManager.Instance != null)
+        {
+            if (GameplayManager.Instance.IsWatchingCutscene()) return;
 
-        //Dont allow the menu to OPEN if we're in victory/defeat states and the menu is currently closed.
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Victory) return;
+            //Dont allow the menu to OPEN if we're in victory/defeat states and the menu is currently closed.
+            if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Victory) return;
 
-        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Defeat) return;
-        
+            if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Defeat) return;
+        }
+
         ShowPopup<UIOptionsPopup>("OptionsPopup");
     }
 
