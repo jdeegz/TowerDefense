@@ -78,7 +78,7 @@ public class UICombatView : MonoBehaviour
     private Dictionary<KeyCode, int> m_towerKeyMap;
     private int m_blueprintTowerKey;
     private int m_wave = 0;
-    
+
     private float m_doubleTapTimer = 0f;
     private float m_doubleTapThreshold = 0.5f;
     private bool m_isFirstTap = false;
@@ -109,7 +109,7 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
         //ResourceManager.RuinIndicated += RuinIndicated;
-        
+
         UIPopupManager.OnPopupManagerPopupsOpen += ToggleButtonInteractivity;
 
         if (m_buttons == null)
@@ -301,7 +301,7 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.SpawnEnemies:
                 break;
             case GameplayManager.GameplayState.BossWave:
-                
+
                 break;
             case GameplayManager.GameplayState.Combat:
                 break;
@@ -404,7 +404,7 @@ public class UICombatView : MonoBehaviour
 
         BuildTowerTrayDisplay();
         m_clearBlueprintsButton.gameObject.SetActive(false);
-        
+
         m_waveLabel.SetText($"Wave: {m_wave}");
     }
 
@@ -471,14 +471,13 @@ public class UICombatView : MonoBehaviour
 
     private void BuildTowerTrayDisplay()
     {
-        
         // TOWERS
         m_towerButtons = new List<TowerTrayButton>();
         for (int i = 0; i < GameplayManager.Instance.m_gameplayData.m_equippedTowers.Count; ++i)
         {
             BuildTowerTrayButton(GameplayManager.Instance.m_gameplayData.m_equippedTowers[i]);
         }
-        
+
         if (GameplayManager.Instance.m_unlockedTowers != null)
         {
             foreach (var towerData in GameplayManager.Instance.m_unlockedTowers)
@@ -516,7 +515,7 @@ public class UICombatView : MonoBehaviour
 
     void OrderTrayButtons()
     {
-        m_towerButtons.Sort((a,b) => a.GetTowerData().m_woodCost.CompareTo(b.GetTowerData().m_woodCost));
+        m_towerButtons.Sort((a, b) => a.GetTowerData().m_woodCost.CompareTo(b.GetTowerData().m_woodCost));
 
         for (int i = 0; i < m_towerButtons.Count; ++i)
         {
@@ -525,8 +524,8 @@ public class UICombatView : MonoBehaviour
         }
 
         if (m_structureButtons == null || m_structureButtons.Count <= 1) return;
-        
-        m_structureButtons.Sort((a,b) => a.GetTowerData().m_woodCost.CompareTo(b.GetTowerData().m_woodCost));
+
+        m_structureButtons.Sort((a, b) => a.GetTowerData().m_woodCost.CompareTo(b.GetTowerData().m_woodCost));
 
         for (int i = 0; i < m_structureButtons.Count; ++i)
         {
@@ -577,7 +576,7 @@ public class UICombatView : MonoBehaviour
 
         m_buttons.Add(buttonScript);
         m_towerButtons.Add(towerTrayButtonScript);
-        
+
         OrderTrayButtons();
     }
 
@@ -589,6 +588,11 @@ public class UICombatView : MonoBehaviour
             if (towerData == button.GetTowerData())
             {
                 buttonsToRemove.Remove(button);
+                Button buttonScript = button.GetComponent<Button>();
+                if (buttonScript)
+                {
+                    m_buttons.Remove(buttonScript);
+                }
                 Destroy(button.gameObject);
             }
         }
@@ -600,7 +604,7 @@ public class UICombatView : MonoBehaviour
             m_towerButtons[i].UpdateHotkeyDisplay(i + 1);
         }
     }
-    
+
     private void BuildStructureTrayButton(TowerData towerData, int qty)
     {
         GameObject buttonPrefab = Instantiate(m_towerTrayButtonPrefab, m_structureTrayLayoutObj);
@@ -611,7 +615,7 @@ public class UICombatView : MonoBehaviour
 
         m_buttons.Add(buttonScript);
         m_structureButtons.Add(towerTrayButtonScript);
-        
+
         OrderTrayButtons();
     }
 
@@ -668,8 +672,8 @@ public class UICombatView : MonoBehaviour
     {
         HandleSpawnClock();
 
-        if(GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.SpawnEnemies) HandleSurvivalWaveTimer();
-        
+        if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.SpawnEnemies) HandleSurvivalWaveTimer();
+
         if (m_castleRepairDisplayObj.activeSelf)
         {
             m_castleRepairFill.fillAmount = m_castleController.RepairProgress();
@@ -710,7 +714,7 @@ public class UICombatView : MonoBehaviour
                 }
             }
         }
-        
+
         // DOUBLE TAP tracking for Gatherer Buttons (among others if we need it.)
         if (m_isFirstTap)
         {
@@ -724,7 +728,7 @@ public class UICombatView : MonoBehaviour
                 m_lastKey = KeyCode.None; // Reset last key
             }
         }
-        
+
         foreach (var kvp in m_gathererKeyMap)
         {
             if (Input.GetKeyDown(kvp.Key) && m_buttonsActivated)
@@ -751,7 +755,7 @@ public class UICombatView : MonoBehaviour
     private void HandleSurvivalWaveTimer()
     {
         if (GameplayManager.Instance.m_gameplayData.m_gameMode != MissionGameplayData.GameMode.Survival) return;
-        
+
         float normalizedTime = Mathf.Clamp01(GameplayManager.Instance.m_timeToNextWave / GameplayManager.Instance.m_gameplayData.m_survivalWaveDuration);
         m_survivalWaveDurationFill.fillAmount = 1 - normalizedTime;
     }
@@ -796,7 +800,7 @@ public class UICombatView : MonoBehaviour
         string actorCountString = "";
         string occupancyString = "";
         string preconTowerPosString = "";
-        
+
         if (cell != null)
         {
             actorCountString = cell.m_actorCount.ToString();

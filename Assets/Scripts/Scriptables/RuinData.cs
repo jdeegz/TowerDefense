@@ -8,6 +8,9 @@ public class RuinData : ScriptableObject
     public string m_ruinName = "Ruin";
     [TextArea(5, 5)]
     public string m_ruinDescription;
+    [TextArea(5, 5)]
+    public string m_ruinDetails;
+
     
     [Header("Audio")]
     public AudioClip m_discoveredAudioClip;

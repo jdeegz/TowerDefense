@@ -21,6 +21,8 @@ public class RuinController : MonoBehaviour
     private RuinIndicator m_ruinIndicator;
     private ProgressionKeyData m_progressionKey;
 
+    public ProgressionKeyData ProgressionKey => m_progressionKey;
+
     private void UpdateRuinState(RuinState newState)
     {
         m_ruinState = newState;
@@ -49,12 +51,13 @@ public class RuinController : MonoBehaviour
         GameObject ruinObj = ruinIndicator.gameObject;
         GameObject ruinIndicatorObj = ObjectPoolManager.SpawnObject(ruinObj, gameObject.transform.position, Quaternion.identity, transform, ObjectPoolManager.PoolType.GameObject);
         GridCellOccupantUtil.SetOccupant(ruinIndicatorObj, true, 1, 1);
-        m_ruinIndicator = ruinIndicatorObj.GetComponent<RuinIndicator>();
-        m_ruinIndicator.SetUpRuinIndicator(this);
 
         // Check the state of the key, to determine if this is discovered previously.
         m_progressionKey = key;
         m_progressionKey.KeyChanged += OnKeyChanged;
+        
+        m_ruinIndicator = ruinIndicatorObj.GetComponent<RuinIndicator>();
+        m_ruinIndicator.SetUpRuinIndicator(this);
 
         // Update ruin controller state.
         if (m_progressionKey.ProgressionKeyEnabled)
@@ -65,6 +68,7 @@ public class RuinController : MonoBehaviour
         {
             UpdateRuinState(RuinState.Indicated);
         }
+        
     }
 
     public void GathererDiscoveredRuin()
