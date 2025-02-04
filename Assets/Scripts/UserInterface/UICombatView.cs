@@ -58,9 +58,9 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private Image m_survivalWaveDurationFill;
 
     [Header("Scene References")]
-    [SerializeField] private UIOptionsMenu m_menuObj;
+    [SerializeField] private UIOptionsPopup m_menuObj;
 
-    private bool m_menusOpen;
+    private bool m_buttonsActivated;
     private float m_timeToNextWave;
     private int m_curCastleHealth;
     private int m_maxCastleHealth;
@@ -109,7 +109,8 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateStoneGathererCount += UpdateStoneGathererDisplay;
         ResourceManager.UpdateWoodGathererCount += UpdateWoodGathererDisplay;
         //ResourceManager.RuinIndicated += RuinIndicated;
-        m_menuObj.OnMenuToggle += SetMenusOpen;
+        
+        UIPopupManager.OnPopupManagerPopupsOpen += ToggleButtonInteractivity;
 
         if (m_buttons == null)
         {
@@ -278,6 +279,8 @@ public class UICombatView : MonoBehaviour
         ResourceManager.UpdateWoodGathererCount -= UpdateWoodGathererDisplay;
         //ResourceManager.RuinIndicated -= RuinIndicated;
 
+        UIPopupManager.OnPopupManagerPopupsOpen -= ToggleButtonInteractivity;
+
         m_castleController.UpdateHealth -= UpdateCastleHealthDisplay;
         m_castleController.UpdateMaxHealth -= UpdateCastleMaxHealthDisplay;
         m_castleController.OnIsRepairingUpdated -= IsRepairingUpdated;
@@ -369,11 +372,13 @@ public class UICombatView : MonoBehaviour
 
     private void ToggleButtonInteractivity(bool b)
     {
+        // if b is true, we disable buttons.
+        m_buttonsActivated = !b;
         if (m_buttons != null)
         {
             foreach (Button button in m_buttons)
             {
-                button.interactable = b;
+                button.interactable = m_buttonsActivated;
             }
         }
     }
@@ -425,12 +430,7 @@ public class UICombatView : MonoBehaviour
 
     private void OnMenuButtonClicked()
     {
-        m_menuObj.ToggleMenu();
-    }
-
-    public void SetMenusOpen(bool value)
-    {
-        m_menusOpen = value;
+        UIPopupManager.Instance.ShowPopup<UIOptionsPopup>("OptionsPopup");
     }
 
     private int gathererIndex;
@@ -684,7 +684,7 @@ public class UICombatView : MonoBehaviour
 
         foreach (var kvp in m_towerKeyMap)
         {
-            if (Input.GetKeyDown(kvp.Key) && !m_menusOpen)
+            if (Input.GetKeyDown(kvp.Key) && m_buttonsActivated)
             {
                 //Only allow for precon of Blueprint towers while paused.
                 if (kvp.Value == -1 && GameplayManager.Instance.m_gameSpeed != GameplayManager.GameSpeed.Paused)
@@ -727,7 +727,7 @@ public class UICombatView : MonoBehaviour
         
         foreach (var kvp in m_gathererKeyMap)
         {
-            if (Input.GetKeyDown(kvp.Key) && !m_menusOpen)
+            if (Input.GetKeyDown(kvp.Key) && m_buttonsActivated)
             {
                 if (m_isFirstTap && m_lastKey == kvp.Key && m_doubleTapTimer <= m_doubleTapThreshold)
                 {

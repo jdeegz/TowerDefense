@@ -156,7 +156,7 @@ public class UIVictoryView : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            // Close this view and resume playing in Endless Mode.
+            // HandleClose this view and resume playing in Endless Mode.
             m_canvasGroup.alpha = 0;
             m_canvasGroup.blocksRaycasts = false;
             

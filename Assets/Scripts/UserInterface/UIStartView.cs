@@ -12,13 +12,6 @@ public class UIStartView : MonoBehaviour
     [SerializeField] private Button m_discordButton;
     
     private string discordInviteUrl = "https://discord.gg/PABndFnjMM";
-
-    [Header("Scene References")]
-    [SerializeField] private UIOptionsMenu m_menuObj;
-    
-    void Awake()
-    {
-    }
     
     void Start()
     {
@@ -34,7 +27,7 @@ public class UIStartView : MonoBehaviour
 
     private void OnMenuButtonClicked()
     {
-        m_menuObj.ToggleMenu();
+        UIPopupManager.Instance.ShowPopup<UIOptionsPopup>("OptionsPopup");
     }
 
     private void OnMissionSelectionButtonClicked()

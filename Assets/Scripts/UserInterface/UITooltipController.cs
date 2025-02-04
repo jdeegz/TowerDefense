@@ -135,14 +135,14 @@ public class UITooltipController : MonoBehaviour
         // I want to show a tooltip if I am hovering over an object, and it's not the same object as last frame.
         if (m_curUISelectable != m_lastUISelectable)
         {
-            // Show a tooltip
+            // HandleShow a tooltip
             if (m_curUISelectable) SetTooltipData(m_curUISelectable.m_selectedObjectType, m_curUISelectable.gameObject);
             m_lastUISelectable = m_curUISelectable;
         }
 
         if (m_curWorldSelectable != m_lastWorldSelectable)
         {
-            // Show a tooltip
+            // HandleShow a tooltip
             if (m_curWorldSelectable) SetTooltipData(m_curWorldSelectable.m_selectedObjectType, m_curWorldSelectable.gameObject);
             m_lastWorldSelectable = m_curWorldSelectable;
         }

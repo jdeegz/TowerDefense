@@ -18,6 +18,7 @@ public class ObjectPoolManager : MonoBehaviour
         Tower,
         Projectile,
         GameObject,
+        UI,
         None
     }
 
@@ -120,7 +121,7 @@ public class ObjectPoolManager : MonoBehaviour
         return spawnableObj;
     }
 
-    public static GameObject SpawnObject(GameObject objectToSpawn, Transform parent)
+    public static GameObject SpawnObject(GameObject objectToSpawn, Transform parent, PoolType poolType = PoolType.None)
     {
         if (Instance == null) return null;
 
@@ -151,6 +152,12 @@ public class ObjectPoolManager : MonoBehaviour
 
         //Debug.Log($"Spawning {spawnableObj.name}.");
         return spawnableObj;
+    }
+    
+    public static UIPopup SpawnPopup(UIPopup popupPrefab, Transform parent)
+    {
+        GameObject spawnedObj = SpawnObject(popupPrefab.gameObject, parent, PoolType.UI);
+        return spawnedObj ? spawnedObj.GetComponent<UIPopup>() : null;
     }
 
     public static void ReturnObjectToPool(GameObject obj, PoolType poolType = PoolType.None)
@@ -199,6 +206,8 @@ public class ObjectPoolManager : MonoBehaviour
                 return Instance.m_enemyEmpty;
             case PoolType.GameObject:
                 return Instance.m_gameObjectEmpty;
+            case PoolType.UI:
+                return null;
             case PoolType.None:
                 return null;
             default:

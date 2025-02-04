@@ -572,8 +572,25 @@ public class GameplayManager : MonoBehaviour
         OnGameObjectSelected += GameObjectSelected;
         OnGameObjectDeselected += GameObjectDeselected;
 
+        UIPopupManager.OnPopupManagerPopupsOpen += PopupManagerPopupsOpen;
+
         m_delayForQuest = m_gameplayData.m_delayForQuest;
         m_blueprintList = new List<TowerBlueprint>();
+    }
+
+    private void PopupManagerPopupsOpen(bool value)
+    {
+        if (value)
+        {
+            GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Paused);
+            GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Disabled);
+        }
+        else
+        {
+            
+            GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Normal);
+            GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Idle);
+        }
     }
 
     public MissionSaveData GetCurrentMissionSaveData()
@@ -1349,7 +1366,7 @@ public class GameplayManager : MonoBehaviour
         {
             if (i < m_preconstructedTowerCells.Count)
             {
-                //Show the cell if we cannot path or afford.
+                //HandleShow the cell if we cannot path or afford.
                 if (!m_canAfford || !m_canPath)
                 {
                     m_invalidCellObjs[i].SetActive(true);

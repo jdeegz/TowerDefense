@@ -55,7 +55,7 @@ public class RuinController : MonoBehaviour
         // Check the state of the key, to determine if this is discovered previously.
         m_progressionKey = key;
         m_progressionKey.KeyChanged += OnKeyChanged;
-        
+
         // Update ruin controller state.
         if (m_progressionKey.ProgressionKeyEnabled)
         {
@@ -78,9 +78,18 @@ public class RuinController : MonoBehaviour
         // The Unlockable Progress this key belongs to and display an alert based on progress.
         ProgressionUnlockableData unlockableData = PlayerDataManager.Instance.m_progressionTable.GetUnlockableFromKey(m_progressionKey);
         UnlockProgress unlockProgress = unlockableData.GetProgress();
-        Vector3 pos = transform.position;
-        pos.y += 2f; // Vertical offset to spawn alert at.
-        IngameUIController.Instance.SpawnRuinDiscoveredAlert(pos, unlockableData.name, unlockProgress.m_requirementTotal, unlockProgress.m_requirementsMet);
+
+        if (unlockProgress.m_isUnlocked)
+        {
+            TowerData rewardData = unlockableData.GetRewardData().GetReward();
+            UIPopupManager.Instance.ShowPopup<UITowerUnlockedPopup>("TowerUnlocked", rewardData);
+        }
+        else
+        {
+            Vector3 pos = transform.position;
+            pos.y += 2f; // Vertical offset to spawn alert at.
+            IngameUIController.Instance.SpawnRuinDiscoveredAlert(pos, unlockableData.name, unlockProgress.m_requirementTotal, unlockProgress.m_requirementsMet);
+        }
     }
 
     void OnKeyChanged(bool value)
