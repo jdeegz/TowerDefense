@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TechnoBabelGames;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
@@ -91,9 +92,11 @@ public class GridManager : MonoBehaviour
         return m_outOfBoundsSpawnCells;
     }
 
+    static readonly ProfilerMarker k_codeMarkerFloodFillGrid = new ProfilerMarker("FloodFillGrid");
     public void FloodFillGrid(Cell[] gridCells, Action callback)
     {
         //Debug.Log($"Begin Flood Fill.");
+        k_codeMarkerFloodFillGrid.Begin();
         int goalCellIndex = Util.GetCellIndex(GameplayManager.Instance.m_enemyGoal.position);
         Cell goalCell = gridCells[goalCellIndex];
         Dictionary<Cell, Cell> nextTileToGoal = new Dictionary<Cell, Cell>();
@@ -111,9 +114,11 @@ public class GridManager : MonoBehaviour
 
         frontier.Enqueue(goalCell);
 
+        int distanceToGoal = 0;
         while (frontier.Count > 0)
         {
             Cell curCell = frontier.Dequeue();
+            ++distanceToGoal;
 
             List<Cell> neighborCells = Util.GetNeighborCells(curCell, gridCells);
             for (var i = 0; i < neighborCells.Count; i++)
@@ -127,7 +132,7 @@ public class GridManager : MonoBehaviour
                     if (!neighbor.m_isOccupied && !neighbor.m_isTempOccupied || neighbor.m_isUpForSale)
                     {
                         //Get the direction of the neighbor to the curCell.
-                        
+                        neighbor.m_cellDistanceFromGoal = distanceToGoal;
                         neighbor.UpdateTempDirection(curCell.m_cellPos);
                         frontier.Enqueue(neighbor);
                         nextTileToGoal[neighbor] = curCell;
@@ -162,6 +167,7 @@ public class GridManager : MonoBehaviour
         {
             callback.Invoke();
         }
+        k_codeMarkerFloodFillGrid.End();
     }
 
     private void UpdateUnitPaths()
@@ -220,10 +226,13 @@ public class GridManager : MonoBehaviour
         GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.FloodFillGrid);
     }
 
+    static readonly ProfilerMarker k_codeMarkerPreconBuildingMoved = new ProfilerMarker("PreconBuildingMoved");
     void PreconBuildingMoved(List<Cell> cells)
     {
+        k_codeMarkerPreconBuildingMoved.Begin();
         if (m_previousPreconCells == null) m_previousPreconCells = new List<Cell>();
 
+        
         foreach (Cell cell in m_previousPreconCells)
         {
             cell.UpdateTempOccupancyDisplay(false);
@@ -236,6 +245,7 @@ public class GridManager : MonoBehaviour
         }
 
         m_previousPreconCells = cells;
+        k_codeMarkerPreconBuildingMoved.End();
 
         FloodFillGrid(m_gridCells, null);
     }
@@ -432,6 +442,7 @@ public class Cell
 
     public int m_actorCount;
     public int m_cellIndex;
+    public int m_cellDistanceFromGoal;
     public Vector2Int m_cellPos;
     public Cell m_portalConnectionCell;
 

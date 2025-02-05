@@ -5,32 +5,24 @@ using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 using UnityEngine.VFX;
 
-public class VFXCleanUp : MonoBehaviour
+public class VFXCleanUp : PooledObject
 {
-    public bool m_hideOnAwake;
     public bool m_returnToPool;
     private float m_longestDuration = 0f;
     private float m_elapsedTime;
-    private ParticleSystem m_tempChild;
-    private List<ParticleSystem> m_particleSystems;
+    private ParticleSystem m_tempChild; // TO REMOVE
+    private List<ParticleSystem> m_particleSystems; // TO REMOVE
     private List<VisualEffect> m_storedVFXSystems;
-    public List<VisualEffect> m_vfxSystems;
+    private List<VisualEffect> m_vfxSystems;
     public List<bool> m_vfxSystemHasPlayed;
     public bool m_vfxSystemsComplete;
     public bool m_hasVFXSystemsInChildren;
-
-
-    public GameObject m_rootObj; // Should be automated? Is this script always on the root?
+    private bool m_hasReturnedToPool = false;
 
     void Start()
     {
-        //
-        //Get VFX times
-        //Manipulated list.
-        m_vfxSystems = new List<VisualEffect>(GetComponentsInChildren<VisualEffect>());
-        
         //Stashed list so I dont do Get Component each time we activate.
-        m_storedVFXSystems = new List<VisualEffect>(m_vfxSystems);
+        m_vfxSystems = new List<VisualEffect>(m_vfx);
         
         //Check if we have any systems, if we do, make a list of bools.
         if (m_vfxSystems.Count == 0)
@@ -54,6 +46,7 @@ public class VFXCleanUp : MonoBehaviour
         m_particleSystems = new List<ParticleSystem>(GetComponentsInChildren<ParticleSystem>());
         foreach (ParticleSystem child in m_particleSystems)
         {
+            Debug.Log($"{gameObject.name} contains Old Particle Systems.");
             if (child.main.loop)
             {
                 //Skip looping vfx
@@ -84,8 +77,6 @@ public class VFXCleanUp : MonoBehaviour
                 }
             }
         }
-
-        m_rootObj.SetActive(!m_hideOnAwake);
     }
 
     void Update()
@@ -93,12 +84,15 @@ public class VFXCleanUp : MonoBehaviour
         //If we have vfx systems in here, we need to check to see if each one has played and if it's completed, if so set a bool to true.
         if (!m_vfxSystemsComplete)
         {
+            m_elapsedTime += Time.deltaTime;
+            
             for (int i = 0; i < m_vfxSystems.Count; i++)
             {
                 //Check if this particle system has alive particles and has played (accounts for a delay)
                 if (m_vfxSystems[i].aliveParticleCount == 0 && m_vfxSystemHasPlayed[i])
                 {
                     //This system is complete. Remove it from the list.
+                    Debug.Log($"{m_vfxSystems[i].name} has no living particle count.");
                     m_vfxSystems.RemoveAt(i);
                     m_vfxSystemHasPlayed.RemoveAt(i);
                     --i;
@@ -115,16 +109,17 @@ public class VFXCleanUp : MonoBehaviour
             if (m_vfxSystems.Count == 0) m_vfxSystemsComplete = true;
         }
 
-        m_elapsedTime += Time.deltaTime;
-        if (m_elapsedTime >= m_longestDuration && m_rootObj.activeSelf && m_vfxSystemsComplete)
+       
+        if (m_elapsedTime >= m_longestDuration && m_vfxSystemsComplete && !m_hasReturnedToPool)
         {
             if (m_returnToPool)
             {
                 ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.ParticleSystem);
+                m_hasReturnedToPool = true;
             }
             else
             {
-                m_rootObj.SetActive(false);
+                //
             }
 
             m_elapsedTime = 0f;
@@ -134,18 +129,17 @@ public class VFXCleanUp : MonoBehaviour
     void OnEnable()
     {
         //On enable, if there are Store VFX systems, we want to reset the VFX system info.
+        m_hasReturnedToPool = false;
         if (m_hasVFXSystemsInChildren)
         {
-            m_vfxSystemsComplete = false;
-            
-            m_vfxSystems = new List<VisualEffect>(m_storedVFXSystems);
-            
-            m_vfxSystemHasPlayed = new List<bool>();
+            m_vfxSystems = new List<VisualEffect>(m_vfx);
             
             for (int i = 0; i < m_vfxSystems.Count; i++)
             {
                 m_vfxSystemHasPlayed.Add(false);
             }
+            
+            m_vfxSystemsComplete = false;
         }
     }
     

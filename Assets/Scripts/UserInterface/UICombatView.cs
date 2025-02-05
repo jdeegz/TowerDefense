@@ -60,7 +60,7 @@ public class UICombatView : MonoBehaviour
     [Header("Scene References")]
     [SerializeField] private UIOptionsPopup m_menuObj;
 
-    private bool m_buttonsActivated;
+    private bool m_buttonsActivated = true;
     private float m_timeToNextWave;
     private int m_curCastleHealth;
     private int m_maxCastleHealth;

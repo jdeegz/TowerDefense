@@ -31,13 +31,14 @@ public class ProjectileBullet : Projectile
         }
     }
 
+    private Vector3 m_directionThisFrame;
     void TravelToTargetFixedUpdate()
     {
         transform.position += transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
 
         //Get Direction
-        Vector3 direction = m_targetPos - transform.position;
-        transform.rotation = Quaternion.LookRotation(direction);
+        m_directionThisFrame = m_targetPos - transform.position;
+        transform.rotation = Quaternion.LookRotation(m_directionThisFrame);
     }
 
     void DealDamage()

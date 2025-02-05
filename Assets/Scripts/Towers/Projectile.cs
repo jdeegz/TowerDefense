@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(SphereCollider))]
-public abstract class Projectile : MonoBehaviour
+public abstract class Projectile : PooledObject
 {
     [Header("Projectile Data")]
     [SerializeField] protected ProjectileData m_projectileData;
@@ -21,8 +21,6 @@ public abstract class Projectile : MonoBehaviour
     [Header("Projectile Components")]
     [SerializeField] protected GameObject m_hitVFXPrefab;
     [SerializeField] protected AudioSource m_audioSource;
-    [SerializeField] protected Renderer m_renderer;
-    [SerializeField] protected VisualEffect m_trail;
 
     protected bool m_isFired = false;
     protected bool m_isComplete;
@@ -56,8 +54,6 @@ public abstract class Projectile : MonoBehaviour
         m_projectileDamage = dmg;
         m_isFired = true;
         m_isComplete = false;
-        if (m_renderer) m_renderer.enabled = true;
-        if (m_trail) m_trail.Play();
     }
 
     public void SetProjectileStatusEffect(StatusEffect statusEffect)
@@ -78,9 +74,6 @@ public abstract class Projectile : MonoBehaviour
         m_isFired = false;
         
         m_enemy = null;
-        
-        if (m_renderer) m_renderer.enabled = false;
-        if (m_trail) m_trail.Stop();
         
         transform.rotation = Quaternion.identity;
 

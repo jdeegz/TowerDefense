@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Unity.Mathematics;
+using Unity.Profiling;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -179,6 +180,8 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
+    
+    
     void Update()
     {
         // Do not run while in Cutscenes.
@@ -1169,33 +1172,32 @@ public class GameplayManager : MonoBehaviour
     bool IsPathingRestricted(List<Cell> cells)
     {
         if (cells == null) return false;
-
         // This is checking pathing from each neighbor of the precon building.
 
-        Debug.Log($"---- Start Pathing Check. ----");
+        //Debug.Log($"---- Start Pathing Check. ----");
         for (int i = 0; i < cells.Count; ++i)
         {
             Cell cell = cells[i];
             if (cell.m_isOccupied) continue;
 
-            Debug.Log($"Neighbor cells {cell.m_cellPos} is unoccupied. Checking for path.");
+            //Debug.Log($"Neighbor cells {cell.m_cellPos} is unoccupied. Checking for path.");
             List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
 
 
             if (testPath != null)
             {
-                Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
+                //Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
                 continue;
             }
 
-            Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
+            //Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
             List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell));
 
             //if (islandCells.Count >= 0) Debug.Log($"{cell.m_cellPos} has no path. Island Found of size: {islandCells.Count}");
 
             if (islandCells.Count == 0 && cell.m_actorCount > 0)
             {
-                Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {cell} contains {cell.m_actorCount} actors");
+                //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {cell} contains {cell.m_actorCount} actors");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                 return false;
             }
@@ -1205,24 +1207,23 @@ public class GameplayManager : MonoBehaviour
                 //Debug.Log($"Island Cell found: {islandCell.m_cellPos} and has actors: {islandCell.m_actorCount}.");
                 if (islandCell.m_actorCount > 0)
                 {
-                    Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {islandCell.m_cellPos} contains actors");
+                    //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {islandCell.m_cellPos} contains actors");
                     m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                     return false;
                 }
             }
         }
 
-        Debug.Log($"---- End Pathing Check. ----");
+        //Debug.Log($"---- End Pathing Check. ----");
 
         // EXITS AND SPAWNERS
         //Check to see if any of our UnitPaths have no path.
         if (!GridManager.Instance.m_spawnPointsAccessible)
         {
-            Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
+            //Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
             m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
             return false;
         }
-
         // Check that the Grid to make sure exits can path to one another.
         int exitsPathable = 0;
         for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
@@ -1311,6 +1312,7 @@ public class GameplayManager : MonoBehaviour
             CheckPreconRestrictions();
             m_preconPeriodTimeElapsed = 0;
         }
+
     }
 
     public List<Cell> GetNeighborCells(Vector2Int pos, int width, int height)

@@ -10,6 +10,7 @@ public class ObjectPoolManager : MonoBehaviour
     private List<PooledObjectInfo> m_objectPools = new List<PooledObjectInfo>();
     private List<OrphanedObject> m_orphanList = new List<OrphanedObject>();
     private List<OrphanedObject> m_expiredOrphanList = new List<OrphanedObject>();
+    private static Dictionary<string, PooledObjectInfo> m_poolDictionary = new Dictionary<string, PooledObjectInfo>();
 
     public enum PoolType
     {
@@ -38,6 +39,9 @@ public class ObjectPoolManager : MonoBehaviour
         }
 
         SetupEmpties();
+
+        //Prewarm EnemyController lists for Tower FindTarget()
+        ListPool<EnemyController>.WarmUp(50);
     }
 
     void SetupEmpties()
@@ -89,15 +93,11 @@ public class ObjectPoolManager : MonoBehaviour
     {
         if (Instance == null) return null;
 
-        PooledObjectInfo pool = Instance.m_objectPools.Find(p => p.m_lookUpString == objectToSpawn.name);
-
-        //if no pool exists, make one
-        if (pool == null)
+        if (!m_poolDictionary.TryGetValue(objectToSpawn.name, out PooledObjectInfo pool))
         {
             pool = new PooledObjectInfo() { m_lookUpString = objectToSpawn.name };
             Instance.m_objectPools.Add(pool);
-
-            //Debug.Log($"No pool found, created one named {objectToSpawn.name}");
+            m_poolDictionary[objectToSpawn.name] = pool;
         }
 
         //check for inactive obj in pool
@@ -113,11 +113,20 @@ public class ObjectPoolManager : MonoBehaviour
             pool.m_inactiveObjects.Remove(spawnableObj);
             spawnableObj.transform.position = spawnPosition;
             spawnableObj.transform.rotation = spawnRotation;
+        }
+
+        spawnableObj.transform.SetParent(parentObject.transform);
+        
+        PooledObject pooledObj = spawnableObj.GetComponent<PooledObject>();
+        if (pooledObj != null)
+        {
+            pooledObj.OnSpawn();
+        }
+        else
+        {
             spawnableObj.SetActive(true);
         }
         
-        spawnableObj.transform.SetParent(parentObject.transform);
-
         return spawnableObj;
     }
 
@@ -125,15 +134,11 @@ public class ObjectPoolManager : MonoBehaviour
     {
         if (Instance == null) return null;
 
-        PooledObjectInfo pool = Instance.m_objectPools.Find(p => p.m_lookUpString == objectToSpawn.name);
-
-        //if no pool exists, make one
-        if (pool == null)
+        if (!m_poolDictionary.TryGetValue(objectToSpawn.name, out PooledObjectInfo pool))
         {
             pool = new PooledObjectInfo() { m_lookUpString = objectToSpawn.name };
             Instance.m_objectPools.Add(pool);
-
-            //Debug.Log($"No pool found, created one named {objectToSpawn.name}");
+            m_poolDictionary[objectToSpawn.name] = pool;
         }
 
         //check for inactive obj in pool
@@ -146,14 +151,23 @@ public class ObjectPoolManager : MonoBehaviour
         else
         {
             pool.m_inactiveObjects.Remove(spawnableObj);
+            
             spawnableObj.transform.SetParent(parent);
-            spawnableObj.SetActive(true);
+            PooledObject pooledObj = spawnableObj.GetComponent<PooledObject>();
+            if (pooledObj != null)
+            {
+                pooledObj.OnSpawn();
+            }
+            else
+            {
+                spawnableObj.SetActive(true);
+            }
         }
 
         //Debug.Log($"Spawning {spawnableObj.name}.");
         return spawnableObj;
     }
-    
+
     public static UIPopup SpawnPopup(UIPopup popupPrefab, Transform parent)
     {
         GameObject spawnedObj = SpawnObject(popupPrefab.gameObject, parent, PoolType.UI);
@@ -175,12 +189,21 @@ public class ObjectPoolManager : MonoBehaviour
         {
             //Debug.LogWarning($"Trying to release an object that is not pooled: {obj.name}");
         }
-
         else
         {
             //Debug.Log($"{obj.name} returned to inactive objects pool.");
+
+            PooledObject pooledObj = obj.GetComponent<PooledObject>();
+            if (pooledObj != null)
+            {
+                pooledObj.OnDespawn();
+            }
+            else
+            {
+                obj.SetActive(false);
+            }
+
             pool.m_inactiveObjects.Add(obj);
-            obj.SetActive(false);
         }
     }
 

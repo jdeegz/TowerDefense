@@ -28,7 +28,6 @@ public class ProjectileMissile : Projectile
         //Reset Data
         m_projectileSpeed = m_storedProjectileSpeed;
         m_lookSpeed = m_storedLookSpeed;
-        if (m_renderer) m_renderer.enabled = true;
     }
 
     public override void Loaded()

@@ -34,7 +34,7 @@ public class TowerBlast : Tower
         m_targetDetectionTimer += Time.deltaTime;
         if (m_targetDetectionTimer >= m_targetDetectionInterval)
         {
-            m_targetDetectionTimer = 0f;
+            m_targetDetectionTimer = Random.Range(-2 * Time.deltaTime, 2 * Time.deltaTime);
             FindTarget();
         }
 

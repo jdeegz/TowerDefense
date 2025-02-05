@@ -34,6 +34,11 @@ public abstract class Tower : MonoBehaviour
     protected float m_targetDetectionInterval = 0.33f;
     protected float m_targetDetectionTimer = 0f;
     protected Collider m_targetCollider;
+    protected Vector3 m_overlapCapsulePoint1;
+    protected Vector3 m_overlapCapsulePoint2;
+    protected float m_targetAngle;
+    protected quaternion m_targetRotation;
+    protected Vector3 m_directionAwayFromSpire;
 
     void Awake()
     {
@@ -68,22 +73,34 @@ public abstract class Tower : MonoBehaviour
     public abstract TowerUpgradeData GetUpgradeData();
     public abstract void SetUpgradeData(TowerUpgradeData data);
 
+    private int m_overlapCapsuleHitCount = 0;
+    
     public void FindTarget()
     {
         // Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_fireRange, m_layerMask.value);
         // Trying a Capsule for player-friendly flying unit target acquisition.
-        Vector3 point1 = transform.position + Vector3.up * 10; // Top of the capsule
-        Vector3 point2 = transform.position - Vector3.up * 1; // Bottom of the capsule
-        Collider[] hits = Physics.OverlapCapsule(point1, point2, m_towerData.m_fireRange, m_layerMask.value);
-        if (hits.Length <= 0)
+        Collider[] hits = Physics.OverlapCapsule(m_overlapCapsulePoint1, m_overlapCapsulePoint2, m_towerData.m_fireRange, m_layerMask.value);
+        m_overlapCapsuleHitCount = hits.Length;
+
+        if (m_overlapCapsuleHitCount == 0)
         {
             m_curTarget = null;
             m_targetCollider = null;
             return;
         }
 
-        //Maybe escape early if hits.Length is only 1?
-        List<EnemyController> targets = new List<EnemyController>();
+        if (m_overlapCapsuleHitCount == 1)
+        {
+            EnemyController target = hits[0].GetComponent<EnemyController>();
+            if (target.GetCurrentHP() > 0)
+            {
+                m_curTarget = target;
+                m_targetCollider = m_curTarget.GetComponent<Collider>();
+                return;
+            }
+        }
+
+        List<EnemyController> targets = ListPool<EnemyController>.Get();
         for (int i = 0; i < hits.Length; ++i)
         {
             EnemyController target = hits[i].GetComponent<EnemyController>();
@@ -96,31 +113,34 @@ public abstract class Tower : MonoBehaviour
         if (targets.Count == 0)
         {
             m_curTarget = null;
+            ListPool<EnemyController>.Release(targets);
             return;
         }
-        
+
         if (targets.Count == 1)
         {
             m_curTarget = targets[0];
+            m_targetCollider = m_curTarget.GetComponent<Collider>();
+            ListPool<EnemyController>.Release(targets);
             return;
         }
-        
+
         m_curTarget = GetPriorityTarget(targets);
 
         if (m_curTarget != null)
         {
             m_targetCollider = m_curTarget.GetComponent<Collider>(); // Used for Void towers to check hit unit or shield.
         }
+        
+        ListPool<EnemyController>.Release(targets);
     }
 
     public void RotateTowardsTarget()
     {
-        Quaternion targetRotation = new Quaternion();
-
         if (m_curTarget)
         {
-            float angle = Mathf.Atan2(m_curTarget.transform.position.x - transform.position.x, m_curTarget.transform.position.z - transform.position.z) * Mathf.Rad2Deg;
-            targetRotation = Quaternion.Euler(new Vector3(0f, angle, 0f));
+            m_targetAngle = Mathf.Atan2(m_curTarget.transform.position.x - transform.position.x, m_curTarget.transform.position.z - transform.position.z) * Mathf.Rad2Deg;
+            m_targetRotation = Quaternion.Euler(new Vector3(0f, m_targetAngle, 0f));
         }
 
         //If we have no target, rotate away from the base during the Build phase. The isBuilt flag will stop this from happening when precon.
@@ -128,35 +148,40 @@ public abstract class Tower : MonoBehaviour
         if (GameplayManager.Instance && GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
         {
             //Use enemy Goal as the 'target'.
-            Vector3 direction = GameplayManager.Instance.m_enemyGoal.position - transform.position;
+            m_directionAwayFromSpire = GameplayManager.Instance.m_enemyGoal.position - transform.position;
 
             // Calculate the rotation angle to make the new object face away from the target.
-            float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
-            targetRotation = Quaternion.Euler(0, angle, 0);
+            float angle = Mathf.Atan2(m_directionAwayFromSpire.x, m_directionAwayFromSpire.z) * Mathf.Rad2Deg + 180f;
+            m_targetRotation = Quaternion.Euler(0, angle, 0);
         }
 
-        m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, targetRotation,
+        m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, m_targetRotation,
             m_towerData.m_rotationSpeed * Time.deltaTime);
     }
 
+    private Vector3 m_targetPos;
+    private Vector3 m_muzzlePos;
+    private Vector3 m_directionOfTarget;
     protected bool IsTargetInSight()
     {
-        Vector3 targetPos = m_curTarget.transform.position;
-        targetPos.y = 0;
+        m_targetPos = m_curTarget.transform.position;
+        m_targetPos.y = 0;
 
-        Vector3 muzzlePos = m_muzzlePoint.transform.position;
-        muzzlePos.y = 0;
+        m_muzzlePos = m_muzzlePoint.transform.position;
+        m_muzzlePos.y = 0;
 
-        Vector3 directionOfTarget = targetPos - muzzlePos;
-        return Vector3.Angle(m_muzzlePoint.transform.forward, directionOfTarget) <= m_towerData.m_facingThreshold;
+        m_directionOfTarget = m_targetPos - m_muzzlePos;
+        return Vector3.Angle(m_muzzlePoint.transform.forward, m_directionOfTarget) <= m_towerData.m_facingThreshold;
     }
 
+    private Vector2 m_tower2dPos;
+    private Vector2 m_target2dPos;
     protected bool IsTargetInFireRange(Vector3 targetPos)
     {
         // Trying 2d range calculations to be more player friendly with the flying unit(s).
-        Vector2 pos = new Vector2(transform.position.x, transform.position.z);
-        Vector2 tarPos = new Vector2(targetPos.x, targetPos.z);
-        return Vector3.Distance(pos, tarPos) <= m_towerData.m_fireRange;
+        m_tower2dPos = new Vector2(transform.position.x, transform.position.z);
+        m_target2dPos = new Vector2(targetPos.x, targetPos.z);
+        return Vector2.Distance(m_tower2dPos, m_target2dPos) <= m_towerData.m_fireRange;
     }
 
     protected bool IsTargetInTargetRange(Vector3 targetPos)
@@ -224,18 +249,20 @@ public abstract class Tower : MonoBehaviour
         gameObject.GetComponent<Collider>().enabled = true;
         m_isBuilt = true;
         m_modelRoot.SetActive(true);
+        m_overlapCapsulePoint1 = transform.position + Vector3.up * 10; // Top of the capsule
+        m_overlapCapsulePoint2 = transform.position - Vector3.up * 1; // Bottom of the capsule
 
         //Animation
         m_animator.SetTrigger("Construct");
 
         //Audio
-        if(GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles) m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
+        if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles) m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
 
         //VFX
         ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
-    //Fired via a keyframe in Animation.
+//Fired via a keyframe in Animation.
     public void FireVFX()
     {
         if (!m_towerData.m_muzzleFlashPrefab) return;
@@ -246,7 +273,7 @@ public abstract class Tower : MonoBehaviour
     public void RequestPlayAudio(AudioClip clip, AudioSource audioSource = null)
     {
         if (clip == null) return;
-        
+
         if (audioSource == null) audioSource = m_audioSource;
         audioSource.PlayOneShot(clip);
     }
@@ -254,7 +281,7 @@ public abstract class Tower : MonoBehaviour
     public void RequestPlayAudio(List<AudioClip> clips, AudioSource audioSource = null)
     {
         if (clips[0] == null) return;
-        
+
         if (audioSource == null) audioSource = m_audioSource;
         int i = Random.Range(0, clips.Count);
         audioSource.PlayOneShot(clips[i]);
@@ -267,7 +294,7 @@ public abstract class Tower : MonoBehaviour
         audioSource.clip = clip;
         audioSource.Play();
     }
-    
+
     public void RequestStopAudioLoop(AudioSource audioSource = null)
     {
         if (audioSource == null) audioSource = m_audioSource;
@@ -298,7 +325,7 @@ public abstract class Tower : MonoBehaviour
     void SetupRangeCircle(int segments, float radius)
     {
         if (radius == -1) return;
-        
+
         m_towerRangeCircle.positionCount = segments;
         m_towerRangeCircle.startWidth = 0.06f;
         m_towerRangeCircle.endWidth = 0.06f;
@@ -328,69 +355,91 @@ public abstract class Tower : MonoBehaviour
         LowestHealth,
     }
 
+    private int m_highestPriority;
+    private List<EnemyController> m_targetsOfThisPriorityValue;
+    int m_fewestCellsToGoal = int.MaxValue;
+    float m_closestTargetDistance = float.PositiveInfinity;
+    float m_lowestCurrentHP = float.PositiveInfinity;
+    float m_highestCurrentHP = 0;
+    int m_enemyCellCountToGoal = 0;
+    float m_enemyDitanceFromTower = 0;
+    float m_enemyHighestHealth = 0;
+    float m_enemyLowestHealth = 0;
+    int m_curCellCount;
+    float m_curTargetdistance;
+    float m_curTargetMaxHP;
+    float m_adjustedHP;
+
     public EnemyController GetPriorityTarget(List<EnemyController> targets)
     {
-        int highestPriority = int.MinValue;
-        List<EnemyController> m_targetsOfThisPriorityValue = new List<EnemyController>();
+        m_highestPriority = int.MinValue;
+        if (m_targetsOfThisPriorityValue == null)
+        {
+            m_targetsOfThisPriorityValue = new List<EnemyController>();
+        }
+        else
+        {
+            m_targetsOfThisPriorityValue.Clear();
+        }
 
         // Create a list of enemies that share the highest Priority that we can then operate upon based on the assigned Target System.
         foreach (EnemyController enemy in targets)
         {
-            if (enemy.m_enemyData.m_targetPriority == highestPriority)
+            if (enemy.m_enemyData.m_targetPriority == m_highestPriority)
             {
                 m_targetsOfThisPriorityValue.Add(enemy);
             }
 
-            if (enemy.m_enemyData.m_targetPriority > highestPriority)
+            if (enemy.m_enemyData.m_targetPriority > m_highestPriority)
             {
-                highestPriority = enemy.m_enemyData.m_targetPriority;
+                m_highestPriority = enemy.m_enemyData.m_targetPriority;
                 m_targetsOfThisPriorityValue = new List<EnemyController> { enemy };
             }
         }
 
         EnemyController priorityTarget = null;
-        int fewestCellsToGoal = int.MaxValue;
-        float closestTargetDistance = float.PositiveInfinity;
-        float lowestCurrentHP = float.PositiveInfinity;
-        float highestCurrentHP = 0;
+        m_fewestCellsToGoal = int.MaxValue;
+        m_closestTargetDistance = float.PositiveInfinity;
+        m_lowestCurrentHP = float.PositiveInfinity;
+        m_highestCurrentHP = 0;
 
         foreach (EnemyController enemy in m_targetsOfThisPriorityValue)
         {
             switch (m_targetSystem)
             {
                 case TargetingSystem.ClosestToGoal:
-                    int cellCount = enemy.GetCellCountToGoal();
-                    if (cellCount < fewestCellsToGoal)
+                    m_enemyCellCountToGoal = enemy.GetCellCountToGoal();
+                    if (m_enemyCellCountToGoal < m_fewestCellsToGoal)
                     {
                         priorityTarget = enemy;
-                        fewestCellsToGoal = cellCount;
+                        m_fewestCellsToGoal = m_enemyCellCountToGoal;
                     }
 
                     break;
                 case TargetingSystem.ClosestToTower: // Find the target closest to the tower.
-                    float distance = Vector3.Distance(transform.position, enemy.transform.position);
-                    if (distance < closestTargetDistance)
+                    m_enemyDitanceFromTower = Vector3.Distance(transform.position, enemy.transform.position);
+                    if (m_enemyDitanceFromTower < m_closestTargetDistance)
                     {
                         priorityTarget = enemy;
-                        closestTargetDistance = distance;
+                        m_closestTargetDistance = m_enemyDitanceFromTower;
                     }
 
                     break;
                 case TargetingSystem.HighestHealth: // Find the target with the highest current health.
-                    float highEnemyHealth = enemy.GetCurrentHP();
-                    if (highEnemyHealth > highestCurrentHP)
+                    m_enemyHighestHealth = enemy.GetCurrentHP();
+                    if (m_enemyHighestHealth > m_highestCurrentHP)
                     {
                         priorityTarget = enemy;
-                        highestCurrentHP = highEnemyHealth;
+                        m_highestCurrentHP = m_enemyHighestHealth;
                     }
 
                     break;
                 case TargetingSystem.LowestHealth: // Find the target with the lowest current health.
-                    float lowEnemyHealth = enemy.GetCurrentHP();
-                    if (lowEnemyHealth < lowestCurrentHP)
+                    m_enemyLowestHealth = enemy.GetCurrentHP();
+                    if (m_enemyLowestHealth < m_lowestCurrentHP)
                     {
                         priorityTarget = enemy;
-                        highestCurrentHP = lowEnemyHealth;
+                        m_highestCurrentHP = m_enemyLowestHealth;
                     }
 
                     break;
@@ -409,36 +458,37 @@ public abstract class Tower : MonoBehaviour
             return priorityTarget;
         }
 
+
         // Don't change targets if the priority target is within a threshold based on the Targeting System of the current target.
         switch (m_targetSystem)
         {
             case TargetingSystem.ClosestToGoal:
-                int curCellCount = m_curTarget.GetCellCountToGoal();
-                if (fewestCellsToGoal < curCellCount)
+                m_curCellCount = m_curTarget.GetCellCountToGoal();
+                if (m_fewestCellsToGoal < m_curCellCount)
                 {
                     return priorityTarget;
                 }
 
                 break;
             case TargetingSystem.ClosestToTower: // Only swap if the distance between current target and priority is past a threshold.
-                float curTargetdistance = Vector3.Distance(transform.position, m_curTarget.transform.position);
-                if (Mathf.Abs(curTargetdistance - closestTargetDistance) > .25f)
+                m_curTargetdistance = Vector3.Distance(transform.position, m_curTarget.transform.position);
+                if (Mathf.Abs(m_curTargetdistance - m_closestTargetDistance) > .25f)
                 {
                     return priorityTarget;
                 }
 
                 break;
             case TargetingSystem.HighestHealth: // Only swap if the MaxHP is greater than the current targets + % threshold.
-                float curTargetMaxHP = priorityTarget.GetMaxHP();
-                if (curTargetMaxHP * 0.95 > m_curTarget.GetMaxHP())
+                m_curTargetMaxHP = priorityTarget.GetMaxHP();
+                if (m_curTargetMaxHP * 0.95 > m_curTarget.GetMaxHP())
                 {
                     return priorityTarget;
                 }
 
                 break;
             case TargetingSystem.LowestHealth: // Only swap if the target has less than current target - 1 tower shots worth of hp.
-                float adjustedHP = lowestCurrentHP + m_towerData.m_baseDamage;
-                if (adjustedHP < m_curTarget.GetCurrentHP())
+                m_adjustedHP = m_lowestCurrentHP + m_towerData.m_baseDamage;
+                if (m_adjustedHP < m_curTarget.GetCurrentHP())
                 {
                     return priorityTarget;
                 }
@@ -447,7 +497,7 @@ public abstract class Tower : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+
         return m_curTarget; // If we fail to meet the thresholds, return our current target.
     }
 

@@ -57,11 +57,6 @@ public class ProjectileCutscene : Projectile
         m_isFired = false;
         
         m_enemy = null;
-        
-        if (m_renderer)
-        {
-            m_renderer.enabled = false;
-        }
 
         Destroy(gameObject, .5f);
     }

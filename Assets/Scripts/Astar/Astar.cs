@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Diagnostics;
 using Vector2Int = UnityEngine.Vector2Int;
@@ -99,9 +100,10 @@ public class AStar
         return closestPathableCell;
     }
 
-
+    static readonly ProfilerMarker k_codeMarkerFindPath = new ProfilerMarker("FindPath");
     public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
     {
+        k_codeMarkerFindPath.Begin();
         List<Vector2Int> path = new List<Vector2Int>();
 
         //if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied) return null;
@@ -110,6 +112,7 @@ public class AStar
         {
             //Debug.Log($"End is same as start, returning end as path.");
             path.Add(end);
+            k_codeMarkerFindPath.End();
             return path;
         }
 
@@ -140,6 +143,7 @@ public class AStar
 
                 path.Reverse(); // Reverse the path to get the correct order
                 //Debug.Log("Path Found.");
+                k_codeMarkerFindPath.End();
                 return path;
             }
 
@@ -178,6 +182,7 @@ public class AStar
 
         // No path found
         //Debug.Log($"No Path found between {start} and {end}");
+        k_codeMarkerFindPath.End();
         return null;
     }
 
@@ -211,11 +216,14 @@ public class AStar
         }
     }
 
+    static readonly ProfilerMarker k_codeMarkerFindIsland = new ProfilerMarker("FindIsland");
     public static List<Cell> FindIsland(Cell startCell)
     {
+        k_codeMarkerFindIsland.Begin();
         List<Cell> islandCells = new List<Cell>();
         HashSet<Cell> visited = new HashSet<Cell>();
         PerformDFS(startCell, islandCells, visited);
+        k_codeMarkerFindIsland.End();
         return islandCells;
     }
 
@@ -284,10 +292,11 @@ public class AStar
 
         return cellCount;
     }
-
+    static readonly ProfilerMarker k_codeMarkerFindExitPath = new ProfilerMarker("FindExitPath");
     public static List<Vector2Int> FindExitPath(Vector2Int start, Vector2Int end, Vector2Int precon, Vector2Int exit)
     {
         //Debug.Log($"Finding Exit Path from {start} - {end}");
+        k_codeMarkerFindExitPath.Begin();
         List<Vector2Int> path = new List<Vector2Int>();
 
         if (start == end
@@ -329,6 +338,7 @@ public class AStar
 
                 path.Reverse(); // Reverse the path to get the correct order
                 //Debug.Log($"Path Found. {start} - {end}");
+                k_codeMarkerFindExitPath.End();
                 return path;
             }
 
@@ -373,6 +383,7 @@ public class AStar
 
         // No path found
         //Debug.Log($"No Path Found. {start} - {end}");
+        k_codeMarkerFindExitPath.End();
         return null;
     }
 
