@@ -16,7 +16,7 @@ public abstract class Projectile : PooledObject
     [Header("Projectile Data")]
     [SerializeField] protected ProjectileData m_projectileData;
     [SerializeField] protected float m_projectileSpeed = .5f;
-    [SerializeField] protected float m_stoppingDistance = .1f;
+    [SerializeField] protected float m_stoppingDistance = .15f;
     
     [Header("Projectile Components")]
     [SerializeField] protected GameObject m_hitVFXPrefab;
@@ -60,11 +60,12 @@ public abstract class Projectile : PooledObject
     {
         m_statusEffect = statusEffect;
     }
-    
+
+    private float m_distanceToTarget;
     public bool IsTargetInStoppingDistance()
     {
-        float distanceToTarget = Vector3.Distance(transform.position, m_targetPos);
-        return distanceToTarget <= m_stoppingDistance;
+        m_distanceToTarget = Vector3.Distance(transform.position, m_targetPos);
+        return m_distanceToTarget <= m_stoppingDistance;
     }
     
     public void RemoveProjectile()
@@ -79,7 +80,7 @@ public abstract class Projectile : PooledObject
 
         RequestPlayAudio(m_projectileData.m_impactClips);
         
-        ObjectPoolManager.OrphanObject(gameObject, 1f);
+        ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
     
     public virtual void Loaded()

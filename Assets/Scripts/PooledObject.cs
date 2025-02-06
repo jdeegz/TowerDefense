@@ -33,7 +33,7 @@ public abstract class PooledObject : MonoBehaviour
         // Play Visual Effects
         foreach (var vfx in m_vfx)
         {
-            vfx.Stop();
+            vfx.Reinit();
             vfx.Play();
         }
     }

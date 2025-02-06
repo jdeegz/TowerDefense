@@ -45,7 +45,7 @@ public class TowerCannon : Tower
         m_targetDetectionTimer += Time.deltaTime;
         if (m_targetDetectionTimer >= m_targetDetectionInterval)
         {
-            m_targetDetectionTimer = 0f;
+            m_targetDetectionTimer = Random.Range(-2 * Time.deltaTime, 2 * Time.deltaTime);
             FindTarget();
         }
 
@@ -98,30 +98,34 @@ public class TowerCannon : Tower
     }
 
 
+    private GameObject projectileObj;
+    private Projectile m_reloadingProjectileScript;
     void Reload(int i)
     {
         //Make the projectile objects
-        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation, m_muzzlePoints[i].transform, ObjectPoolManager.PoolType.Projectile);
+        projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation, m_muzzlePoints[i].transform, ObjectPoolManager.PoolType.Projectile);
         
-        Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-        if(m_isBuilt) projectileScript.Loaded();
+        m_reloadingProjectileScript = projectileObj.GetComponent<Projectile>();
+        if(m_isBuilt) m_reloadingProjectileScript.Loaded();
 
         //Store the projectiles in a list to pull from later.
-        m_loadedProjectiles[i] = projectileScript;
-        if (projectileScript == null) Debug.Log($"Projectile Script is null");
+        m_loadedProjectiles[i] = m_reloadingProjectileScript;
+        if (m_reloadingProjectileScript == null) Debug.Log($"Projectile Script is null");
     }
 
+    private Projectile m_firingProjectileScript;
+    private int m_reloadIndex;
     private void Fire(int fireIndex)
     {
         //Pull projectile from the pool of loaded projectiles.
-        Projectile projectileScript = m_loadedProjectiles[m_projectileCounter];
+        m_firingProjectileScript = m_loadedProjectiles[m_projectileCounter];
 
         //Unparent the projectile so it stops rotating around the tower.
-        projectileScript.transform.parent = ObjectPoolManager.SetParentObject(ObjectPoolManager.PoolType.Projectile).transform;
+        m_firingProjectileScript.transform.parent = ObjectPoolManager.SetParentObject(ObjectPoolManager.PoolType.Projectile).transform;
         m_loadedProjectiles[fireIndex] = null;
 
         //Give the projectile purpose.
-        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, projectileScript.transform.position, gameObject, m_statusEffectData);
+        m_firingProjectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_firingProjectileScript.transform.position, gameObject, m_statusEffectData);
 
         //Play fire Sound
         RequestPlayAudio(m_towerData.m_audioFireClips);
@@ -132,14 +136,8 @@ public class TowerCannon : Tower
 
         //Start a reload timer for this index.
         //Source https://github.com/Mr-sB/UnityTimer
-        int reloadIndex = fireIndex;
-        Timer.DelayAction(m_reloadDelay, () => { Reload(reloadIndex); }, null, Timer.UpdateMode.GameTime, autoDestroyOwner: this);
-    }
-
-
-    private bool IsTargetInRange(Vector3 targetPos)
-    {
-        return Vector3.Distance(transform.position, targetPos) < m_towerData.m_fireRange;
+        m_reloadIndex = fireIndex;
+        Timer.DelayAction(m_reloadDelay, () => { Reload(m_reloadIndex); }, null, Timer.UpdateMode.GameTime, autoDestroyOwner: this);
     }
 
     public override TowerTooltipData GetTooltipData()

@@ -7,7 +7,9 @@ public class ProjectileBullet : Projectile
 {
     void FixedUpdate()
     {
-        if (!m_isComplete && IsTargetInStoppingDistance())
+        if (m_isComplete) return;
+        
+        if (IsTargetInStoppingDistance())
         {
             DealDamage();
             RemoveProjectile();
@@ -18,7 +20,7 @@ public class ProjectileBullet : Projectile
             RemoveProjectile();
         }
 
-        if(!m_isComplete) TravelToTargetFixedUpdate();
+        TravelToTargetFixedUpdate();
         
         if (m_enemy)
         {
@@ -64,15 +66,15 @@ public class ProjectileBullet : Projectile
         }
     }
 
+    private Quaternion m_spawnVFXDirection;
     void OnCollisionEnter(Collision collision)
     {
         if (m_isComplete) return;
         
         if (collision.collider.gameObject.layer == m_shieldLayer)
         {
-            
-            Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
+            m_spawnVFXDirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, m_spawnVFXDirection, null, ObjectPoolManager.PoolType.ParticleSystem);
             RemoveProjectile();
         }
 

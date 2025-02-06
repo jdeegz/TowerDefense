@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -16,6 +18,17 @@ public class ProjectileMissile : Projectile
 
     private float m_storedProjectileSpeed;
     private float m_storedLookSpeed;
+    private Vector3 m_direction;
+    private Quaternion m_targetRotation;
+    private float m_lookStep;
+    private float m_speedStep;
+    private int m_overlapCapsuleHitCount = 0;
+    private Vector3 m_explosionPosition;
+    private Vector3 m_rayOrigin;
+    private Vector3 m_targetPoint;
+    private Vector3 m_rayDirection;
+    private EnemyController m_enemyHit;
+    private Quaternion m_spawnVFXdirection;
 
     void Awake()
     {
@@ -23,24 +36,35 @@ public class ProjectileMissile : Projectile
         m_storedLookSpeed = m_lookSpeed;
     }
 
+    public override void OnSpawn()
+    {
+        base.OnSpawn();
+        m_projectileSpeed = m_storedProjectileSpeed;
+        m_lookSpeed = m_storedLookSpeed;
+        m_lookStep = 0;
+        m_speedStep = 0;
+    }
+
     void OnEnable()
     {
         //Reset Data
-        m_projectileSpeed = m_storedProjectileSpeed;
-        m_lookSpeed = m_storedLookSpeed;
     }
 
     public override void Loaded()
     {
+        gameObject.transform.localScale = Vector3.zero;
+        gameObject.transform.DOScale(1, 0.2f);
         RequestPlayAudio(m_projectileData.m_reloadClips);
     }
 
     void FixedUpdate()
     {
-        if (!m_isComplete && IsTargetInStoppingDistance())
+        if (m_isComplete) return;
+
+        if (IsTargetInStoppingDistance())
         {
-            DealDamage();
             RemoveProjectile();
+            DealDamage();
         }
 
         if (m_isFired)
@@ -59,36 +83,40 @@ public class ProjectileMissile : Projectile
         }
     }
 
+    static readonly ProfilerMarker k_codeMarkerTravelToTargetFixedUpdate = new ProfilerMarker("TravelToTargetFixedUpdate");
+
     void TravelToTargetFixedUpdate()
     {
+        k_codeMarkerTravelToTargetFixedUpdate.Begin();
         //Rotate towards Target.
-        Vector3 direction = m_targetPos - transform.position;
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, m_lookSpeed * Time.fixedDeltaTime);
+        m_direction = m_targetPos - transform.position;
+        m_targetRotation = Quaternion.LookRotation(m_direction);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, m_targetRotation, m_lookSpeed * Time.fixedDeltaTime);
 
         //Move Forward.
         transform.position += transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
 
         //Increase Lookspeed (greatly)
-        var lookStep = (m_lookAcceleration + Time.fixedDeltaTime);
-        m_lookSpeed += lookStep;
+        m_lookStep = m_lookAcceleration * Time.fixedDeltaTime;
+        m_lookSpeed += m_lookStep;
 
         //Increase Move Speed up to 50%
-        var speedStep = (m_speedAcceleration + Time.fixedDeltaTime);
-        m_projectileSpeed += speedStep;
+        m_speedStep = m_speedAcceleration * Time.fixedDeltaTime;
+        m_projectileSpeed += m_speedStep;
+        k_codeMarkerTravelToTargetFixedUpdate.End();
     }
 
     void DealDamage()
     {
         //This needs to use the missiles collider center as position instead of the missile position.
-        Vector3 explosionPosition = gameObject.GetComponent<Collider>().bounds.center;
-        
-        //Spawn VFX
-        ObjectPoolManager.SpawnObject(m_impactEffect, explosionPosition, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), null, ObjectPoolManager.PoolType.ParticleSystem);
+        m_explosionPosition = gameObject.GetComponent<Collider>().bounds.center;
+        ObjectPoolManager.SpawnObject(m_impactEffect, m_explosionPosition, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), null, ObjectPoolManager.PoolType.ParticleSystem);
 
         //Find affected enemies
-        Collider[] hits = Physics.OverlapSphere(explosionPosition, m_impactRadius, m_areaLayerMask.value);
-        if (hits.Length <= 0)
+        Collider[] hits = Physics.OverlapSphere(m_explosionPosition, m_impactRadius, m_areaLayerMask.value);
+        m_overlapCapsuleHitCount = hits.Length;
+
+        if (m_overlapCapsuleHitCount == 0)
         {
             return;
         }
@@ -96,42 +124,43 @@ public class ProjectileMissile : Projectile
         foreach (Collider col in hits)
         {
             //If the explosion position is within the collider, it's a hit, regardless of shields.
-            if (col.bounds.Contains(explosionPosition))
+            if (col.bounds.Contains(m_explosionPosition))
             {
                 SendDamage(col);
                 continue;
             }
-    
-            // Use ClosestPoint for ray direction
-            Vector3 targetPoint = col.bounds.center;
-            Vector3 rayDirection = (targetPoint - explosionPosition).normalized;
-            
-            
-            // Offset ray origin slightly
-            Vector3 rayOrigin = explosionPosition;
-            Ray ray = new Ray(rayOrigin, rayDirection);
 
-            // Perform RaycastAll
-            RaycastHit[] raycastHits = Physics.RaycastAll(ray, m_impactRadius, m_raycastLayerMask.value);
-            if (raycastHits.Length == 0)
-            {
-                continue;
-            }
-            
-            Array.Sort(raycastHits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
-            
-            //Check each hit's layer, if we hit a shield before we hit our target (ideally the last item in our list) escape.
-            foreach (var hit in raycastHits)
+
+            // Use ClosestPoint for ray direction
+            m_targetPoint = col.bounds.center;
+            m_rayDirection = (m_targetPoint - m_explosionPosition).normalized;
+            m_rayOrigin = m_explosionPosition;
+
+            RaycastHit hit;
+            Vector3 rayStart = m_rayOrigin;
+            float remainingDistance = m_impactRadius;
+
+            while (Physics.Raycast(rayStart, m_rayDirection, out hit, remainingDistance, m_raycastLayerMask.value))
             {
                 if (hit.collider.gameObject.layer == m_shieldLayer)
                 {
-                    // We hit a shield before reaching the target, so exit without dealing damage
-                    break;
+                    // A shield blocked the damage before the target, so exit early
+                    return;
                 }
 
                 if (hit.collider == col)
                 {
                     SendDamage(col);
+                    return;
+                }
+
+                // Move the ray origin slightly forward to continue checking beyond this collider
+                rayStart = hit.point + m_rayDirection * 0.01f;
+                remainingDistance -= hit.distance;
+
+                // If remaining distance is negligible, stop checking
+                if (remainingDistance <= 0)
+                {
                     break;
                 }
             }
@@ -140,18 +169,17 @@ public class ProjectileMissile : Projectile
 
     void SendDamage(Collider col)
     {
-        EnemyController enemyHit = col.GetComponent<EnemyController>();
-        enemyHit.OnTakeDamage(m_projectileDamage);
-        ObjectPoolManager.SpawnObject(m_hitVFXPrefab, enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
+        m_enemyHit = col.GetComponent<EnemyController>();
+        m_enemyHit.OnTakeDamage(m_projectileDamage);
+        ObjectPoolManager.SpawnObject(m_hitVFXPrefab, m_enemyHit.transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
 
         //Apply Status Effect
         if (m_statusEffectData != null)
         {
             StatusEffect statusEffect = new StatusEffect(m_statusSender, m_statusEffectData);
-            enemyHit.ApplyEffect(statusEffect);
-        } 
+            m_enemyHit.ApplyEffect(statusEffect);
+        }
     }
-
 
     void OnCollisionEnter(Collision collision)
     {
@@ -159,8 +187,8 @@ public class ProjectileMissile : Projectile
 
         if (collision.collider.gameObject.layer == m_shieldLayer)
         {
-            Quaternion spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
-            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
+            m_spawnVFXdirection = Quaternion.LookRotation(collision.transform.position - m_startPos);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, m_spawnVFXdirection, null, ObjectPoolManager.PoolType.ParticleSystem);
             DealDamage();
             RemoveProjectile();
         }
