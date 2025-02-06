@@ -1170,119 +1170,112 @@ public class GameplayManager : MonoBehaviour
     }
 
     bool IsPathingRestricted(List<Cell> cells)
+{
+    if (cells == null) return false;
+
+    // This is checking pathing from each neighbor of the precon building.
+    for (int i = 0; i < cells.Count; ++i)
     {
-        if (cells == null) return false;
-        // This is checking pathing from each neighbor of the precon building.
+        Cell cell = cells[i];
+        if (cell.m_isOccupied) continue;
 
-        //Debug.Log($"---- Start Pathing Check. ----");
-        for (int i = 0; i < cells.Count; ++i)
+        List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
+
+        if (testPath != null)
         {
-            Cell cell = cells[i];
-            if (cell.m_isOccupied) continue;
+            ListPool<Vector2Int>.Release(testPath);
+            continue;
+        }
 
-            //Debug.Log($"Neighbor cells {cell.m_cellPos} is unoccupied. Checking for path.");
-            List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
+        List<Cell> islandCells = ListPool<Cell>.Get();
+        islandCells.AddRange(AStar.FindIsland(cell)); // Assuming `FindIsland` returns a list.
 
+        if (islandCells.Count == 0 && cell.m_actorCount > 0)
+        {
+            ListPool<Cell>.Release(islandCells);
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
+            return false;
+        }
 
-            if (testPath != null)
+        foreach (Cell islandCell in islandCells)
+        {
+            if (islandCell.m_actorCount > 0)
             {
-                //Debug.Log($"{cell.m_cellPos} has path of length: {testPath.Count}.");
-                continue;
-            }
-
-            //Debug.Log($"No path found from Neighbor: {cell.m_cellPos} to exit, checking for inhabited islands.");
-            List<Cell> islandCells = new List<Cell>(AStar.FindIsland(cell));
-
-            //if (islandCells.Count >= 0) Debug.Log($"{cell.m_cellPos} has no path. Island Found of size: {islandCells.Count}");
-
-            if (islandCells.Count == 0 && cell.m_actorCount > 0)
-            {
-                //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {cell} contains {cell.m_actorCount} actors");
+                ListPool<Cell>.Release(islandCells);
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                 return false;
             }
+        }
 
-            foreach (Cell islandCell in islandCells)
+        ListPool<Cell>.Release(islandCells);
+    }
+
+    // EXITS AND SPAWNERS
+    // Check to see if any of our UnitPaths have no path.
+    if (!GridManager.Instance.m_spawnPointsAccessible)
+    {
+        m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
+        return false;
+    }
+
+    // Check that exits can path to one another.
+    int exitsPathable = 0;
+    for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
+    {
+        bool startObjPathable = false;
+        GameObject startObj = m_castleController.m_castleEntrancePoints[x];
+        Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
+
+        // Define the end
+        for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
+        {
+            GameObject endObj = m_castleController.m_castleEntrancePoints[z];
+            Vector2Int endPos = Util.GetVector2IntFrom3DPos(endObj.transform.position);
+
+            // Skip if they are the same
+            if (startObj == endObj)
             {
-                //Debug.Log($"Island Cell found: {islandCell.m_cellPos} and has actors: {islandCell.m_actorCount}.");
-                if (islandCell.m_actorCount > 0)
-                {
-                    //Debug.Log($"Cannot Place: {islandCells.Count} Island created, and Cell: {islandCell.m_cellPos} contains actors");
-                    m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
-                    return false;
-                }
+                continue;
+            }
+
+            // Path from Start to End and exclude the Game's Goal cell.
+            List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
+            if (testPath != null)
+            {
+                ++exitsPathable;
+                startObjPathable = true;
+                ListPool<Vector2Int>.Release(testPath);
+                break;
             }
         }
 
-        //Debug.Log($"---- End Pathing Check. ----");
-
-        // EXITS AND SPAWNERS
-        //Check to see if any of our UnitPaths have no path.
-        if (!GridManager.Instance.m_spawnPointsAccessible)
+        // If we couldn't path to any other exit, check spawners
+        if (!startObjPathable)
         {
-            //Debug.Log($"Cannot Place: This would block one or more spawners from reaching the exit.");
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
-            return false;
-        }
-        // Check that the Grid to make sure exits can path to one another.
-        int exitsPathable = 0;
-        for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
-        {
-            bool startObjPathable = false;
-            GameObject startObj = m_castleController.m_castleEntrancePoints[x];
-            Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
-
-            //Define the end
-            for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
+            for (int y = 0; y < m_enemySpawners.Count; ++y)
             {
-                GameObject endObj = m_castleController.m_castleEntrancePoints[z];
-                Vector2Int endPos = Util.GetVector2IntFrom3DPos(endObj.transform.position);
-
-                //Go next if they're the same.
-                if (startObj == endObj)
-                {
-                    continue;
-                }
-
-                //Path from Start to End and exclude the Game's Goal cell.
-                List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
+                Vector2Int spawnerPos = Util.GetVector2IntFrom3DPos(m_enemySpawners[y].GetSpawnPointTransform().position);
+                List<Vector2Int> testPath = AStar.FindExitPath(spawnerPos, startPos, m_preconstructedTowerPos, m_goalPointPos);
                 if (testPath != null)
                 {
-                    //If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
                     ++exitsPathable;
-                    startObjPathable = true;
+                    ListPool<Vector2Int>.Release(testPath);
                     break;
                 }
             }
-
-            // We could not path to any other exit. So check to see if we can path to atleast one spawner.
-            if (!startObjPathable)
-            {
-                for (int y = 0; y < m_enemySpawners.Count; ++y)
-                {
-                    Vector2Int spawnerPos = Util.GetVector2IntFrom3DPos(m_enemySpawners[y].GetSpawnPointTransform().position);
-                    List<Vector2Int> testPath = AStar.FindExitPath(spawnerPos, startPos, m_preconstructedTowerPos, m_goalPointPos);
-                    if (testPath != null)
-                    {
-                        // If we do get a path, this exit is good. Increment and break out of this for loop to check other exits.
-                        //Debug.Log($"Castle Exit: {startPos} was able to path to Spawner: {spawnerPos}.");
-                        ++exitsPathable;
-                        break;
-                    }
-                }
-            }
         }
-
-        //If the number of pathable exits is less than the number of exits, return false. One cannot path to another exit.
-        if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
-        {
-            //Debug.Log($"An exit cannot path to another exit or spawner.");
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
-            return false;
-        }
-
-        return true;
     }
+
+    // If the number of pathable exits is less than the number of exits, return false
+    if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
+    {
+        m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
+        return false;
+    }
+
+    return true;
+}
+
 
     private void PositionPrecon()
     {

@@ -10,21 +10,35 @@ public class AStar
     public static List<Vector2Int> FindPathToGoal(Cell goalCell, Cell currentCell)
     {
         List<Vector2Int> path = null;
-        List<Cell> emptyCells = null;
+        List<Cell> emptyCells = null; // Pooled list
+        List<Vector2Int> emptyCellPositions = null;
+
         int currentDistance = Math.Max(Math.Abs(currentCell.m_cellPos.x - goalCell.m_cellPos.x), Math.Abs(currentCell.m_cellPos.y - goalCell.m_cellPos.y));
         int searchDistance = goalCell.m_isOccupied ? 1 : 0;
         int maxSearchDistance = Math.Min(currentDistance, 9);
+
         while (searchDistance <= maxSearchDistance && path == null)
         {
+            // Before assigning a new list, release the previous one if it exists
+            if (emptyCells != null)
+            {
+                ListPool<Cell>.Release(emptyCells);
+            }
+
+            if (emptyCellPositions != null)
+            {
+                ListPool<Vector2Int>.Release(emptyCellPositions);
+            }
+
             emptyCells = Util.GetEmptyCellsAtDistance(goalCell.m_cellPos, searchDistance);
 
-            if (emptyCells == null) // We found no empty cells, expand range.
+            if (emptyCells == null) // No empty cells found, expand search range.
             {
                 ++searchDistance;
                 continue;
             }
 
-            List<Vector2Int> emptyCellPositions = new List<Vector2Int>();
+            emptyCellPositions = ListPool<Vector2Int>.Get();
 
             foreach (Cell cell in emptyCells)
             {
@@ -35,8 +49,19 @@ public class AStar
 
             if (path == null)
             {
-                ++searchDistance; // We found no pathable empty cells, expand range.
+                ++searchDistance; // No pathable empty cells, expand range.
             }
+        }
+
+        // Ensure we release the last emptyCells before returning
+        if (emptyCells != null)
+        {
+            ListPool<Cell>.Release(emptyCells);
+        }
+
+        if (emptyCellPositions != null)
+        {
+            ListPool<Vector2Int>.Release(emptyCellPositions);
         }
 
         return path;
@@ -46,94 +71,54 @@ public class AStar
     public static List<Vector2Int> FindShortestPath(Vector2Int start, List<Vector2Int> endPositions)
     {
         List<Vector2Int> shortestPath = null;
+        List<Vector2Int> path = null;
 
         foreach (Vector2Int end in endPositions)
         {
-            List<Vector2Int> path = FindPath(start, end);
+            path = FindPath(start, end);
             if (path == null)
             {
                 continue;
             }
 
-            //Debug.Log($"Path to {end} is {path.Count} long.");
-
             if (shortestPath == null)
             {
-                shortestPath = path;
+                shortestPath = new List<Vector2Int>(path);;
             }
             else if (path.Count < shortestPath.Count)
             {
-                shortestPath = path;
+                shortestPath = new List<Vector2Int>(path);;
             }
+
+            ListPool<Vector2Int>.Release(path);
         }
 
         return shortestPath;
     }
 
-    public static Cell PickClosestPathableCell(Vector2Int start, List<Vector2Int> endPositions)
-    {
-        List<Vector2Int> shortestPath = null;
-        Cell closestPathableCell = null;
-
-        foreach (Vector2Int end in endPositions)
-        {
-            List<Vector2Int> path = FindPath(start, end);
-            if (path == null)
-            {
-                continue;
-            }
-
-            //Debug.Log($"Path to {end} is {path.Count} long.");
-
-            if (shortestPath == null)
-            {
-                shortestPath = path;
-                closestPathableCell = Util.GetCellFromPos(end);
-            }
-            else if (path.Count < shortestPath.Count)
-            {
-                shortestPath = path;
-                closestPathableCell = Util.GetCellFromPos(end);
-            }
-        }
-
-        return closestPathableCell;
-    }
-
-    static readonly ProfilerMarker k_codeMarkerFindPath = new ProfilerMarker("FindPath");
     public static List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
     {
-        k_codeMarkerFindPath.Begin();
-        List<Vector2Int> path = new List<Vector2Int>();
-
-        //if (start == end || Util.GetCellFromPos(start).m_isOccupied || Util.GetCellFromPos(end).m_isOccupied) return null;
+        List<Vector2Int> path = ListPool<Vector2Int>.Get();
+        List<Vector2Int> neighbors = ListPool<Vector2Int>.Get(); // Use a pooled list for neighbors
 
         if (start == end)
         {
-            //Debug.Log($"End is same as start, returning end as path.");
             path.Add(end);
-            k_codeMarkerFindPath.End();
+            ListPool<Vector2Int>.Release(neighbors); // Release neighbors before returning
             return path;
         }
 
-        // Priority queue for open nodes
         PriorityQueue<Node> openNodes = new PriorityQueue<Node>();
-
-        // List to keep track of visited nodes
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
 
-        // Add the start node to openNodes
         openNodes.Enqueue(new Node(start, null, 0, Heuristic(start, end)));
 
         while (openNodes.Count > 0)
         {
-            // Get the node with the lowest f value from openNodes
             Node current = openNodes.Dequeue();
 
-            // Check if we reached the goal
             if (current.position == end)
             {
-                // Reconstruct the path from the goal node to the start node
                 Node node = current;
                 while (node != null)
                 {
@@ -141,22 +126,21 @@ public class AStar
                     node = node.parent;
                 }
 
-                path.Reverse(); // Reverse the path to get the correct order
-                //Debug.Log("Path Found.");
-                k_codeMarkerFindPath.End();
+                path.Reverse();
+
+                ListPool<Vector2Int>.Release(neighbors); // Release neighbors
                 return path;
             }
 
-            // Mark the current node as visited
             if (!visited.Add(current.position))
             {
                 continue;
             }
 
-            // Get the neighboring cells (North, East, South, and West)
-            List<Vector2Int> neighbors = new List<Vector2Int>();
+            // Clear and reuse the pooled neighbors list
+            neighbors.Clear();
 
-            Cell curCell = Util.GetCellFromPos(new Vector2Int(current.position.x, current.position.y));
+            Cell curCell = Util.GetCellFromPos(current.position);
             if (curCell.m_canPathNorth) neighbors.Add(new Vector2Int(current.position.x, current.position.y + 1));
             if (curCell.m_canPathEast) neighbors.Add(new Vector2Int(current.position.x + 1, current.position.y));
             if (curCell.m_canPathSouth) neighbors.Add(new Vector2Int(current.position.x, current.position.y - 1));
@@ -168,23 +152,21 @@ public class AStar
                     neighbor.y >= 0 && neighbor.y < GridManager.Instance.m_gridHeight &&
                     !Util.GetCellFromPos(neighbor).m_isOccupied)
                 {
-                    // Calculate the g value (cost from start to neighbor)
                     float g = current.g + 1;
-
-                    // Calculate the h value (heuristic value from neighbor to goal)
                     float h = Heuristic(neighbor, end);
 
-                    // Add the neighbor node to openNodes
                     openNodes.Enqueue(new Node(neighbor, current, g, h));
                 }
             }
         }
 
-        // No path found
-        //Debug.Log($"No Path found between {start} and {end}");
-        k_codeMarkerFindPath.End();
+        // If no path is found, release both lists before returning null
+        ListPool<Vector2Int>.Release(path);
+        ListPool<Vector2Int>.Release(neighbors);
+
         return null;
     }
+
 
     private static float Heuristic(Vector2Int from, Vector2Int to)
     {
@@ -216,14 +198,11 @@ public class AStar
         }
     }
 
-    static readonly ProfilerMarker k_codeMarkerFindIsland = new ProfilerMarker("FindIsland");
     public static List<Cell> FindIsland(Cell startCell)
     {
-        k_codeMarkerFindIsland.Begin();
         List<Cell> islandCells = new List<Cell>();
         HashSet<Cell> visited = new HashSet<Cell>();
         PerformDFS(startCell, islandCells, visited);
-        k_codeMarkerFindIsland.End();
         return islandCells;
     }
 
@@ -247,7 +226,7 @@ public class AStar
                 // We've crawled to this tile, we want to include it in the island, but not add any of its neighbors.
                 return;
             }
-            
+
             // Recursively explore the neighbors of the current cell
             // Up neighbor
             Cell northNeighborCell = Util.GetCellFromPos(new Vector2Int(curCellPos.x, curCellPos.y + 1));
@@ -292,12 +271,11 @@ public class AStar
 
         return cellCount;
     }
-    static readonly ProfilerMarker k_codeMarkerFindExitPath = new ProfilerMarker("FindExitPath");
+
     public static List<Vector2Int> FindExitPath(Vector2Int start, Vector2Int end, Vector2Int precon, Vector2Int exit)
     {
-        //Debug.Log($"Finding Exit Path from {start} - {end}");
-        k_codeMarkerFindExitPath.Begin();
-        List<Vector2Int> path = new List<Vector2Int>();
+        List<Vector2Int> path = ListPool<Vector2Int>.Get();
+        List<Vector2Int> neighbors = ListPool<Vector2Int>.Get();
 
         if (start == end
             || Util.GetCellFromPos(start).m_isOccupied
@@ -305,30 +283,22 @@ public class AStar
             || Util.GetCellFromPos(start).m_isTempOccupied
             || Util.GetCellFromPos(end).m_isTempOccupied)
         {
-            //Debug.Log("Start is End: " + (start == end));
-            //Debug.Log("Start is occupied: " + Util.GetCellFromPos(start).m_isOccupied);
-            //Debug.Log("End is occupied: " + Util.GetCellFromPos(end).m_isOccupied);
+            ListPool<Vector2Int>.Release(neighbors);
+            ListPool<Vector2Int>.Release(path);
             return null;
         }
 
-
-        // Priority queue for open nodes
         PriorityQueue<Node> openNodes = new PriorityQueue<Node>();
-
-        // List to keep track of visited nodes
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
 
-        // Add the start node to openNodes
         openNodes.Enqueue(new Node(start, null, 0, Heuristic(start, end)));
+
         while (openNodes.Count > 0)
         {
-            // Get the node with the lowest f value from openNodes
             Node current = openNodes.Dequeue();
 
-            // Check if we reached the goal
             if (current.position == end)
             {
-                // Reconstruct the path from the goal node to the start node
                 Node node = current;
                 while (node != null)
                 {
@@ -336,22 +306,18 @@ public class AStar
                     node = node.parent;
                 }
 
-                path.Reverse(); // Reverse the path to get the correct order
-                //Debug.Log($"Path Found. {start} - {end}");
-                k_codeMarkerFindExitPath.End();
-                return path;
+                path.Reverse();
+                ListPool<Vector2Int>.Release(neighbors);
+                return path; // Caller must release this
             }
 
-            // Mark the current node as visited
             if (!visited.Add(current.position))
             {
                 continue;
             }
 
-            // Get the neighboring cells (North, East, South, and West)
-            List<Vector2Int> neighbors = new List<Vector2Int>();
-
-            Cell curCell = Util.GetCellFromPos(new Vector2Int(current.position.x, current.position.y));
+            neighbors.Clear();
+            Cell curCell = Util.GetCellFromPos(current.position);
             if (curCell.m_canPathNorth) neighbors.Add(new Vector2Int(current.position.x, current.position.y + 1));
             if (curCell.m_canPathEast) neighbors.Add(new Vector2Int(current.position.x + 1, current.position.y));
             if (curCell.m_canPathSouth) neighbors.Add(new Vector2Int(current.position.x, current.position.y - 1));
@@ -369,28 +335,24 @@ public class AStar
                     neighbor != precon &&
                     neighbor != exit)
                 {
-                    // Calculate the g value (cost from start to neighbor)
                     float g = current.g + 1;
-
-                    // Calculate the h value (heuristic value from neighbor to goal)
                     float h = Heuristic(neighbor, end);
-
-                    // Add the neighbor node to openNodes
                     openNodes.Enqueue(new Node(neighbor, current, g, h));
                 }
             }
         }
 
         // No path found
-        //Debug.Log($"No Path Found. {start} - {end}");
-        k_codeMarkerFindExitPath.End();
+        ListPool<Vector2Int>.Release(path);
+        ListPool<Vector2Int>.Release(neighbors);
         return null;
     }
+
 
     public static List<Vector2Int> GetExitPath(Vector2Int startPos, Vector2Int endPos)
     {
         //Debug.Log($"Getting Exit Path from {startPos} - {endPos}");
-        List<Vector2Int> path = new List<Vector2Int>();
+        List<Vector2Int> path = ListPool<Vector2Int>.Get();
         Vector2Int current = startPos;
 
         while (current != endPos)
@@ -400,7 +362,7 @@ public class AStar
             //If the current cell is occupied, we cannot find the exit, this is not a valid path.
             if ((curCell.m_isOccupied && !curCell.m_isUpForSale) || curCell.m_isTempOccupied)
             {
-                Debug.Log($"GetExitPath did not find a path, {curCell.m_cellPos} is occupied.");
+                ListPool<Vector2Int>.Release(path);
                 return null;
             }
 
@@ -409,13 +371,13 @@ public class AStar
             if (curCell.m_portalConnectionCell != null)
             {
                 //Debug.Log($"Found a portal connection.");
-                
+
                 if (curCell.m_tempDirectionToNextCell == Cell.Direction.Portal && curCell.m_directionToNextCell != Cell.Direction.Portal && curCell.m_actorCount > 0)
                 {
-                    Debug.Log($"{curCell.m_cellPos} is a portal with {curCell.m_actorCount} actors in it.");
+                    ListPool<Vector2Int>.Release(path);
                     return null;
                 }
-                
+
                 if (curCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
                 {
                     //Debug.Log($"Portal exit has direction, stepping into it.");
@@ -426,12 +388,11 @@ public class AStar
                 }
             }
 
-            
             Cell.Direction direction = curCell.m_tempDirectionToNextCell;
 
             if (direction == Cell.Direction.Unset)
             {
-                Debug.Log($"{curCell.m_cellPos} Cell has no direction value. Temp Direction to Cell {curCell.m_tempDirectionToNextCell}");
+                ListPool<Vector2Int>.Release(path);
                 return null;
             }
 
@@ -440,7 +401,7 @@ public class AStar
             // Path goes out of bounds, return null
             if (current.x < 0 || current.x == GridManager.Instance.m_gridWidth || current.y < 0 || current.y == GridManager.Instance.m_gridHeight)
             {
-                Debug.LogError("Path goes out of bounds.");
+                ListPool<Vector2Int>.Release(path);
                 return null;
             }
         }

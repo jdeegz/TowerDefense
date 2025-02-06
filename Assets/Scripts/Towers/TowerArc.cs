@@ -125,6 +125,10 @@ public class TowerArc : Tower
         }
     }
 
+    private Vector3 m_hitPos;
+    private Vector3 m_direction;
+    private float m_coneAngleCosine;
+    
     private void Fire()
     {
         //Get all the enemies in the cone and deal damage to them. VFX is visual layer ontop of that.
@@ -133,13 +137,13 @@ public class TowerArc : Tower
 
         for (int i = 0; i < hits.Length; ++i)
         {
-            Vector3 hitPos = hits[i].transform.position;
-            hitPos.y = m_muzzlePoint.transform.position.y;
+            m_hitPos = hits[i].transform.position;
+            m_hitPos.y = m_muzzlePoint.transform.position.y;
 
-            Vector3 direction = hitPos - m_muzzlePoint.transform.position;
-            float coneAngleCosine = Mathf.Cos(Mathf.Deg2Rad * (m_towerData.m_fireConeAngle / 2f));
+            m_direction = m_hitPos - m_muzzlePoint.transform.position;
+            m_coneAngleCosine = Mathf.Cos(Mathf.Deg2Rad * (m_towerData.m_fireConeAngle / 2f));
 
-            if (Vector3.Dot(direction.normalized, m_muzzlePoint.forward.normalized) > coneAngleCosine && IsTargetInFireRange(hitPos))
+            if (Vector3.Dot(m_direction.normalized, m_muzzlePoint.forward.normalized) > m_coneAngleCosine && IsTargetInFireRange(m_hitPos))
             {
                 // Target is within the cone.
                 EnemyController enemyHit = hits[i].transform.GetComponent<EnemyController>();

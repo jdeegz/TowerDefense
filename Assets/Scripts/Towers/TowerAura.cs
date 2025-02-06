@@ -15,7 +15,7 @@ public class TowerAura : Tower
     void OnEnable()
     {
         m_timeUntilFire = 1f / m_towerData.m_fireRate;
-        m_targetsTracked = new List<GameObject>();
+        m_targetsTracked = ListPool<GameObject>.Get();
     }
 
     // Update is called once per frame
@@ -54,14 +54,16 @@ public class TowerAura : Tower
 
         StartDome();
     }
-    
+
+    private List<GameObject> m_copyTargetsTracked;
     private void SetTargets()
     {
         //Restart Reload Timer
         m_timeUntilFire = 0;
         
         //Create targetsList Copy
-        List<GameObject> copyTargetsTracked = new List<GameObject>(m_targetsTracked);
+        m_copyTargetsTracked = ListPool<GameObject>.Get();
+        m_copyTargetsTracked.AddRange(m_targetsTracked);
         
         //Look for Units in sphere.
         Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_fireRange, m_layerMask.value);
@@ -71,10 +73,10 @@ public class TowerAura : Tower
             for (int i = 0; i < hits.Length; ++i)
             {
                 //Does copyTargetsTracked contain hits. 
-                if (copyTargetsTracked.Contains(hits[i].gameObject))
+                if (m_copyTargetsTracked.Contains(hits[i].gameObject))
                 {
                     //If it does, we have already applied an effect.
-                    copyTargetsTracked.Remove(hits[i].gameObject);
+                    m_copyTargetsTracked.Remove(hits[i].gameObject);
                 }
                 else
                 {
@@ -86,11 +88,13 @@ public class TowerAura : Tower
         }
 
         //Remove the effect from items that remain in the Copy of Targets Tracked. They're no longer in the area.
-        foreach (GameObject obj in copyTargetsTracked)
+        foreach (GameObject obj in m_copyTargetsTracked)
         {
             m_targetsTracked.Remove(obj);
             obj.GetComponent<EnemyController>().RequestRemoveEffect(gameObject);
         }
+        
+        ListPool<GameObject>.Release(m_copyTargetsTracked);
     }
     
 
@@ -157,7 +161,8 @@ public class TowerAura : Tower
         {
             obj.GetComponent<EnemyController>().RequestRemoveEffect(gameObject);
         }
-        m_targetsTracked.Clear();
+
+        ListPool<GameObject>.Release(m_targetsTracked);
         
         //Resume virtual function
         base.RemoveTower();

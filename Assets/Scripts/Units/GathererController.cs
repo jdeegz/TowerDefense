@@ -86,7 +86,7 @@ public class GathererController : MonoBehaviour
         {
             m_gathererPath = value;
 
-            //Debug.Log($"GathererPath is null: {m_gathererPath == null}");
+            Debug.Log($"GathererPath is null: {m_gathererPath == null}, it is size: {m_gathererPath.Count}");
             if (m_gathererPath != null)
             {
                 if (m_gathererPath.Count > 1)
@@ -894,15 +894,15 @@ public class GathererController : MonoBehaviour
                 //Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is NULL.");
                 continue;
             }
-            
+
             //Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is {path.Count} long.");
             //Debug.Log($"The last cell in the path is {path.Last()}.");
             float remainingCellDistance = Math.Max(Math.Abs(nodeCell.m_cellPos.x - path.Last().x), Math.Abs(nodeCell.m_cellPos.y - path.Last().y));
 
             if (remainingCellDistance > 1) continue;
-            
+
             //Debug.Log($"The last cell in the path is {remainingCellDistance} away from the Resource Node.");
-            
+
             if (shortestPath == null || path.Count < shortestPath.Count)
             {
                 shortestPath = path;
@@ -1136,7 +1136,7 @@ public class GathererController : MonoBehaviour
                 Cell cell = Util.GetCellFromPos(currentPos);
 
                 if (cell == null) continue;
-                
+
                 if (cell.m_isOutOfBounds) continue;
 
                 if (cell.m_isOccupied)

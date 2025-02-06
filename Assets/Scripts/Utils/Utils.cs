@@ -47,32 +47,29 @@ public static class Util
     {
         List<Cell> emptyCells = null;
 
-        // Loop through the grid centered around the target
         for (int x = -distance; x <= distance; x++)
         {
             for (int z = -distance; z <= distance; z++)
             {
-                // Get the current grid cell
                 Vector2Int currentPos = new Vector2Int(center.x + x, center.y + z);
 
-                // Skip this cell if it's not in the gamefield.
                 if (!IsWithinBounds(currentPos.x, currentPos.y)) continue;
 
-                // Skip the inner grid
                 if (Mathf.Abs(x) < distance && Mathf.Abs(z) < distance) continue;
 
-                // Add outer cells to the list
                 Cell cell = GetCellFromPos(currentPos);
                 if (!cell.m_isOccupied)
                 {
-                    if (emptyCells == null) emptyCells = new List<Cell>();
+                    if (emptyCells == null) emptyCells = ListPool<Cell>.Get();
                     emptyCells.Add(cell);
                 }
             }
         }
 
-        return emptyCells;
+        return emptyCells; // Don't release it here! The caller must handle it.
     }
+
+    
 
     public static Vector3 GetRandomPosition(Vector3 objPosition, Vector3 offset)
     {

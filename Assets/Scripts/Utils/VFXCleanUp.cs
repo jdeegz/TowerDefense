@@ -81,6 +81,8 @@ public class VFXCleanUp : PooledObject
 
     void Update()
     {
+        if (m_hasReturnedToPool) return;
+        
         //If we have vfx systems in here, we need to check to see if each one has played and if it's completed, if so set a bool to true.
         if (!m_vfxSystemsComplete)
         {
@@ -92,7 +94,6 @@ public class VFXCleanUp : PooledObject
                 if (m_vfxSystems[i].aliveParticleCount == 0 && m_vfxSystemHasPlayed[i])
                 {
                     //This system is complete. Remove it from the list.
-                    //Debug.Log($"{m_vfxSystems[i].name} has no living particle count.");
                     m_vfxSystems.RemoveAt(i);
                     m_vfxSystemHasPlayed.RemoveAt(i);
                     --i;

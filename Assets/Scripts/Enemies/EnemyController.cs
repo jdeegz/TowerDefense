@@ -258,17 +258,33 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     //Movement
     //Functions
+    protected Vector2Int m_newPos;
+    protected Cell m_newCell;
+    protected float m_wiggleMagnitude;
+    protected Vector2 m_nextCellPosOffset;
+    protected Vector3 m_curCell3dPos;
+    protected Vector2Int m_directionToNextCell;
+    protected float m_angle;
+    protected float m_moveSpeed;
+    protected float m_cumulativeMoveSpeed;
+    protected float m_maxBaseLookSpeed;
+    protected float m_cumulativeLookSpeed;
+    protected Quaternion m_targetRotation;
+    protected float m_posClampX;
+    protected float m_posClampZ;
+    
+    
     public virtual void HandleMovement()
     {
         //Update Cell occupancy
-        Vector2Int newPos = Util.GetVector2IntFrom3DPos(transform.position);
+        m_newPos = Util.GetVector2IntFrom3DPos(transform.position);
 
-        if (newPos != m_curPos)
+        if (m_newPos != m_curPos)
         {
-            Cell newCell = Util.GetCellFromPos(newPos);
+            m_newCell = Util.GetCellFromPos(m_newPos);
 
             //Check new cells occupancy.
-            if (newCell.m_isOccupied)
+            if (m_newCell.m_isOccupied)
             {
                 //If it is occupied, we do NOT want to continue entering it. Ask our previous cell for it's new direction (assuming we've placed a tower and updated the grid)
             }
@@ -281,22 +297,22 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 }
 
                 // Is the new cell a portal? Is it also a portal entrance?
-                if (newCell.m_directionToNextCell == Cell.Direction.Portal)
+                if (m_newCell.m_directionToNextCell == Cell.Direction.Portal)
                 {
-                    Debug.Log($"{newCell.m_cellPos} is trying to teleport to {newCell.m_portalConnectionCell.m_cellPos}.");
-                    Cell portalDestinationCell = newCell.m_portalConnectionCell;
+                    Debug.Log($"{m_newCell.m_cellPos} is trying to teleport to {m_newCell.m_portalConnectionCell.m_cellPos}.");
+                    Cell portalDestinationCell = m_newCell.m_portalConnectionCell;
    
                     BeginTeleport(portalDestinationCell);
                     
-                    newPos = portalDestinationCell.m_cellPos;
-                    newCell = portalDestinationCell;
+                    m_newPos = portalDestinationCell.m_cellPos;
+                    m_newCell = portalDestinationCell;
                 }
 
                 //Assign new position, we are now in a new cell.
-                m_curPos = newPos;
+                m_curPos = m_newPos;
 
                 //Get new cell from new position.
-                m_curCell = newCell;
+                m_curCell = m_newCell;
                 
                 //Assign self to cell.
                 m_curCell.UpdateActorCount(1, gameObject.name);
@@ -310,17 +326,17 @@ public abstract class EnemyController : Dissolvable, IEffectable
             if (m_goalCell == null) Debug.Log($"goal cell is null.");
             
 
-            float wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-            Vector2 nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * wiggleMagnitude);
+            m_wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+            m_nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * m_wiggleMagnitude);
 
             //Convert saved cell pos from Vector2 to Vector3
-            Vector3 m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
+            m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
 
             //Get the position of the next cell.
             //If the current cell is occupied, we go in the reverse direction until we're in an unoccupied cell.
             //If the current cell has no direction, we go back to the previous cell.
-            Vector2Int directionToNextCell = m_curCell.GetDirectionVector(m_curCell.m_directionToNextCell);
-            m_nextCellPosition = m_curCell3dPos + new Vector3(directionToNextCell.x + nextCellPosOffset.x, 0, directionToNextCell.y + nextCellPosOffset.y);
+            m_directionToNextCell = m_curCell.GetDirectionVector(m_curCell.m_directionToNextCell);
+            m_nextCellPosition = m_curCell3dPos + new Vector3(m_directionToNextCell.x + m_nextCellPosOffset.x, 0, m_directionToNextCell.y + m_nextCellPosOffset.y);
 
             //Clamp saftey net. This was .45, but changed to .49 when I saw units hitch forward after new cell subscriptions combined with low velocity.
             m_maxX = m_curCell.m_cellPos.x + .49f;
@@ -329,23 +345,23 @@ public abstract class EnemyController : Dissolvable, IEffectable
             m_maxZ = m_curCell.m_cellPos.y + .49f;
             m_minZ = m_curCell.m_cellPos.y - .49f;
 
-            if (directionToNextCell.x < 0)
+            if (m_directionToNextCell.x < 0)
             {
                 //We're going left.
                 m_minX += -1;
             }
-            else if (directionToNextCell.x > 0)
+            else if (m_directionToNextCell.x > 0)
             {
                 //we're going right.
                 m_maxX += 1;
             }
 
-            if (directionToNextCell.y < 0)
+            if (m_directionToNextCell.y < 0)
             {
                 //We're going down.
                 m_minZ += -1;
             }
-            else if (directionToNextCell.y > 0)
+            else if (m_directionToNextCell.y > 0)
             {
                 //we're going up.
                 m_maxZ += 1;
@@ -355,30 +371,25 @@ public abstract class EnemyController : Dissolvable, IEffectable
         m_moveDirection = (m_nextCellPosition - transform.position).normalized;
 
         //Send information to Animator
-        float angle = Vector3.SignedAngle(transform.forward, m_moveDirection, Vector3.up);
-        m_animator.SetFloat("LookRotation", angle);
+        m_angle = Vector3.SignedAngle(transform.forward, m_moveDirection, Vector3.up);
+        m_animator.SetFloat("LookRotation", m_angle);
 
         //Move forward.
-        float speed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
-        float cumulativeMoveSpeed = speed * Time.deltaTime;
-        transform.position += transform.forward * cumulativeMoveSpeed;
-        m_animator.SetFloat("Speed", speed);
+        m_moveSpeed = m_baseMoveSpeed * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
+        m_cumulativeMoveSpeed = m_moveSpeed * Time.deltaTime;
+        transform.position += transform.forward * m_cumulativeMoveSpeed;
+        m_animator.SetFloat("Speed", m_moveSpeed);
 
         //Look towards the move direction.
-        float baseLookSpeed = Mathf.Max(m_baseLookSpeed, Math.Abs(angle));
-        float cumulativeLookSpeed = baseLookSpeed * speed * Time.deltaTime;
-        Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
-
-        /*if (angle >= 90 || angle <= -90)
-        {
-            Debug.Log($"Angle: {angle} at Speed: {speed}. Look Speed: {baseLookSpeed * speed}");
-        }*/
+        m_maxBaseLookSpeed = Mathf.Max(m_baseLookSpeed, Math.Abs(m_angle));
+        m_cumulativeLookSpeed = m_maxBaseLookSpeed * m_moveSpeed * Time.deltaTime;
+        m_targetRotation = Quaternion.LookRotation(m_moveDirection);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, m_targetRotation, m_cumulativeLookSpeed);
 
         //Apply clamping
-        float posX = Mathf.Clamp(transform.position.x, m_minX, m_maxX);
-        float posZ = Mathf.Clamp(transform.position.z, m_minZ, m_maxZ);
-        transform.position = new Vector3(posX, transform.position.y, posZ);
+        m_posClampX = Mathf.Clamp(transform.position.x, m_minX, m_maxX);
+        m_posClampZ = Mathf.Clamp(transform.position.z, m_minZ, m_maxZ);
+        transform.position = new Vector3(m_posClampX, transform.position.y, m_posClampZ);
     }
 
     //Taking Damage
@@ -412,12 +423,14 @@ public abstract class EnemyController : Dissolvable, IEffectable
         }
     }
 
+    private float cumDamage;
+    
     public virtual void OnTakeDamage(float dmg)
     {
         if (m_curHealth <= 0) return;
 
         //Calculate Damage
-        float cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
+        cumDamage = dmg * m_baseDamageMultiplier * m_lastDamageModifierHigher * m_lastDamageModifierLower;
         m_curHealth -= cumDamage;
         UpdateHealth?.Invoke(-cumDamage);
 
@@ -434,6 +447,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
         if (gameObject.activeSelf) HitFlash();
     }
 
+    private Color m_hitFlashStartColor = new Color(130f / 255f, 50f / 255f, 50f / 255f); // Convert to 0-1 range
+    private Color m_hitFlashEndColor = Color.black;
     public void HitFlash()
     {
         for (int i = 0; i < m_allRenderers.Count; ++i)
@@ -443,12 +458,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 if (material != null)
                 {
                     material.EnableKeyword("_EMISSION");
-
-                    Color startColor = new Color(130f / 255f, 50f / 255f, 50f / 255f); // Convert to 0-1 range
-                    material.SetColor("_EmissionColor", startColor);
-
-                    Color endColor = Color.black;
-                    material.DOColor(endColor, "_EmissionColor", 0.15f);
+                    material.SetColor("_EmissionColor", m_hitFlashStartColor);
+                    material.DOColor(m_hitFlashEndColor, "_EmissionColor", 0.15f);
                 }
             }
         }

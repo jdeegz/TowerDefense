@@ -32,7 +32,6 @@ public class GridManager : MonoBehaviour
     private List<Cell> m_outOfBoundsSpawnCells;
 
 
-
     void Awake()
     {
         Instance = this;
@@ -93,6 +92,7 @@ public class GridManager : MonoBehaviour
     }
 
     static readonly ProfilerMarker k_codeMarkerFloodFillGrid = new ProfilerMarker("FloodFillGrid");
+
     public void FloodFillGrid(Cell[] gridCells, Action callback)
     {
         //Debug.Log($"Begin Flood Fill.");
@@ -154,7 +154,7 @@ public class GridManager : MonoBehaviour
 
         //If we've found all the spawn points, this is good, we can update each path.
         m_spawnPointsAccessible = spawnPointCellsFound == spawnPointCells.Count;
-        
+
         if (!m_spawnPointsAccessible)
         {
             //Debug.Log($"We did not find all spawn points when flood filling from the exit.");
@@ -167,6 +167,7 @@ public class GridManager : MonoBehaviour
         {
             callback.Invoke();
         }
+
         k_codeMarkerFloodFillGrid.End();
     }
 
@@ -175,7 +176,7 @@ public class GridManager : MonoBehaviour
         if (m_unitPaths == null || m_unitPaths.Count == 0) return;
 
         //Debug.Log($"Updating Unit Paths");
-        
+
         foreach (UnitPath unitPath in m_unitPaths)
         {
             //Break this into its own function outside of flood fill.
@@ -227,12 +228,13 @@ public class GridManager : MonoBehaviour
     }
 
     static readonly ProfilerMarker k_codeMarkerPreconBuildingMoved = new ProfilerMarker("PreconBuildingMoved");
+
     void PreconBuildingMoved(List<Cell> cells)
     {
         k_codeMarkerPreconBuildingMoved.Begin();
         if (m_previousPreconCells == null) m_previousPreconCells = new List<Cell>();
 
-        
+
         foreach (Cell cell in m_previousPreconCells)
         {
             cell.UpdateTempOccupancyDisplay(false);
@@ -458,7 +460,7 @@ public class Cell
     private Color m_occupiedColor = Color.yellow;
     private Color m_tempOccupiedColor = Color.magenta;
     private Color m_goalColor = Color.green;
-    
+
     public Direction m_directionToNextCell = Direction.Unset;
     public Direction m_tempDirectionToNextCell = Direction.Unset;
 
@@ -471,31 +473,31 @@ public class Cell
         West,
         Portal
     }
-    
+
     public Vector2Int GetDirectionVector(Direction direction)
     {
         switch (direction)
         {
             case Direction.Unset:
-                return new Vector2Int(0,0);
-            
+                return new Vector2Int(0, 0);
+
             case Direction.North:
-                return new Vector2Int(0,1);
-            
+                return new Vector2Int(0, 1);
+
             case Direction.East:
-                return new Vector2Int(1,0);
-            
+                return new Vector2Int(1, 0);
+
             case Direction.South:
-                return new Vector2Int(0,-1);
-            
+                return new Vector2Int(0, -1);
+
             case Direction.West:
-                return new Vector2Int(-1,0);
-            
+                return new Vector2Int(-1, 0);
+
             case Direction.Portal:
-                return new Vector2Int(0,0);
-            
+                return new Vector2Int(0, 0);
+
             default:
-                return new Vector2Int(99,99);
+                return new Vector2Int(99, 99);
         }
     }
 
@@ -526,7 +528,7 @@ public class Cell
     public void UpdateOccupancy(bool b)
     {
         m_isOccupied = b;
-        
+
         if (m_isOccupied)
         {
             UpdateGridCellColor(m_occupiedColor);
@@ -545,14 +547,14 @@ public class Cell
     public void SetIsOutOfBounds(bool b)
     {
         m_isOutOfBounds = b;
-        
+
         UpdateOccupancy(b);
     }
 
     public void UpdateTempOccupancyDisplay(bool b)
     {
         m_isTempOccupied = b;
-        
+
         if (m_isTempOccupied)
         {
             UpdateGridCellColor(m_tempOccupiedColor);
@@ -567,7 +569,7 @@ public class Cell
     public void UpdateGoalDisplay(bool b)
     {
         m_isGoal = b;
-        
+
         if (m_isGoal) UpdateGridCellColor(m_goalColor);
     }
 
@@ -587,7 +589,7 @@ public class Cell
         Vector2Int directionPos = destinationCellPos - m_cellPos;
 
         Direction direction = Direction.Unset;
-        
+
         if (directionPos == new Vector2Int(0, 1))
         {
             //Tile is north, face south.
@@ -683,7 +685,6 @@ public class UnitPath
         newLine.transform.parent = m_standardSpawner.transform;
         m_lineRenderers.Add(newLine);
 
-        
 
         newLine.lineRendererProperties = new TBLineRenderer();
         Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
@@ -787,7 +788,14 @@ public class UnitPath
         int shortestPathCount = Int32.MaxValue;
         m_hasPath = false;
 
-        //Path from the UnitPath Start position (can be spawner OR exit, to each exit)
+        // Release previous path if it exists
+        if (m_path != null)
+        {
+            ListPool<Vector2Int>.Release(m_path);
+            m_path = null;
+        }
+
+        // Path from the UnitPath Start position (can be spawner OR exit, to each exit)
         for (int i = 0; i < m_exits.Count; ++i)
         {
             if (m_startPos == m_exits[i])
@@ -795,70 +803,83 @@ public class UnitPath
                 continue;
             }
 
-            //Debug.Log($"Checking path of {m_sourceObj.name}: {m_startPos} - {m_exits[i]}");
-            List<Vector2Int> testPath =
-                AStar.FindExitPath(m_startPos, m_exits[i], m_preconstructedTowerPos, m_enemyGoalPos);
+            List<Vector2Int> testPath = AStar.FindExitPath(m_startPos, m_exits[i], m_preconstructedTowerPos, m_enemyGoalPos);
 
             if (testPath != null)
             {
                 m_hasPath = true;
 
-                //Compare to current shortest path found.
+                // Compare to current shortest path found
                 if (testPath.Count <= shortestPathCount)
                 {
+                    // Release the previous shortest path before replacing it
+                    if (m_path != null)
+                    {
+                        ListPool<Vector2Int>.Release(m_path);
+                    }
+
                     shortestPathCount = testPath.Count;
-                    m_path = testPath;
+                    m_path = testPath; // Don't release testPath here!
                     m_endPos = m_exits[i];
+                }
+                else
+                {
+                    // Release testPath since it's not the shortest
+                    ListPool<Vector2Int>.Release(testPath);
                 }
             }
         }
 
-        //We did not find any path-able exits. Now try spawners.
+        // We did not find any path-able exits. Now try spawners.
         if (!m_hasPath && m_isExit)
         {
             for (int i = 0; i < m_spawners.Count; ++i)
             {
                 List<Vector2Int> testPath = AStar.FindExitPath(m_startPos, m_spawners[i], m_preconstructedTowerPos, m_enemyGoalPos);
+
                 if (testPath != null)
                 {
                     m_hasPath = true;
 
-                    //Compare to current shortest path found.
+                    // Compare to current shortest path found
                     if (testPath.Count <= shortestPathCount)
                     {
+                        // Release the previous shortest path before replacing it
+                        if (m_path != null)
+                        {
+                            ListPool<Vector2Int>.Release(m_path);
+                        }
+
                         shortestPathCount = testPath.Count;
-                        m_path = testPath;
+                        m_path = testPath; // Don't release testPath here!
                         m_endPos = m_spawners[i];
+                    }
+                    else
+                    {
+                        // Release testPath since it's not the shortest
+                        ListPool<Vector2Int>.Release(testPath);
                     }
                 }
             }
         }
-
-        if (!m_hasPath)
-        {
-            //Debug.Log("CANNOT BUILD.");
-        }
     }
+
 
     public void DrawExitPathLine()
     {
         if (!m_displayThisPath) return;
-
-        //Debug.Log($"Drawing Exit Path Line from {m_startPos} - {m_enemyGoalPos}.");
-
+        
         List<Vector2Int> path = AStar.GetExitPath(m_startPos, m_enemyGoalPos);
 
-        /*Debug.Log($"Got an exit path of count: {path.Count}");
-        Debug.Log($"Drawing Path from {path[0]} to {path.Last()}");*/
-
         int pathCount = 0;
-        List<Vector2Int> curPath = new List<Vector2Int>();
+        List<Vector2Int> curPath = ListPool<Vector2Int>.Get();
+        
         for (int i = 1; i < path.Count; i++)
         {
             curPath.Add(path[i]);
             Cell curCell = Util.GetCellFromPos(path[i]);
             m_lineRenderers[pathCount].gameObject.SetActive(true);
-            if (curCell.m_portalConnectionCell != null && curCell.m_tempDirectionToNextCell == Cell.Direction.Portal) 
+            if (curCell.m_portalConnectionCell != null && curCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
             {
                 m_lineRenderers[pathCount].SetPoints(curPath);
                 ++pathCount;
@@ -866,28 +887,25 @@ public class UnitPath
                 //Create a new list to start adding positions to. If there are no line renderers to use, add one to the game ojbect, and then add it to the pool.
                 if (pathCount == m_lineRenderers.Count)
                 {
-                    //Debug.Log($"Preparing a new Line Renderer.");
                     CreateLineRenderer();
                 }
-
-                curPath = new List<Vector2Int>();
+                
+                curPath.Clear();
             }
         }
-
+        
+        
 
         m_lineRenderers[pathCount].SetPoints(curPath);
         ++pathCount;
 
-        //If we're done, and there are active linerenderers, disable them.
-        //Debug.Log($"Line Renderers list is null: {m_lineRenderers == null}");
-
         for (int i = pathCount; i < m_lineRenderers.Count; ++i)
         {
             m_lineRenderers[i].gameObject.SetActive(false);
-            //Debug.Log($"Disabling the Line Renderer Component {pathCount} of {m_lineRenderers.Count}");
         }
-
-
-        m_path = path;
+        
+        m_path = new List<Vector2Int>(path);
+        ListPool<Vector2Int>.Release(curPath);
+        ListPool<Vector2Int>.Release(path);
     }
 }

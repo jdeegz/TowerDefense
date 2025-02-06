@@ -149,6 +149,8 @@ public class TowerChargeUp : Tower
         }
     }
 
+    private Color m_chargeColor;
+    private float m_chargeNormalizedTime;
     private void ChargeUp()
     {
         //Dont charge up if we're at max stacks.
@@ -164,9 +166,9 @@ public class TowerChargeUp : Tower
         CurStacks += (m_towerData.m_fireRate * m_maxStacks) * Time.deltaTime;
 
         //Handle the Charge up VFX
-        float normalizedTime = (float)CurStacks / m_maxStacks;
-        Color color = m_beamGradient.Evaluate(normalizedTime);
-        m_muzzleChargeVFX.SetVector4("_Color", color);
+        m_chargeNormalizedTime = (float)CurStacks / m_maxStacks;
+        m_chargeColor = m_beamGradient.Evaluate(m_chargeNormalizedTime);
+        m_muzzleChargeVFX.SetVector4("_Color", m_chargeColor);
         m_muzzleChargeVFX.SetFloat("_Speed", CurStacks / 8);
         m_muzzleChargeVFX.SetFloat("_Rate", CurStacks);
     }
@@ -182,21 +184,23 @@ public class TowerChargeUp : Tower
 
     private float m_audioPitchMin = 0.5f;
     private float m_audioPitchMax = 1.5f;
+    private float m_panelNormalizedTime;
+    private Color m_panelColor;
     private void HandlePanelColor()
     {
         if (CurStacks == m_lastStacks) return;
 
-        float normalizedTime = CurStacks / m_maxStacks;
-        Color color = m_panelGradient.Evaluate(normalizedTime);
+        m_panelNormalizedTime = CurStacks / m_maxStacks;
+        m_panelColor = m_panelGradient.Evaluate(m_panelNormalizedTime);
         foreach (MeshRenderer mesh in m_panelMeshRenderers)
         {
-            mesh.material.SetColor("_EmissionColor", color);
+            mesh.material.SetColor("_EmissionColor", m_panelColor);
         }
 
         m_lastStacks = CurStacks;
         
         // AUDIO - TOWER AMBIENT 
-        m_audioSource.pitch = Mathf.Lerp(m_audioPitchMin, m_audioPitchMax, normalizedTime);
+        m_audioSource.pitch = Mathf.Lerp(m_audioPitchMin, m_audioPitchMax, m_panelNormalizedTime);
         //m_audioSource.volume = Mathf.Lerp(0, 1, normalizedTime);
         
         if (CurStacks > 0 && !m_audioSource.isPlaying)
@@ -295,31 +299,34 @@ public class TowerChargeUp : Tower
         //Debug.Log($"Current Beam Width: {m_curBeamWidth}");
     }
 
+    private Vector3 m_vfxTarget;
+    private Quaternion m_vfxRotation;
+    private float m_beamNormalizedTime;
+    private Color m_beamColor;
     private void HandleBeamVisual()
     {
         //Setup Target point and rotation
-        Vector3 vfxTarget;
-        Quaternion vfxRotation;
-        GetPointOnColliderSurface(m_muzzlePoint.position, m_curTarget.m_targetPoint.position, m_targetCollider, out vfxTarget, out vfxRotation, out m_colliderHit);
-        m_projectileImpactVFX.transform.position = vfxTarget;
-        m_projectileImpactVFX.transform.rotation = vfxRotation;
+        
+        GetPointOnColliderSurface(m_muzzlePoint.position, m_curTarget.m_targetPoint.position, m_targetCollider, out m_vfxTarget, out m_vfxRotation, out m_colliderHit);
+        m_projectileImpactVFX.transform.position = m_vfxTarget;
+        m_projectileImpactVFX.transform.rotation = m_vfxRotation;
 
 
         //Setup LineRenderer Data.
         m_projectileLineRenderer.SetPosition(0, m_muzzlePoint.position);
-        m_projectileLineRenderer.SetPosition(1, vfxTarget);
+        m_projectileLineRenderer.SetPosition(1, m_vfxTarget);
         m_projectileLineRenderer_Darken.SetPosition(0, m_muzzlePoint.position);
-        m_projectileLineRenderer_Darken.SetPosition(1, vfxTarget);
+        m_projectileLineRenderer_Darken.SetPosition(1, m_vfxTarget);
 
         //Scroll the texture.
-        m_scrollOffset = new Vector2(-m_maxStacks / 8, 0);
+        m_scrollOffset.x = -m_maxStacks / 8;
         m_projectileLineRenderer.material.SetVector("_BaseScrollSpeed", m_scrollOffset);
 
         //Color the texture.
-        float normalizedTime = (float)CurStacks / m_maxStacks;
-        Color color = m_beamGradient.Evaluate(normalizedTime);
-        m_projectileLineRenderer.material.SetColor("_Color", color);
-        m_projectileImpactVFX.SetVector4("_Color", color);
+        m_beamNormalizedTime = (float)CurStacks / m_maxStacks;
+        m_beamColor = m_beamGradient.Evaluate(m_beamNormalizedTime);
+        m_projectileLineRenderer.material.SetColor("_Color", m_beamColor);
+        m_projectileImpactVFX.SetVector4("_Color", m_beamColor);
 
         //Modify Speed & Rate.
         m_projectileImpactVFX.SetFloat("_Rate", CurStacks);

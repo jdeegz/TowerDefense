@@ -42,9 +42,6 @@ public class EnemyDragon : EnemyController
     private List<BossObeliskObj> m_bossObeliskPathPoints = new List<BossObeliskObj>();
     private int m_bossObeliskPathIndex = 0;
     private Queue<BoneTransform> m_headTransformHistory = new Queue<BoneTransform>();
-    private float m_cumulativeMoveSpeed;
-    private float m_cumulativeLookSpeed;
-    private float m_moveSpeed;
     private float m_attackingSpeedModifier = 1;
     private float m_rampingLookSpeed = 0;
 
