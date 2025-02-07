@@ -15,10 +15,13 @@ public class TowerBeam : Tower
     private float m_curDissolve = 1f;
     private float m_timeUntilFire;
     private bool m_isShooting;
+    private EnemyController m_lastTarget;
+
     private bool IsShooting
     {
         get { return m_isShooting; }
-        set {
+        set
+        {
             if (value != m_isShooting)
             {
                 m_isShooting = value;
@@ -35,7 +38,7 @@ public class TowerBeam : Tower
                     StopBeam();
                     RequestStopAudioLoop();
                 }
-            } 
+            }
         }
     }
 
@@ -57,7 +60,7 @@ public class TowerBeam : Tower
         RotateTowardsTarget();
 
         Reload();
-        
+
         //Find a new target only if our current target is out of range.
         m_targetDetectionTimer += Time.deltaTime;
         if (m_targetDetectionTimer >= m_targetDetectionInterval)
@@ -66,6 +69,13 @@ public class TowerBeam : Tower
             FindTarget();
         }
         
+        //We found a new target, or no target. Stop shooting.
+        if (m_lastTarget != m_curTarget)
+        {
+            IsShooting = false;
+            m_lastTarget = m_curTarget;
+        }
+
         if (m_curTarget == null)
         {
             //StopBeam();
@@ -78,7 +88,7 @@ public class TowerBeam : Tower
             m_curTarget = null;
             return;
         }
-        
+
         if (!IsTargetInFireRange(m_curTarget.transform.position))
         {
             m_curTarget = null;
@@ -88,11 +98,11 @@ public class TowerBeam : Tower
             Fire();
         }
     }
-    
+
     public override void RequestTowerDisable()
     {
         IsShooting = false;
-        
+
         base.RequestTowerDisable();
     }
 
@@ -106,7 +116,6 @@ public class TowerBeam : Tower
         m_timeUntilFire += Time.deltaTime;
     }
 
-    private EnemyController m_lastTarget;
     private void Fire()
     {
         //Restart Reload Timer
@@ -116,11 +125,7 @@ public class TowerBeam : Tower
         ApplyStatusEffect();
 
         //Turn on/update beam if the new target is different.
-        if (m_lastTarget != m_curTarget)
-        {
-            IsShooting = true;
-            m_lastTarget = m_curTarget;
-        }
+        IsShooting = true;
     }
 
     void StartBeam()
@@ -132,7 +137,7 @@ public class TowerBeam : Tower
 
     void StopBeam()
     {
-        if (!m_activeBeam) return;
+        if (m_activeBeam == null) return;
         m_activeBeam.StopBeam();
         m_activeBeam = null;
     }

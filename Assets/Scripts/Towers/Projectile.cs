@@ -79,7 +79,7 @@ public abstract class Projectile : PooledObject
         transform.rotation = Quaternion.identity;
 
         RequestPlayAudio(m_projectileData.m_impactClips);
-        
+
         ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
     

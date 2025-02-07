@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class ProjectileBullet : Projectile
@@ -63,6 +64,7 @@ public class ProjectileBullet : Projectile
             }
 
             m_enemy.OnTakeDamage(dmg);
+            ObjectPoolManager.SpawnObject(m_hitVFXPrefab, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
     }
 

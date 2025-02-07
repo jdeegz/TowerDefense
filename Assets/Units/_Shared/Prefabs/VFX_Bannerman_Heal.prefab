@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8125360282504330302}
+  - component: {fileID: 4280865991843341955}
   - component: {fileID: 3070627944409321884}
   - component: {fileID: 2540254579732049196}
-  - component: {fileID: -6371115907330480253}
   m_Layer: 0
   m_Name: VFX_Bannerman_Heal
   m_TagString: Untagged
@@ -34,6 +34,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4280865991843341955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6669414696289766840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9325cb8df58e6a40a2b18e493882fe9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_renderers: []
+  m_rigidBodies: []
+  m_colliders: []
+  m_vfx:
+  - {fileID: 3070627944409321884}
+  m_returnToPool: 1
+  m_vfxSystemHasPlayed: 
+  m_vfxSystemsComplete: 0
+  m_hasVFXSystemsInChildren: 0
 --- !u!2083052967 &3070627944409321884
 VisualEffect:
   m_ObjectHideFlags: 0
@@ -118,15 +139,3 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &-6371115907330480253
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6669414696289766840}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6ea6ad500d622e4f8ef97c3b6861272, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

@@ -134,7 +134,7 @@ public class EnemyDragon : EnemyController
             newObeliskObj.m_obeliskProgressPercent = obelisk.GetObeliskProgress();
 
             Vector2Int obeliskPosition = Util.GetVector2IntFrom3DPos(obelisk.transform.position);
-            newObeliskObj.m_obeliskPointPositions = DiamondGenerator(obeliskPosition, (int)obelisk.m_obeliskData.m_obeliskRange);
+            newObeliskObj.m_obeliskPointPositions = DiamondGenerator(obeliskPosition, Math.Min((int)obelisk.m_obeliskData.m_obeliskRange, 4));
             m_bossObeliskPathPoints.Add(newObeliskObj);
         }
 
@@ -278,7 +278,7 @@ public class EnemyDragon : EnemyController
         float y = Random.Range(-offset, offset);
 
         goalPos = new Vector3(cellPos.x + x, 0, cellPos.y + y);
-        Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos} which is index {i} of {curPositionList.Count}.");
+        //Debug.Log($"cell pos: {cellPos} / goal pos: {goalPos} which is index {i} of {curPositionList.Count}.");
         return goalPos;
     }
 

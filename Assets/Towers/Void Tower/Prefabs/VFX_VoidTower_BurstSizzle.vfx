@@ -19,7 +19,7 @@ MonoBehaviour:
       x: 2043
       y: -237
       width: 736
-      height: 2107
+      height: 2136
     contents:
     - model: {fileID: 8926484042661615062}
       id: 0
@@ -36,6 +36,9 @@ MonoBehaviour:
     - model: {fileID: 8926484042661615115}
       id: 0
       isStickyNote: 0
+    - model: {fileID: 8926484042661614654}
+      id: 1
+      isStickyNote: 0
   stickyNoteInfos: []
   categories: []
   uiBounds:
@@ -43,7 +46,7 @@ MonoBehaviour:
     x: -129
     y: -237
     width: 2908
-    height: 2918
+    height: 2903
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1987,6 +1990,14 @@ MonoBehaviour:
     expandedSlots: []
     expanded: 0
     supecollapsed: 0
+  - m_Id: 1
+    linkedSlots:
+    - outputSlot: {fileID: 8926484042661614655}
+      inputSlot: {fileID: 8926484042661615251}
+    position: {x: 2137, y: 1394}
+    expandedSlots: []
+    expanded: 1
+    supecollapsed: 0
 --- !u!114 &8926484042661614655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2026,6 +2037,7 @@ MonoBehaviour:
   m_Direction: 1
   m_LinkedSlots:
   - {fileID: 8926484042661615237}
+  - {fileID: 8926484042661615251}
 --- !u!114 &8926484042661614656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7046,7 +7058,8 @@ MonoBehaviour:
       m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
   m_Direction: 0
-  m_LinkedSlots: []
+  m_LinkedSlots:
+  - {fileID: 8926484042661614655}
 --- !u!114 &8926484042661615252
 MonoBehaviour:
   m_ObjectHideFlags: 0

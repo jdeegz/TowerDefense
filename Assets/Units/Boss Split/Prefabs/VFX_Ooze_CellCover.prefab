@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8763385643488871308}
   - component: {fileID: 8413214517148779736}
   - component: {fileID: 3331622046901755697}
+  - component: {fileID: 467736762066115248}
   m_Layer: 0
   m_Name: VFX_Ooze_CellCover
   m_TagString: Untagged
@@ -43,7 +44,7 @@ VisualEffect:
   m_Enabled: 1
   m_Asset: {fileID: 8926484042661614526, guid: acd5e11338445914884c2006d08a0eca, type: 3}
   m_InitialEventName: OnPlay
-  m_InitialEventNameOverriden: 0
+  m_InitialEventNameOverriden: 1
   m_StartSeed: 0
   m_ResetSeedOnPlay: 1
   m_AllowInstancing: 1
@@ -114,3 +115,23 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &467736762066115248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7132693267712938159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9325cb8df58e6a40a2b18e493882fe9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_renderers: []
+  m_rigidBodies: []
+  m_colliders: []
+  m_vfx:
+  - {fileID: 8413214517148779736}
+  m_returnToPool: 0
+  m_vfxSystemHasPlayed: 
+  m_vfxSystemsComplete: 0

@@ -114,7 +114,7 @@ public class TowerCannon : Tower
     }
 
     private Projectile m_firingProjectileScript;
-    private int m_reloadIndex;
+    
     private void Fire(int fireIndex)
     {
         //Pull projectile from the pool of loaded projectiles.
@@ -136,8 +136,7 @@ public class TowerCannon : Tower
 
         //Start a reload timer for this index.
         //Source https://github.com/Mr-sB/UnityTimer
-        m_reloadIndex = fireIndex;
-        Timer.DelayAction(m_reloadDelay, () => { Reload(m_reloadIndex); }, null, Timer.UpdateMode.GameTime, autoDestroyOwner: this);
+        Timer.DelayAction(m_reloadDelay, () => { Reload(fireIndex); }, null, Timer.UpdateMode.GameTime, autoDestroyOwner: this);
     }
 
     public override TowerTooltipData GetTooltipData()

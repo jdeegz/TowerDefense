@@ -45,11 +45,6 @@ public class ProjectileMissile : Projectile
         m_speedStep = 0;
     }
 
-    void OnEnable()
-    {
-        //Reset Data
-    }
-
     public override void Loaded()
     {
         gameObject.transform.localScale = Vector3.zero;
@@ -63,8 +58,8 @@ public class ProjectileMissile : Projectile
 
         if (IsTargetInStoppingDistance())
         {
-            RemoveProjectile();
             DealDamage();
+            RemoveProjectile();
         }
 
         if (m_isFired)
@@ -83,11 +78,9 @@ public class ProjectileMissile : Projectile
         }
     }
 
-    static readonly ProfilerMarker k_codeMarkerTravelToTargetFixedUpdate = new ProfilerMarker("TravelToTargetFixedUpdate");
 
     void TravelToTargetFixedUpdate()
     {
-        k_codeMarkerTravelToTargetFixedUpdate.Begin();
         //Rotate towards Target.
         m_direction = m_targetPos - transform.position;
         m_targetRotation = Quaternion.LookRotation(m_direction);
@@ -103,16 +96,14 @@ public class ProjectileMissile : Projectile
         //Increase Move Speed up to 50%
         m_speedStep = m_speedAcceleration * Time.fixedDeltaTime;
         m_projectileSpeed += m_speedStep;
-        k_codeMarkerTravelToTargetFixedUpdate.End();
     }
 
     void DealDamage()
     {
-        //This needs to use the missiles collider center as position instead of the missile position.
         m_explosionPosition = gameObject.GetComponent<Collider>().bounds.center;
-        ObjectPoolManager.SpawnObject(m_impactEffect, m_explosionPosition, Util.GetRandomRotation(Quaternion.identity, new Vector3(0, 180, 0)), null, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_impactEffect, m_explosionPosition, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
 
-        //Find affected enemies
+        // Find affected enemies
         Collider[] hits = Physics.OverlapSphere(m_explosionPosition, m_impactRadius, m_areaLayerMask.value);
         m_overlapCapsuleHitCount = hits.Length;
 
@@ -123,17 +114,18 @@ public class ProjectileMissile : Projectile
 
         foreach (Collider col in hits)
         {
-            //If the explosion position is within the collider, it's a hit, regardless of shields.
+            // Use ClosestPoint instead of center to avoid missing colliders whose center is outside the explosion
+            Vector3 closestPoint = col.ClosestPoint(m_explosionPosition);
+
+            // If explosion position is inside the collider, guarantee a hit
             if (col.bounds.Contains(m_explosionPosition))
             {
                 SendDamage(col);
                 continue;
             }
 
-
-            // Use ClosestPoint for ray direction
-            m_targetPoint = col.bounds.center;
-            m_rayDirection = (m_targetPoint - m_explosionPosition).normalized;
+            // Adjust ray to go from explosion to closest point
+            m_rayDirection = (closestPoint - m_explosionPosition).normalized;
             m_rayOrigin = m_explosionPosition;
 
             RaycastHit hit;
@@ -142,23 +134,23 @@ public class ProjectileMissile : Projectile
 
             while (Physics.Raycast(rayStart, m_rayDirection, out hit, remainingDistance, m_raycastLayerMask.value))
             {
+                //Debug.Log($"Ray hit {hit.collider.gameObject.name} at {hit.point}");
+
                 if (hit.collider.gameObject.layer == m_shieldLayer)
                 {
-                    // A shield blocked the damage before the target, so exit early
-                    return;
+                    break;
                 }
 
                 if (hit.collider == col)
                 {
                     SendDamage(col);
-                    return;
+                    break;
                 }
 
-                // Move the ray origin slightly forward to continue checking beyond this collider
+                // Move ray slightly forward to check next object
                 rayStart = hit.point + m_rayDirection * 0.01f;
                 remainingDistance -= hit.distance;
 
-                // If remaining distance is negligible, stop checking
                 if (remainingDistance <= 0)
                 {
                     break;
@@ -166,6 +158,7 @@ public class ProjectileMissile : Projectile
             }
         }
     }
+
 
     void SendDamage(Collider col)
     {

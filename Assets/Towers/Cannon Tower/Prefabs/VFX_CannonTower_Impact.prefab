@@ -49,11 +49,11 @@ MonoBehaviour:
   m_renderers: []
   m_rigidBodies: []
   m_colliders: []
-  m_vfx: []
+  m_vfx:
+  - {fileID: 5902740840705135716}
   m_returnToPool: 1
   m_vfxSystemHasPlayed: 
   m_vfxSystemsComplete: 0
-  m_hasVFXSystemsInChildren: 0
 --- !u!2083052967 &5902740840705135716
 VisualEffect:
   m_ObjectHideFlags: 0
@@ -71,7 +71,13 @@ VisualEffect:
   m_ResourceVersion: 1
   m_PropertySheet:
     m_Float:
-      m_Array: []
+      m_Array:
+      - m_Value: 3
+        m_Name: ShockwaveSize
+        m_Overridden: 1
+      - m_Value: 1.5
+        m_Name: Blast Scale
+        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:

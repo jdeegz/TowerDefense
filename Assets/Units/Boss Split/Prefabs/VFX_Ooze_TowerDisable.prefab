@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2863373982240771576}
   - component: {fileID: 5617624725846618256}
   - component: {fileID: 8902675082738340885}
+  - component: {fileID: -1070909973224403122}
   m_Layer: 0
   m_Name: VFX_Ooze_TowerDisable
   m_TagString: Untagged
@@ -43,7 +44,7 @@ VisualEffect:
   m_Enabled: 1
   m_Asset: {fileID: 8926484042661614526, guid: 88046201f8b10d44ab4ccc28ef9a28a2, type: 3}
   m_InitialEventName: OnPlay
-  m_InitialEventNameOverriden: 0
+  m_InitialEventNameOverriden: 1
   m_StartSeed: 0
   m_ResetSeedOnPlay: 1
   m_AllowInstancing: 1
@@ -114,3 +115,23 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &-1070909973224403122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2009453666469105388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9325cb8df58e6a40a2b18e493882fe9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_renderers: []
+  m_rigidBodies: []
+  m_colliders: []
+  m_vfx:
+  - {fileID: 5617624725846618256}
+  m_returnToPool: 0
+  m_vfxSystemHasPlayed: 
+  m_vfxSystemsComplete: 0

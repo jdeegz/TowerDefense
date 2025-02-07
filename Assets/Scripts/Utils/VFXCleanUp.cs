@@ -16,31 +16,10 @@ public class VFXCleanUp : PooledObject
     private List<VisualEffect> m_vfxSystems;
     public List<bool> m_vfxSystemHasPlayed;
     public bool m_vfxSystemsComplete;
-    public bool m_hasVFXSystemsInChildren;
     private bool m_hasReturnedToPool = false;
 
     void Start()
     {
-        //Stashed list so I dont do Get Component each time we activate.
-        m_vfxSystems = new List<VisualEffect>(m_vfx);
-        
-        //Check if we have any systems, if we do, make a list of bools.
-        if (m_vfxSystems.Count == 0)
-        {
-            m_vfxSystemsComplete = true;
-        }
-        else
-        {
-            m_hasVFXSystemsInChildren = true;
-            
-            m_vfxSystemHasPlayed = new List<bool>();
-            
-            for (int i = 0; i < m_vfxSystems.Count; i++)
-            {
-                m_vfxSystemHasPlayed.Add(false);
-            }
-        }
-        
         //
         //Get particle system times
         m_particleSystems = new List<ParticleSystem>(GetComponentsInChildren<ParticleSystem>());
@@ -63,13 +42,14 @@ public class VFXCleanUp : PooledObject
                 }
             }
         }
-        
+
         //
         //Get Material Over Time
         var m_animatedMaterials = GetComponentsInChildren<MaterialOverTime>();
         foreach (MaterialOverTime child in m_animatedMaterials)
         {
             {
+                Debug.Log($"{gameObject.name} contains Old Material Over Time Systems.");
                 float totalDuration = child.GetDissolveDuration();
                 if (totalDuration > m_longestDuration)
                 {
@@ -82,12 +62,12 @@ public class VFXCleanUp : PooledObject
     void Update()
     {
         if (m_hasReturnedToPool) return;
-        
+
         //If we have vfx systems in here, we need to check to see if each one has played and if it's completed, if so set a bool to true.
         if (!m_vfxSystemsComplete)
         {
             m_elapsedTime += Time.deltaTime;
-            
+
             for (int i = 0; i < m_vfxSystems.Count; i++)
             {
                 //Check if this particle system has alive particles and has played (accounts for a delay)
@@ -99,7 +79,7 @@ public class VFXCleanUp : PooledObject
                     --i;
                     continue;
                 }
-                
+
                 //Check if the system has an alive particle, indicating it has played.
                 if (m_vfxSystems[i].aliveParticleCount > 0)
                 {
@@ -110,7 +90,7 @@ public class VFXCleanUp : PooledObject
             if (m_vfxSystems.Count == 0) m_vfxSystemsComplete = true;
         }
 
-       
+
         if (m_elapsedTime >= m_longestDuration && m_vfxSystemsComplete && !m_hasReturnedToPool)
         {
             if (m_returnToPool)
@@ -127,21 +107,38 @@ public class VFXCleanUp : PooledObject
         }
     }
 
-    void OnEnable()
+    public override void OnSpawn()
     {
-        //On enable, if there are Store VFX systems, we want to reset the VFX system info.
+        base.OnSpawn();
+        
+        // On enable, if there are Store VFX systems, we want to reset the VFX system info.
         m_hasReturnedToPool = false;
-        if (m_hasVFXSystemsInChildren)
+        
+        // Create list that i manipulate in Update.
+        m_vfxSystems = new List<VisualEffect>(m_vfx);
+
+        // Check if we have any systems, if we do, make a list of bools.
+        if (m_vfxSystems.Count == 0)
         {
-            m_vfxSystems = new List<VisualEffect>(m_vfx);
-            
+            m_vfxSystemsComplete = true;
+        }
+        else
+        {
+            m_vfxSystemsComplete = false;
+
+            if (m_vfxSystemHasPlayed == null)
+            {
+                m_vfxSystemHasPlayed = new List<bool>();
+            }
+            else
+            {
+                m_vfxSystemHasPlayed.Clear();
+            }
+
             for (int i = 0; i < m_vfxSystems.Count; i++)
             {
                 m_vfxSystemHasPlayed.Add(false);
             }
-            
-            m_vfxSystemsComplete = false;
         }
     }
-    
 }

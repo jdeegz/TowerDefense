@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6106660648673296081}
   - component: {fileID: 1371772348603563723}
   - component: {fileID: 2186010347665573084}
+  - component: {fileID: 5195706824599897405}
   m_Layer: 0
   m_Name: VFX_Ooze_Projectile
   m_TagString: Untagged
@@ -43,7 +44,7 @@ VisualEffect:
   m_Enabled: 1
   m_Asset: {fileID: 8926484042661614526, guid: 0ce4643ef3f028646b84ac64d4d2bc60, type: 3}
   m_InitialEventName: OnPlay
-  m_InitialEventNameOverriden: 0
+  m_InitialEventNameOverriden: 1
   m_StartSeed: 0
   m_ResetSeedOnPlay: 1
   m_AllowInstancing: 1
@@ -114,3 +115,23 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &5195706824599897405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5821152948329123961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9325cb8df58e6a40a2b18e493882fe9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_renderers: []
+  m_rigidBodies: []
+  m_colliders: []
+  m_vfx:
+  - {fileID: 1371772348603563723}
+  m_returnToPool: 0
+  m_vfxSystemHasPlayed: 
+  m_vfxSystemsComplete: 0
