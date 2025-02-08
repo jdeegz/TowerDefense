@@ -27,6 +27,7 @@ public class IngameUIController : MonoBehaviour
     
     [Header("Colors")]
     [SerializeField] private Color m_currencyGoodcolor;
+    [SerializeField] private Color m_currencyCritcolor;
     [SerializeField] private Color m_currencyBadcolor;
     [SerializeField] private Color m_levelUpColor;
     [SerializeField] private Color m_ruinColor;
@@ -73,7 +74,7 @@ public class IngameUIController : MonoBehaviour
         //Build the alert.
         UIAlert alert = ObjectPoolManager.SpawnObject(m_critCurrencyAlert.gameObject, transform).GetComponent<UIAlert>();
         Vector2 screenPos = GetScreenPosition(worldPos);
-        alert.SetLabelText($"{values.Item1}", values.Item2);
+        alert.SetLabelText($"{values.Item1}", m_currencyCritcolor);
         alert.SetupAlert(screenPos);
     }
     

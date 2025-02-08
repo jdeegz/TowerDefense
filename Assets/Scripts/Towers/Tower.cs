@@ -319,7 +319,8 @@ public abstract class Tower : MonoBehaviour
     public virtual void RemoveTower()
     {
         m_modelRoot.SetActive(false);
-        ObjectPoolManager.OrphanObject(gameObject, .5f, ObjectPoolManager.PoolType.Tower);
+        ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Tower);
+        //ObjectPoolManager.OrphanObject(gameObject, .5f, ObjectPoolManager.PoolType.Tower);
     }
 
     void SetupRangeCircle(int segments, float radius)

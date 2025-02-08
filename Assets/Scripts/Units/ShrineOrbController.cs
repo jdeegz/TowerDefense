@@ -22,17 +22,16 @@ public class ShrineOrbController : MonoBehaviour
     
     void Start()
     {
-        m_spawnPoint = transform.position;
-        m_curDestination = GetNewDestination();
-        Vector3 direction = m_curDestination - transform.position;
-        transform.rotation = Quaternion.LookRotation(direction);
-        
         //GameplayManager.OnGameObjectSelected += GameObjectSelected;
     }
 
     public void SetShrine(TowerShrine towerShrine)
     {
         m_orbParentTower = towerShrine;
+        m_spawnPoint = transform.position;
+        m_curDestination = GetNewDestination();
+        Vector3 direction = m_curDestination - transform.position;
+        transform.rotation = Quaternion.LookRotation(direction);
     }
     
     private void GameObjectSelected(GameObject obj)
@@ -103,7 +102,7 @@ public class ShrineOrbController : MonoBehaviour
         Vector3 pos = m_spawnPoint;
 
         pos.x = Random.Range(m_spawnPoint.x - m_radius, m_spawnPoint.x + m_radius);
-        pos.y = Random.Range(1, 1 + m_radius);
+        pos.y = Random.Range(m_spawnPoint.y, m_spawnPoint.y + m_radius);
         pos.z = Random.Range(m_spawnPoint.z - m_radius, m_spawnPoint.z + m_radius);
         
         return pos;

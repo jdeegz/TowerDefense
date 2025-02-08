@@ -235,12 +235,7 @@ public class UITooltipController : MonoBehaviour
                 ObeliskTooltipData obeliskNodeData = hoveredObj.GetComponent<Obelisk>().GetTooltipData();
                 m_objectNameString = obeliskNodeData.m_obeliskName;
                 m_objectDescriptionString = obeliskNodeData.m_obeliskDescription;
-                m_objectDetailsString = $"Progress: {obeliskNodeData.m_obeliskCurCharge} / {obeliskNodeData.m_obeliskMaxCharge}";
-                if (obeliskNodeData.m_obeliskCurCharge == obeliskNodeData.m_obeliskMaxCharge)
-                {
-                    m_objectDetailsString = "Progress: Complete";
-                }
-
+                m_objectDetailsString = $"Core's Claimed: {obeliskNodeData.m_obeliskCurCharge} / {obeliskNodeData.m_obeliskMaxCharge}";
                 break;
             case Selectable.SelectedObjectType.Ruin:
                 RuinTooltipData ruinData = hoveredObj.GetComponent<Ruin>().GetTooltipData();

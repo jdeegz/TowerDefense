@@ -264,6 +264,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected Vector2 m_nextCellPosOffset;
     protected Vector3 m_curCell3dPos;
     protected Vector2Int m_directionToNextCell;
+    protected Vector2Int m_directionToPreviousCell;
     protected float m_angle;
     protected float m_moveSpeed;
     protected float m_cumulativeMoveSpeed;
@@ -333,10 +334,18 @@ public abstract class EnemyController : Dissolvable, IEffectable
             m_curCell3dPos = new Vector3(m_curCell.m_cellPos.x, 0, m_curCell.m_cellPos.y);
 
             //Get the position of the next cell.
-            //If the current cell is occupied, we go in the reverse direction until we're in an unoccupied cell.
             //If the current cell has no direction, we go back to the previous cell.
+            m_directionToPreviousCell = m_directionToNextCell * -1;
             m_directionToNextCell = m_curCell.GetDirectionVector(m_curCell.m_directionToNextCell);
-            m_nextCellPosition = m_curCell3dPos + new Vector3(m_directionToNextCell.x + m_nextCellPosOffset.x, 0, m_directionToNextCell.y + m_nextCellPosOffset.y);
+            if (m_directionToNextCell != Vector2Int.zero)
+            {
+                m_nextCellPosition = m_curCell3dPos + new Vector3(m_directionToNextCell.x + m_nextCellPosOffset.x, 0, m_directionToNextCell.y + m_nextCellPosOffset.y);
+            }
+            else // We reverse our current direction, which will bring us to our previous cell..
+            {
+                Debug.Log($"We're in a cell with 0 direction, trying to reverse direction.");
+                m_nextCellPosition = m_curCell3dPos + new Vector3(m_directionToPreviousCell.x + m_nextCellPosOffset.x, 0, m_directionToPreviousCell.y + m_nextCellPosOffset.y);
+            }
 
             //Clamp saftey net. This was .45, but changed to .49 when I saw units hitch forward after new cell subscriptions combined with low velocity.
             m_maxX = m_curCell.m_cellPos.x + .49f;

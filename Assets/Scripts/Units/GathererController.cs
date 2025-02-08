@@ -8,6 +8,7 @@ using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.VFX;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
@@ -17,7 +18,7 @@ public class GathererController : MonoBehaviour
     public Vector3 m_targetObjPosition;
 
     [SerializeField] private GameObject m_resourceAnchor;
-    [SerializeField] private GameObject m_boostedVFX;
+    [SerializeField] private VisualEffect m_ruinBoostVFX;
     [SerializeField] private GameObject m_gathererBlockedIndicator;
     [SerializeField] private GameObject m_gathererIdleIndicator;
     [SerializeField] private GathererTask m_gathererTask;
@@ -86,7 +87,7 @@ public class GathererController : MonoBehaviour
         {
             m_gathererPath = value;
 
-            Debug.Log($"GathererPath is null: {m_gathererPath == null}, it is size: {m_gathererPath.Count}");
+            //Debug.Log($"GathererPath is null: {m_gathererPath == null}, it is size: {m_gathererPath.Count}");
             if (m_gathererPath != null)
             {
                 if (m_gathererPath.Count > 1)
@@ -313,30 +314,30 @@ public class GathererController : MonoBehaviour
     {
         UpdateStatusEffects();
 
-        HandleBoostedEffect();
+        //HandleBoostedEffect();
 
         CleanUpHarvestQueue();
 
         FindUnblockedPath();
     }
 
-    private void HandleBoostedEffect()
+    /*private void HandleBoostedEffect()
     {
-        if (m_activeSpeedBoostCount > 0)
+        if (ActiveSpeedBoostCount > 0)
         {
             if (!m_boostedVFX.activeSelf)
             {
                 m_boostedVFX.SetActive(true);
             }
         }
-        else if (m_activeSpeedBoostCount == 0)
+        else if (ActiveSpeedBoostCount == 0)
         {
             if (m_boostedVFX.activeSelf)
             {
                 m_boostedVFX.SetActive(false);
             }
         }
-    }
+    }*/
 
     void FixedUpdate()
     {
@@ -1286,6 +1287,27 @@ public class GathererController : MonoBehaviour
     protected List<ShrineRuinEffect> m_newshrineRuinEffects = new List<ShrineRuinEffect>();
     protected List<ShrineRuinEffect> m_expiredshrineRuinEffects = new List<ShrineRuinEffect>();
     private int m_activeSpeedBoostCount;
+
+    private int ActiveSpeedBoostCount
+    {
+        get { return m_activeSpeedBoostCount; }
+        set
+        {
+            m_activeSpeedBoostCount = value;
+            if (m_activeSpeedBoostCount > 0)
+            {
+                if (m_ruinBoostVFX.aliveParticleCount <= 0)
+                {
+                    m_ruinBoostVFX.Play();
+                }
+            }
+            else
+            {
+                m_ruinBoostVFX.Stop();
+            }
+        }
+    }
+
     private float m_boostValue;
     private float m_totalDurationBoost = 1;
     private float m_totalSpeedBoost = 1;
@@ -1304,12 +1326,12 @@ public class GathererController : MonoBehaviour
         {
             foreach (ShrineRuinEffect expiredshrineRuinEffect in m_expiredshrineRuinEffects)
             {
-                --m_activeSpeedBoostCount;
+                --ActiveSpeedBoostCount;
                 m_shrineRuinEffects.Remove(expiredshrineRuinEffect);
             }
 
-            m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, m_activeSpeedBoostCount));
-            m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, m_activeSpeedBoostCount));
+            m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, ActiveSpeedBoostCount));
+            m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, ActiveSpeedBoostCount));
             SetAnimatorFloat("SpeedMultiplier", m_totalSpeedBoost);
             m_expiredshrineRuinEffects.Clear();
         }
@@ -1326,12 +1348,12 @@ public class GathererController : MonoBehaviour
             foreach (ShrineRuinEffect newshrineRuinEffect in m_newshrineRuinEffects)
             {
                 m_shrineRuinEffects.Add(newshrineRuinEffect);
-                ++m_activeSpeedBoostCount;
+                ++ActiveSpeedBoostCount;
                 m_boostValue = newshrineRuinEffect.m_effectSpeedBoost;
             }
 
-            m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, m_activeSpeedBoostCount));
-            m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, m_activeSpeedBoostCount));
+            m_totalDurationBoost = Math.Min(1, MathF.Pow(1 - m_boostValue, ActiveSpeedBoostCount));
+            m_totalSpeedBoost = Math.Max(1, MathF.Pow(1 + m_boostValue, ActiveSpeedBoostCount));
             SetAnimatorFloat("SpeedMultiplier", m_totalSpeedBoost);
             m_newshrineRuinEffects.Clear();
         }
