@@ -13,6 +13,7 @@ public class EnemyData : ScriptableObject
     public float m_moveSpeed = 1f;
     public float m_movementWiggleValue = 1f;
     public float m_lookSpeed = 180f;
+    public bool m_canBeSlowed = true;
     
     [Header("Vitality")]
     public float m_damageMultiplier = 0f;

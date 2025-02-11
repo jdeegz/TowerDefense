@@ -215,6 +215,8 @@ public class UIOptionsPopup : UIPopup
 
     void Update()
     {
+        base.Update();
+        
         m_elapsedTime += Time.deltaTime;
         if (m_elapsedTime > 10f)
         {

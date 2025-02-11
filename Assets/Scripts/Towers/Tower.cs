@@ -346,6 +346,11 @@ public abstract class Tower : MonoBehaviour
         }
     }
 
+    public void SetRangeCircleColor(Color color)
+    {
+        m_towerRangeCircle.material.color = color;
+    }
+
     public TargetingSystem m_targetSystem = TargetingSystem.ClosestToGoal;
 
     public enum TargetingSystem

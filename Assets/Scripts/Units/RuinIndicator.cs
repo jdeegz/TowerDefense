@@ -15,7 +15,7 @@ public class RuinIndicator : Ruin
         data.m_ruinDescription = m_towerData.m_towerRuinDescription;
         
         UnlockProgress unlockProgress = m_unlockableData.GetProgress();
-        if (unlockProgress.m_isUnlocked)
+        if (m_ruinController.ProgressionKey.ProgressionKeyEnabled)
         {
             data.m_ruinDetails = m_data.m_ruinDiscovered;
         }

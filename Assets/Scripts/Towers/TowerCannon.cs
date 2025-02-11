@@ -24,6 +24,7 @@ public class TowerCannon : Tower
 
         //The duration we wait to reload is the number of missiles we launch + 1 * the fire rate.
         m_reloadDelay = 1f / m_towerData.m_fireRate / 2;
+        
         for (var i = 0; i < m_muzzlePoints.Count; ++i)
         {
             Reload(i);
@@ -106,7 +107,14 @@ public class TowerCannon : Tower
         projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoints[i].transform.position, m_muzzlePoints[i].transform.rotation, m_muzzlePoints[i].transform, ObjectPoolManager.PoolType.Projectile);
         
         m_reloadingProjectileScript = projectileObj.GetComponent<Projectile>();
-        if(m_isBuilt) m_reloadingProjectileScript.Loaded();
+        if (m_isBuilt)
+        {
+            m_reloadingProjectileScript.Loaded();
+        }
+        else
+        {
+            projectileObj.transform.localScale = Vector3.one;
+        }
 
         //Store the projectiles in a list to pull from later.
         m_loadedProjectiles[i] = m_reloadingProjectileScript;

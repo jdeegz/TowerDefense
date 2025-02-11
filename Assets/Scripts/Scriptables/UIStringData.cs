@@ -23,6 +23,7 @@ public class UIStringData : ScriptableObject
     public string m_buildRestrictedActorsInIsland;
     public string m_buildRestrictedOccupied;
     public string m_buildRestrictedRestricted;
+    public string m_buildRestrictedOutOfBounds = "Tower is out of bounds.";
     public string m_buildRestrictedBlocksPath;
     public string m_woodRequirmentNotMet = "Not enough Wood.";
     public string m_stoneRequirementNotMet = "Not Enough Manasteel.";

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using JetBrains.Annotations;
 using Unity.Mathematics;
 using Unity.Profiling;
@@ -102,15 +103,14 @@ public class GameplayManager : MonoBehaviour
     private List<TowerBlueprint> m_blueprintList;
 
     [Header("Selected Object Info")]
-    [SerializeField]
-    private SelectionColors m_selectionColors;
+    [SerializeField] private SelectionColors m_selectionColors;
     private Material m_selectedOutlineMaterial; //Assigned on awake
     private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
 
     // Precon Tower Info
-    public GameObject m_invalidCellObj;
-    public List<GameObject> m_invalidCellObjs;
+    public InvalidCell m_invalidCellObj;
+    public List<InvalidCell> m_invalidCellObjs;
     public LayerMask m_buildSurface;
     public Vector2Int m_preconstructedTowerPos;
 
@@ -180,8 +180,7 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    
-    
+
     void Update()
     {
         // Do not run while in Cutscenes.
@@ -541,6 +540,11 @@ public class GameplayManager : MonoBehaviour
         //Debug.Log($"Trying to change color: {canBuild}");
         Color color = canBuild ? m_selectionColors.m_outlineBaseColor : m_selectionColors.m_outlineRestrictedColor;
         m_selectedOutlineMaterial.SetColor("_Outline_Color", color);
+
+        if (m_preconstructedTower)
+        {
+            m_preconstructedTower.SetRangeCircleColor(color);
+        }
     }
 
     private void Awake()
@@ -590,7 +594,6 @@ public class GameplayManager : MonoBehaviour
         }
         else
         {
-            
             GameplayManager.Instance.UpdateGamePlayback(GameplayManager.GameSpeed.Normal);
             GameplayManager.Instance.UpdateInteractionState(GameplayManager.InteractionState.Idle);
         }
@@ -694,6 +697,7 @@ public class GameplayManager : MonoBehaviour
         OnGameObjectDeselected -= GameObjectDeselected;
         PlayerDataManager.OnUnlockableUnlocked -= UnlockableUnlocked;
         PlayerDataManager.OnUnlockableLocked -= UnlockableLocked;
+        UIPopupManager.OnPopupManagerPopupsOpen -= PopupManagerPopupsOpen;
     }
 
     private void GameplayPlaybackChanged(GameSpeed state)
@@ -846,7 +850,7 @@ public class GameplayManager : MonoBehaviour
                 break;
             case GameplayState.Victory:
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
-                
+
                 UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
                 break;
             case GameplayState.Defeat:
@@ -1017,13 +1021,49 @@ public class GameplayManager : MonoBehaviour
         ClearPreconstructedTower();
 
         m_preconstructedTowerData = towerData;
-        m_preconstructedTowerObj = Instantiate(towerData.m_prefab, m_castleController.transform.position + Vector3.up, Quaternion.identity);
-        m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
         m_preconBuildingWidth = towerData.m_buildingSize.x;
         m_preconBuildingHeight = towerData.m_buildingSize.y;
         m_preconxOffset = m_preconBuildingWidth % 2 == 0 ? 0.5f : 0;
         m_preconzOffset = m_preconBuildingHeight % 2 == 0 ? 0.5f : 0;
 
+        // Spawn the tower at the mouse position.
+        Vector3 spawnPosition = new Vector3();
+        Vector2Int gridPos = new Vector2Int();
+        Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
+
+        if (ray.direction.y == 0) return; // Ensure the ray isn't parallel to the XZ plane
+
+        float t = -ray.origin.y / ray.direction.y; // Solve for t where Y = 0
+        Vector3 worldPos = ray.origin + t * ray.direction; // Get intersection point
+
+        worldPos.x += m_preconxOffset;
+        worldPos.z += m_preconzOffset;
+
+        gridPos = Util.FindNearestValidCellPos(worldPos);
+
+        spawnPosition = new Vector3(gridPos.x, 0.7f, gridPos.y);
+
+        // Create the new object.
+        m_preconstructedTowerObj = Instantiate(towerData.m_prefab, spawnPosition, Quaternion.identity);
+        m_preconstructedTowerPos = gridPos;
+        m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
+        
+        // Set the precon Cells and neighbors.
+        List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
+
+        if (newCells == null) return;
+
+        m_preconstructedTowerCells = newCells;
+        m_preconNeighborCells = GetNeighborCells(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
+        OnPreconBuildingMoved?.Invoke(m_preconstructedTowerCells);
+
+        // Tween the object's scale.
+        m_preconstructedTowerObj.transform.localScale = Vector3.zero;
+        m_preconstructedTowerObj.transform.DOScale(Vector3.one, 0.15f)
+            .SetEase(Ease.InOutBounce)
+            .SetUpdate(true);
+
+        // Update building inventory
         if (m_unlockedStructures.TryGetValue(m_preconstructedTowerData, out int quantity))
         {
             m_qty = quantity;
@@ -1038,8 +1078,6 @@ public class GameplayManager : MonoBehaviour
         m_canAfford = false;
         m_canBuild = false;
         m_canPlace = false;
-
-        HandlePreconMousePosition();
     }
 
     private List<Cell> m_preconstructedTowerCells;
@@ -1053,31 +1091,30 @@ public class GameplayManager : MonoBehaviour
     {
         if (m_interactionState != InteractionState.PreconstructionTower) return;
 
+        // Spawn the tower at the mouse position
+        Vector2Int gridPos = new Vector2Int();
         Ray ray = m_mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 100f, m_buildSurface))
-        {
-            //Raycast has hit the ground, round that point to the nearest int.
-            Vector3 gridPos = raycastHit.point;
 
-            //Convert hit point to 2d grid position
-            gridPos.x += m_preconxOffset;
-            gridPos.z += m_preconzOffset;
+        if (ray.direction.y == 0) return; // Ensure the ray isn't parallel to the XZ plane
 
-            Vector2Int newPos = Util.GetVector2IntFrom3DPos(gridPos);
+        float t = -ray.origin.y / ray.direction.y; // Solve for t where Y = 0
+        Vector3 worldPos = ray.origin + t * ray.direction; // Get intersection point
 
-            if (newPos == m_preconstructedTowerPos) return;
+        worldPos.x += m_preconxOffset;
+        worldPos.z += m_preconzOffset;
 
-            m_preconstructedTowerPos = newPos;
+        gridPos = Util.FindNearestValidCellPos(worldPos);
 
-            List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
-            if (newCells != null)
-            {
-                m_preconstructedTowerCells = newCells;
-                m_preconNeighborCells = GetNeighborCells(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
-                OnPreconBuildingMoved?.Invoke(m_preconstructedTowerCells);
-                CheckPreconRestrictions();
-            }
-        }
+        if (gridPos == m_preconstructedTowerPos) return;
+
+        m_preconstructedTowerPos = gridPos;
+        List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
+
+        if (newCells == null) return;
+
+        m_preconstructedTowerCells = newCells;
+        m_preconNeighborCells = GetNeighborCells(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
+        OnPreconBuildingMoved?.Invoke(m_preconstructedTowerCells);
     }
 
     void CheckPreconRestrictions()
@@ -1090,6 +1127,7 @@ public class GameplayManager : MonoBehaviour
         m_canBuild = m_canAfford && m_canPlace && m_canPath;
 
         SetOutlineColor(m_canBuild);
+        DrawPreconCellObjs();
     }
 
     private bool IsCurrencyRestricted()
@@ -1157,6 +1195,12 @@ public class GameplayManager : MonoBehaviour
                 }
             }
 
+            if (curCell.m_isOutOfBounds)
+            {
+                m_pathRestrictedReason = m_UIStringData.m_buildRestrictedOutOfBounds;
+                return false;
+            }
+
             //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
             if (curCell.m_isBuildRestricted)
             {
@@ -1170,111 +1214,111 @@ public class GameplayManager : MonoBehaviour
     }
 
     bool IsPathingRestricted(List<Cell> cells)
-{
-    if (cells == null) return false;
-
-    // This is checking pathing from each neighbor of the precon building.
-    for (int i = 0; i < cells.Count; ++i)
     {
-        Cell cell = cells[i];
-        if (cell.m_isOccupied) continue;
+        if (cells == null) return false;
 
-        List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
-
-        if (testPath != null)
+        // This is checking pathing from each neighbor of the precon building.
+        for (int i = 0; i < cells.Count; ++i)
         {
-            ListPool<Vector2Int>.Release(testPath);
-            continue;
-        }
+            Cell cell = cells[i];
+            if (cell.m_isOccupied) continue;
 
-        List<Cell> islandCells = ListPool<Cell>.Get();
-        islandCells.AddRange(AStar.FindIsland(cell)); // Assuming `FindIsland` returns a list.
+            List<Vector2Int> testPath = AStar.GetExitPath(cell.m_cellPos, m_goalPointPos);
 
-        if (islandCells.Count == 0 && cell.m_actorCount > 0)
-        {
-            ListPool<Cell>.Release(islandCells);
-            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
-            return false;
-        }
+            if (testPath != null)
+            {
+                ListPool<Vector2Int>.Release(testPath);
+                continue;
+            }
 
-        foreach (Cell islandCell in islandCells)
-        {
-            if (islandCell.m_actorCount > 0)
+            List<Cell> islandCells = ListPool<Cell>.Get();
+            islandCells.AddRange(AStar.FindIsland(cell)); // Assuming `FindIsland` returns a list.
+
+            if (islandCells.Count == 0 && cell.m_actorCount > 0)
             {
                 ListPool<Cell>.Release(islandCells);
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
                 return false;
             }
-        }
 
-        ListPool<Cell>.Release(islandCells);
-    }
-
-    // EXITS AND SPAWNERS
-    // Check to see if any of our UnitPaths have no path.
-    if (!GridManager.Instance.m_spawnPointsAccessible)
-    {
-        m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
-        return false;
-    }
-
-    // Check that exits can path to one another.
-    int exitsPathable = 0;
-    for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
-    {
-        bool startObjPathable = false;
-        GameObject startObj = m_castleController.m_castleEntrancePoints[x];
-        Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
-
-        // Define the end
-        for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
-        {
-            GameObject endObj = m_castleController.m_castleEntrancePoints[z];
-            Vector2Int endPos = Util.GetVector2IntFrom3DPos(endObj.transform.position);
-
-            // Skip if they are the same
-            if (startObj == endObj)
+            foreach (Cell islandCell in islandCells)
             {
-                continue;
+                if (islandCell.m_actorCount > 0)
+                {
+                    ListPool<Cell>.Release(islandCells);
+                    m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsInIsland;
+                    return false;
+                }
             }
 
-            // Path from Start to End and exclude the Game's Goal cell.
-            List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
-            if (testPath != null)
-            {
-                ++exitsPathable;
-                startObjPathable = true;
-                ListPool<Vector2Int>.Release(testPath);
-                break;
-            }
+            ListPool<Cell>.Release(islandCells);
         }
 
-        // If we couldn't path to any other exit, check spawners
-        if (!startObjPathable)
+        // EXITS AND SPAWNERS
+        // Check to see if any of our UnitPaths have no path.
+        if (!GridManager.Instance.m_spawnPointsAccessible)
         {
-            for (int y = 0; y < m_enemySpawners.Count; ++y)
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
+            return false;
+        }
+
+        // Check that exits can path to one another.
+        int exitsPathable = 0;
+        for (int x = 0; x < m_castleController.m_castleEntrancePoints.Count; ++x)
+        {
+            bool startObjPathable = false;
+            GameObject startObj = m_castleController.m_castleEntrancePoints[x];
+            Vector2Int startPos = Util.GetVector2IntFrom3DPos(startObj.transform.position);
+
+            // Define the end
+            for (int z = 0; z < m_castleController.m_castleEntrancePoints.Count; ++z)
             {
-                Vector2Int spawnerPos = Util.GetVector2IntFrom3DPos(m_enemySpawners[y].GetSpawnPointTransform().position);
-                List<Vector2Int> testPath = AStar.FindExitPath(spawnerPos, startPos, m_preconstructedTowerPos, m_goalPointPos);
+                GameObject endObj = m_castleController.m_castleEntrancePoints[z];
+                Vector2Int endPos = Util.GetVector2IntFrom3DPos(endObj.transform.position);
+
+                // Skip if they are the same
+                if (startObj == endObj)
+                {
+                    continue;
+                }
+
+                // Path from Start to End and exclude the Game's Goal cell.
+                List<Vector2Int> testPath = AStar.FindExitPath(startPos, endPos, m_preconstructedTowerPos, m_goalPointPos);
                 if (testPath != null)
                 {
                     ++exitsPathable;
+                    startObjPathable = true;
                     ListPool<Vector2Int>.Release(testPath);
                     break;
                 }
             }
+
+            // If we couldn't path to any other exit, check spawners
+            if (!startObjPathable)
+            {
+                for (int y = 0; y < m_enemySpawners.Count; ++y)
+                {
+                    Vector2Int spawnerPos = Util.GetVector2IntFrom3DPos(m_enemySpawners[y].GetSpawnPointTransform().position);
+                    List<Vector2Int> testPath = AStar.FindExitPath(spawnerPos, startPos, m_preconstructedTowerPos, m_goalPointPos);
+                    if (testPath != null)
+                    {
+                        ++exitsPathable;
+                        ListPool<Vector2Int>.Release(testPath);
+                        break;
+                    }
+                }
+            }
         }
-    }
 
-    // If the number of pathable exits is less than the number of exits, return false
-    if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
-    {
-        m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
-        return false;
-    }
+        // If the number of pathable exits is less than the number of exits, return false
+        if (exitsPathable < m_castleController.m_castleEntrancePoints.Count)
+        {
+            m_pathRestrictedReason = m_UIStringData.m_buildRestrictedBlocksPath;
+            return false;
+        }
 
-    return true;
-}
+        return true;
+    }
 
 
     private void PositionPrecon()
@@ -1287,8 +1331,6 @@ public class GameplayManager : MonoBehaviour
         //Position the precon Tower at the cursor position.
         m_preconstructedTowerObj.transform.position = Vector3.Lerp(m_preconstructedTowerObj.transform.position,
             moveToPosition, 20f * Time.unscaledDeltaTime);
-
-        DrawPreconCellObjs();
     }
 
     private float m_preconPeriodTimeElapsed;
@@ -1305,7 +1347,6 @@ public class GameplayManager : MonoBehaviour
             CheckPreconRestrictions();
             m_preconPeriodTimeElapsed = 0;
         }
-
     }
 
     public List<Cell> GetNeighborCells(Vector2Int pos, int width, int height)
@@ -1348,45 +1389,60 @@ public class GameplayManager : MonoBehaviour
     {
         if (m_preconstructedTowerCells == null) return;
 
-        // Make sure we have enough objs to display.
-        if (m_invalidCellObjs == null) m_invalidCellObjs = new List<GameObject>();
+        if (m_invalidCellObjs == null) m_invalidCellObjs = new List<InvalidCell>();
 
-        if (m_invalidCellObjs.Count < m_preconstructedTowerCells.Count)
-        {
-            m_invalidCellObjs.Add(ObjectPoolManager.SpawnObject(m_invalidCellObj, Vector3.zero, quaternion.identity, transform));
-        }
+        int totalCells = Math.Max(m_preconstructedTowerCells.Count, m_invalidCellObjs.Count);
 
-        for (int i = 0; i < m_invalidCellObjs.Count; ++i)
+        for (int i = 0; i < totalCells; ++i)
         {
+            if (i >= m_invalidCellObjs.Count)
+            {
+                // Spawn new object if needed
+                Cell spawnCell = m_preconstructedTowerCells[i];
+                Vector3 spawnPos = new Vector3(spawnCell.m_cellPos.x, 0, spawnCell.m_cellPos.y);
+                GameObject newCellVisualObj = ObjectPoolManager.SpawnObject(m_invalidCellObj.gameObject, spawnPos, quaternion.identity, transform);
+                InvalidCell invalidCell = newCellVisualObj.GetComponent<InvalidCell>();
+                m_invalidCellObjs.Add(invalidCell);
+            }
+
             if (i < m_preconstructedTowerCells.Count)
             {
-                //HandleShow the cell if we cannot path or afford.
-                if (!m_canAfford || !m_canPath)
+                // Enable and update cell
+                if (m_canAfford && m_canPath && m_canPlace)
                 {
-                    m_invalidCellObjs[i].SetActive(true);
+                    m_invalidCellObjs[i].CellIsBuildable = !m_preconstructedTowerCells[i].m_isOccupied && !m_preconstructedTowerCells[i].m_isBuildRestricted;
                 }
                 else
                 {
-                    //Else show the cell if cell is occupied.
-                    m_invalidCellObjs[i].SetActive(m_preconstructedTowerCells[i].m_isOccupied || m_preconstructedTowerCells[i].m_isBuildRestricted);
+                    m_invalidCellObjs[i].CellIsBuildable = false;
                 }
 
+
                 Cell cell = m_preconstructedTowerCells[i];
-
                 Vector3 pos = new Vector3(cell.m_cellPos.x, 0, cell.m_cellPos.y);
-                m_invalidCellObjs[i].transform.position = pos;
-                continue;
-            }
+                m_invalidCellObjs[i].CurrentCellPosition = pos;
 
-            m_invalidCellObjs[i].SetActive(false);
+                if (!m_invalidCellObjs[i].gameObject.activeSelf)
+                {
+                    m_invalidCellObjs[i].transform.position = pos;
+                    m_invalidCellObjs[i].gameObject.SetActive(true);
+                }
+            }
+            else
+            {
+                // Disable extra objects
+                if (m_invalidCellObjs[i].gameObject.activeSelf)
+                    m_invalidCellObjs[i].gameObject.SetActive(false);
+            }
         }
     }
+
 
     private void HidePreconCellObjs()
     {
         for (int i = 0; i < m_invalidCellObjs.Count; ++i)
         {
-            m_invalidCellObjs[i].SetActive(false);
+            m_invalidCellObjs[i].gameObject.SetActive(false);
         }
     }
 
@@ -1401,7 +1457,6 @@ public class GameplayManager : MonoBehaviour
         }
 
         HidePreconCellObjs();
-        m_invalidCellObj.SetActive(false);
         m_preconstructedTowerPos = new Vector2Int(999, 999);
         m_preconstructedTowerData = null;
         m_preconstructedTowerObj = null;
@@ -1435,6 +1490,7 @@ public class GameplayManager : MonoBehaviour
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
         newTower.SetupTower();
+        newTower.SetRangeCircleColor(m_selectionColors.m_outlineBaseColor);
 
         //Update banks
         ValueTuple<int, int> cost = newTower.GetTowercost();
@@ -1918,6 +1974,11 @@ public class OozeManager
         GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
     }
 
+    void OnDestroy()
+    {
+        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
+    }
+
     private void GameplayStateChanged(GameplayManager.GameplayState newState)
     {
         if (m_currentOozedCells.Count <= 0) return;
@@ -1928,7 +1989,6 @@ public class OozeManager
             Debug.Log($"List of Ooze cleared.");
         }
     }
-
 
     public bool IsCellOozed(Cell cell)
     {

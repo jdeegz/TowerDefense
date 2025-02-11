@@ -69,7 +69,41 @@ public static class Util
         return emptyCells; // Don't release it here! The caller must handle it.
     }
 
+    private static int[] m_dX = { 0, 1, 0, -1 };
+    private static int[] m_dY = { 0, 1, -1, 0 };
     
+    public static Vector2Int FindNearestValidCellPos(Vector3 worldPos)
+    {
+        Vector2Int gridPos = new Vector2Int(Mathf.RoundToInt(worldPos.x), Mathf.RoundToInt(worldPos.z));
+        gridPos.x = Mathf.Clamp(gridPos.x, 0, GridManager.Instance.m_gridWidth - 1);
+        gridPos.y = Mathf.Clamp(gridPos.y, 0, GridManager.Instance.m_gridHeight - 1);
+
+        Cell cell = GetCellFromPos(gridPos);
+        if (cell != null) return cell.m_cellPos;
+
+        int step = 1;
+        int longestAxis = Mathf.Max(GridManager.Instance.m_gridHeight, GridManager.Instance.m_gridWidth);
+        while (step <= longestAxis)
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                for (int j = 0; j < step; ++j)
+                {
+                    gridPos.x += m_dX[i];
+                    gridPos.y += m_dY[i];
+                    
+                    gridPos.x = Mathf.Clamp(gridPos.x, 0, GridManager.Instance.m_gridWidth - 1);
+                    gridPos.y = Mathf.Clamp(gridPos.y, 0, GridManager.Instance.m_gridHeight - 1);
+
+                    cell = GetCellFromPos(gridPos);
+                    if (cell != null) return cell.m_cellPos;
+                }
+            }
+            ++step;
+        }
+
+        return gridPos;
+    }   
 
     public static Vector3 GetRandomPosition(Vector3 objPosition, Vector3 offset)
     {
@@ -97,14 +131,10 @@ public static class Util
         return new Vector3(Mathf.FloorToInt(vector.x + 0.5f), Mathf.FloorToInt(vector.y), Mathf.FloorToInt(vector.z + 0.5f));
     }
 
-    /*
+    
     public static List<Cell> GetCellsInRadius(int centerX, int centerY, int radius)
     {
         List<Cell> cellsWithinRadius = new List<Cell>();
-
-        /#1#/ Convert the 1D center index to 2D coordinates
-        int centerX = centerIndex / gridWidth;
-        int centerY = centerIndex % gridWidth;#1#
 
         int x = centerX;
         int y = centerY;
@@ -138,7 +168,7 @@ public static class Util
         }
 
         return cellsWithinRadius;
-    }*/
+    }
 
     public static List<Cell> GetCellsInRadius(Cell startCell, int maxDistance)
     {
@@ -486,10 +516,13 @@ public static class Util
 
                 Cell cell = GetCellFromPos(new Vector2Int(xPos, zPos));
 
-                if (cell.m_isOutOfBounds)
+                // Disabling out of bounds check 2/11/2025
+                // Implementing precon changes that allow the obj to appear over water.
+                /*if (cell.m_isOutOfBounds) 
                 {
+                    Debug.Log($"Cell out of bounds.");
                     return null;
-                }
+                }*/
 
                 cellsFromPos.Add(cell);
             }

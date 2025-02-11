@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -12,6 +14,7 @@ public abstract class UIPopup : MonoBehaviour
     [SerializeField] private Button m_closeButton;
     [SerializeField] private bool m_closeOnEscape = true;
     [SerializeField] private bool m_closeOnOutsideClick = false;
+    [SerializeField] private Button m_closeOnOutsideButton;
     [SerializeField] private bool m_isModal = true;
     [SerializeField] private float m_autoCloseTime = 0f; // 0 means no auto-close
     
@@ -33,6 +36,11 @@ public abstract class UIPopup : MonoBehaviour
             m_closeButton.onClick.AddListener(RequestClose);
         }
 
+        if (m_closeOnOutsideButton != null && m_closeOnOutsideClick)
+        {
+            m_closeOnOutsideButton.onClick.AddListener(RequestClose);
+        }
+
         m_canvasGroup = GetComponent<CanvasGroup>();
         m_audioSource = GetComponent<AudioSource>();
     }
@@ -45,13 +53,44 @@ public abstract class UIPopup : MonoBehaviour
 
     protected virtual void Update()
     {
-        
+        /*if (m_closeOnOutsideClick && Input.GetMouseButtonDown(0))
+        {
+            
+            if (!IsPointerOverUIElement(gameObject))
+            {
+                RequestClose();
+            }
+        }*/
     }
+    
+    /*private bool IsPointerOverUIElement(GameObject popup)
+    {
+        PointerEventData eventData = new PointerEventData(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
+    
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        foreach (var result in results)
+        {
+            if (result.gameObject == popup || result.gameObject.transform.IsChildOf(popup.transform))
+            {
+                return true; // Clicked inside the popup
+            }
+        }
+
+        return false; // Clicked outside
+    }*/
+
 
     public virtual void HandleShow()
     {
         Debug.Log($"Showing {this.name}");
         gameObject.SetActive(true);
+        m_canvasGroup.interactable = true;
+        m_canvasGroup.blocksRaycasts = true;
         m_canvasGroup.alpha = 0;
         m_canvasGroup.DOFade(1, m_showPopupFadeDuration).SetUpdate(true);
     }
@@ -64,6 +103,8 @@ public abstract class UIPopup : MonoBehaviour
     
     public virtual void HandleClose()
     {
+        m_canvasGroup.interactable = false;
+        m_canvasGroup.blocksRaycasts = false;
         m_canvasGroup.DOFade(0, m_showPopupFadeDuration).SetUpdate(true).OnComplete(() => CompleteClose());
     }
 

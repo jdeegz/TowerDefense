@@ -723,7 +723,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         switch (statusEffect.m_data.m_effectType)
         {
             case StatusEffectData.EffectType.DecreaseMoveSpeed:
-                if (!m_decreaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX)
+                if (!m_decreaseMoveSpeedVFXOjb && statusEffect.m_data.m_effectVFX && m_enemyData.m_canBeSlowed)
                 {
                     m_decreaseMoveSpeedVFXOjb = ObjectPoolManager.SpawnObject(statusEffect.m_data.m_effectVFX, m_targetPoint.position, Quaternion.identity, transform);
 
@@ -799,7 +799,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         {
             //Debug.Log($"Move Speed modifier found.");
             //Modify speed
-            if (statusEffect.m_data.m_speedModifier < 1 && statusEffect.m_data.m_speedModifier < m_lastSpeedModifierSlower)
+            if (statusEffect.m_data.m_speedModifier < 1 && statusEffect.m_data.m_speedModifier < m_lastSpeedModifierSlower && m_enemyData.m_canBeSlowed)
             {
                 m_lastSpeedModifierSlower = statusEffect.m_data.m_speedModifier;
                 //Debug.Log($"Set slower speed modifier to: {m_lastSpeedModifierSlower}");

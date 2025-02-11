@@ -11,23 +11,9 @@ public class UITowerUnlockedPopup : UIPopup, IDataPopup
     
     private TowerData m_towerData;
     
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void SetData(object data)
     {
-        Debug.Log($"no data setup needed.");
-
         if (data is TowerData towerData)
         {
             m_towerData = towerData;
@@ -37,10 +23,6 @@ public class UITowerUnlockedPopup : UIPopup, IDataPopup
             m_towerUnlockImage.sprite = m_towerData.m_uiIcon;
             
             LayoutRebuilder.ForceRebuildLayoutImmediate(m_popupGroupRoot);
-        }
-        else
-        {
-            Debug.Log($"Data Type incompatible. Expecting TowerData");
         }
     }
 

@@ -9,9 +9,11 @@ using Random = UnityEngine.Random;
 
 public class CellOoze : MonoBehaviour
 {
+    
     public Vector3 m_goalPos;
     public Collider m_collider;
-    
+
+    public float m_oozeLifetime = 20f;
     public GameObject m_oozeProjectileObj;
     private GameObject m_activeOozeProjectileObj;
     
@@ -29,6 +31,8 @@ public class CellOoze : MonoBehaviour
 
     private Cell m_cell;
     private float m_curDissolve = 1;
+    private bool m_isActive = false;
+    private float m_timeElapsed;
 
     void Awake()
     {
@@ -40,8 +44,38 @@ public class CellOoze : MonoBehaviour
         m_activeOozeProjectileObj = null;
         m_activeCellOozeObj = null;
         m_activeTowerDisableObj = null;
-        
-        GameplayManager.OnGameplayStateChanged += RemoveOoze;
+        m_isActive = true;
+        m_timeElapsed = 0;
+        GameplayManager.OnGameplayStateChanged += GameplayStateChanged;
+    }
+
+    private void GameplayStateChanged(GameplayManager.GameplayState newState)
+    {
+        if (newState == GameplayManager.GameplayState.Build)
+        {
+            Debug.Log($"New Build state, removing ooze.");
+            RemoveOoze();
+        }
+    }
+
+    private void Update()
+    {
+        if (m_isActive)
+        {
+            HandleOozeTimer();
+        }
+    }
+
+    private void HandleOozeTimer()
+    {
+        m_timeElapsed += Time.deltaTime;
+
+        if (m_timeElapsed >= m_oozeLifetime)
+        {
+            m_isActive = false;
+            Debug.Log($"Ooze Timer Hit, removing ooze.");
+            RemoveOoze();
+        }
     }
 
     public void SetOozeCell(Cell cell)
@@ -56,10 +90,11 @@ public class CellOoze : MonoBehaviour
             .SetEase(animationCurve)
             .OnComplete(() =>
             {
+                RequestPlayAudio(m_audioImpactClips, m_audioSource);
                 SetupOoze();
+                
                 ObjectPoolManager.ReturnObjectToPool(m_activeOozeProjectileObj);
                 m_activeOozeProjectileObj = null;
-                RequestPlayAudio(m_audioImpactClips, m_audioSource);
             });
     }
     
@@ -74,18 +109,20 @@ public class CellOoze : MonoBehaviour
         m_activeCellOozeObj = ObjectPoolManager.SpawnObject(m_cellOozeObj, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
-    void RemoveOoze(GameplayManager.GameplayState newState)
+    void RemoveOoze()
     {
-        if (newState != GameplayManager.GameplayState.Build) return;
-        
+        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
         m_cell.UpdateBuildRestrictedValue(false);
         m_collider.enabled = false;
         
         if(m_activeOozeProjectileObj) ObjectPoolManager.ReturnObjectToPool(m_activeOozeProjectileObj);
-        if(m_activeCellOozeObj) ObjectPoolManager.ReturnObjectToPool(m_activeCellOozeObj);
+        if (m_activeCellOozeObj)
+        {
+            Debug.Log($"Returning cell Ooze to Pool.");
+            ObjectPoolManager.ReturnObjectToPool(m_activeCellOozeObj);
+        }
         if(m_activeTowerDisableObj) ObjectPoolManager.ReturnObjectToPool(m_activeTowerDisableObj);
         
-        GameplayManager.OnGameplayStateChanged -= RemoveOoze;
         ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
     
@@ -127,6 +164,6 @@ public class CellOoze : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameplayManager.OnGameplayStateChanged -= RemoveOoze;
+        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
     }
 }

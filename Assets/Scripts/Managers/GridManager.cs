@@ -874,7 +874,7 @@ public class UnitPath
         int pathCount = 0;
         List<Vector2Int> curPath = ListPool<Vector2Int>.Get();
         
-        for (int i = 1; i < path.Count; i++)
+        for (int i = 0; i < path.Count; i++)
         {
             curPath.Add(path[i]);
             Cell curCell = Util.GetCellFromPos(path[i]);
