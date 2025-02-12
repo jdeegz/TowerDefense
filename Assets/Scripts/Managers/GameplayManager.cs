@@ -1057,9 +1057,9 @@ public class GameplayManager : MonoBehaviour
         OnPreconBuildingMoved?.Invoke(m_preconstructedTowerCells);
 
         // Tween the object's scale.
-        m_preconstructedTowerObj.transform.localScale = Vector3.zero;
+        m_preconstructedTowerObj.transform.localScale = Vector3.one * 0.5f;
         m_preconstructedTowerObj.transform.DOScale(Vector3.one, 0.15f)
-            .SetEase(Ease.InOutBounce)
+            .SetEase(Ease.InOutBack)
             .SetUpdate(true);
 
         // Update building inventory
@@ -1339,7 +1339,7 @@ public class GameplayManager : MonoBehaviour
     {
         if (m_interactionState != InteractionState.PreconstructionTower) return;
 
-        m_preconPeriodTimeElapsed += Time.deltaTime;
+        m_preconPeriodTimeElapsed += Time.unscaledDeltaTime;
 
         if (m_preconPeriodTimeElapsed > m_preconPeriod)
         {
