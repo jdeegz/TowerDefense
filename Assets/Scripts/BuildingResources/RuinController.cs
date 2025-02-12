@@ -55,7 +55,7 @@ public class RuinController : MonoBehaviour
         // Check the state of the key, to determine if this is discovered previously.
         m_progressionKey = key;
         m_progressionKey.KeyChanged += OnKeyChanged;
-        
+
         m_ruinIndicator = ruinIndicatorObj.GetComponent<RuinIndicator>();
         m_ruinIndicator.SetUpRuinIndicator(this);
 
@@ -68,7 +68,6 @@ public class RuinController : MonoBehaviour
         {
             UpdateRuinState(RuinState.Indicated);
         }
-        
     }
 
     public void GathererDiscoveredRuin()
@@ -110,9 +109,7 @@ public class RuinController : MonoBehaviour
 
     void OnDestroy()
     {
-        if (m_ruinIndicator != null)
-        {
-            m_progressionKey.KeyChanged -= OnKeyChanged;
-        }
+        if (m_progressionKey == null) return;
+        m_progressionKey.KeyChanged -= OnKeyChanged;
     }
 }

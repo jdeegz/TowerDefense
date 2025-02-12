@@ -161,13 +161,13 @@ public class UIOptionsPopup : UIPopup
 
     void PlayAudio(AudioClip clip)
     {
-        Debug.Log($"playing audio clip: {clip.name}");
+        //Debug.Log($"playing audio clip: {clip.name}");
         m_audioSource.PlayOneShot(clip);
     }
 
     private void OnSurrenderButtonClicked()
     {
-        Debug.Log("Surrendering Mission.");
+        //Debug.Log("Surrendering Mission.");
         int wave = 0;
 
         // Are we surrendering from an endless match, or normal?
@@ -182,14 +182,14 @@ public class UIOptionsPopup : UIPopup
 
     private void OnRestartButtonClicked()
     {
-        Debug.Log("Restarting Mission.");
+        //Debug.Log("Restarting Mission.");
         PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0);
         GameManager.Instance.RequestSceneRestart();
     }
 
     private void OnExitApplicationButtonClicked()
     {
-        Debug.Log("Quitting Application.");
+        //Debug.Log("Quitting Application.");
         PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0);
         Application.Quit();
     }

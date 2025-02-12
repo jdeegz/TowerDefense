@@ -33,15 +33,26 @@ public class ObjectPoolManager : MonoBehaviour
 
     void Awake()
     {
-        if (!Instance)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
+            //Debug.Log("[ObjectPoolManager] Destroying duplicate ObjectPoolManager instance.");
+            Destroy(gameObject);
+            return;
         }
 
+        Instance = this;
+        //Debug.Log("[ObjectPoolManager] Assigning new Object Pool Manager Instance.");
+        
         SetupEmpties();
+        InitializeLists();
+    }
 
-        //Prewarm EnemyController lists for Tower FindTarget()
-        ListPool<EnemyController>.WarmUp(50);
+    void InitializeLists()
+    {
+    List<PooledObjectInfo> m_objectPools = new List<PooledObjectInfo>();
+    List<OrphanedObject> m_orphanList = new List<OrphanedObject>();
+    List<OrphanedObject> m_expiredOrphanList = new List<OrphanedObject>();
+    Dictionary<string, PooledObjectInfo> m_poolDictionary = new Dictionary<string, PooledObjectInfo>();
     }
 
     void SetupEmpties()
@@ -66,7 +77,13 @@ public class ObjectPoolManager : MonoBehaviour
 
     void OnDestroy()
     {
-        Instance = null;
+        // Only clear if the instance is being destroyed
+        if (Instance == this)
+        {
+            //Debug.Log("[ObjectPoolManager] Object Pool Manager Destroyed. Clearing pools.");
+            m_objectPools.Clear();
+            m_poolDictionary.Clear();
+        }
     }
 
     void Update()
@@ -98,6 +115,8 @@ public class ObjectPoolManager : MonoBehaviour
             pool = new PooledObjectInfo() { m_lookUpString = objectToSpawn.name };
             Instance.m_objectPools.Add(pool);
             m_poolDictionary[objectToSpawn.name] = pool;
+            
+            //Debug.Log($"[ObjectPool] Added new pool for {objectToSpawn.name}.");
         }
 
         //check for inactive obj in pool
@@ -139,6 +158,8 @@ public class ObjectPoolManager : MonoBehaviour
             pool = new PooledObjectInfo() { m_lookUpString = objectToSpawn.name };
             Instance.m_objectPools.Add(pool);
             m_poolDictionary[objectToSpawn.name] = pool;
+            
+            //Debug.Log($"[ObjectPool] Added new pool for {objectToSpawn.name}.");
         }
 
         //check for inactive obj in pool
@@ -176,6 +197,14 @@ public class ObjectPoolManager : MonoBehaviour
 
     public static void ReturnObjectToPool(GameObject obj, PoolType poolType = PoolType.None)
     {
+        if (Instance == null)
+        {
+            //Debug.LogError("[ObjectPool] Instance is null in ReturnToPool!");
+            return;
+        }
+        
+        //Debug.Log($"[ObjectPool] Attempting to return {obj.name} to pool.");
+        
         string goName = obj.name.Substring(0, obj.name.Length - 7); // Remove (Clone)
         PooledObjectInfo pool = Instance.m_objectPools.Find(p => p.m_lookUpString == goName);
 
@@ -187,7 +216,12 @@ public class ObjectPoolManager : MonoBehaviour
 
         if (pool == null)
         {
-            //Debug.LogWarning($"Trying to release an object that is not pooled: {obj.name}");
+            //Debug.LogError($"[ObjectPool] No matching pool found for {obj.name}. Existing pools:");
+            
+            foreach (var p in Instance.m_objectPools)
+            {
+                //Debug.Log($"[ObjectPool] Pool Prefab Name: {p.m_lookUpString}");
+            }
         }
         else
         {

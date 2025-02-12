@@ -93,4 +93,9 @@ public class UIHealthMeter : MonoBehaviour
         m_enemy.DestroyEnemy -= OnEnemyDestroyed;
         ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
+
+    void OnDestroy()
+    {
+        
+    }
 }

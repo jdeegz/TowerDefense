@@ -554,21 +554,20 @@ public class GameplayManager : MonoBehaviour
         PlayerDataManager.OnUnlockableUnlocked += UnlockableUnlocked;
         PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
 
-        // DELETE THIS
-        //PlayerDataManager.Instance.ResetProgressionTable();
-
         SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
+        
         m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
-
-        /*foreach (var kvp in m_unlockedStructures)
-        {
-            Debug.Log($"Unlocked {kvp.Key.m_towerName}, Quantity of :{kvp.Value}");
-        }*/
-
         m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
+        
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
-        Instance = this;
+        
+        if (!Instance)
+        {
+            Instance = this;
+        }
+        
         m_mainCamera = Camera.main;
+        
         if (m_enemyGoal != null)
         {
             m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);

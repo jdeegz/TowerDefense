@@ -262,7 +262,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnGameSpeedChanged -= GameplaySpeedChanged;
         GameplayManager.OnAlertDisplayed -= Alert;
         GameplayManager.OnObelisksCharged -= UpdateObeliskDisplay;
-        GameplayManager.OnObeliskAdded += UpdateObeliskDisplay;
+        GameplayManager.OnObeliskAdded -= UpdateObeliskDisplay;
         GameplayManager.OnGathererAdded -= BuildGathererTrayButton;
         GameplayManager.OnGathererRemoved -= RemoveGathererTrayButton;
         GameplayManager.OnDelayForQuestChanged -= DelayForQuestChanged;

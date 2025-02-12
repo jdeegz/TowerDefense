@@ -43,6 +43,10 @@ public class GridManager : MonoBehaviour
 
     void OnDestroy()
     {
+        foreach (UnitPath unitPath in m_unitPaths)
+        {
+            unitPath.ClearUnitPath();
+        }
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
         GameplayManager.OnPreconBuildingMoved -= PreconBuildingMoved;
         GameplayManager.OnPreconBuildingClear -= PreconBuildingClear;
@@ -907,5 +911,13 @@ public class UnitPath
         m_path = new List<Vector2Int>(path);
         ListPool<Vector2Int>.Release(curPath);
         ListPool<Vector2Int>.Release(path);
+    }
+    
+    public void ClearUnitPath()
+    {
+        if (m_displayThisPath)
+        {
+            m_standardSpawner.OnActiveWaveSet -= StandardSpawnActiveWaveSet;
+        } 
     }
 }
