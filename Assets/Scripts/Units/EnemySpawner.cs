@@ -26,6 +26,11 @@ public abstract class EnemySpawner : MonoBehaviour
     public abstract void GameplayManagerStateChanged(GameplayManager.GameplayState newState);
     public abstract void UpdateCreepSpawners();
 
+    public void DeactivateSpawner()
+    {
+        m_isSpawnerActive = false;
+    }
+    
     public void SetNextCreepWave()
     {
         if (m_spawnerWaves == null) return;

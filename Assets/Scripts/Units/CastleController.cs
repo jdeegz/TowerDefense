@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.VFX;
 using Random = UnityEngine.Random;
 
@@ -10,8 +12,9 @@ public class CastleController : MonoBehaviour
     public CastleData m_castleData;
 
     [SerializeField] public List<GameObject> m_castleEntrancePoints;
-    [SerializeField] private Transform m_modelsParent;
-    private List<Renderer> m_allRenderers;
+    [SerializeField] private List<Renderer> m_spireRenderers;
+    public VisualEffect m_spireBeamVFX;
+    public VisualEffect m_spireEndlessVFX;
     private List<Color> m_allOrigColors;
     private Coroutine m_hitFlashCoroutine;
     private AudioSource m_audioSource;
@@ -22,6 +25,7 @@ public class CastleController : MonoBehaviour
     private int m_repairFrequency;
     private float m_repairElapsedTime;
     private int m_healthRepaired = 0;
+    private bool m_isInvulnerable;
 
     public event Action<int> UpdateHealth;
     public event Action<int> UpdateMaxHealth;
@@ -30,8 +34,6 @@ public class CastleController : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        CollectMeshRenderers(m_modelsParent);
-
         m_maxHealth = m_castleData.m_maxHealth;
         m_curHealth = m_castleData.m_maxHealth;
         m_repairHealthAmount = m_castleData.m_repairHealthAmount;
@@ -45,11 +47,24 @@ public class CastleController : MonoBehaviour
         ResourceManager.UpdateStoneBank += OnBankUpdated;
         ResourceManager.UpdateWoodBank += OnBankUpdated;
         m_audioSource = GetComponent<AudioSource>();
+
+        m_allOrigColors = new List<Color>();
+        foreach (Renderer renderer in m_spireRenderers)
+        {
+            m_allOrigColors.Add(renderer.material.GetColor("_EmissionColor"));
+        }
     }
 
     void OnBankUpdated(int amount, int total)
     {
         //
+    }
+
+    public void SetCastleInvulnerable(bool value)
+    {
+        if (m_isInvulnerable == value) return;
+
+        m_isInvulnerable = value;
     }
 
     void OnDestroy()
@@ -141,6 +156,46 @@ public class CastleController : MonoBehaviour
         m_curRepairCoroutine = StartCoroutine(RepairCoroutine());
     }
 
+    private bool m_spireBeamVFXIsPlaying;
+    private float m_curBeamWidth = 1;
+
+    public void HandleSpireBeamVFX(bool value)
+    {
+        if (value == m_spireBeamVFXIsPlaying) return;
+
+        m_spireBeamVFXIsPlaying = value;
+
+        if (m_spireBeamVFXIsPlaying)
+        {
+            m_spireBeamVFX.Play();
+        }
+        else // Triggered when going Endless.
+        {
+            m_spireBeamVFX.Stop();
+            DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, 0f, .33f)
+                .OnUpdate(() => m_spireBeamVFX.SetFloat("BeamWidth", m_curBeamWidth))
+                .SetUpdate(true);
+        }
+    }
+
+    private bool m_spireEndlessVFXPlaying;
+
+    public void HandleSpireEndlessVFX(bool value)
+    {
+        if (value == m_spireEndlessVFXPlaying) return;
+
+        m_spireEndlessVFXPlaying = value;
+
+        if (m_spireEndlessVFXPlaying)
+        {
+            m_spireEndlessVFX.Play();
+        }
+        else
+        {
+            m_spireEndlessVFX.Stop();
+        }
+    }
+
 
     private IEnumerator RepairCoroutine()
     {
@@ -216,6 +271,8 @@ public class CastleController : MonoBehaviour
 
     void OnUpdateHealth(int i)
     {
+        if (m_isInvulnerable) return; 
+        
         m_curHealth += i;
 
         if (i > 0)
@@ -242,6 +299,8 @@ public class CastleController : MonoBehaviour
 
     void OnUpdateMaxHealth(int i)
     {
+        if (m_isInvulnerable) return;
+        
         m_maxHealth += i;
 
         m_curHealth += i;
@@ -269,9 +328,9 @@ public class CastleController : MonoBehaviour
     private IEnumerator HitFlash()
     {
         //Set the color
-        for (int i = 0; i < m_allRenderers.Count; ++i)
+        for (int i = 0; i < m_spireRenderers.Count; ++i)
         {
-            foreach (Material material in m_allRenderers[i].materials)
+            foreach (Material material in m_spireRenderers[i].materials)
             {
                 material.SetColor("_EmissionColor", Color.red);
             }
@@ -280,42 +339,12 @@ public class CastleController : MonoBehaviour
         yield return new WaitForSeconds(.15f);
 
         //Return to original colors.
-        for (int i = 0; i < m_allRenderers.Count; ++i)
+        for (int i = 0; i < m_spireRenderers.Count; ++i)
         {
-            foreach (Material material in m_allRenderers[i].materials)
+            foreach (Material material in m_spireRenderers[i].materials)
             {
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
-        }
-    }
-
-
-    void CollectMeshRenderers(Transform parent)
-    {
-        //Get Parent Mesh Renderer if there is one.
-        Renderer Renderer = parent.GetComponent<Renderer>();
-
-        if (Renderer != null && !(Renderer is TrailRenderer) && !(Renderer is VFXRenderer))
-        {
-            if (m_allRenderers == null)
-            {
-                m_allRenderers = new List<Renderer>();
-            }
-
-            if (m_allOrigColors == null)
-            {
-                m_allOrigColors = new List<Color>();
-            }
-
-            m_allRenderers.Add(Renderer);
-            m_allOrigColors.Add(Renderer.material.GetColor("_EmissionColor"));
-        }
-
-        for (int i = 0; i < parent.childCount; ++i)
-        {
-            //Recursivly add meshrenderers by calling this function again with the child as the transform.
-            Transform child = parent.GetChild(i);
-            CollectMeshRenderers(child);
         }
     }
 

@@ -1,5 +1,25 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5515988974199977595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Name: FullscreenEffectVictory
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  injectionPoint: 600
+  fetchColorBuffer: 1
+  requirements: 0
+  passMaterial: {fileID: 2100000, guid: 24ee112b1c29a8a4e8a5465cf3703e0a, type: 2}
+  passIndex: 0
+  bindDepthStencilAttachment: 0
+  m_Version: 1
 --- !u!114 &-4529147020027551350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,7 +194,9 @@ MonoBehaviour:
   - {fileID: 4932844208533599652}
   - {fileID: 7188610880002612785}
   - {fileID: -340310107598150191}
-  m_RendererFeatureMap: 07c392264a5ddac9679350e76d809407925b4f695bbac43bb563ea597ab84ec8d809b988d362a6618a21bd1fc83c25c1bfd9e5a657602834a4f5fc1dacfb7444315e102b8213c363d125239bc2f946fb
+  - {fileID: -5515988974199977595}
+  - {fileID: 7014851050958980702}
+  m_RendererFeatureMap: 07c392264a5ddac9679350e76d809407925b4f695bbac43bb563ea597ab84ec8d809b988d362a6618a21bd1fc83c25c1bfd9e5a657602834a4f5fc1dacfb7444315e102b8213c363d125239bc2f946fb85c9d6bf404573b35e86af54ddc15961
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -321,6 +343,26 @@ MonoBehaviour:
   fetchColorBuffer: 1
   requirements: 0
   passMaterial: {fileID: 2100000, guid: a6ed242e9e8ad4149ae4ba169a8755e2, type: 2}
+  passIndex: 0
+  bindDepthStencilAttachment: 0
+  m_Version: 1
+--- !u!114 &7014851050958980702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Name: FullscreenEffectDefeat
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  injectionPoint: 600
+  fetchColorBuffer: 1
+  requirements: 0
+  passMaterial: {fileID: 2100000, guid: ac880924ab9fae649ba686257218dbaf, type: 2}
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1

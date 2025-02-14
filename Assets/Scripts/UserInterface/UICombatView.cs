@@ -87,6 +87,7 @@ public class UICombatView : MonoBehaviour
     void Awake()
     {
         m_canvasGroup.alpha = 0;
+        GameplayManager.Instance.CombatHUD = this;
 
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
@@ -296,7 +297,8 @@ public class UICombatView : MonoBehaviour
         switch (state)
         {
             case GameplayManager.GameplayState.Setup:
-                m_canvasGroup.alpha = 1;
+                m_canvasGroup.alpha = 0;
+                SetCanvasInteractive(true);
                 break;
             case GameplayManager.GameplayState.SpawnEnemies:
                 break;
@@ -312,10 +314,8 @@ public class UICombatView : MonoBehaviour
             case GameplayManager.GameplayState.CutScene:
                 break;
             case GameplayManager.GameplayState.Victory:
-                Time.timeScale = 0;
                 break;
             case GameplayManager.GameplayState.Defeat:
-                Time.timeScale = 0;
                 break;
             default:
                 break;
@@ -323,6 +323,17 @@ public class UICombatView : MonoBehaviour
 
         m_castleRepairDisplayObj.SetActive(state == GameplayManager.GameplayState.Build && m_curCastleHealth < m_maxCastleHealth);
         m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_delayForQuest);
+    }
+
+    public void SetCanvasInteractive(bool value)
+    {
+        float alpha = 0;
+        if (value) alpha = 1;
+        m_canvasGroup.DOFade(alpha, 0.33f)
+            .SetUpdate(true)
+            .OnComplete(() => m_canvasGroup.alpha = alpha);
+
+        m_canvasGroup.interactable = value;
     }
 
     void HandleHighScoreLabel()
@@ -358,9 +369,7 @@ public class UICombatView : MonoBehaviour
                 break;
         }
 
-
         m_pausedDisplayObj.gameObject.SetActive(newSpeed == GameplayManager.GameSpeed.Paused);
-
         m_pauseButton.interactable = newSpeed != GameplayManager.GameSpeed.Paused;
         m_playButton.interactable = newSpeed != GameplayManager.GameSpeed.Normal;
     }
@@ -593,6 +602,7 @@ public class UICombatView : MonoBehaviour
                 {
                     m_buttons.Remove(buttonScript);
                 }
+
                 Destroy(button.gameObject);
             }
         }
@@ -738,7 +748,7 @@ public class UICombatView : MonoBehaviour
                     // THIS IS A DOUBLE TAP
                     m_isFirstTap = false;
                     GathererController gathererToFocus = GameplayManager.Instance.m_woodGathererList[kvp.Value];
-                    CameraController.Instance.RequestOnRailsMove(gathererToFocus.transform.position);
+                    CameraController.Instance.RequestOnRailsMove(gathererToFocus.transform.position, 0.15f);
                 }
                 else
                 {

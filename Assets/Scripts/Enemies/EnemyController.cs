@@ -523,7 +523,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         //If dead, look for obelisks nearby. If there is one, spawn a soul and have it move to the obelisk.
         if (m_curHealth <= 0 && m_obeliskData != null)
         {
-            Obelisk m_closestObelisk = FindObelisk();
+            Obelisk m_closestObelisk = FindUnchargedObelisk();
             if (m_closestObelisk != null)
             {
                 //Instantiate a soul, and set its properties.
@@ -590,7 +590,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         return (m_lastSpeedModifierFaster, m_lastSpeedModifierSlower);
     }
 
-    private Obelisk FindObelisk()
+    private Obelisk FindAnyObelisk()
     {
         float closestUnchargedDistance = Mathf.Infinity;
         float closestChargedDistance = Mathf.Infinity;
@@ -631,7 +631,40 @@ public abstract class EnemyController : Dissolvable, IEffectable
         }
 
         // Return the closest uncharged obelisk, or the closest charged obelisk if none are uncharged.
-        return closestUnchargedObelisk ?? closestChargedObelisk;
+        return closestUnchargedObelisk ? closestUnchargedObelisk : closestChargedObelisk;
+    }
+    
+    private Obelisk FindUnchargedObelisk()
+    {
+        float closestUnchargedDistance = Mathf.Infinity;
+
+        Obelisk closestUnchargedObelisk = null;
+
+        // Loop through all obelisks in the mission.
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
+        {
+            // Calculate the distance from the current object to the obelisk.
+            float distance = Vector3.Distance(transform.position, obelisk.transform.position);
+
+            // Skip obelisks outside their effective range.
+            if (distance > obelisk.m_obeliskData.m_obeliskRange)
+            {
+                continue;
+            }
+
+            // Check if the obelisk is charged and update the closest charged obelisk if needed.
+            if (obelisk.m_obeliskState != Obelisk.ObeliskState.Charged)
+            {
+                if (distance < closestUnchargedDistance)
+                {
+                    closestUnchargedDistance = distance;
+                    closestUnchargedObelisk = obelisk;
+                }
+            }
+        }
+
+        // Return the closest uncharged obelisk, or the closest charged obelisk if none are uncharged.
+        return closestUnchargedObelisk;
     }
 
 

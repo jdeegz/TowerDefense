@@ -46,6 +46,8 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GathererController> OnGathererAdded;
     public static event Action<GathererController> OnGathererRemoved;
     public static event Action OnCutSceneEnd;
+    public static event Action<bool> OnGossamerHealed;
+    public static event Action<bool> OnSpireDestroyed;
     public static event Action<bool> OnDelayForQuestChanged;
     public static event Action<int> OnBlueprintCountChanged;
     public static event Action<TowerData, int> OnUnlockedStucturesUpdated;
@@ -57,6 +59,12 @@ public class GameplayManager : MonoBehaviour
     private int m_qty;
     public Dictionary<TowerData, int> m_unlockedStructures;
     public List<TowerData> m_unlockedTowers;
+    private UICombatView m_combatHUD;
+    public UICombatView CombatHUD
+    {
+        get { return m_combatHUD; }
+        set { m_combatHUD = value; }
+    }
 
     [Header("Wave Settings")]
     public MissionGameplayData m_gameplayData;
@@ -78,7 +86,7 @@ public class GameplayManager : MonoBehaviour
     [HideInInspector] public float m_timeToNextWave;
     [HideInInspector] public bool delayForQuest;
 
-    [Header("Castle")]
+    [Header("Spire")]
     public CastleController m_castleController;
     public Transform m_enemyGoal;
 
@@ -555,19 +563,19 @@ public class GameplayManager : MonoBehaviour
         PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
 
         SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
-        
+
         m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
         m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
-        
+
         m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
-        
+
         if (!Instance)
         {
             Instance = this;
         }
-        
+
         m_mainCamera = Camera.main;
-        
+
         if (m_enemyGoal != null)
         {
             m_goalPointPos = new Vector2Int((int)m_enemyGoal.position.x, (int)m_enemyGoal.position.z);
@@ -777,6 +785,7 @@ public class GameplayManager : MonoBehaviour
 
                 ToggleBlueprintPathDirections(false); // Disable blueprint tower path directions.
                 Time.timeScale = m_playbackSpeed;
+                Debug.Log($"Time Scale now : {Time.timeScale}");
                 RequestPlayAudio(m_gameplayAudioData.m_play);
                 break;
             default:
@@ -848,9 +857,9 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
-
-                UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
+                /*PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
+                UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");*/
+                HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
                 RequestPlayAudio(m_gameplayAudioData.m_defeatClip);
@@ -1046,7 +1055,7 @@ public class GameplayManager : MonoBehaviour
         m_preconstructedTowerObj = Instantiate(towerData.m_prefab, spawnPosition, Quaternion.identity);
         m_preconstructedTowerPos = gridPos;
         m_preconstructedTower = m_preconstructedTowerObj.GetComponent<Tower>();
-        
+
         // Set the precon Cells and neighbors.
         List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
 
@@ -1795,7 +1804,6 @@ public class GameplayManager : MonoBehaviour
         if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
         {
             RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
-            m_preVictoryState = m_gameplayState;
             UpdateGameplayState(GameplayState.Victory);
             return;
         }
@@ -1807,10 +1815,34 @@ public class GameplayManager : MonoBehaviour
 
     public void StartEndlessMode()
     {
+        // Re-enable the CombatHUD
+        CombatHUD.SetCanvasInteractive(true);
+        
+        // Disable the Gossamer Full Screen effect.
+        OnGossamerHealed?.Invoke(false);
+        
+        // Enable Spire Damage.
+        m_castleController.SetCastleInvulnerable(false);
+        
+        // Disable Obelisk Beams
+        foreach (Obelisk obelisk in m_obelisksInMission)
+        {
+            Debug.Log($"{obelisk.gameObject.name} beam activated.");
+            obelisk.HandleSpireBeamVFX(false);
+        }
+        
+        // Disable Spire Beam.
+        m_castleController.HandleSpireBeamVFX(false);
+        
+        // Audio
         RequestPlayAudio(m_gameplayAudioData.m_endlessModeStartedClip);
+        
+        // Enable Endless Mode bool (used for next victory/defeat display)
         m_endlessModeActive = true;
-        m_gameplayState = m_preVictoryState; // Resume the previous state from where victory / endless came from
-        UpdateGamePlayback(GameSpeed.Normal);
+
+        // Resume previous Game State.
+        //m_gameplayState = m_preVictoryState; // Resume the previous state from where victory / endless came from
+        UpdateGameplayState(GameplayState.Build);
         UpdateInteractionState(InteractionState.Idle);
     }
 
@@ -1882,8 +1914,6 @@ public class GameplayManager : MonoBehaviour
 
     public void WatchingCutScene()
     {
-        if (m_lights == null) m_lights = FindObjectsOfType<Light>();
-
         m_watchingCutScene = true;
 
         //Clear precon if we're precon
@@ -1903,7 +1933,7 @@ public class GameplayManager : MonoBehaviour
         UpdateGamePlayback(GameSpeed.Paused);
 
         // Disable Lights
-        if (m_lights == null) m_lights = FindObjectsOfType<Light>();
+        m_lights = FindObjectsOfType<Light>();
 
         // Loop through each light and disable it
         foreach (Light light in m_lights)
@@ -1935,6 +1965,81 @@ public class GameplayManager : MonoBehaviour
     {
         //To replace this with playing a cutscene then triggering defeat, or they're the same?
         UpdateGameplayState(GameplayState.Defeat);
+    }
+
+    private void HandleVictorySequence()
+    {
+        m_victorySequence = StartCoroutine(VictorySequence());
+    }
+
+    private void StopVictorySequence()
+    {
+        if (m_victorySequence == null) return;
+
+        StopCoroutine(m_victorySequence);
+        m_victorySequence = null;
+    }
+
+    private Coroutine m_victorySequence;
+    private float m_obeliskToSpireDelay = 2f;
+    private float m_killAllEnemiesDelay = 0.8f;
+    private float m_displayVictoryUIDelay = 0f;
+    IEnumerator VictorySequence()
+    {
+        // Disable Spire Damage.
+        m_castleController.SetCastleInvulnerable(true);
+        
+        // Disable Tooltips.
+        UITooltipController.Instance.HideAndSuppressToolTips();
+        
+        // Hide the CombatHUD.
+        CombatHUD.SetCanvasInteractive(false);
+        
+        // Deactivate Spawners
+        foreach (EnemySpawner spawner in m_enemySpawners)
+        {
+            spawner.DeactivateSpawner();
+        }
+        
+        // Bringing the camera to the Spire.
+        CameraController.Instance.RequestOnRailsMove(m_castleController.transform.position + (Vector3.forward * 2), 2f);
+        float zoomDestination = CameraController.Instance.m_startZoom + CameraController.Instance.m_maxZoomOut;
+        CameraController.Instance.RequestOnRailsZoom(zoomDestination, 2f);
+        
+        // Begin to slow gameplay.
+        DOTween.To(() => Time.timeScale, x => Time.timeScale = x, .2f, m_obeliskToSpireDelay).SetUpdate(true);
+        
+        // Enable the beams that connect the Obelisks to Spire.
+        foreach (Obelisk obelisk in m_obelisksInMission)
+        {
+            obelisk.HandleSpireBeamVFX(true);
+        }
+        
+        // Wait for the Obelisk beams to connect to the spire.
+        yield return new WaitForSecondsRealtime(m_obeliskToSpireDelay);
+        
+        // Enable the Spire's Beam
+        m_castleController.HandleSpireBeamVFX(true);
+        
+        // Enable the Endless spire vfx (persists if we go into endless mode)
+        m_castleController.HandleSpireEndlessVFX(true);
+        
+        // Remove all enemies from the map.
+        Time.timeScale = 1;
+        yield return new WaitForSecondsRealtime(m_killAllEnemiesDelay);
+        KillAllEnemies();
+        
+        // Enable the Gossamer Fullscreen effect
+        OnGossamerHealed?.Invoke(true);
+        
+        // Wait a beat after killing enemies to display the victory UI.
+        yield return new WaitForSecondsRealtime(m_displayVictoryUIDelay);
+        
+        // Display the Victory UI.
+        UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
+        
+        // Restore Tooltips
+        UITooltipController.Instance.UnsuppressToolTips();
     }
 
     public void BuildTowerQuestCompleted()

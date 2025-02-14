@@ -72,6 +72,17 @@ public class UITooltipController : MonoBehaviour
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
     }
 
+    public void HideAndSuppressToolTips()
+    {
+        RequestShowTooltip(false);
+        m_supressToolTips = true;
+    }
+
+    public void UnsuppressToolTips()
+    {
+        m_supressToolTips = false;
+    }
+    
     private void GameObjectDeselected(GameObject obj)
     {
         Selectable deselected = obj.GetComponent<Selectable>();
@@ -285,6 +296,7 @@ public class UITooltipController : MonoBehaviour
 
     void RequestShowTooltip(bool show)
     {
+        if (m_supressToolTips) return;
         if (m_curTween != null) m_curTween.Kill();
         m_canvasGroup.alpha = 0;
         if (show)

@@ -16,7 +16,9 @@ public abstract class UIPopup : MonoBehaviour
     [SerializeField] private bool m_closeOnOutsideClick = false;
     [SerializeField] private Button m_closeOnOutsideButton;
     [SerializeField] private bool m_isModal = true;
+    [SerializeField] private bool m_pausesGame = true;
     [SerializeField] private float m_autoCloseTime = 0f; // 0 means no auto-close
+    
     
     [Header("UI Animation Settings")]
     [SerializeField] private float m_showPopupFadeDuration = 0.15f;
@@ -25,6 +27,7 @@ public abstract class UIPopup : MonoBehaviour
     public event Action OnPopupOpen;
     public event Action OnPopupClose;
     public bool CloseOnEscape => m_closeOnEscape;
+    public bool PausesGame => m_pausesGame;
 
     protected CanvasGroup m_canvasGroup; 
     protected AudioSource m_audioSource;

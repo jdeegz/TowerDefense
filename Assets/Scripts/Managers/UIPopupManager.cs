@@ -49,7 +49,7 @@ public class UIPopupManager : MonoBehaviour
         popup.HandleShow();
         m_activePopups.Add(popup);
         
-        PauseGameplay();
+        if(popup.PausesGame) PauseGameplay();
         
         return popup as T;
     }

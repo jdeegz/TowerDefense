@@ -105,18 +105,18 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         if (!m_cameraIsLive) return;
-        
-        //On rails movement will focus the camera on a destination. (Example: Selecting a gatherer from the UI)
-        if (m_onRails)
-        {
-            HandleOnRailsMovement();
-        }
-        else
-        {
-            HandleScreenEdgePan();
 
-            HandleKeyInput();
+        //On rails movement will focus the camera on a destination. (Example: Selecting a gatherer from the UI)
+        if (OnRails)
+        {
+            if(m_onMoveRails) HandleOnRailsMovement();
+            if(m_onZoomRails) HandleOnRailsZoom();
+            return;
         }
+
+        HandleScreenEdgePan();
+
+        HandleKeyInput();
 
         if (GameplayManager.Instance != null && GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.PreconstructionTower)
         {
@@ -146,7 +146,7 @@ public class CameraController : MonoBehaviour
     void HandleKeyInput()
     {
         //If we're on rails at the moment, ignore inputs.
-        if (m_onRails) return;
+        if (OnRails) return;
 
         //Define the vector we wish to move. Make sure we're not moving past the Camera Bounds.
         Vector3 cameraMovement = Vector3.zero;
@@ -176,11 +176,12 @@ public class CameraController : MonoBehaviour
     }
 
     private bool m_startedOnUI = false;
+
     void HandleMouseInput()
     {
         // Track if the drag started on a UI element
-        
-        
+
+
         if (Input.GetMouseButtonDown(0))
         {
             // Check if the pointer is over a UI element
@@ -193,7 +194,7 @@ public class CameraController : MonoBehaviour
             {
                 m_startedOnUI = false;
             }
-            
+
             Plane plane = new Plane(Vector3.up, Vector3.zero);
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -215,7 +216,7 @@ public class CameraController : MonoBehaviour
             {
                 return; // Exit the method if drag started over UI
             }
-            
+
             Plane plane = new Plane(Vector3.up, Vector3.zero);
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -306,68 +307,104 @@ public class CameraController : MonoBehaviour
         Rect gameWindowRect = new Rect(0, 0, Screen.width, Screen.height);
         return gameWindowRect.Contains(mousePosition);
     }
-
-    private bool m_onRails;
-    private Vector3 m_railsDestination;
-
-    public void RequestOnRailsMove(Vector3 pos)
+    
+    // MOVING FUNCTIONS
+    float m_stoppingDistance = 0.1f;
+    private bool OnRails
     {
-        //Debug.Log($"CameraController: Request On Rails Move to: {pos}");
-        m_onRails = true;
-        m_railsDestination = pos;
+        get { return m_onMoveRails || m_onZoomRails; }
+    }
+    private bool m_onMoveRails;
+    private bool m_onZoomRails;
+    private Vector3 m_railsMoveDestination;
+    private Vector3 m_railsMoveStartPosition;
+    private float m_railsMoveDuration;
+    private float m_railsMoveElapsedTIme;
+    public AnimationCurve m_railsMoveCurve;
+    private float m_railsMoveSpeedMultiplier = 1;
+    
+    public void RequestOnRailsMove(Vector3 pos, float duration)
+    {
+        m_onMoveRails = true;
+        m_railsMoveDestination = pos;
+        m_railsMoveDuration = duration;
+        m_railsMoveElapsedTIme = 0;
+        m_railsMoveStartPosition = transform.position;
+        m_railsMoveSpeedMultiplier = 1;
+    }
+    
+    void HandleOnRailsMovement()
+    {
+        if (Vector3.Distance(transform.position, m_railsMoveDestination) <= m_stoppingDistance)
+        {
+            m_onMoveRails = false;
+        }
+        
+        m_railsMoveElapsedTIme += Time.unscaledDeltaTime * m_railsMoveSpeedMultiplier;
+        float t = Mathf.Clamp01(m_railsMoveElapsedTIme / m_railsMoveDuration);
+
+        // Lerp towards the destination
+        float curveT = m_railsMoveCurve.Evaluate(t);
+        Vector3 newPos = Vector3.Lerp(m_railsMoveStartPosition, m_railsMoveDestination, curveT);
+
+        Mathf.Clamp(newPos.x, m_minXBounds, m_maxXBounds);
+        Mathf.Clamp(newPos.z, m_minZBounds, m_maxZBounds);
+        
+        transform.position = newPos;
     }
 
     void CancelOnRailsMove()
     {
-        m_onRails = false;
-        m_railsDestination = Vector3.zero;
-        //Debug.Log($"CameraController: On Rails movement cancelled.");
+        m_onMoveRails = false;
+        m_railsMoveDestination = Vector3.zero;
+        m_railsMoveDuration = 0;
     }
-
-    void HandleOnRailsMovement()
+    
+    
+    // ZOOMING FUNCTIONS
+    private float m_railsZoomDestination;
+    private float m_railsZoomDuration;
+    private float m_railsZoomStartLevel;
+    private float m_railsZoomElapsedTIme;
+    private float m_railsZoomSpeedMultiplier = 1;
+    public AnimationCurve m_railsZoomCurve;
+    
+    public void RequestOnRailsZoom(float zoomLevel, float duration)
     {
-        //Debug.Log($"CameraController: Handling On Rails Movement to: {m_railsDestination}");
-        float stoppingDistance = 0.1f;
-
-        //Check to see if we're close enough.
-        if (Vector3.Distance(transform.position, m_railsDestination) <= stoppingDistance)
-        {
-            //Debug.Log($"CameraController: Reached stopping distance for On Rails Movement.");
-            m_onRails = false;
-            return;
-        }
-
-        bool xAxisComplete = false;
-        bool zAxisComplete = false;
-        Vector3 newPos = transform.position;
-
-        newPos.x = Mathf.Lerp(transform.position.x, m_railsDestination.x, m_scrollSpeed * Time.unscaledDeltaTime);
-        newPos.z = Mathf.Lerp(transform.position.z, m_railsDestination.z, m_scrollSpeed * Time.unscaledDeltaTime);
-
-        Mathf.Clamp(newPos.x, m_minXBounds, m_maxXBounds);
-        Mathf.Clamp(newPos.z, m_minZBounds, m_maxZBounds);
-
-        if (transform.position.x == newPos.x)
-        {
-            xAxisComplete = true;
-        }
-
-        if (transform.position.z == newPos.x)
-        {
-            zAxisComplete = true;
-        }
-
-        //Do the MOVE unless we're done on each axis.
-        if (xAxisComplete && zAxisComplete)
-        {
-            m_onRails = false;
-        }
-        else
-        {
-            transform.position = newPos;
-        }
+        m_onZoomRails = true;
+        m_railsZoomDestination = zoomLevel;
+        m_railsZoomDuration = duration;
+        m_railsZoomStartLevel = m_camera.gameObject.transform.localPosition.z;
+        m_railsZoomElapsedTIme = 0;
+        m_railsZoomSpeedMultiplier = 1;
     }
 
+    void HandleOnRailsZoom()
+    {
+        // Time-based interpolation factor
+        m_railsZoomElapsedTIme += Time.unscaledDeltaTime * m_railsZoomSpeedMultiplier;
+        float t = Mathf.Clamp01(m_railsZoomElapsedTIme / m_railsZoomDuration);
+
+        // Lerp towards the destination
+        float curveT = m_railsZoomCurve.Evaluate(t);
+        float newZoomLevel = Mathf.Lerp(m_railsZoomStartLevel, m_railsZoomDestination, curveT);
+        SetCameraPosition(newZoomLevel);
+
+        // Are we there yet?
+        float currentZoomLevel = m_camera.gameObject.transform.localPosition.z;
+        if (Mathf.Abs(currentZoomLevel - m_railsZoomDestination) <= m_stoppingDistance)
+        {
+            m_onZoomRails = false;
+        }
+    }
+    
+    void CancelOnRailsZoom()
+    {
+        m_onZoomRails = false;
+        m_railsZoomDestination = 0;
+        m_railsZoomDuration = 0;
+    }
+    
     Vector3 GetPositionInBounds(Vector3 positionRequested)
     {
         float clampedX = Mathf.Clamp(positionRequested.x, m_minXBounds, m_maxXBounds);
