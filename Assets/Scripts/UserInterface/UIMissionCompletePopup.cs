@@ -27,13 +27,15 @@ public class UIMissionCompletePopup : UIPopup
         m_exitButton.onClick.AddListener(OnExitButtonClicked);
         m_endlessModeButton.onClick.AddListener(OnEndlessModeButtonClicked);
         m_retryButton.onClick.AddListener(OnRetryButtonClicked);
-        m_endlessHighScoreLabel.gameObject.SetActive(false);
+        
     }
 
     public override void HandleShow()
     {
         base.HandleShow();
 
+        m_endlessHighScoreLabel.gameObject.SetActive(false);
+        
         GameplayManager.GameplayState curState = GameplayManager.Instance.m_gameplayState;
 
         Debug.Log($"Current State: {curState}");
@@ -55,6 +57,11 @@ public class UIMissionCompletePopup : UIPopup
         Debug.Log($"Setup Victory UI");
         m_resultLabel.SetText(m_uiStrings.m_victory);
         m_endlessModeButton.gameObject.SetActive(!GameplayManager.Instance.IsEndlessModeActive() && GameplayManager.Instance.m_gameplayData.m_allowEndlessMode);
+
+        if (GameplayManager.Instance.IsEndlessModeActive() && GameplayManager.Instance.m_gameplayData.m_allowEndlessMode) // We lost in endless mode, we want to assign the wave we lost on to see if it's a high score.
+        {
+            ConfigureEndlessHighScoreLabel();
+        }
     }
 
     void SetupDefeat()
@@ -65,24 +72,29 @@ public class UIMissionCompletePopup : UIPopup
 
         if (GameplayManager.Instance.IsEndlessModeActive()) // We lost in endless mode, we want to assign the wave we lost on to see if it's a high score.
         {
-            m_victoriousWave = GameplayManager.Instance.m_wave;
-            int curHighScore = GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore;
-
-            string endlessHighScorestring;
-
-            if (m_victoriousWave > curHighScore)
-            {
-                // New High Score!
-                endlessHighScorestring = string.Format(m_uiStrings.m_newEndlessHighScore, m_victoriousWave);
-            }
-            else
-            {
-                endlessHighScorestring = string.Format(m_uiStrings.m_currentEndlessHighScore, curHighScore);
-            }
-
-            m_endlessHighScoreLabel.SetText(endlessHighScorestring);
-            m_endlessHighScoreLabel.gameObject.SetActive(true);
+            ConfigureEndlessHighScoreLabel();
         }
+    }
+
+    void ConfigureEndlessHighScoreLabel()
+    {
+        m_victoriousWave = GameplayManager.Instance.m_wave;
+        int curHighScore = GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore;
+
+        string endlessHighScorestring;
+
+        if (m_victoriousWave > curHighScore)
+        {
+            // New High Score!
+            endlessHighScorestring = string.Format(m_uiStrings.m_newEndlessHighScore, m_victoriousWave);
+        }
+        else
+        {
+            endlessHighScorestring = string.Format(m_uiStrings.m_currentEndlessHighScore, curHighScore);
+        }
+
+        m_endlessHighScoreLabel.SetText(endlessHighScorestring);
+        m_endlessHighScoreLabel.gameObject.SetActive(true);
     }
 
     private void OnEndlessModeButtonClicked()

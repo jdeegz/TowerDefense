@@ -47,7 +47,7 @@ public class ProjectileMissile : Projectile
 
     public override void Loaded()
     {
-        Debug.Log($"Missile Loaded");
+        //Debug.Log($"Missile Loaded");
         gameObject.transform.localScale = Vector3.zero;
         gameObject.transform.DOScale(Vector3.one, 0.15f).SetUpdate(true).SetEase(Ease.InOutBounce);
         RequestPlayAudio(m_projectileData.m_reloadClips);

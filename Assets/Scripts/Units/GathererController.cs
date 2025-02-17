@@ -667,6 +667,11 @@ public class GathererController : MonoBehaviour
         if (m_isSelected) RequestPlayAudio(m_gathererData.m_selectedGathererClips);
     }
 
+    public void ReturnToIdle()
+    {
+        RequestedIdle();
+    }
+
     public void Contact()
     {
         if (m_curHarvestNode != null)

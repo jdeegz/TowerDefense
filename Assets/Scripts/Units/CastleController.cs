@@ -177,6 +177,11 @@ public class CastleController : MonoBehaviour
                 .SetUpdate(true);
         }
     }
+    
+    public void HandleSpireDestroyedVFX(bool value)
+    {
+        // TO DO
+    }
 
     private bool m_spireEndlessVFXPlaying;
 

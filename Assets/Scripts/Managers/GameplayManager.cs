@@ -60,6 +60,7 @@ public class GameplayManager : MonoBehaviour
     public Dictionary<TowerData, int> m_unlockedStructures;
     public List<TowerData> m_unlockedTowers;
     private UICombatView m_combatHUD;
+
     public UICombatView CombatHUD
     {
         get { return m_combatHUD; }
@@ -1739,6 +1740,8 @@ public class GameplayManager : MonoBehaviour
 
         if (m_gameplayState == GameplayState.Defeat) return;
 
+        if (m_gameplayState == GameplayState.Victory) return;
+
         if (m_gameplayState == GameplayState.BossWave)
         {
             OnWaveCompleted?.Invoke(m_UIStringData.m_bossWaveComplete);
@@ -1817,26 +1820,26 @@ public class GameplayManager : MonoBehaviour
     {
         // Re-enable the CombatHUD
         CombatHUD.SetCanvasInteractive(true);
-        
+
         // Disable the Gossamer Full Screen effect.
         OnGossamerHealed?.Invoke(false);
-        
+
         // Enable Spire Damage.
         m_castleController.SetCastleInvulnerable(false);
-        
+
         // Disable Obelisk Beams
         foreach (Obelisk obelisk in m_obelisksInMission)
         {
             Debug.Log($"{obelisk.gameObject.name} beam activated.");
             obelisk.HandleSpireBeamVFX(false);
         }
-        
+
         // Disable Spire Beam.
         m_castleController.HandleSpireBeamVFX(false);
-        
+
         // Audio
         RequestPlayAudio(m_gameplayAudioData.m_endlessModeStartedClip);
-        
+
         // Enable Endless Mode bool (used for next victory/defeat display)
         m_endlessModeActive = true;
 
@@ -1964,7 +1967,14 @@ public class GameplayManager : MonoBehaviour
     public void CastleControllerDestroyed()
     {
         //To replace this with playing a cutscene then triggering defeat, or they're the same?
-        UpdateGameplayState(GameplayState.Defeat);
+        if (m_endlessModeActive)
+        {
+            UpdateGameplayState(GameplayState.Victory);
+        }
+        else
+        {
+            UpdateGameplayState(GameplayState.Defeat);
+        }
     }
 
     private void HandleVictorySequence()
@@ -1984,60 +1994,116 @@ public class GameplayManager : MonoBehaviour
     private float m_obeliskToSpireDelay = 2f;
     private float m_killAllEnemiesDelay = 0.8f;
     private float m_displayVictoryUIDelay = 0f;
+    private float m_displayDefeatUIDelay = 0f;
+
     IEnumerator VictorySequence()
     {
         // Disable Spire Damage.
         m_castleController.SetCastleInvulnerable(true);
-        
+
         // Disable Tooltips.
         UITooltipController.Instance.HideAndSuppressToolTips();
-        
+
         // Hide the CombatHUD.
         CombatHUD.SetCanvasInteractive(false);
-        
+
+        // Idle the gatherers
+        foreach (GathererController gatherer in m_woodGathererList)
+        {
+            gatherer.ReturnToIdle();
+        }
+
         // Deactivate Spawners
         foreach (EnemySpawner spawner in m_enemySpawners)
         {
             spawner.DeactivateSpawner();
         }
-        
+
         // Bringing the camera to the Spire.
         CameraController.Instance.RequestOnRailsMove(m_castleController.transform.position + (Vector3.forward * 2), 2f);
         float zoomDestination = CameraController.Instance.m_startZoom + CameraController.Instance.m_maxZoomOut;
         CameraController.Instance.RequestOnRailsZoom(zoomDestination, 2f);
-        
+
         // Begin to slow gameplay.
-        DOTween.To(() => Time.timeScale, x => Time.timeScale = x, .2f, m_obeliskToSpireDelay).SetUpdate(true);
-        
+        DOTween.To(() => Time.timeScale, x => Time.timeScale = x, .2f, m_obeliskToSpireDelay).SetUpdate(true).OnComplete(() => Debug.Log($"Time Scale: 0.2"));
+
         // Enable the beams that connect the Obelisks to Spire.
         foreach (Obelisk obelisk in m_obelisksInMission)
         {
             obelisk.HandleSpireBeamVFX(true);
         }
-        
+
         // Wait for the Obelisk beams to connect to the spire.
         yield return new WaitForSecondsRealtime(m_obeliskToSpireDelay);
-        
+
         // Enable the Spire's Beam
         m_castleController.HandleSpireBeamVFX(true);
-        
+
         // Enable the Endless spire vfx (persists if we go into endless mode)
         m_castleController.HandleSpireEndlessVFX(true);
-        
+
         // Remove all enemies from the map.
-        Time.timeScale = 1;
         yield return new WaitForSecondsRealtime(m_killAllEnemiesDelay);
+        Debug.Log($"Time Scale: 1");
+        Time.timeScale = 1;
         KillAllEnemies();
-        
+
         // Enable the Gossamer Fullscreen effect
         OnGossamerHealed?.Invoke(true);
-        
+
         // Wait a beat after killing enemies to display the victory UI.
         yield return new WaitForSecondsRealtime(m_displayVictoryUIDelay);
-        
+
         // Display the Victory UI.
         UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
-        
+
+        // Restore Tooltips
+        UITooltipController.Instance.UnsuppressToolTips();
+    }
+
+    IEnumerator DefeatSequence()
+    {
+        // Disable Spire Damage.
+        m_castleController.SetCastleInvulnerable(true);
+
+        // Disable Tooltips.
+        UITooltipController.Instance.HideAndSuppressToolTips();
+
+        // Hide the CombatHUD.
+        CombatHUD.SetCanvasInteractive(false);
+
+        // Idle the gatherers
+        foreach (GathererController gatherer in m_woodGathererList)
+        {
+            gatherer.ReturnToIdle();
+        }
+
+        // Deactivate Spawners
+        foreach (EnemySpawner spawner in m_enemySpawners)
+        {
+            spawner.DeactivateSpawner();
+        }
+
+        // Bringing the camera to the Spire.
+        CameraController.Instance.RequestOnRailsMove(m_castleController.transform.position + (Vector3.forward * 1), 2f);
+        float zoomDestination = CameraController.Instance.m_startZoom + CameraController.Instance.m_maxZoomIn;
+        CameraController.Instance.RequestOnRailsZoom(zoomDestination, 2f);
+
+        // Begin to slow gameplay.
+        DOTween.To(() => Time.timeScale, x => Time.timeScale = x, .2f, m_obeliskToSpireDelay).SetUpdate(true);
+
+        // Blow up the Spire
+        m_castleController.HandleSpireDestroyedVFX(true);
+
+        // Enable the Gossamer Fullscreen effect
+        OnSpireDestroyed?.Invoke(true);
+
+        // Wait a beat after killing enemies to display the victory UI.
+        yield return new WaitForSecondsRealtime(m_displayDefeatUIDelay);
+
+        // Display the Victory UI.
+        UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
+
         // Restore Tooltips
         UITooltipController.Instance.UnsuppressToolTips();
     }
