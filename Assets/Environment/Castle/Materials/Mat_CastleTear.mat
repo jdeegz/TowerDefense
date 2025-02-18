@@ -7,32 +7,29 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Rupture
-  m_Shader: {fileID: -6465566751694194690, guid: bffce137e06495c42b62ff2ab034d292, type: 3}
+  m_Name: Mat_CastleTear
+  m_Shader: {fileID: -6465566751694194690, guid: a16a58ffee92e1a4ca175a7b5fb82754, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _RECEIVE_SHADOWS_OFF
+  - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords: []
-  m_LightmapFlags: 2
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3002
   stringTagMap:
-    RenderType: Opaque
+    RenderType: Transparent
   disabledShaderPasses:
-  - SHADOWCASTER
   - MOTIONVECTORS
+  - DepthOnly
+  - SHADOWCASTER
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _DiffuseTexture:
-        m_Texture: {fileID: 2800000, guid: 021c1f34acc0935439b95955c254550e, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _Texture2DAsset_0d8b0dda5afd4986993e548d1678da2f_Out_0_Texture2D:
-        m_Texture: {fileID: 2800000, guid: 5c26dccc5d744104b8c8e1733d4ad1b0, type: 3}
+    - _MaskShape:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -54,26 +51,43 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _CastShadows: 0
+    - _CoreBrightness: 0.33
+    - _CoreScale: 0.16
     - _Cull: 2
-    - _DstBlend: 0
-    - _GlowPower: 0.65
+    - _DistortIntensity: 0.365
+    - _DistortScale: 10
+    - _DstBlend: 10
+    - _EdgeNoiseScale: 25
+    - _EdgePadding: 0.2
+    - _EdgeSoftness: 0.2
+    - _NoiseScale: 100
+    - _Padding: 1
+    - _PortalCenterOffset: 0.5
     - _QueueControl: 0
-    - _QueueOffset: 0
-    - _ReceiveShadows: 0
-    - _SrcBlend: 1
-    - _Surface: 0
-    - _WorkflowMode: 1
+    - _QueueOffset: 2
+    - _ReceiveShadows: 1
+    - _Softness: 0.15
+    - _SrcBlend: 5
+    - _Surface: 1
+    - _WorkflowMode: 0
     - _ZTest: 4
-    - _ZWrite: 1
+    - _ZWrite: 0
     - _ZWriteControl: 0
     m_Colors:
-    - _DiffuseColor: {r: 4, g: 1.43291, b: 0, a: 0}
-    - _DiffuseScrollSpeed: {r: 0, g: 0.1, b: 0, a: 0}
-    - _DiffuseTiling: {r: 0.1, g: 0.1, b: 0, a: 0}
-    - _GlowColor: {r: 2, g: 0.716455, b: 0, a: 0}
+    - _Color: {r: 0, g: 0, b: 0, a: 0}
+    - _DiffuseScale: {r: 6, g: 6, b: 0, a: 0}
+    - _DiffuseScrollSpeed: {r: -0.01, g: -0.01, b: 0, a: 0}
+    - _DistortScrollSpeed: {r: 0.01, g: 0.01, b: 0, a: 0}
+    - _EdgeScrollSpeed: {r: -1, g: 1, b: 0, a: 0}
+    - _PortalDistortScrollSpeed: {r: 1, g: 1, b: 0, a: 0}
+    - _PortalScrollSpeed: {r: -1, g: -1, b: 0, a: 0}
+    - _PortalScrollSpeed_1: {r: -0.05, g: 0, b: 0, a: 0}
+    - _ScrollSpeed: {r: -0.01, g: 0, b: 0, a: 0}
+    - _ScrollSpeed_1: {r: -0.1, g: 0, b: 0, a: 0}
+    - _StreakScale: {r: 6, g: 6, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &7943849833143517464
+--- !u!114 &1408250630501511942
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

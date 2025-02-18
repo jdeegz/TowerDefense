@@ -19,4 +19,6 @@ public class CastleData : ScriptableObject
     public List<AudioClip> m_healthLostClips;
     public AudioClip m_repairingClip;
     public AudioClip m_destroyedClip;
+    public GameObject m_destoyedVFX;
+    public GameObject m_destoyedTearVFX;
 }

@@ -137,6 +137,7 @@ public class Obelisk : MonoBehaviour
         switch (m_obeliskState)
         {
             case ObeliskState.Charging:
+                if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Defeat) return; // Don't increment if the game is over. (Edge case handling)
                 if (m_curChargeCount >= m_maxChargeCount) return; // Dont increment if we're capped.
 
                 m_curChargeCount += i;

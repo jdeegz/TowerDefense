@@ -6,7 +6,6 @@ using UnityEngine.VFX;
 
 public class Dissolvable : MonoBehaviour
 {
-    public VisualEffect m_deathVFX;
     private List<Material> m_materials;
     private float m_dissolveDuration = 0.66f;
 

@@ -207,14 +207,22 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     public void ReachedCastle()
     {
-        DamageCastle();
+        if (GameplayManager.Instance.m_castleController.GetCastleCurHealth() > 0)
+        {
+            DamageCastle();
+        }
+
         OnEnemyDestroyed(transform.position);
-        DestroyEnemy?.Invoke(transform.position);
     }
 
     public virtual void DamageCastle()
     {
         GameplayManager.Instance.m_castleController.TakeDamage(1);
+        
+        if (m_enemyData.m_attackSpireVFXPrefab)
+        {
+            ObjectPoolManager.SpawnObject(m_enemyData.m_attackSpireVFXPrefab, transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
+        }
     }
 
     void FixedUpdate()
@@ -506,8 +514,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         m_isComplete = true;
         m_isActive = false;
 
-        //Kind of hacky, but this prevents towers from continuing to hit units that reach the castle.
-        m_curHealth = 0;
+        
 
         if (m_curCell != null)
         {
@@ -533,9 +540,9 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
                 obeliskSoul.SetupSoul(m_closestObelisk.m_targetPoint.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
             }
-            else if (m_deathVFX)
+            else if (m_enemyData.m_deathVFXPrefab)
             {
-                ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+                ObjectPoolManager.SpawnObject(m_enemyData.m_deathVFXPrefab.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
             }
         }
 
@@ -561,6 +568,9 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
+        
+        //Kind of hacky, but this prevents towers from continuing to hit units that reach the castle.
+        m_curHealth = 0;
 
         StartDissolve(RemoveObject);
     }
@@ -678,6 +688,11 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public void SetEnemyActive(bool active) //Used to halt this unit from functioning. (Trojan created enemies)
     {
         m_isActive = active;
+
+        if (!m_isActive)
+        {
+            m_animator.SetFloat("Speed", .2f);
+        }
     }
 
     //Status Effect

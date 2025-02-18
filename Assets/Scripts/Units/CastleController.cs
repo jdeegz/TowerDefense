@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.VFX;
@@ -13,6 +14,8 @@ public class CastleController : MonoBehaviour
 
     [SerializeField] public List<GameObject> m_castleEntrancePoints;
     [SerializeField] private List<Renderer> m_spireRenderers;
+    [SerializeField] private Renderer m_spireTopRenderer;
+    [SerializeField] private GameObject m_castleModelRoot;
     public VisualEffect m_spireBeamVFX;
     public VisualEffect m_spireEndlessVFX;
     private List<Color> m_allOrigColors;
@@ -26,7 +29,10 @@ public class CastleController : MonoBehaviour
     private float m_repairElapsedTime;
     private int m_healthRepaired = 0;
     private bool m_isInvulnerable;
-
+    private List<Material> m_spireMaterials;
+    private Material m_spireTopMaterial;
+    private float m_spireTopStartDissolve;
+    
     public event Action<int> UpdateHealth;
     public event Action<int> UpdateMaxHealth;
     public event Action DestroyCastle;
@@ -49,10 +55,15 @@ public class CastleController : MonoBehaviour
         m_audioSource = GetComponent<AudioSource>();
 
         m_allOrigColors = new List<Color>();
+        m_spireMaterials = new List<Material>();
         foreach (Renderer renderer in m_spireRenderers)
         {
+            m_spireMaterials.Add(renderer.material);
             m_allOrigColors.Add(renderer.material.GetColor("_EmissionColor"));
         }
+
+        m_spireTopMaterial = m_spireTopRenderer.material;
+        m_spireTopStartDissolve = m_spireTopMaterial.GetFloat("_DissolveValue");
     }
 
     void OnBankUpdated(int amount, int total)
@@ -167,20 +178,50 @@ public class CastleController : MonoBehaviour
 
         if (m_spireBeamVFXIsPlaying)
         {
+            
             m_spireBeamVFX.Play();
         }
         else // Triggered when going Endless.
         {
+            m_spireBeamVFX.Reinit();
             m_spireBeamVFX.Stop();
-            DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, 0f, .33f)
+            /*DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, 0f, .33f)
                 .OnUpdate(() => m_spireBeamVFX.SetFloat("BeamWidth", m_curBeamWidth))
-                .SetUpdate(true);
+                .SetUpdate(true);*/
         }
     }
-    
-    public void HandleSpireDestroyedVFX(bool value)
+
+    private float m_curSpireDestroyedDissolve;
+    private float m_spireDestroyDuration = 5f;
+    public void HandleSpireDestroyedVFX()
     {
-        // TO DO
+        gameObject.GetComponent<Collider>().enabled = false;
+        
+        ObjectPoolManager.SpawnObject(m_castleData.m_destoyedTearVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        
+        //Dissolve Spire
+        DOTween.To(() => 0f, x => SetDissolveValue(x), 1f, (m_spireDestroyDuration - 0.5f) * 0.8f)
+            .SetDelay(0.5f)
+            .SetUpdate(true)
+            .SetEase(Ease.InSine);
+        
+        ObjectPoolManager.SpawnObject(m_castleData.m_destoyedVFX, transform.position, quaternion.identity, m_castleModelRoot.transform, ObjectPoolManager.PoolType.ParticleSystem);
+        
+        //Lift Castle object
+        m_castleModelRoot.transform.DOLocalMove(new Vector3(0, 2, 0), m_spireDestroyDuration).SetUpdate(true).SetEase(Ease.InSine);
+        m_castleModelRoot.transform.DOLocalRotate(new Vector3(0, Random.Range(-45, 45), Random.Range(-50, 50)), m_spireDestroyDuration).SetUpdate(true).SetEase(Ease.InSine);
+    }
+
+    private float m_curSpireTopDissolveValue;
+    void SetDissolveValue(float value)
+    {
+        foreach (Material material in m_spireMaterials)
+        {
+            material.SetFloat("_AlphaClipThreshold", value);
+        }
+
+        m_curSpireTopDissolveValue = Mathf.Lerp(m_spireTopStartDissolve, 1, value);
+        m_spireTopMaterial.SetFloat("_DissolveValue", m_curSpireTopDissolveValue);
     }
 
     private bool m_spireEndlessVFXPlaying;

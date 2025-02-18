@@ -251,6 +251,10 @@ public class FullscreenEffectController : MonoBehaviour
             m_curSpireDestroyedDissolve -= Time.unscaledDeltaTime / m_missionCompleteDefeatAppearDuration;
             if (m_curSpireDestroyedDissolve < 0) m_curSpireDestroyedDissolve = 0;
             m_matMissionCompleteDefeat.SetFloat("_Dissolve", m_curSpireDestroyedDissolve);
+            
+            m_vignette.intensity.value = Mathf.Lerp(m_vignetteIntensityMax, m_vignetteIntensityMin, m_curSpireDestroyedDissolve);
+            m_vignette.smoothness.value = Mathf.Lerp(m_vignetteSmoothnessMax, m_vignetteSmoothnessMin, m_curSpireDestroyedDissolve);
+            m_vignette.center.value = Vector2.Lerp(m_vignettePositionMax, m_vignettePositionMin, m_curSpireDestroyedDissolve);
             yield return null;
         }
 
@@ -265,6 +269,10 @@ public class FullscreenEffectController : MonoBehaviour
             m_curSpireDestroyedDissolve += Time.unscaledDeltaTime / m_missionCompleteDefeatDissolveDuration;
             if (m_curSpireDestroyedDissolve > 1f) m_curSpireDestroyedDissolve = 1;
             m_matMissionCompleteDefeat.SetFloat("_Dissolve", m_curSpireDestroyedDissolve);
+            
+            m_vignette.intensity.value = Mathf.Lerp(m_vignetteIntensityMax, m_vignetteIntensityMin, m_curSpireDestroyedDissolve);
+            m_vignette.smoothness.value = Mathf.Lerp(m_vignetteSmoothnessMax, m_vignetteSmoothnessMin, m_curSpireDestroyedDissolve);
+            m_vignette.center.value = Vector2.Lerp(m_vignettePositionMax, m_vignettePositionMin, m_curSpireDestroyedDissolve);
             yield return null;
         }
 

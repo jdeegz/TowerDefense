@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using Unity.VisualScripting;
+using UnityEngine.Serialization;
 using Sequence = DG.Tweening.Sequence;
 
 public class UIMissionCompletePopup : UIPopup
@@ -13,8 +14,11 @@ public class UIMissionCompletePopup : UIPopup
     [SerializeField] private Button m_exitButton;
     [SerializeField] private Button m_endlessModeButton;
     [SerializeField] private Button m_retryButton;
+    [SerializeField] private CanvasGroup m_victoryCanvasGroup;
+    [SerializeField] private CanvasGroup m_defeatCanvasGroup;
 
-    public TextMeshProUGUI m_resultLabel;
+    public TextMeshProUGUI m_victoryResultLabel;
+    public TextMeshProUGUI m_defeatResultLabel;
     public TextMeshProUGUI m_endlessHighScoreLabel;
     public UIStringData m_uiStrings;
 
@@ -27,7 +31,6 @@ public class UIMissionCompletePopup : UIPopup
         m_exitButton.onClick.AddListener(OnExitButtonClicked);
         m_endlessModeButton.onClick.AddListener(OnEndlessModeButtonClicked);
         m_retryButton.onClick.AddListener(OnRetryButtonClicked);
-        
     }
 
     public override void HandleShow()
@@ -35,6 +38,8 @@ public class UIMissionCompletePopup : UIPopup
         base.HandleShow();
 
         m_endlessHighScoreLabel.gameObject.SetActive(false);
+        m_defeatCanvasGroup.alpha = 0;
+        m_victoryCanvasGroup.alpha = 0;
         
         GameplayManager.GameplayState curState = GameplayManager.Instance.m_gameplayState;
 
@@ -55,7 +60,8 @@ public class UIMissionCompletePopup : UIPopup
     void SetupVictory()
     {
         Debug.Log($"Setup Victory UI");
-        m_resultLabel.SetText(m_uiStrings.m_victory);
+        m_victoryCanvasGroup.alpha = 1;
+        m_victoryResultLabel.SetText(m_uiStrings.m_victory);
         m_endlessModeButton.gameObject.SetActive(!GameplayManager.Instance.IsEndlessModeActive() && GameplayManager.Instance.m_gameplayData.m_allowEndlessMode);
 
         if (GameplayManager.Instance.IsEndlessModeActive() && GameplayManager.Instance.m_gameplayData.m_allowEndlessMode) // We lost in endless mode, we want to assign the wave we lost on to see if it's a high score.
@@ -66,8 +72,9 @@ public class UIMissionCompletePopup : UIPopup
 
     void SetupDefeat()
     {
+        m_defeatCanvasGroup.alpha = 1;
         Debug.Log($"Setup Defeat UI");
-        m_resultLabel.SetText(m_uiStrings.m_defeat);
+        m_victoryResultLabel.SetText(m_uiStrings.m_defeat);
         m_endlessModeButton.gameObject.SetActive(false);
 
         if (GameplayManager.Instance.IsEndlessModeActive()) // We lost in endless mode, we want to assign the wave we lost on to see if it's a high score.

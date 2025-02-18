@@ -869,7 +869,7 @@ public class GameplayManager : MonoBehaviour
                 if (m_endlessModeActive) wave = m_wave - 1;
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
 
-                UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
+                HandleDefeatSequence();
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -1847,6 +1847,9 @@ public class GameplayManager : MonoBehaviour
         //m_gameplayState = m_preVictoryState; // Resume the previous state from where victory / endless came from
         UpdateGameplayState(GameplayState.Build);
         UpdateInteractionState(InteractionState.Idle);
+
+        // Disable FFW
+        if(m_playbackSpeed == 2) UpdateGameSpeed();
     }
 
     public bool IsEndlessModeActive()
@@ -1981,6 +1984,11 @@ public class GameplayManager : MonoBehaviour
     {
         m_victorySequence = StartCoroutine(VictorySequence());
     }
+    
+    private void HandleDefeatSequence()
+    {
+        m_defeatSequence = StartCoroutine(DefeatSequence());
+    }
 
     private void StopVictorySequence()
     {
@@ -1994,10 +2002,12 @@ public class GameplayManager : MonoBehaviour
     private float m_obeliskToSpireDelay = 2f;
     private float m_killAllEnemiesDelay = 0.8f;
     private float m_displayVictoryUIDelay = 0f;
-    private float m_displayDefeatUIDelay = 0f;
+    private float m_displayDefeatUIDelay = 2.5f;
 
     IEnumerator VictorySequence()
     {
+        UpdateInteractionState(InteractionState.Disabled);
+        
         // Disable Spire Damage.
         m_castleController.SetCastleInvulnerable(true);
 
@@ -2061,8 +2071,12 @@ public class GameplayManager : MonoBehaviour
         UITooltipController.Instance.UnsuppressToolTips();
     }
 
+    private Coroutine m_defeatSequence;
+    private float m_cameraMoveDuration = 2f;
     IEnumerator DefeatSequence()
     {
+        UpdateInteractionState(InteractionState.Disabled);
+        
         // Disable Spire Damage.
         m_castleController.SetCastleInvulnerable(true);
 
@@ -2071,11 +2085,25 @@ public class GameplayManager : MonoBehaviour
 
         // Hide the CombatHUD.
         CombatHUD.SetCanvasInteractive(false);
+        
+        // Assure we're at Time Scale 1.
+        DOTween.To(() => Time.timeScale, x => Time.timeScale = x, 1f, 3).SetUpdate(true);
 
         // Idle the gatherers
         foreach (GathererController gatherer in m_woodGathererList)
         {
             gatherer.ReturnToIdle();
+        }
+        
+        // Disable Living enemies.
+        foreach (EnemyController enemyController in m_enemyList)
+        {
+            enemyController.SetEnemyActive(false);
+        }
+        
+        foreach (EnemyController enemyController in m_enemyBossList)
+        {
+            enemyController.SetEnemyActive(false);
         }
 
         // Deactivate Spawners
@@ -2085,15 +2113,15 @@ public class GameplayManager : MonoBehaviour
         }
 
         // Bringing the camera to the Spire.
-        CameraController.Instance.RequestOnRailsMove(m_castleController.transform.position + (Vector3.forward * 1), 2f);
+        CameraController.Instance.RequestOnRailsMove(m_castleController.transform.position + (Vector3.forward * 2), m_cameraMoveDuration);
         float zoomDestination = CameraController.Instance.m_startZoom + CameraController.Instance.m_maxZoomIn;
-        CameraController.Instance.RequestOnRailsZoom(zoomDestination, 2f);
+        CameraController.Instance.RequestOnRailsZoom(zoomDestination, m_cameraMoveDuration);
 
-        // Begin to slow gameplay.
-        DOTween.To(() => Time.timeScale, x => Time.timeScale = x, .2f, m_obeliskToSpireDelay).SetUpdate(true);
+        // Wait for camera position
+        yield return new WaitForSecondsRealtime(m_cameraMoveDuration * .5f);
 
         // Blow up the Spire
-        m_castleController.HandleSpireDestroyedVFX(true);
+        m_castleController.HandleSpireDestroyedVFX();
 
         // Enable the Gossamer Fullscreen effect
         OnSpireDestroyed?.Invoke(true);

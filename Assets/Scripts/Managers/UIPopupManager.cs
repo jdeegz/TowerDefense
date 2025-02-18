@@ -109,7 +109,6 @@ public class UIPopupManager : MonoBehaviour
     {
         //Debug.Log($"Trying to pause game.");
         OnPopupManagerPopupsOpen?.Invoke(true);
-        
     }
 
     public void ResumeGameplay()

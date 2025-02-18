@@ -54,6 +54,11 @@ public abstract class Tower : MonoBehaviour
 
     public virtual void GameplayStateChanged(GameplayManager.GameplayState newState)
     {
+        if (newState == GameplayManager.GameplayState.Defeat)
+        {
+            m_audioSource.enabled = false;
+            RequestTowerDisable();
+        }
     }
 
     public virtual void RequestTowerDisable()

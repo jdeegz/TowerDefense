@@ -161,9 +161,9 @@ public class EnemySwarmMember : EnemyController
 
         m_curHealth = 0;
 
-        if (m_deathVFX)
+        if (m_enemyData.m_deathVFXPrefab)
         {
-            ObjectPoolManager.SpawnObject(m_deathVFX.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+            ObjectPoolManager.SpawnObject(m_enemyData.m_deathVFXPrefab.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
 
         //Return effects to pool.

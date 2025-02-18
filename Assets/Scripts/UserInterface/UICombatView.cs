@@ -57,9 +57,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private Image m_castleRepairFill;
     [SerializeField] private Image m_survivalWaveDurationFill;
 
-    [Header("Scene References")]
-    [SerializeField] private UIOptionsPopup m_menuObj;
-
     private bool m_buttonsActivated = true;
     private float m_timeToNextWave;
     private int m_curCastleHealth;
@@ -87,8 +84,8 @@ public class UICombatView : MonoBehaviour
     void Awake()
     {
         m_canvasGroup.alpha = 0;
-        GameplayManager.Instance.CombatHUD = this;
-
+        
+        
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnGamePlaybackChanged += GameplayPlaybackChanged;
         GameplayManager.OnGameSpeedChanged += GameplaySpeedChanged;
@@ -334,6 +331,7 @@ public class UICombatView : MonoBehaviour
             .OnComplete(() => m_canvasGroup.alpha = alpha);
 
         m_canvasGroup.interactable = value;
+        m_buttonsActivated = value;
     }
 
     void HandleHighScoreLabel()
@@ -381,7 +379,8 @@ public class UICombatView : MonoBehaviour
 
     private void ToggleButtonInteractivity(bool b)
     {
-        // if b is true, we disable buttons.
+        //b is true when Popups are OPEN. so we want to set interactivity to FALSE.
+        
         m_buttonsActivated = !b;
         if (m_buttons != null)
         {
@@ -395,6 +394,7 @@ public class UICombatView : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GameplayManager.Instance.CombatHUD = this;
         m_castleController = GameplayManager.Instance.m_castleController;
         m_castleController.UpdateHealth += UpdateCastleHealthDisplay;
         m_castleController.UpdateMaxHealth += UpdateCastleMaxHealthDisplay;

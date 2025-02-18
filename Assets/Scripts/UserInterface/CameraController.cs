@@ -319,6 +319,9 @@ public class CameraController : MonoBehaviour
     public void RequestOnRailsMove(Vector3 pos, float duration)
     {
         m_onMoveRails = true;
+        // Clamp the new position to stay within bounds
+        pos.x = Mathf.Clamp(pos.x, m_minXBounds, m_maxXBounds);
+        pos.z = Mathf.Clamp(pos.z, m_minZBounds, m_maxZBounds);
         m_railsMoveDestination = pos;
         m_railsMoveDuration = duration;
         m_railsMoveElapsedTIme = 0;
@@ -328,7 +331,7 @@ public class CameraController : MonoBehaviour
 
     void HandleOnRailsMovement()
     {
-        if (Vector3.Distance(transform.position, m_railsMoveDestination) <= m_stoppingDistance)
+        if (Vector3.Distance(transform.position, m_railsMoveDestination) <= m_stoppingDistance || m_railsMoveElapsedTIme >= m_railsMoveDuration)
         {
             m_onMoveRails = false;
         }
@@ -339,11 +342,7 @@ public class CameraController : MonoBehaviour
         // Lerp towards the destination
         float curveT = m_railsMoveCurve.Evaluate(t);
         Vector3 newPos = Vector3.Lerp(m_railsMoveStartPosition, m_railsMoveDestination, curveT);
-
-        Mathf.Clamp(newPos.x, m_minXBounds, m_maxXBounds);
-        Mathf.Clamp(newPos.z, m_minZBounds, m_maxZBounds);
-
-        transform.position = newPos;
+        SetCameraControllerPosition(newPos);
     }
 
     void CancelOnRailsMove()
@@ -385,7 +384,7 @@ public class CameraController : MonoBehaviour
 
         // Are we there yet?
         float currentZoomLevel = m_camera.gameObject.transform.localPosition.z;
-        if (Mathf.Abs(currentZoomLevel - m_railsZoomDestination) <= m_stoppingDistance)
+        if (Mathf.Abs(currentZoomLevel - m_railsZoomDestination) <= m_stoppingDistance || m_railsZoomElapsedTIme >= m_railsZoomDuration)
         {
             m_onZoomRails = false;
         }

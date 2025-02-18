@@ -28,6 +28,7 @@ public class EnemyData : ScriptableObject
     [Header("VFX")]
     public GameObject m_spawnVFXPrefab;
     public GameObject m_deathVFXPrefab;
+    public GameObject m_attackSpireVFXPrefab;
     public GameObject m_teleportDepartureVFX;
     public GameObject m_teleportArrivalVFX;
 
