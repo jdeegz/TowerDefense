@@ -99,13 +99,9 @@ public class ShrineOrbController : MonoBehaviour
 
     private Vector3 GetNewDestination()
     {
-        Vector3 pos = m_spawnPoint;
-
-        pos.x = Random.Range(m_spawnPoint.x - m_radius, m_spawnPoint.x + m_radius);
-        pos.y = Random.Range(m_spawnPoint.y, m_spawnPoint.y + m_radius);
-        pos.z = Random.Range(m_spawnPoint.z - m_radius, m_spawnPoint.z + m_radius);
-        
-        return pos;
+        Vector3 newPos = m_spawnPoint + Random.insideUnitSphere * m_radius;
+        newPos.y = m_spawnPoint.y;
+        return newPos;
     }
 
     private void OnDestroy()

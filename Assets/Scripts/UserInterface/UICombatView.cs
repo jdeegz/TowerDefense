@@ -322,11 +322,11 @@ public class UICombatView : MonoBehaviour
         m_nextWaveButton.gameObject.SetActive(state == GameplayManager.GameplayState.Build && !GameplayManager.Instance.m_delayForQuest);
     }
 
-    public void SetCanvasInteractive(bool value)
+    public void SetCanvasInteractive(bool value, float duration = 0.33f)
     {
         float alpha = 0;
         if (value) alpha = 1;
-        m_canvasGroup.DOFade(alpha, 0.33f)
+        m_canvasGroup.DOFade(alpha, duration)
             .SetUpdate(true)
             .OnComplete(() => m_canvasGroup.alpha = alpha);
 

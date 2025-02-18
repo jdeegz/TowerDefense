@@ -33,14 +33,10 @@ public class CellOoze : MonoBehaviour
     private float m_curDissolve = 1;
     private bool m_isActive = false;
     private float m_timeElapsed;
-
-    void Awake()
-    {
-        m_collider.enabled = false;
-    }
     
     public void OnEnable()
     {
+        m_collider.enabled = false;
         m_activeOozeProjectileObj = null;
         m_activeCellOozeObj = null;
         m_activeTowerDisableObj = null;
@@ -72,12 +68,12 @@ public class CellOoze : MonoBehaviour
 
         if (m_timeElapsed >= m_oozeLifetime)
         {
-            m_isActive = false;
             Debug.Log($"Ooze Timer Hit, removing ooze.");
             RemoveOoze();
         }
     }
 
+    private Tween m_spawnTween;
     public void SetOozeCell(Cell cell)
     {
         m_cell = cell;
@@ -86,7 +82,7 @@ public class CellOoze : MonoBehaviour
         
         RequestPlayAudio(m_audioCreatedClips, m_audioSource);
         
-        gameObject.transform.DOJump(m_goalPos, 4, 1, 2f)
+        m_spawnTween = gameObject.transform.DOJump(m_goalPos, 4, 1, 2f)
             .SetEase(animationCurve)
             .OnComplete(() =>
             {
@@ -100,6 +96,8 @@ public class CellOoze : MonoBehaviour
     
     void SetupOoze()
     {
+        if (!m_isActive) return;
+        
         //What Cell am I on?
         m_cell.UpdateBuildRestrictedValue(true);
         
@@ -112,16 +110,15 @@ public class CellOoze : MonoBehaviour
     void RemoveOoze()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
+        m_isActive = false;
+        m_spawnTween.Kill(false);
         m_cell.UpdateBuildRestrictedValue(false);
         m_collider.enabled = false;
         
         if(m_activeOozeProjectileObj) ObjectPoolManager.ReturnObjectToPool(m_activeOozeProjectileObj);
-        if (m_activeCellOozeObj)
-        {
-            Debug.Log($"Returning cell Ooze to Pool.");
-            ObjectPoolManager.ReturnObjectToPool(m_activeCellOozeObj);
-        }
+        if (m_activeCellOozeObj) ObjectPoolManager.ReturnObjectToPool(m_activeCellOozeObj);
         if(m_activeTowerDisableObj) ObjectPoolManager.ReturnObjectToPool(m_activeTowerDisableObj);
+        if(m_disabledTower) m_disabledTower.RequestTowerEnable();
         
         ObjectPoolManager.ReturnObjectToPool(gameObject);
     }
@@ -135,13 +132,13 @@ public class CellOoze : MonoBehaviour
         audioSource.PlayOneShot(clips[i]);
     }
 
-    
+    private Tower m_disabledTower;
     private void OnTriggerEnter(Collider other)
     {
-        Tower tower = other.gameObject.GetComponent<Tower>();
-        if (tower)
+        m_disabledTower = other.gameObject.GetComponent<Tower>();
+        if (m_disabledTower && m_disabledTower.GetTowerData().m_buildingSize == Vector2Int.one)
         {
-            tower.RequestTowerDisable();
+            m_disabledTower.RequestTowerDisable();
             m_activeTowerDisableObj = ObjectPoolManager.SpawnObject(m_towerDisableObj, transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
 
@@ -149,16 +146,6 @@ public class CellOoze : MonoBehaviour
         if (node)
         {
             node.OnDepletion(false);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        Tower tower = other.gameObject.GetComponent<Tower>();
-        if (tower)
-        {
-            if(m_activeTowerDisableObj) ObjectPoolManager.ReturnObjectToPool(m_activeTowerDisableObj);
-            tower.RequestTowerEnable();
         }
     }
 

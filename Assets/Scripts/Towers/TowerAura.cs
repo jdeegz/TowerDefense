@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using DG.Tweening;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -120,7 +121,7 @@ public class TowerAura : Tower
     void StartDome()
     {
         //Start Effects
-        var m_auraobj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_modelRoot.transform);
+        var m_auraobj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, transform.position, quaternion.identity, m_modelRoot.transform, ObjectPoolManager.PoolType.ParticleSystem);
         m_auraVFX = m_auraobj.GetComponent<VisualEffect>();
         m_auraVFX.Play();
         DOTween.To(() => m_curDissolve, x => m_curDissolve = x, 0f, 3f)

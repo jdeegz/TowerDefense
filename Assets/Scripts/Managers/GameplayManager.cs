@@ -1936,19 +1936,23 @@ public class GameplayManager : MonoBehaviour
 
         //Set speed to paused
         UpdateGamePlayback(GameSpeed.Paused);
+        
+        m_combatHUD.SetCanvasInteractive(false, 0.1f);
 
-        // Disable Lights
+        /*// Disable Lights
         m_lights = FindObjectsOfType<Light>();
 
         // Loop through each light and disable it
         foreach (Light light in m_lights)
         {
             light.enabled = false;
-        }
+        }*/
     }
 
     public void DoneWatchingLeaveCutScene()
     {
+        m_combatHUD.SetCanvasInteractive(true);
+        
         //Set interaction to disabled
         UpdateInteractionState(InteractionState.Idle);
 
@@ -1957,11 +1961,11 @@ public class GameplayManager : MonoBehaviour
 
         m_watchingCutScene = false;
 
-        // Loop through each light and re-enable it
+        /*// Loop through each light and re-enable it
         foreach (Light light in m_lights)
         {
             light.enabled = true;
-        }
+        }*/
 
         OnCutSceneEnd?.Invoke();
     }
