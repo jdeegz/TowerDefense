@@ -863,7 +863,7 @@ public class GameplayManager : MonoBehaviour
                 HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
-                RequestPlayAudio(m_gameplayAudioData.m_defeatClip);
+                
 
                 int wave = 0;
                 if (m_endlessModeActive) wave = m_wave - 1;
@@ -1806,7 +1806,6 @@ public class GameplayManager : MonoBehaviour
 
         if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
         {
-            RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
             UpdateGameplayState(GameplayState.Victory);
             return;
         }
@@ -2066,6 +2065,9 @@ public class GameplayManager : MonoBehaviour
 
         // Display the Victory UI.
         UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
+        
+        // Play Victory Stinger
+        RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
 
         // Restore Tooltips
         UITooltipController.Instance.UnsuppressToolTips();
@@ -2129,6 +2131,9 @@ public class GameplayManager : MonoBehaviour
         // Wait a beat after killing enemies to display the victory UI.
         yield return new WaitForSecondsRealtime(m_displayDefeatUIDelay);
 
+        // Play Defeat Stinger
+        RequestPlayAudio(m_gameplayAudioData.m_defeatClip);
+        
         // Display the Victory UI.
         UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
 

@@ -178,7 +178,7 @@ public class CastleController : MonoBehaviour
 
         if (m_spireBeamVFXIsPlaying)
         {
-            
+            RequestPlayAudio(m_castleData.m_spireBeamExplosionClip);
             m_spireBeamVFX.Play();
         }
         else // Triggered when going Endless.
@@ -204,6 +204,8 @@ public class CastleController : MonoBehaviour
             .SetDelay(0.5f)
             .SetUpdate(true)
             .SetEase(Ease.InSine);
+        
+        RequestPlayAudio(m_castleData.m_destroyedClip);
         
         ObjectPoolManager.SpawnObject(m_castleData.m_destoyedVFX, transform.position, quaternion.identity, m_castleModelRoot.transform, ObjectPoolManager.PoolType.ParticleSystem);
         

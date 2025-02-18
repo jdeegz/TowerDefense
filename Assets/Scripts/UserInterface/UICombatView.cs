@@ -331,6 +331,7 @@ public class UICombatView : MonoBehaviour
             .OnComplete(() => m_canvasGroup.alpha = alpha);
 
         m_canvasGroup.interactable = value;
+        m_canvasGroup.blocksRaycasts = value;
         m_buttonsActivated = value;
     }
 

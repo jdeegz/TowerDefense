@@ -18,6 +18,9 @@ public class SettingsManager : MonoBehaviour
 
         float sfxVol = GameSettings.SFXVolumeValue;
         TryChangeSFXVolume(sfxVol);
+
+        bool dynamicTooltip = GameSettings.DynamicToolTipsEnabled;
+        ToggleDynamicTooltip(dynamicTooltip);
     }
 
     void TryChangeMasterVolume(float value)
@@ -33,5 +36,10 @@ public class SettingsManager : MonoBehaviour
     void TryChangeSFXVolume(float value)
     {
         GameSettings.SFXVolumeValue = value;
+    }
+    
+    void ToggleDynamicTooltip(bool value)
+    {
+        GameSettings.DynamicToolTipsEnabled = value;
     }
 }
