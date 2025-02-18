@@ -50,7 +50,6 @@ public class UIOptionsPopup : UIPopup
     {
         base.Awake();
         
-        GameSettings.AudioMixer = m_audioMixer;
         m_elapsedTime = 0;
         m_cheatsGroup.SetActive(false);
 
