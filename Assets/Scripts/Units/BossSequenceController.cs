@@ -35,6 +35,7 @@ public class BossSequenceController : MonoBehaviour
         if (!string.IsNullOrEmpty(m_bossIntroCutScene))
         {
             GameplayManager.OnCutSceneEnd += SpawnBoss;
+            Debug.Log($"Boss Sequence Controller requesting Additive Scene Load to: {m_bossIntroCutScene}");
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossIntroCutScene);
         }
     }
@@ -52,6 +53,8 @@ public class BossSequenceController : MonoBehaviour
     {
         if (GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Defeat) return;
         
+        Debug.Log($"Boss Removed: Boss has {curHealth}.");
+        
         if (curHealth > 0) // If the boss still has health, it escapes.
         {
             BossHasEscaped();   
@@ -64,13 +67,16 @@ public class BossSequenceController : MonoBehaviour
 
     public void BossHasDied() // If the boss' hit points reached 0.
     {
+        Debug.Log($"Boss Sequence Controller: Boss Has Died.");
         if (GameManager.Instance != null && !string.IsNullOrEmpty(m_bossDeathCutScene))
         {
+            Debug.Log($"Boss Sequence Controller: Boss Has Died and has a cutscene.");
             GameplayManager.OnCutSceneEnd += BossDeathCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossDeathCutScene);
         }
         else
         {
+            Debug.Log($"Boss Sequence Controller: Boss Has Died and has no cutscene.");
             BossDeathCutSceneEnded();
         }
     }
@@ -82,13 +88,16 @@ public class BossSequenceController : MonoBehaviour
 
     public void BossHasEscaped() // If the boss reached the castle, but the castle still stands.
     {
+        Debug.Log($"Boss Sequence Controller: Boss Has Escaped.");
         if (GameManager.Instance != null && !string.IsNullOrEmpty(m_bossOutroCutScene))
         {
+            Debug.Log($"Boss Sequence Controller: Boss Has Escaped and has a cutscene.");
             GameplayManager.OnCutSceneEnd += BossOutroCutSceneEnded;
             GameManager.Instance.RequestAdditiveSceneLoad(m_bossOutroCutScene);
         }
         else
         {
+            Debug.Log($"Boss Sequence Controller: Boss Has Escaped and has no cutscene.");
             BossOutroCutSceneEnded();
         }
     }
@@ -97,6 +106,7 @@ public class BossSequenceController : MonoBehaviour
     void BossDeathCutSceneEnded()
     {
         GameplayManager.OnCutSceneEnd -= BossDeathCutSceneEnded;
+        Debug.Log($"Returning Boss Sequence Controller to the Object Pool.");
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
         
         
@@ -107,6 +117,7 @@ public class BossSequenceController : MonoBehaviour
     void BossOutroCutSceneEnded()
     {
         GameplayManager.OnCutSceneEnd -= BossOutroCutSceneEnded;
+        Debug.Log($"Returning Boss Sequence Controller to the Object Pool.");
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
 
         

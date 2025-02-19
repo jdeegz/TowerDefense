@@ -31,6 +31,8 @@ public class GridCellOccupantUtil
 
                 cell.UpdateOccupancy(isOccupied);
 
+                Debug.Log($"Set Occupant: {obj.name} at {cell.m_cellPos} occupies: {isOccupied}.");
+
                 cell.m_occupant = isOccupied ? obj : null;
                 cell.m_cellResourceNode = isOccupied ? resourceNode : null;
                 

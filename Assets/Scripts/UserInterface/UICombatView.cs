@@ -4,6 +4,7 @@ using DG.Tweening;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -38,9 +39,11 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_blueprintTowerTrayButtonPrefab;
     [SerializeField] private GameObject m_gathererTrayButtonPrefab;
     [SerializeField] private GameObject m_alertRootObj;
+    [SerializeField] private GameObject m_waveCompleteRoot;
     [SerializeField] private GameObject m_alertPrefab;
     [SerializeField] private GameObject m_ruinIndicatedAlertPrefab;
     [SerializeField] private GameObject m_waveCompleteAlertPrefab;
+    [SerializeField] private GameObject m_waveCompletePerfectAlertPrefab;
     [SerializeField] private GameObject m_pausedDisplayObj;
     [SerializeField] private GameObject m_castleRepairDisplayObj;
     [SerializeField] private GameObject m_ffwActiveDisplayObj;
@@ -100,6 +103,8 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnUnlockedStucturesUpdated += UnlockedStructuresUpdated;
         GameplayManager.OnUnlockedTowersUpdated += UnlockedTowersUpdated;
         GameplayManager.OnWaveChanged += UpdateWaveDisplay;
+        //GameplayManager.OnEnemyCountChanged += UpdateEnemyCountDisplay;
+        
 
         ResourceManager.UpdateStoneBank += UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank += UpdateWoodDisplay;
@@ -141,6 +146,11 @@ public class UICombatView : MonoBehaviour
 
         m_highScoreLabel.gameObject.SetActive(false);
         m_survivalWaveDurationFill.fillAmount = 0;
+    }
+
+    private void UpdateEnemyCountDisplay(int enemiesCreated, int enemiesKilled, int soulsClaimed)
+    {
+        // m_enemyCounterLabel.SetText($"Enemies Created: {enemiesCreated}<br>Enemies Killed: {enemiesKilled}<br>Souls Claimed: {soulsClaimed}");
     }
 
     private void UpdateWaveDisplay(int value)
@@ -269,6 +279,7 @@ public class UICombatView : MonoBehaviour
         GameplayManager.OnUnlockedStucturesUpdated -= UnlockedStructuresUpdated;
         GameplayManager.OnUnlockedTowersUpdated -= UnlockedTowersUpdated;
         GameplayManager.OnWaveChanged -= UpdateWaveDisplay;
+        //GameplayManager.OnEnemyCountChanged -= UpdateEnemyCountDisplay;
 
         ResourceManager.UpdateStoneBank -= UpdateStoneDisplay;
         ResourceManager.UpdateWoodBank -= UpdateWoodDisplay;
@@ -644,11 +655,33 @@ public class UICombatView : MonoBehaviour
         alert.SetupAlert(Vector2.zero);
     }
 
-    private void AlertWaveComplete(string text)
+    public Gradient m_waveCompleteColorRank;
+    private void AlertWaveComplete(int enemiesCreated, int enemiesKilled, int soulsClaimed, int damageTaken)
     {
-        /*UIAlert alert = ObjectPoolManager.SpawnObject(m_waveCompleteAlertPrefab, m_alertRootObj.transform).GetComponent<UIAlert>();
-        alert.SetLabelText(text, Color.white);
-        alert.SetupAlert(Vector2.zero);*/
+        //Calculate %
+        float percentSoulsClaimed = (float)soulsClaimed / enemiesCreated;
+        String text;
+        UIAlert alert;
+
+        //Debug.Log($"{percentSoulsClaimed}% Souls Claimed. {soulsClaimed} / {enemiesCreated}");
+        
+        if (percentSoulsClaimed == 1 && damageTaken == 0)
+        {
+            // Perfect Wave
+            text = m_uiStringData.m_waveCompletedPerfect;
+            alert = ObjectPoolManager.SpawnObject(m_waveCompletePerfectAlertPrefab, m_waveCompleteRoot.transform).GetComponent<UIAlert>();
+            alert.SetLabelText(text, Color.white, false);
+        }
+        else
+        {
+            // Not Perfect Wave
+            text = Mathf.RoundToInt(percentSoulsClaimed * 100) + "%";
+            alert = ObjectPoolManager.SpawnObject(m_waveCompleteAlertPrefab, m_waveCompleteRoot.transform).GetComponent<UIAlert>();
+            Color color = m_waveCompleteColorRank.Evaluate(percentSoulsClaimed);
+            alert.SetLabelText(text, color);
+        }
+        GameplayManager.Instance.m_wavesCompleted.Add(percentSoulsClaimed);
+        alert.SetupAlert(Vector2.zero);
     }
 
     private void RuinIndicated()

@@ -28,6 +28,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameSpeed> OnGamePlaybackChanged;
     public static event Action<int> OnGameSpeedChanged;
     public static event Action<int> OnWaveChanged;
+    public static event Action<int, int, int> OnEnemyCountChanged;
     public static event Action<GameObject> OnGameObjectSelected;
     public static event Action<GameObject> OnGameObjectDeselected;
     public static event Action<GameObject> OnGameObjectHoveredEnter;
@@ -35,7 +36,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameObject, Selectable.SelectedObjectType> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
-    public static event Action<String> OnWaveCompleted;
+    public static event Action<int, int, int, int> OnWaveCompleted;
     public static event Action<List<Cell>> OnPreconBuildingMoved;
     public static event Action OnPreconBuildingClear;
     public static event Action<TowerData> OnTowerBuild;
@@ -104,6 +105,61 @@ public class GameplayManager : MonoBehaviour
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
     public List<EnemyController> m_enemyBossList;
+    
+    public List<float> m_wavesCompleted;
+    
+    private int m_enemiesCreatedThisWave;
+    public int EnemiesCreatedThisWave
+    {
+        get { return m_enemiesCreatedThisWave; }
+        set
+        {
+            if (value != m_enemiesCreatedThisWave)
+            {
+                m_enemiesCreatedThisWave = value;
+            }
+        }
+    }
+    
+    private int m_enemiesKilledThisWave;
+    public int EnemiesKilledThisWave
+    {
+        get { return m_enemiesKilledThisWave; }
+        set
+        {
+            if (value != m_enemiesKilledThisWave)
+            {
+                m_enemiesKilledThisWave = value;
+            }
+        }
+    }
+    
+    private int m_coresClaimedThisWave;
+    public int CoresClaimedThisWave
+    {
+        get { return m_coresClaimedThisWave; }
+        set
+        {
+            if (value != m_coresClaimedThisWave)
+            {
+                m_coresClaimedThisWave = value;
+            }
+        }
+    }
+    
+    private int m_damageTakenThisWave;
+    public int DamageTakenThisWave
+    {
+        get { return m_damageTakenThisWave; }
+        set
+        {
+            if (value != m_damageTakenThisWave)
+            {
+                m_damageTakenThisWave = value;
+            }
+        }
+    }
+    
 
     [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
@@ -234,7 +290,7 @@ public class GameplayManager : MonoBehaviour
             StartNextWave();
         }
     }
-
+    
     void StartNextWave()
     {
         switch (m_gameplayData.m_gameMode)
@@ -356,7 +412,7 @@ public class GameplayManager : MonoBehaviour
             {
                 if (!m_canAfford)
                 {
-                    //Debug.Log("Not Enough Resources.");
+                    Debug.Log("Build Tower Attempt: Can Afford is False.");
                     OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
                     RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
@@ -364,7 +420,7 @@ public class GameplayManager : MonoBehaviour
 
                 if (!m_canPlace)
                 {
-                    //Debug.Log("Cannot build here.");
+                    Debug.Log("Build Tower Attempt: Can Place is False.");
                     OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
                     RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
@@ -372,7 +428,7 @@ public class GameplayManager : MonoBehaviour
 
                 if (!m_canPath)
                 {
-                    //Debug.Log("Cannot build here.");
+                    Debug.Log("Build Tower Attempt: Can Path is False.");
                     OnAlertDisplayed?.Invoke(m_pathRestrictedReason);
                     RequestPlayAudio(m_gameplayAudioData.m_cannotPlaceClip);
                     return;
@@ -766,6 +822,8 @@ public class GameplayManager : MonoBehaviour
         if (newSpeed == m_gameSpeed) return;
 
         m_gameSpeed = newSpeed;
+        Debug.Log($"Gameplay Manager: Game Speed is now {m_gameSpeed}.");
+        
         //Include FFW state
         //When we get a request check current game speed to identify if we return to normal or return to FFW when leaving pause.
         //What do we send from the hotkey/button presses?
@@ -816,7 +874,7 @@ public class GameplayManager : MonoBehaviour
     public void UpdateGameplayState(GameplayState newState)
     {
         m_gameplayState = newState;
-        //Debug.Log($"Game state is now: {m_gameplayState}");
+        Debug.Log($"Gameplay State is now: {m_gameplayState}");
 
         switch (m_gameplayState)
         {
@@ -854,21 +912,21 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
+                EnemiesCreatedThisWave = 0;
+                EnemiesKilledThisWave = 0;
+                CoresClaimedThisWave = 0;
+                DamageTakenThisWave = 0;
                 break;
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                /*PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
-                UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");*/
+                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
                 HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
-                
-
                 int wave = 0;
                 if (m_endlessModeActive) wave = m_wave - 1;
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
-
                 HandleDefeatSequence();
                 break;
             default:
@@ -906,7 +964,7 @@ public class GameplayManager : MonoBehaviour
         }
 
         m_interactionState = newState;
-        //Debug.Log($"Interaction state is now: {m_interactionState}");
+        Debug.Log($"Interaction state is now: {m_interactionState}");
     }
 
     private void GameObjectSelected(GameObject obj)
@@ -1482,6 +1540,7 @@ public class GameplayManager : MonoBehaviour
             Cell towerCell = Util.GetCellFrom3DPos(blueprint.transform.position);
             if (towerCell.m_cellPos == m_preconstructedTowerPos)
             {
+                Debug.Log($"Build Tower: Removing Blueprint in Tower destination.");
                 RemoveBlueprintTower(blueprint);
             }
         }
@@ -1495,6 +1554,7 @@ public class GameplayManager : MonoBehaviour
         // Calculate the rotation angle to make the new object face away from the target.
         float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + 180f;
 
+        Debug.Log($"Build Tower: Spawning Tower {m_preconstructedTowerData.m_prefab.name} at {gridPos}.");
         GameObject newTowerObj = ObjectPoolManager.SpawnObject(m_preconstructedTowerData.m_prefab, gridPos, Quaternion.identity, null, ObjectPoolManager.PoolType.Tower);
         Tower newTower = newTowerObj.GetComponent<Tower>();
         newTower.GetTurretTransform().rotation = Quaternion.Euler(0, angle, 0);
@@ -1718,6 +1778,7 @@ public class GameplayManager : MonoBehaviour
 
     public void AddEnemyToList(EnemyController enemy)
     {
+        ++EnemiesCreatedThisWave;
         m_enemyList.Add(enemy);
     }
 
@@ -1732,6 +1793,8 @@ public class GameplayManager : MonoBehaviour
             }
         }
 
+        ++EnemiesKilledThisWave;
+        
         // Dont check for win in Survival.
         if (m_gameplayData.m_gameMode == MissionGameplayData.GameMode.Survival) return;
 
@@ -1744,11 +1807,11 @@ public class GameplayManager : MonoBehaviour
 
         if (m_gameplayState == GameplayState.BossWave)
         {
-            OnWaveCompleted?.Invoke(m_UIStringData.m_bossWaveComplete);
+            OnWaveCompleted?.Invoke(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave);
         }
         else
         {
-            OnWaveCompleted?.Invoke(m_UIStringData.m_waveComplete);
+            OnWaveCompleted?.Invoke(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave);
         }
 
         RequestPlayAudio(m_gameplayAudioData.m_audioWaveEndClips);
@@ -1919,14 +1982,18 @@ public class GameplayManager : MonoBehaviour
 
     public void WatchingCutScene()
     {
+        Debug.Log($"Cut Scene: Gameplay Manager is now Watching Cut Scene.");
         m_watchingCutScene = true;
+        Debug.Log($"Cut Scene: Set Watching Cut Scene to: {m_watchingCutScene}.");
 
         //Clear precon if we're precon
+        Debug.Log($"Cut Scene: Clear Precon Tower.");
         if (m_preconstructedTowerObj) ClearPreconstructedTower();
 
         //Clear selected
         if (m_curSelectable)
         {
+            Debug.Log($"Cut Scene: Deselecting Current Selectable.");
             OnGameObjectDeselected?.Invoke(m_curSelectable.gameObject);
             m_curSelectable = null;
         }
@@ -1951,6 +2018,9 @@ public class GameplayManager : MonoBehaviour
 
     public void DoneWatchingLeaveCutScene()
     {
+        Debug.Log($"Cut Scene: Done watching Cut Scene.");
+
+        Debug.Log($"Cut Scene: Set Combat HUD Interativity to True.");
         m_combatHUD.SetCanvasInteractive(true);
         
         //Set interaction to disabled
@@ -1960,6 +2030,8 @@ public class GameplayManager : MonoBehaviour
         UpdateGamePlayback(GameSpeed.Normal);
 
         m_watchingCutScene = false;
+        Debug.Log($"Cut Scene: Set Watching Cut Scene to: {m_watchingCutScene}.");
+        
 
         /*// Loop through each light and re-enable it
         foreach (Light light in m_lights)
@@ -1967,6 +2039,7 @@ public class GameplayManager : MonoBehaviour
             light.enabled = true;
         }*/
 
+        Debug.Log($"Cut Scene: OnCutSceneEnd Invoked.");
         OnCutSceneEnd?.Invoke();
     }
 
@@ -2152,6 +2225,7 @@ public class GameplayManager : MonoBehaviour
 
     public void SetActiveBossController(BossSequenceController bossSequenceController)
     {
+        Debug.Log($"Setting Active Boss Sequence Controller to: {bossSequenceController}");
         m_activeBossSequenceController = bossSequenceController;
     }
 

@@ -194,14 +194,19 @@ public abstract class EnemyController : Dissolvable, IEffectable
         if (!m_goal) return;
 
         //If this is the exit cell, we've made it! Deal some damage to the player.
-        CheckAtGoal();
+        // Disabling this check in favor of Reaching Castle in the HandleMovement.
+        //CheckAtGoal();
     }
 
     public virtual void CheckAtGoal()
     {
-        if (Vector3.Distance(transform.position, m_goal.position) <= 0.5f)
+        if (Vector3.Distance(transform.position, m_goal.position) <= 0.6f)
         {
-            ReachedCastle();
+            if (m_isActive && !m_isComplete)
+            {
+                Debug.Log($"Check At Goal: At goal.");
+            }
+            //ReachedCastle();
         }
     }
 
@@ -303,6 +308,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 if (m_curCell != null)
                 {
                     m_curCell.UpdateActorCount(-1, gameObject.name);
+                }
+
+                //Have we made it to the goal?
+                if (m_newCell.m_isGoal)
+                {
+                    ReachedCastle();
+                    return;
                 }
 
                 // Is the new cell a portal? Is it also a portal entrance?
@@ -539,6 +551,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
                 ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
                 obeliskSoul.SetupSoul(m_closestObelisk.m_targetPoint.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
+                ++GameplayManager.Instance.CoresClaimedThisWave;
             }
             else if (m_enemyData.m_deathVFXPrefab)
             {

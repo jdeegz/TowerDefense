@@ -302,6 +302,7 @@ public class CastleController : MonoBehaviour
         m_hitFlashCoroutine = StartCoroutine(HitFlash());
         IngameUIController.Instance.SpawnHealthAlert(1, transform.position);
         UpdateHealth?.Invoke(-dmg);
+        ++GameplayManager.Instance.DamageTakenThisWave;
     }
 
     public void TakeBossDamage(int dmg)
@@ -315,6 +316,7 @@ public class CastleController : MonoBehaviour
         IngameUIController.Instance.SpawnMaxHealthAlert(1, transform.position);
 
         UpdateMaxHealth?.Invoke(-dmg);
+        ++GameplayManager.Instance.DamageTakenThisWave;
     }
 
     void OnUpdateHealth(int i)

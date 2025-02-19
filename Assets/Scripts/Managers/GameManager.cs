@@ -137,6 +137,7 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator AddCutSceneAsync(String sceneName)
     {
+        Debug.Log($"Cut Scene: Starting Add {sceneName} coroutine.");
         m_curCutScene = sceneName;
 
         AsyncOperation loadSceneOperation = SceneManager.LoadSceneAsync(m_curCutScene, LoadSceneMode.Additive);
@@ -145,13 +146,19 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
+        Debug.Log($"Cut Scene: Loading {sceneName} Complete.");
+        
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curCutScene));
+        
+        Debug.Log($"Cut Scene: {sceneName} Now the active scene.");
+        
         m_cutSceneTransitionController.TransitionEnd(); //Reveal new scene
     }
 
     //REMOVE SCENE
     public void RequestAdditiveSceneUnload(String sceneName)
     {
+        Debug.Log($"Cut Scene: Request Scene Unload: {sceneName}");
         m_cutSceneTransitionController.TransitionStart(sceneName, () => StartCutSceneUnload(sceneName));
     }
 
@@ -162,14 +169,20 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator RemoveCutSceneAsync(String sceneName)
     {
-        AsyncOperation loadSceneOperation = SceneManager.UnloadSceneAsync(m_curCutScene);
+        Debug.Log($"Cut Scene: Starting Remove {sceneName} Coroutine.");
+        AsyncOperation loadSceneOperation = SceneManager.UnloadSceneAsync(sceneName);
         while (!loadSceneOperation.isDone)
         {
             yield return null;
         }
 
+        Debug.Log($"Cut Scene: Unloading {sceneName} Complete.");
+        
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
+        
+        Debug.Log($"Cut Scene: {SceneManager.GetActiveScene().name} Now the active scene.");
         m_cutSceneTransitionController.TransitionEnd(); //Reveal new scene
+        
         GameplayManager.Instance.DoneWatchingLeaveCutScene(); //Return to our last gameplay state.
     }
     //END CUTSCENE MANAGEMENT

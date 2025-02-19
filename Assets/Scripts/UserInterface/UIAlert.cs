@@ -15,7 +15,13 @@ public class UIAlert : MonoBehaviour
     [SerializeField] private float m_lifeTime;
 
     private RectTransform m_objRectTransform;
+    private CanvasGroup m_canvasGroup;
 
+
+    public void Awake()
+    {
+        m_canvasGroup = GetComponent<CanvasGroup>();
+    }
 
     public void SetupAlert(Vector2 pos)
     {
@@ -31,13 +37,24 @@ public class UIAlert : MonoBehaviour
 
     void BeginTween()
     {
+        m_canvasGroup.alpha = 0;
         Sequence sequence = DOTween.Sequence();
         sequence.SetUpdate(true);
         
-        Vector2 endPos = new Vector2(m_objRectTransform.anchoredPosition.x, m_objRectTransform.anchoredPosition.y + 60f);
-        sequence.Append(m_objRectTransform.DOAnchorPos(endPos, m_lifeTime));
+        Vector2 midPos = new Vector2(m_objRectTransform.anchoredPosition.x, m_objRectTransform.anchoredPosition.y + 50f);
+        Vector2 endPos = new Vector2(midPos.x, midPos.y + 15f);
 
-        sequence.AppendInterval(.5f);
+        float showDuration = m_lifeTime * .165f;
+        float idleDuration = m_lifeTime * .66f;
+        float hideDuration = m_lifeTime * .165f;
+        
+        sequence.Append(m_canvasGroup.DOFade(1, showDuration));
+        sequence.Join(m_objRectTransform.DOAnchorPos(midPos, showDuration));
+
+        sequence.AppendInterval(idleDuration);
+        
+        sequence.Append(m_objRectTransform.DOAnchorPos(endPos, hideDuration));
+        sequence.Join(m_canvasGroup.DOFade(0, hideDuration));
 
         sequence.OnComplete(RemoveObject);
     }
@@ -48,10 +65,10 @@ public class UIAlert : MonoBehaviour
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.GameObject);
     }
 
-    public void SetLabelText(string text, Color color)
+    public void SetLabelText(string text, Color color, bool tint = true)
     {
         m_label.SetText(text);
-        m_label.color = color;
+        if(tint) m_label.color = color;
         LayoutRebuilder.MarkLayoutForRebuild(m_objRectTransform);
     }
 }

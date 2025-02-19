@@ -42,6 +42,8 @@ public class UIStringData : ScriptableObject
     public string m_totalScore = "Total:";
     public string m_newEndlessHighScore = "Wave {0} is a new Endless Mode High Score!";
     public string m_currentEndlessHighScore = "Endless Mode High Score: Wave {0}";
+    public string m_waveCompleted = "{0}% Cores Claimed";
+    public string m_waveCompletedPerfect = "Perfect Wave!";
 
     [Header("Sound Strings")]
     public string m_volumeMasterText;

@@ -11,16 +11,22 @@ using Sequence = DG.Tweening.Sequence;
 
 public class UIMissionCompletePopup : UIPopup
 {
+    [Header("EOG Button Objects")]
     [SerializeField] private Button m_exitButton;
     [SerializeField] private Button m_endlessModeButton;
     [SerializeField] private Button m_retryButton;
+    
+    [Header("Victory / Defeat Canvas Groups")]
     [SerializeField] private CanvasGroup m_victoryCanvasGroup;
     [SerializeField] private CanvasGroup m_defeatCanvasGroup;
-
-    public TextMeshProUGUI m_victoryResultLabel;
-    public TextMeshProUGUI m_defeatResultLabel;
-    public TextMeshProUGUI m_endlessHighScoreLabel;
-    public UIStringData m_uiStrings;
+    
+    [Header("Result Labels")]
+    [SerializeField] private  TextMeshProUGUI m_victoryResultLabel;
+    [SerializeField] private  TextMeshProUGUI m_defeatResultLabel;
+    [SerializeField] private  TextMeshProUGUI m_endlessHighScoreLabel;
+    
+    [Header("String Data")]
+    [SerializeField] private  UIStringData m_uiStrings;
 
     private int m_victoriousWave;
 
@@ -44,6 +50,7 @@ public class UIMissionCompletePopup : UIPopup
         GameplayManager.GameplayState curState = GameplayManager.Instance.m_gameplayState;
 
         Debug.Log($"Current State: {curState}");
+        WaveReportCard.Instance.MoveDisplayTo(transform);
         if (curState == GameplayManager.GameplayState.Victory)
         {
             SetupVictory();
@@ -55,7 +62,10 @@ public class UIMissionCompletePopup : UIPopup
             SetupDefeat();
             return;
         }
+        
     }
+
+    
 
     void SetupVictory()
     {
@@ -74,7 +84,7 @@ public class UIMissionCompletePopup : UIPopup
     {
         m_defeatCanvasGroup.alpha = 1;
         Debug.Log($"Setup Defeat UI");
-        m_victoryResultLabel.SetText(m_uiStrings.m_defeat);
+        m_defeatResultLabel.SetText(m_uiStrings.m_defeat);
         m_endlessModeButton.gameObject.SetActive(false);
 
         if (GameplayManager.Instance.IsEndlessModeActive()) // We lost in endless mode, we want to assign the wave we lost on to see if it's a high score.
@@ -106,6 +116,8 @@ public class UIMissionCompletePopup : UIPopup
 
     private void OnEndlessModeButtonClicked()
     {
+        WaveReportCard.Instance.ReturnDisplayTo();
+        
         UIPopupManager.Instance.ClosePopup(this);
 
         //Debug.Log("Endless Mode Activated.");

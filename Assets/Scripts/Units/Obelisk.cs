@@ -141,7 +141,7 @@ public class Obelisk : MonoBehaviour
                 if (m_curChargeCount >= m_maxChargeCount) return; // Dont increment if we're capped.
 
                 m_curChargeCount += i;
-
+                
                 // METER
                 float progress = (float)m_curChargeCount / m_maxChargeCount;
                 m_meterMaterial.SetFloat(m_meterScrollParameter, 1 - progress);

@@ -49,6 +49,7 @@ public abstract class Tower : MonoBehaviour
         SetupRangeCircle(48, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
         m_animator = GetComponent<Animator>();
+        m_towerCollider = gameObject.GetComponent<Collider>();
         m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
     }
 
@@ -246,19 +247,21 @@ public abstract class Tower : MonoBehaviour
 
     public virtual void SetupTower()
     {
+        Debug.Log($"Build Tower: Setting up {gameObject.name} at {transform.position}.");
         //Grid
         GridCellOccupantUtil.SetOccupant(gameObject, true, m_towerData.m_buildingSize.x, m_towerData.m_buildingSize.y);
         GameplayManager.Instance.AddTowerToList(this);
 
         //Operational
-        gameObject.GetComponent<Collider>().enabled = true;
+        m_towerCollider.enabled = true;
         m_isBuilt = true;
         m_modelRoot.SetActive(true);
+        Debug.Log($"Build Tower: {gameObject.name}'s collider enabled: {m_towerCollider.enabled}, is built: {m_isBuilt}, model root is active: {m_modelRoot.activeSelf}.");
         m_overlapCapsulePoint1 = transform.position + Vector3.up * 10; // Top of the capsule
         m_overlapCapsulePoint2 = transform.position - Vector3.up * 1; // Bottom of the capsule
 
         //Animation
-        m_animator.SetTrigger("Construct");
+        //m_animator.SetTrigger("Construct");
 
         //Audio
         if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles) m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);
@@ -321,9 +324,14 @@ public abstract class Tower : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
     }
 
+    private Collider m_towerCollider;
     public virtual void RemoveTower()
     {
+        Debug.Log($"Build Tower: Setting up {gameObject.name} at {transform.position}.");
+        m_isBuilt = false;
+        m_towerCollider.enabled = false;
         m_modelRoot.SetActive(false);
+        Debug.Log($"Build Tower: {gameObject.name}'s collider enabled: {m_towerCollider.enabled}, is built: {m_isBuilt}, model root is active: {m_modelRoot.activeSelf}.");
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Tower);
         //ObjectPoolManager.OrphanObject(gameObject, .5f, ObjectPoolManager.PoolType.Tower);
     }
@@ -524,6 +532,7 @@ public abstract class Tower : MonoBehaviour
 
     public Transform GetTurretTransform()
     {
+        Debug.Log($"Build Tower: Getting Turret Transform. Transform is null: {m_turretPivot == null}");
         return m_turretPivot;
     }
 
