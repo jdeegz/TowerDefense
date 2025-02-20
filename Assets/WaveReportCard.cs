@@ -40,25 +40,19 @@ public class WaveReportCard : MonoBehaviour
         GameplayManager.OnWaveCompleted -= AlertWaveComplete;
     }
 
-    private void AlertWaveComplete(int enemiesCreated, int enemiesKilled, int soulsClaimed, int damageTaken)
+    private void AlertWaveComplete(CompletedWave completedWave)
     {
         ++m_wavesCompleted;
         
-        // Calculate %
-        float percentSoulsClaimed = (float)soulsClaimed / enemiesCreated;
-
-        // Cheat for endless mode to only care about damage taken.
-        if (GameplayManager.Instance.IsEndlessModeActive()) percentSoulsClaimed = 1;
-        
         // Pick the prefab to create.
-        if (percentSoulsClaimed == 1 && damageTaken == 0)
+        if (completedWave.m_wavePercent == 1)
         {
             Instantiate(m_waveCompletePerfectPrefab, m_waveDisplayRootObj.transform);
         }
         else
         {
             Image image = Instantiate(m_waveCompletePrefab, m_waveDisplayRootObj.transform).GetComponent<Image>();
-            image.color = m_combatHUD.m_waveCompleteColorRank.Evaluate(percentSoulsClaimed);
+            image.color = m_combatHUD.m_waveCompleteColorRank.Evaluate(completedWave.m_wavePercent);
         }
         
         // Check to add a spacer.
@@ -70,7 +64,7 @@ public class WaveReportCard : MonoBehaviour
             spacerRectTransform.sizeDelta = new Vector2(40, 5);
         }
         
-        LayoutRebuilder.MarkLayoutForRebuild(m_nestRectTransform);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(m_nestRectTransform);
     }
 
     public void MoveDisplayTo(Transform parentTransform)

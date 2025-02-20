@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "UIStrings", menuName = "ScriptableObjects/StringContainer")]
 public class UIStringData : ScriptableObject
@@ -41,6 +42,12 @@ public class UIStringData : ScriptableObject
     public string m_totalScore = "Total:";
     public string m_newEndlessHighScore = "Wave {0} is a new Endless Mode High Score!";
     public string m_currentEndlessHighScore = "Endless Mode High Score: Wave {0}";
+    public string m_tooltipNewEndlessHighScore = "NEW BEST Highest Wave: {0}";
+    public string m_tooltipCurrentEndlessHighScore = "Highest Wave: {0}";
+    public string m_tooltipCurrentEndlessScore = "Current Wave: {0}";
+    public string m_tooltipNewPerfectHighScore = "NEW BEST Perfect Waves: {0}";
+    public string m_tooltipCurrentPerfectHighScore = "Most Perfect Waves: {0}";
+    public string m_tooltipCurrentPerfectScore = "Perfect Waves: {0}";
     public string m_waveCompleted = "Cores Claimed";
     public string m_waveCompletedEndless = "Grainwraiths Slain";
     public string m_waveCompletedPerfect = "Perfect Wave!";
@@ -49,4 +56,9 @@ public class UIStringData : ScriptableObject
     public string m_volumeMasterText;
     public string m_volumeMusicText;
     public string m_volumeSFXText;
+    
+    [Header("Options Popup Strings")]
+    public string m_surrender = "Surrender";
+    public string m_completeMission = "Complete Mission";
+    
 }

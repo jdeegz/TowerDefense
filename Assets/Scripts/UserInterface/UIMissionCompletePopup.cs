@@ -65,8 +65,6 @@ public class UIMissionCompletePopup : UIPopup
         
     }
 
-    
-
     void SetupVictory()
     {
         Debug.Log($"Setup Victory UI");
@@ -129,7 +127,6 @@ public class UIMissionCompletePopup : UIPopup
         if (GameManager.Instance != null)
         {
             Debug.Log("Restarting Mission.");
-            PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, m_victoriousWave);
             GameManager.Instance.RequestSceneRestart();
         }
     }

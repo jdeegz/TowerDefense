@@ -32,7 +32,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_obelisksChargedLabel;
     [SerializeField] private TextMeshProUGUI m_castleHealthLabel;
     [SerializeField] private TextMeshProUGUI m_debugInfoLabel;
-    [SerializeField] private TextMeshProUGUI m_highScoreLabel;
 
     [Header("Objects")]
     [SerializeField] private GameObject m_towerTrayButtonPrefab;
@@ -47,7 +46,6 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_pausedDisplayObj;
     [SerializeField] private GameObject m_castleRepairDisplayObj;
     [SerializeField] private GameObject m_ffwActiveDisplayObj;
-    [SerializeField] private GameObject m_highScoreDisplayObj;
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
@@ -145,7 +143,6 @@ public class UICombatView : MonoBehaviour
             { KeyCode.Y, 4 },
         };
 
-        m_highScoreDisplayObj.gameObject.SetActive(false);
         m_survivalWaveDurationFill.fillAmount = 0;
     }
 
@@ -318,7 +315,6 @@ public class UICombatView : MonoBehaviour
                 break;
             case GameplayManager.GameplayState.Build:
                 m_timeToNextWave = GameplayManager.Instance.m_timeToNextWave;
-                HandleHighScoreLabel();
                 break;
             case GameplayManager.GameplayState.CutScene:
                 break;
@@ -345,26 +341,6 @@ public class UICombatView : MonoBehaviour
         m_canvasGroup.interactable = value;
         m_canvasGroup.blocksRaycasts = value;
         m_buttonsActivated = value;
-    }
-
-    void HandleHighScoreLabel()
-    {
-        // Redesign Endless Mode scores to also include perfect waves, available on Hover of the Wave label.
-        m_highScoreDisplayObj.gameObject.SetActive(GameplayManager.Instance.IsEndlessModeActive());
-
-        if (!m_highScoreDisplayObj.gameObject.activeSelf) return;
-
-        if (m_wave < GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore)
-        {
-            string highScoreString = string.Format(m_uiStringData.m_displayHighScore, GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore);
-            m_highScoreLabel.SetText(highScoreString);
-        }
-        else
-        {
-            m_highScoreLabel.SetText(m_uiStringData.m_newHighScoreDisplay);
-            ColorUtility.TryParseHtmlString("#F1D24B", out Color color);
-            m_highScoreLabel.color = color;
-        }
     }
 
     private void GameplayPlaybackChanged(GameplayManager.GameSpeed newSpeed)
@@ -658,19 +634,15 @@ public class UICombatView : MonoBehaviour
     }
 
     public Gradient m_waveCompleteColorRank;
-    private void AlertWaveComplete(int enemiesCreated, int enemiesKilled, int soulsClaimed, int damageTaken)
+    private void AlertWaveComplete(CompletedWave completedWave)
     {
         //Calculate %
-        float percentSoulsClaimed = (float)soulsClaimed / enemiesCreated;
         String text;
         UIAlert alert;
 
         //Debug.Log($"{percentSoulsClaimed}% Souls Claimed. {soulsClaimed} / {enemiesCreated}");
         
-        // Cheat for endless mode to only care about damage taken.
-        if (GameplayManager.Instance.IsEndlessModeActive()) percentSoulsClaimed = (float)enemiesCreated / enemiesKilled;
-        
-        if (percentSoulsClaimed == 1 && damageTaken == 0)
+        if (completedWave.m_wavePercent == 1)
         {
             // Perfect Wave
             text = m_uiStringData.m_waveCompletedPerfect;
@@ -680,12 +652,12 @@ public class UICombatView : MonoBehaviour
         else
         {
             // Not Perfect Wave
-            text = Mathf.RoundToInt(percentSoulsClaimed * 100) + "%";
+            text = Mathf.RoundToInt(completedWave.m_wavePercent * 100) + "%";
             alert = ObjectPoolManager.SpawnObject(m_waveCompleteAlertPrefab, m_waveCompleteRoot.transform).GetComponent<UIAlert>();
-            Color color = m_waveCompleteColorRank.Evaluate(percentSoulsClaimed);
+            Color color = m_waveCompleteColorRank.Evaluate(completedWave.m_wavePercent);
             alert.SetLabelText(text, color);
         }
-        GameplayManager.Instance.m_wavesCompleted.Add(percentSoulsClaimed);
+        
         alert.SetupAlert(Vector2.zero);
     }
 

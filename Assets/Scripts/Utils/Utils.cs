@@ -103,7 +103,46 @@ public static class Util
         }
 
         return gridPos;
-    }   
+    } 
+    
+    public static Vector2Int FindNearestValidCellPos(Vector3 worldPos, Vector2Int objectSize)
+    {
+        Vector2Int gridPos = new Vector2Int(Mathf.RoundToInt(worldPos.x), Mathf.RoundToInt(worldPos.z));
+        
+        //Expected outcomes: 1x1 = 0,0 | 2x2 = 1,1 | 3x3 = 1,1
+        Vector2Int buildingPadding = new Vector2Int((int)Math.Floor(objectSize.x / 2.0), (int)Math.Floor(objectSize.y / 2.0));
+
+        Debug.Log($"Find Nearest Valid Cell Pos: {worldPos}, Building Size: {objectSize}, Building Padding: {buildingPadding}");
+        
+        gridPos.x = Mathf.Clamp(gridPos.x, 0 + buildingPadding.x, GridManager.Instance.m_gridWidth - buildingPadding.x);
+        gridPos.y = Mathf.Clamp(gridPos.y, 0 + buildingPadding.y, GridManager.Instance.m_gridHeight - buildingPadding.y);
+
+        Cell cell = GetCellFromPos(gridPos);
+        if (cell != null) return cell.m_cellPos;
+
+        int step = 1;
+        int longestAxis = Mathf.Max(GridManager.Instance.m_gridHeight, GridManager.Instance.m_gridWidth);
+        while (step <= longestAxis)
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                for (int j = 0; j < step; ++j)
+                {
+                    gridPos.x += m_dX[i];
+                    gridPos.y += m_dY[i];
+                    
+                    gridPos.x = Mathf.Clamp(gridPos.x, 0, GridManager.Instance.m_gridWidth - 1);
+                    gridPos.y = Mathf.Clamp(gridPos.y, 0, GridManager.Instance.m_gridHeight - 1);
+
+                    cell = GetCellFromPos(gridPos);
+                    if (cell != null) return cell.m_cellPos;
+                }
+            }
+            ++step;
+        }
+
+        return gridPos;
+    }
 
     public static Vector3 GetRandomPosition(Vector3 objPosition, Vector3 offset)
     {
@@ -503,14 +542,14 @@ public static class Util
                 //Check we're within the grid width
                 if (xPos < 0 || xPos >= GridManager.Instance.m_gridWidth)
                 {
-                    //Debug.Log("X not within grid bounds.");
+                    Debug.Log($"GetCellsFromPos: {new Vector2(xPos, zPos)} -- X not within grid bounds.");
                     return null;
                 }
 
                 //Check we're within the grid height
                 if (zPos < 0 || zPos >= GridManager.Instance.m_gridHeight)
                 {
-                    //Debug.Log("Z not within grid bounds.");
+                    Debug.Log($"GetCellsFromPos: {new Vector2(xPos, zPos)} -- Z not within grid bounds.");
                     return null;
                 }
 
@@ -524,6 +563,8 @@ public static class Util
                     return null;
                 }*/
 
+
+                Debug.Log($"GetCellsFromPos: Adding {cell.m_cellPos}.");
                 cellsFromPos.Add(cell);
             }
         }

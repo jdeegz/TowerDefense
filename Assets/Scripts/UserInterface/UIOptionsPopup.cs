@@ -42,6 +42,7 @@ public class UIOptionsPopup : UIPopup
 
     [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_missionNameLabel;
+    [SerializeField] private TextMeshProUGUI m_surrenderButtonLabel;
 
     private int m_dropdownIndex;
     private float m_elapsedTime;
@@ -59,6 +60,28 @@ public class UIOptionsPopup : UIPopup
         }
     }
     
+    public override void HandleShow()
+    {
+        if (m_surrenderButton.gameObject.activeSelf)
+        {
+            string buttonString;
+            if (GameplayManager.Instance.IsEndlessModeActive())
+            {
+                // Complete Mission
+                buttonString = m_uiStrings.m_completeMission;
+            }
+            else
+            {
+                // Surrender
+                buttonString = m_uiStrings.m_surrender;
+            }
+            
+            m_surrenderButtonLabel.SetText(buttonString);
+        }
+        
+        base.HandleShow();
+    }
+
     void Start()
     {
         m_surrenderButton.onClick.AddListener(OnSurrenderButtonClicked);
@@ -168,28 +191,30 @@ public class UIOptionsPopup : UIPopup
     {
         //Debug.Log("Surrendering Mission.");
         int wave = 0;
+        int perfectWavesCompleted = 0;
 
         // Are we surrendering from an endless match, or normal?
         if (GameplayManager.Instance.IsEndlessModeActive())
         {
             wave = GameplayManager.Instance.Wave;
+            perfectWavesCompleted = GameplayManager.Instance.m_perfectWavesCompleted;
         }
 
-        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
+        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave, perfectWavesCompleted);
         GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
     }
 
     private void OnRestartButtonClicked()
     {
         //Debug.Log("Restarting Mission.");
-        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0);
+        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0, 0);
         GameManager.Instance.RequestSceneRestart();
     }
 
     private void OnExitApplicationButtonClicked()
     {
         //Debug.Log("Quitting Application.");
-        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0);
+        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0, 0);
         Application.Quit();
     }
 

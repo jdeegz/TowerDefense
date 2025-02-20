@@ -19,7 +19,7 @@ public class CutSceneController : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             //We're cut scene complete, and mouse pressed. 
-            GameManager.Instance.RequestAdditiveSceneUnload(gameObject.scene.ToString());
+            GameManager.Instance.RequestAdditiveSceneUnload(gameObject.scene.name);
         }
     }
 

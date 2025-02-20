@@ -280,14 +280,15 @@ public class UITooltipController : MonoBehaviour
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
 
-        m_objectNameLabel.gameObject.SetActive(m_objectNameString != null);
         m_objectNameLabel.SetText(m_objectNameString);
-
-        m_objectDescriptionLabel.gameObject.SetActive(m_objectDescriptionString != null);
+        m_objectNameLabel.gameObject.SetActive(!string.IsNullOrEmpty(m_objectNameString));
+        
         m_objectDescriptionLabel.SetText(m_objectDescriptionString);
-
-        m_objectDetailsLabel.gameObject.SetActive(m_objectDetailsString != null);
+        m_objectDescriptionLabel.gameObject.SetActive(!string.IsNullOrWhiteSpace(m_objectDescriptionString));
+        
         m_objectDetailsLabel.SetText(m_objectDetailsString);
+        m_objectDetailsLabel.gameObject.SetActive(!string.IsNullOrWhiteSpace(m_objectDetailsString));
+
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(m_tooltipRect);
 

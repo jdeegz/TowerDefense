@@ -75,16 +75,16 @@ public class PlayerDataManager
         {
             var missionData = GameManager.Instance.m_missionTable.m_MissionList[i];
             int completionRank = m_playerData.m_missions.Count == 0 ? 1 : 0;
-            MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene, 0, 0, completionRank);
+            MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene, 0, 0, completionRank, 0);
 
             m_playerData.m_missions.Add(newMissionSaveData);
         }
     }
 
-    public void UpdateMissionSaveData(string missionName, int completeionRank, int wave)
+    public void UpdateMissionSaveData(string missionName, int completeionRank, int wave, int perfectWaves)
     {
         // Make and edit a temporary Mission Save Data, use the existing one as reference, then assign it.
-        MissionSaveData newMissionSaveData = new MissionSaveData(missionName, 0, 0, 0);
+        MissionSaveData newMissionSaveData = new MissionSaveData(missionName, 0, 0, 0, 0);
         newMissionSaveData.m_missionCompletionRank = completeionRank;
 
         for (var i = 0; i < m_playerData.m_missions.Count; i++)
@@ -96,6 +96,7 @@ public class PlayerDataManager
                 newMissionSaveData.m_missionAttempts = mission.m_missionAttempts + 1;
 
                 newMissionSaveData.m_waveHighScore = Math.Max(wave, mission.m_waveHighScore);
+                newMissionSaveData.m_perfectWaveScore = Math.Max(perfectWaves, mission.m_perfectWaveScore);
 
                 //only save the highest completion rank.
                 newMissionSaveData.m_missionCompletionRank = Math.Max(newMissionSaveData.m_missionCompletionRank, mission.m_missionCompletionRank);
@@ -319,14 +320,16 @@ public class MissionSaveData
     public string m_sceneName;
     public int m_missionAttempts;
     public int m_waveHighScore;
+    public int m_perfectWaveScore;
     public int m_missionCompletionRank;
 
-    public MissionSaveData(string sceneName, int attempts, int highScore, int completionRank)
+    public MissionSaveData(string sceneName, int attempts, int highScore, int completionRank, int perfectWaveScore)
     {
         m_sceneName = sceneName;
         m_missionAttempts = attempts;
         m_waveHighScore = highScore;
         m_missionCompletionRank = completionRank;
+        m_perfectWaveScore = perfectWaveScore;
     }
 }
 

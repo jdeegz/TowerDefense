@@ -36,7 +36,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<GameObject, Selectable.SelectedObjectType> OnCommandRequested;
     public static event Action<GameObject, bool> OnObjRestricted;
     public static event Action<String> OnAlertDisplayed;
-    public static event Action<int, int, int, int> OnWaveCompleted;
+    public static event Action<CompletedWave> OnWaveCompleted;
     public static event Action<List<Cell>> OnPreconBuildingMoved;
     public static event Action OnPreconBuildingClear;
     public static event Action<TowerData> OnTowerBuild;
@@ -106,7 +106,8 @@ public class GameplayManager : MonoBehaviour
     public List<EnemyController> m_enemyList;
     public List<EnemyController> m_enemyBossList;
     
-    public List<float> m_wavesCompleted;
+    public List<CompletedWave> m_wavesCompleted;
+    public int m_perfectWavesCompleted;
     
     private int m_enemiesCreatedThisWave;
     public int EnemiesCreatedThisWave
@@ -914,18 +915,15 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
-                ResetWaveCompleteValues();
                 break;
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, Wave);
+                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, Wave, m_perfectWavesCompleted);
                 HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
-                int wave = 0;
-                if (m_endlessModeActive) wave = Wave - 1;
-                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
+                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0, 0);
                 HandleDefeatSequence();
                 break;
             default:
@@ -1109,13 +1107,19 @@ public class GameplayManager : MonoBehaviour
 
         float t = -ray.origin.y / ray.direction.y; // Solve for t where Y = 0
         Vector3 worldPos = ray.origin + t * ray.direction; // Get intersection point
+        
+        Debug.Log($"Precon Mouse Position: {worldPos}.");
 
         worldPos.x += m_preconxOffset;
         worldPos.z += m_preconzOffset;
 
-        gridPos = Util.FindNearestValidCellPos(worldPos);
+        Debug.Log($"Precon Building Position: {worldPos}.");
+
+        gridPos = Util.FindNearestValidCellPos(worldPos, m_preconstructedTowerData.m_buildingSize);
 
         spawnPosition = new Vector3(gridPos.x, 0.7f, gridPos.y);
+        
+        Debug.Log($"Precon Building Spawn Position: {spawnPosition}");
 
         // Create the new object.
         m_preconstructedTowerObj = Instantiate(towerData.m_prefab, spawnPosition, Quaternion.identity);
@@ -1125,7 +1129,11 @@ public class GameplayManager : MonoBehaviour
         // Set the precon Cells and neighbors.
         List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
 
-        if (newCells == null) return;
+        if (newCells == null)
+        {
+            Debug.Log($"newCells is null.");
+            return;
+        }
 
         m_preconstructedTowerCells = newCells;
         m_preconNeighborCells = GetNeighborCells(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
@@ -1177,11 +1185,12 @@ public class GameplayManager : MonoBehaviour
         worldPos.x += m_preconxOffset;
         worldPos.z += m_preconzOffset;
 
-        gridPos = Util.FindNearestValidCellPos(worldPos);
+        gridPos = Util.FindNearestValidCellPos(worldPos, m_preconstructedTowerData.m_buildingSize);
 
         if (gridPos == m_preconstructedTowerPos) return;
 
         m_preconstructedTowerPos = gridPos;
+        
         List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
 
         if (newCells == null) return;
@@ -1824,16 +1833,42 @@ public class GameplayManager : MonoBehaviour
 
         if (m_gameplayState == GameplayState.BossWave)
         {
-            OnWaveCompleted?.Invoke(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave);
+            UpdateCompletedWaves();
         }
         else
         {
-            OnWaveCompleted?.Invoke(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave);
+            UpdateCompletedWaves();
+            
         }
 
         RequestPlayAudio(m_gameplayAudioData.m_audioWaveEndClips);
 
         UpdateGameplayState(GameplayState.Build);
+    }
+
+    private void UpdateCompletedWaves()
+    {
+        // Calculate if this was a perfected wave.
+        float wavePercent = 0;
+        if (IsEndlessModeActive())
+        {
+            wavePercent = (float)EnemiesKilledThisWave / EnemiesCreatedThisWave;
+        }
+        else
+        {
+            wavePercent = (float)CoresClaimedThisWave / EnemiesCreatedThisWave;
+        }
+
+        if (wavePercent == 1) ++m_perfectWavesCompleted;
+
+        CompletedWave completedWave = new CompletedWave(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave, wavePercent);
+
+        if (m_wavesCompleted == null) m_wavesCompleted = new List<CompletedWave>();
+        m_wavesCompleted.Add(completedWave);
+
+        OnWaveCompleted?.Invoke(completedWave);
+        
+        ResetWaveCompleteValues();
     }
 
     public void AddBossToList(EnemyController enemy)
@@ -2315,5 +2350,23 @@ public class OozeManager
         {
             m_currentOozedCells.Remove(cell);
         }
+    }
+}
+
+public class CompletedWave
+{
+    public int m_enemiesCreatedThisWave;
+    public int m_enemiesKilledThisWave;
+    public int m_coresClaimedThisWave;
+    public int m_damageTakenThisWave;
+    public float m_wavePercent;
+
+    public CompletedWave(int enemiesCreatedThisWave, int enemiesKilledThisWave, int coresClaimedThisWave, int damageTakenThisWave, float wavePercent)
+    {
+        m_enemiesCreatedThisWave = enemiesCreatedThisWave;
+        m_enemiesKilledThisWave = enemiesKilledThisWave;
+        m_coresClaimedThisWave = coresClaimedThisWave;
+        m_damageTakenThisWave = damageTakenThisWave;
+        m_wavePercent = wavePercent;
     }
 }
