@@ -13,6 +13,7 @@ public abstract class EnemySpawner : MonoBehaviour
 
     protected CreepWave m_nextCreepWave = null;
     protected bool m_isSpawnerActive = false;
+    public bool SpawnerActive => m_isSpawnerActive;
     protected List<CreepSpawner> m_activeCreepSpawners;
 
     // Status Effects to apply to spawned units.
@@ -35,7 +36,7 @@ public abstract class EnemySpawner : MonoBehaviour
     {
         if (m_spawnerWaves == null) return;
 
-        int gameplayWave = GameplayManager.Instance.m_wave;
+        int gameplayWave = GameplayManager.Instance.Wave;
 
         //Debug.Log($"Getting wave {GameplayManager.Instance.m_wave}");
 

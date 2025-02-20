@@ -48,7 +48,7 @@ public class MissionGameplayData : ScriptableObject
     
     public float CalculateHealth(float baseHealth)
     {
-        int i = GameplayManager.Instance.m_wave;
+        int i = GameplayManager.Instance.Wave;
         float health = baseHealth;
 
         float earlyGameHealth;

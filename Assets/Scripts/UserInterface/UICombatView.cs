@@ -47,6 +47,7 @@ public class UICombatView : MonoBehaviour
     [SerializeField] private GameObject m_pausedDisplayObj;
     [SerializeField] private GameObject m_castleRepairDisplayObj;
     [SerializeField] private GameObject m_ffwActiveDisplayObj;
+    [SerializeField] private GameObject m_highScoreDisplayObj;
 
     [Header("Rect Transforms")]
     [SerializeField] private RectTransform m_towerTrayLayoutObj;
@@ -144,7 +145,7 @@ public class UICombatView : MonoBehaviour
             { KeyCode.Y, 4 },
         };
 
-        m_highScoreLabel.gameObject.SetActive(false);
+        m_highScoreDisplayObj.gameObject.SetActive(false);
         m_survivalWaveDurationFill.fillAmount = 0;
     }
 
@@ -348,9 +349,10 @@ public class UICombatView : MonoBehaviour
 
     void HandleHighScoreLabel()
     {
-        m_highScoreLabel.gameObject.SetActive(GameplayManager.Instance.IsEndlessModeActive());
+        // Redesign Endless Mode scores to also include perfect waves, available on Hover of the Wave label.
+        m_highScoreDisplayObj.gameObject.SetActive(GameplayManager.Instance.IsEndlessModeActive());
 
-        if (!m_highScoreLabel.gameObject.activeSelf) return;
+        if (!m_highScoreDisplayObj.gameObject.activeSelf) return;
 
         if (m_wave < GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore)
         {
@@ -664,6 +666,9 @@ public class UICombatView : MonoBehaviour
         UIAlert alert;
 
         //Debug.Log($"{percentSoulsClaimed}% Souls Claimed. {soulsClaimed} / {enemiesCreated}");
+        
+        // Cheat for endless mode to only care about damage taken.
+        if (GameplayManager.Instance.IsEndlessModeActive()) percentSoulsClaimed = (float)enemiesCreated / enemiesKilled;
         
         if (percentSoulsClaimed == 1 && damageTaken == 0)
         {

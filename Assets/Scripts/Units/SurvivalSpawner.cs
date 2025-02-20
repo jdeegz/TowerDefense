@@ -63,7 +63,7 @@ public class SurvivalSpawner : EnemySpawner
     {
         if (m_spawnerWaves == null) return;
 
-        int gameplayWave = GameplayManager.Instance.m_wave;
+        int gameplayWave = GameplayManager.Instance.Wave;
 
         //Debug.Log($"Getting wave {GameplayManager.Instance.m_wave}");
 

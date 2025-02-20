@@ -15,12 +15,14 @@ public class WaveReportCard : MonoBehaviour
     private int m_wavesCompleted;
     private UICombatView m_combatHUD;
     private Transform m_homeTransform;
+    private RectTransform m_nestRectTransform;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         GameplayManager.OnWaveCompleted += AlertWaveComplete;
         m_combatHUD = GetComponentInParent<UICombatView>();
+        m_nestRectTransform = m_waveDisplayRootObj.GetComponent<RectTransform>();
         m_homeTransform = m_combatHUD.transform;
 
         if (Instance != null && Instance != this)
@@ -44,6 +46,9 @@ public class WaveReportCard : MonoBehaviour
         
         // Calculate %
         float percentSoulsClaimed = (float)soulsClaimed / enemiesCreated;
+
+        // Cheat for endless mode to only care about damage taken.
+        if (GameplayManager.Instance.IsEndlessModeActive()) percentSoulsClaimed = 1;
         
         // Pick the prefab to create.
         if (percentSoulsClaimed == 1 && damageTaken == 0)
@@ -64,6 +69,8 @@ public class WaveReportCard : MonoBehaviour
             RectTransform spacerRectTransform = spacerObj.GetComponent<RectTransform>();
             spacerRectTransform.sizeDelta = new Vector2(40, 5);
         }
+        
+        LayoutRebuilder.MarkLayoutForRebuild(m_nestRectTransform);
     }
 
     public void MoveDisplayTo(Transform parentTransform)

@@ -38,7 +38,7 @@ public class ScoreManager : MonoBehaviour
         }
 
         int tierIndex = 0;
-        for (int waveIndex = 1; waveIndex < GameplayManager.Instance.m_wave + 1; ++waveIndex)
+        for (int waveIndex = 1; waveIndex < GameplayManager.Instance.Wave + 1; ++waveIndex)
         {
             tierScores[tierIndex].m_tierScore += m_scoreTiers[tierIndex].m_scorePerWave;
             ++tierScores[tierIndex].m_tierWaveCount;

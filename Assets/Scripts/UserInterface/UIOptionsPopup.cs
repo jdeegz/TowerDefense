@@ -172,7 +172,7 @@ public class UIOptionsPopup : UIPopup
         // Are we surrendering from an endless match, or normal?
         if (GameplayManager.Instance.IsEndlessModeActive())
         {
-            wave = GameplayManager.Instance.m_wave;
+            wave = GameplayManager.Instance.Wave;
         }
 
         PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);

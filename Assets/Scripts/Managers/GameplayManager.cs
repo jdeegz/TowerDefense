@@ -298,9 +298,9 @@ public class GameplayManager : MonoBehaviour
             case MissionGameplayData.GameMode.Standard:
 
                 // Is this a boss wave?
-                if (m_bossWaves.Contains(m_wave) && m_bossSequenceController)
+                if (m_bossWaves.Contains(Wave) && m_bossSequenceController)
                 {
-                    Debug.Log($"BOSS Wave {m_wave} Chosen.");
+                    Debug.Log($"BOSS Wave {Wave} Chosen.");
                     UpdateGameplayState(GameplayState.BossWave);
                     return;
                 }
@@ -331,6 +331,8 @@ public class GameplayManager : MonoBehaviour
 
 
             case MissionGameplayData.GameMode.Survival:
+                /*OnWaveCompleted?.Invoke(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave);
+                ResetWaveCompleteValues();*/
                 foreach (EnemySpawner spawner in m_enemySpawners)
                 {
                     spawner.UpdateCreepSpawners();
@@ -912,20 +914,17 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.Combat:
                 break;
             case GameplayState.Build:
-                EnemiesCreatedThisWave = 0;
-                EnemiesKilledThisWave = 0;
-                CoresClaimedThisWave = 0;
-                DamageTakenThisWave = 0;
+                ResetWaveCompleteValues();
                 break;
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, m_wave);
+                PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, Wave);
                 HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
                 int wave = 0;
-                if (m_endlessModeActive) wave = m_wave - 1;
+                if (m_endlessModeActive) wave = Wave - 1;
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave);
                 HandleDefeatSequence();
                 break;
@@ -934,6 +933,14 @@ public class GameplayManager : MonoBehaviour
         }
 
         OnGameplayStateChanged?.Invoke(newState);
+    }
+
+    private void ResetWaveCompleteValues()
+    {
+        EnemiesCreatedThisWave = 0;
+        EnemiesKilledThisWave = 0;
+        CoresClaimedThisWave = 0;
+        DamageTakenThisWave = 0;
     }
 
     public void UpdateInteractionState(InteractionState newState)
@@ -1800,6 +1807,16 @@ public class GameplayManager : MonoBehaviour
 
         // Are there enemies remaining?
         if (m_enemyList.Count > 0) return;
+        
+        // Are there active spawners?
+        foreach (EnemySpawner spawner in m_enemySpawners)
+        {
+            if (spawner.SpawnerActive)
+            {
+                //Debug.Log($"Spawner Still Active.");
+                return;
+            }
+        }
 
         if (m_gameplayState == GameplayState.Defeat) return;
 
@@ -1907,6 +1924,17 @@ public class GameplayManager : MonoBehaviour
 
         // Resume previous Game State.
         //m_gameplayState = m_preVictoryState; // Resume the previous state from where victory / endless came from
+        switch (m_gameplayData.m_gameMode)
+        {
+            case MissionGameplayData.GameMode.Standard: // in standard, we go to the next wave since we killed all the enemies.
+                UpdateGameplayState(GameplayState.Build);
+                break;
+            case MissionGameplayData.GameMode.Survival: // in survival, we want to resume right from where we left off.
+                m_gameplayState = GameplayState.SpawnEnemies;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
         UpdateGameplayState(GameplayState.Build);
         UpdateInteractionState(InteractionState.Idle);
 

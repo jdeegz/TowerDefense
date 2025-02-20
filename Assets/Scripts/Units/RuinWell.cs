@@ -36,7 +36,7 @@ public class RuinWell : Ruin
 
         RequestPlayAudio(m_data.m_discoveredAudioClip);
 
-        m_lastChargeWave = GameplayManager.Instance.m_wave;
+        m_lastChargeWave = GameplayManager.Instance.Wave;
 
         SetVisuals();
     }
@@ -82,10 +82,10 @@ public class RuinWell : Ruin
             return;
         }
 
-        if (m_curCharges < m_maxCharges && GameplayManager.Instance.m_wave - m_lastChargeWave <= m_intervalLength)
+        if (m_curCharges < m_maxCharges && GameplayManager.Instance.Wave - m_lastChargeWave <= m_intervalLength)
         {
             // Increment curCharges -- This will increment only once. Change the above condition to have it catch up to missing charges / waves.
-            m_lastChargeWave = GameplayManager.Instance.m_wave;
+            m_lastChargeWave = GameplayManager.Instance.Wave;
             IncrementCharges();
         }
     }

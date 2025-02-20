@@ -24,17 +24,7 @@ public class EnemySwarmMember : EnemyController
         m_isComplete = false;
 
         int wave = 1;
-
-        if (GameplayManager.Instance)
-        {
-            //m_goal = GameplayManager.Instance.m_enemyGoal;
-            wave = GameplayManager.Instance.m_wave;
-            //AddToGameplayList();
-        }
-
-        //Setup with GridManager
-        //m_curPos = Vector2Int.zero;
-
+        
         //Setup Data
         //m_baseMoveSpeed = m_enemyData.m_moveSpeed;
         //m_baseLookSpeed = m_enemyData.m_lookSpeed;

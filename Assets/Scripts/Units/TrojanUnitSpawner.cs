@@ -34,7 +34,7 @@ public class TrojanUnitSpawner : MonoBehaviour
         RequestPlayAudioLoop(m_data.m_audioSpawnerActiveLoops, m_audioSource);
         
         //Calculate which CreepWave to spawn based on mission's wave number.
-        int creepWaveIndex = GameplayManager.Instance.m_wave % m_creepWaves.Count;
+        int creepWaveIndex = GameplayManager.Instance.Wave % m_creepWaves.Count;
         
         //Assure each creep has a point to spawn to.
         m_activeCreepSpawners = new List<CreepSpawner>();

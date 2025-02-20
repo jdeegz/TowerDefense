@@ -95,7 +95,7 @@ public class UIMissionCompletePopup : UIPopup
 
     void ConfigureEndlessHighScoreLabel()
     {
-        m_victoriousWave = GameplayManager.Instance.m_wave;
+        m_victoriousWave = GameplayManager.Instance.Wave;
         int curHighScore = GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore;
 
         string endlessHighScorestring;

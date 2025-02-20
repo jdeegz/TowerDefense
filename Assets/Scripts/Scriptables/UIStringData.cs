@@ -10,7 +10,6 @@ public class UIStringData : ScriptableObject
     public string m_cannotPlace;
     public string m_gathererLevelUp;
     public string m_gathererIdle;
-    public string m_waveComplete;
     public string m_displayHighScore;
     public string m_newHighScoreDisplay;
     public string m_bossWaveComplete;
@@ -42,7 +41,8 @@ public class UIStringData : ScriptableObject
     public string m_totalScore = "Total:";
     public string m_newEndlessHighScore = "Wave {0} is a new Endless Mode High Score!";
     public string m_currentEndlessHighScore = "Endless Mode High Score: Wave {0}";
-    public string m_waveCompleted = "{0}% Cores Claimed";
+    public string m_waveCompleted = "Cores Claimed";
+    public string m_waveCompletedEndless = "Grainwraiths Slain";
     public string m_waveCompletedPerfect = "Perfect Wave!";
 
     [Header("Sound Strings")]
