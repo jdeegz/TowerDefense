@@ -96,11 +96,20 @@ public class PlayerDataManager
                 newMissionSaveData.m_missionAttempts = mission.m_missionAttempts + 1;
 
                 newMissionSaveData.m_waveHighScore = Math.Max(wave, mission.m_waveHighScore);
+                Debug.Log($"UpdateMissionSaveData: Evaluating High Score. Current High Score {mission.m_waveHighScore}, New Score {wave}.");
+                
                 newMissionSaveData.m_perfectWaveScore = Math.Max(perfectWaves, mission.m_perfectWaveScore);
+                Debug.Log($"UpdateMissionSaveData: Evaluating Perfect Wave Score. Current High Score {mission.m_perfectWaveScore}, New Score {perfectWaves}.");
 
                 //only save the highest completion rank.
                 newMissionSaveData.m_missionCompletionRank = Math.Max(newMissionSaveData.m_missionCompletionRank, mission.m_missionCompletionRank);
 
+                Debug.Log($"UpdateMissionSaveData: " +
+                          $"Mission Attempts {newMissionSaveData.m_missionAttempts}, " +
+                          $"Wave High Score {newMissionSaveData.m_waveHighScore}, " +
+                          $"Perfect Wave Score {newMissionSaveData.m_perfectWaveScore}, " +
+                          $"Completion Rank {newMissionSaveData.m_missionCompletionRank}.");
+                
                 m_playerData.m_missions[i] = newMissionSaveData;
 
                 //If completion rank is greater than 1, we want to unlock the next mission if there is one.

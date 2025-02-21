@@ -1,12 +1,7 @@
-using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.Serialization;
-using System.Collections;
-using UnityEngine;
 
 public class FullscreenEffectController : MonoBehaviour
 {

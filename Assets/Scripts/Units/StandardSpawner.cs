@@ -46,7 +46,6 @@ public class StandardSpawner : EnemySpawner
 
     public override void UpdateCreepSpawners()
     {
-
         if (m_nextCreepWave == null) return;
 
         //Assure each creep has a point to spawn to.

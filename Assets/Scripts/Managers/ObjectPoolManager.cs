@@ -143,6 +143,7 @@ public class ObjectPoolManager : MonoBehaviour
         }
         else
         {
+            Debug.Log($"Spawning object: {spawnableObj.name}", spawnableObj);
             spawnableObj.SetActive(true);
         }
         

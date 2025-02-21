@@ -29,6 +29,7 @@ public abstract class EnemySpawner : MonoBehaviour
 
     public void DeactivateSpawner()
     {
+        Debug.Log($"Spawner: Deactivating {gameObject.name}'s spawner.");
         m_isSpawnerActive = false;
     }
     
@@ -108,7 +109,7 @@ public abstract class EnemySpawner : MonoBehaviour
         OnActiveWaveSet?.Invoke(m_nextCreepWave);
     }
 
-    void Awake()
+    public virtual void OnEnable()
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
@@ -169,6 +170,14 @@ public abstract class EnemySpawner : MonoBehaviour
         if (audioSource == null) audioSource = m_audioSource;
         if (m_curCoroutine != null) StopCoroutine(m_curCoroutine);
         m_curCoroutine = StartCoroutine(FadeOutAudio(3f, audioSource));
+    }
+    
+    public void RequestPlayAudio(AudioClip clip, AudioSource audioSource = null)
+    {
+        if (clip == null) return;
+        
+        if (audioSource == null) audioSource = m_audioSource;
+        audioSource.PlayOneShot(clip);
     }
     // END AUDIO
 

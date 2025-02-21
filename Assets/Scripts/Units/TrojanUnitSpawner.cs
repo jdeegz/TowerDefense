@@ -1,24 +1,27 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrojanUnitSpawner : MonoBehaviour
+public class TrojanUnitSpawner : EnemySpawner
 {
     //The Trojan spawner is created at the X,Y position of the Enemy Trojan when it dies.
-    //It needs to be added to the gameplay manager's active spawner list.
-    //It needs to spawn creeps from each creep wave based on their timing data.
-    [SerializeField] private TearData m_data;
     [SerializeField] private List<CreepWave> m_creepWaves;
-    [SerializeField] private AudioSource m_audioSource;
-
-    private List<CreepSpawner> m_activeCreepSpawners;
-    private List<Creep> m_activeCreepWave;
-    private bool m_isSpawnerActive;
     
     private void OnEnable()
     {
-        m_isSpawnerActive = false;
+        GameplayManager.GameplayState currentState = GameplayManager.Instance.m_gameplayState;
+        if (currentState == GameplayManager.GameplayState.Victory || currentState == GameplayManager.GameplayState.Defeat)
+        {
+            //Cancel the request to spawn a tear.
+            Destroy(gameObject);
+            return;
+        }
         
+        base.OnEnable();
+        
+        m_isSpawnerActive = false;
+        GameplayManager.Instance.AddTrojanSpawnerToList(this);
         RequestPlayAudio(m_data.m_audioSpawnerCreated, m_audioSource);
         StartCoroutine(CreateSpawner());
     }
@@ -41,7 +44,7 @@ public class TrojanUnitSpawner : MonoBehaviour
         for (int i = 0; i < m_creepWaves[creepWaveIndex].m_creeps.Count; ++i)
         {
             //Build list of Active Creep Spawners.
-            CreepSpawner creepSpawner = new CreepSpawner(m_creepWaves[creepWaveIndex].m_creeps[i], transform);
+            CreepSpawner creepSpawner = new CreepSpawner(m_creepWaves[creepWaveIndex].m_creeps[i], m_spawnPoint);
             m_activeCreepSpawners.Add(creepSpawner);
         }
 
@@ -75,75 +78,61 @@ public class TrojanUnitSpawner : MonoBehaviour
             }
         }
     }
-    
-    public void RequestPlayAudioLoop(List<AudioClip> clips, AudioSource audioSource = null)
+
+    public override void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
     {
-        if (audioSource == null) audioSource = m_audioSource;
-        
-        int i = Random.Range(0, clips.Count);
-        audioSource.volume = 0;
-        audioSource.loop = true;
-        audioSource.clip = clips[i];
-        audioSource.Play();
-        
-        if(m_curCoroutine != null) StopCoroutine(m_curCoroutine);
-        m_curCoroutine = StartCoroutine(FadeInAudio(1f, audioSource));
-
-    }
-
-    private Coroutine m_curCoroutine;
-    private IEnumerator FadeInAudio(float duration, AudioSource audioSource)
-    {
-        float startVolume = audioSource.volume;
-        float elapsedTime = 0f;
-
-        while (elapsedTime < duration)
+        switch (newState)
         {
-            elapsedTime += Time.unscaledDeltaTime;
-            audioSource.volume = Mathf.Clamp01(startVolume + (elapsedTime / duration));
-            yield return null;
+            case GameplayManager.GameplayState.BuildGrid:
+                break;
+            case GameplayManager.GameplayState.PlaceObstacles:
+                break;
+            case GameplayManager.GameplayState.FloodFillGrid:
+                break;
+            case GameplayManager.GameplayState.CreatePaths:
+                break;
+            case GameplayManager.GameplayState.Setup:
+                break;
+            case GameplayManager.GameplayState.SpawnEnemies:
+                break;
+            case GameplayManager.GameplayState.BossWave:
+                break;
+            case GameplayManager.GameplayState.Combat:
+                break;
+            case GameplayManager.GameplayState.Build:
+                break;
+            case GameplayManager.GameplayState.CutScene:
+                break;
+            case GameplayManager.GameplayState.Victory:
+                RemoveTrojanUnitSpawner();
+                break;
+            case GameplayManager.GameplayState.Defeat:
+                DeactivateSpawner();
+                break;
+            default:
+                break;
         }
-
-        audioSource.volume = 1f;
     }
-    
-    private IEnumerator FadeOutAudio(float duration, AudioSource audioSource)
-    {
-        float startVolume = audioSource.volume;
-        float elapsedTime = 0f;
 
-        while (elapsedTime < duration)
-        {
-            elapsedTime += Time.unscaledDeltaTime;
-            audioSource.volume = Mathf.Clamp01(startVolume - (elapsedTime / duration));
-            yield return null;
-        }
-
-        audioSource.volume = 0f;
-        audioSource.Stop();
-    }
-    
-    public void RequestStopAudioLoop(AudioSource audioSource = null)
+    public override void UpdateCreepSpawners()
     {
-        if (audioSource == null) audioSource = m_audioSource;
-        if(m_curCoroutine != null) StopCoroutine(m_curCoroutine);
-        m_curCoroutine = StartCoroutine(FadeOutAudio(0.5f, audioSource));
-    }
-    
-    public void RequestPlayAudio(AudioClip clip, AudioSource audioSource = null)
-    {
-        if (clip == null) return;
-        
-        if (audioSource == null) audioSource = m_audioSource;
-        audioSource.PlayOneShot(clip);
+        // Trojan Spawners do not need to update Creep Spawners. They only have one.
     }
 
     private void RemoveTrojanUnitSpawner()
     {
-        //Trigger animation to remove spawners
+        DeactivateSpawner();
+        
+        // TO DO Trigger animation to remove spawners
         
         //Remove Obj from scene
+        GameplayManager.Instance.RemoveTrojanSpawnerFromList(this);
+        
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
+        
+        Debug.Log($"Spawner: {gameObject.name}'s spawner removed.");
+        
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
     }
     
     public TearTooltipData GetTooltipData()

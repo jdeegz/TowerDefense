@@ -17,22 +17,29 @@ public class UIToolTipWaveDisplay : UITooltip
         int curWave = GameplayManager.Instance.Wave;
         int waveHighScore = GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore;
 
-        if (curWave > waveHighScore)
+        if (waveHighScore > 0)
         {
-            // New High Score!
-            endlessHighScorestring = string.Format(m_uiStrings.m_tooltipNewEndlessHighScore, curWave);
+            if (curWave > waveHighScore)
+            {
+                // New High Score!
+                endlessHighScorestring = string.Format(m_uiStrings.m_tooltipNewEndlessHighScore, curWave);
+            }
+            else
+            {
+                string currentEndlessHighScore = string.Format(m_uiStrings.m_tooltipCurrentEndlessHighScore, waveHighScore);
+                string currentEndlessScore = string.Format(m_uiStrings.m_tooltipCurrentEndlessScore, curWave);
+                endlessHighScorestring = $"{currentEndlessHighScore}<br>{currentEndlessScore}";
+            }
         }
         else
         {
-            endlessHighScorestring = string.Format(m_uiStrings.m_tooltipCurrentEndlessHighScore, waveHighScore);
+            endlessHighScorestring = string.Format(m_uiStrings.m_tooltipCurrentEndlessScore, curWave);
         }
-        
+
         //Display highest Perfect Wave count.
         string perfectWaveHighScoreString;
         int curPerfectWaveCount = GameplayManager.Instance.m_perfectWavesCompleted;
         int perfectWaveHighScore = GameplayManager.Instance.GetCurrentMissionSaveData().m_perfectWaveScore;
-
-        Debug.Log($"perfect wave high score: {perfectWaveHighScore}");
         
         if (perfectWaveHighScore > 0) // If we do NOT have a saved high score, we only care about the current score.
         {

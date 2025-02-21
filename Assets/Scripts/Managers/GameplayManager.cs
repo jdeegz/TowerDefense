@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using JetBrains.Annotations;
+using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Profiling;
 using Unity.VisualScripting;
@@ -99,8 +100,9 @@ public class GameplayManager : MonoBehaviour
     [FormerlySerializedAs("m_activeObelisks")]
     public List<Obelisk> m_obelisksInMission;
 
-    [FormerlySerializedAs("m_unitSpawners")] [Header("Unit Spawners")]
-    public List<EnemySpawner> m_enemySpawners;
+    [Header("Unit Spawners")]
+    [ReadOnly] public List<EnemySpawner> m_enemySpawners;
+    [ReadOnly] public List<EnemySpawner> m_enemyTrojanSpawners;
 
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
@@ -1826,6 +1828,15 @@ public class GameplayManager : MonoBehaviour
                 return;
             }
         }
+        
+        foreach (EnemySpawner spawner in m_enemyTrojanSpawners)
+        {
+            if (spawner.SpawnerActive)
+            {
+                //Debug.Log($"Spawner Still Active.");
+                return;
+            }
+        }
 
         if (m_gameplayState == GameplayState.Defeat) return;
 
@@ -1865,6 +1876,49 @@ public class GameplayManager : MonoBehaviour
 
         if (m_wavesCompleted == null) m_wavesCompleted = new List<CompletedWave>();
         m_wavesCompleted.Add(completedWave);
+        
+        Debug.Log($"Wave {m_wavesCompleted.Count} completed.");
+        Debug.Log($"Wave {m_wavesCompleted.Count} data: " +
+                  $"Enemies Created: {EnemiesCreatedThisWave}, " +
+                  $"Enemies Killed: {EnemiesKilledThisWave}, " +
+                  $"Cores Claimed: {CoresClaimedThisWave}, " +
+                  $"Damage Taken: {DamageTakenThisWave}, " +
+                  $"Completion: {wavePercent}%");
+        
+
+        OnWaveCompleted?.Invoke(completedWave);
+        
+        ResetWaveCompleteValues();
+    }
+
+    private void AddVictoryWave()
+    {
+        float wavePercent = 0;
+        if (DamageTakenThisWave == 0)
+        {
+            wavePercent = 1;
+        }
+        else
+        {
+            // What percent of enemies created escaped?
+            wavePercent = 1 - (DamageTakenThisWave / EnemiesCreatedThisWave);
+        }
+        
+        if (wavePercent == 1) ++m_perfectWavesCompleted;
+        
+        CompletedWave completedWave = new CompletedWave(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave, wavePercent);
+        
+        if (m_wavesCompleted == null) m_wavesCompleted = new List<CompletedWave>();
+        m_wavesCompleted.Add(completedWave);
+        
+        Debug.Log($"Wave {m_wavesCompleted.Count} completed.");
+        Debug.Log($"Wave {m_wavesCompleted.Count} data: " +
+                  $"Enemies Created: {EnemiesCreatedThisWave}, " +
+                  $"Enemies Killed: {EnemiesKilledThisWave}, " +
+                  $"Cores Claimed: {CoresClaimedThisWave}, " +
+                  $"Damage Taken: {DamageTakenThisWave}, " +
+                  $"Completion: {wavePercent}%");
+        
 
         OnWaveCompleted?.Invoke(completedWave);
         
@@ -1888,9 +1942,24 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    public void AddSpawnerToList(EnemySpawner standardSpawner)
+    public void AddSpawnerToList(EnemySpawner spawner)
     {
-        m_enemySpawners.Add(standardSpawner);
+        m_enemySpawners.Add(spawner);
+    }
+    
+    public void RemoveSpawnerFromList(EnemySpawner spawner)
+    {
+        m_enemySpawners.Remove(spawner);
+    }
+    
+    public void AddTrojanSpawnerToList(EnemySpawner spawner)
+    {
+        m_enemyTrojanSpawners.Add(spawner);
+    }
+    
+    public void RemoveTrojanSpawnerFromList(EnemySpawner spawner)
+    {
+        m_enemyTrojanSpawners.Remove(spawner);
     }
 
     [HideInInspector]
@@ -1921,6 +1990,7 @@ public class GameplayManager : MonoBehaviour
 
         if (m_obeliskCount > 0 && m_obelisksChargedCount == m_obeliskCount)
         {
+            AddVictoryWave();
             UpdateGameplayState(GameplayState.Victory);
             return;
         }
@@ -1970,8 +2040,10 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
+        
         UpdateGameplayState(GameplayState.Build);
         UpdateInteractionState(InteractionState.Idle);
+        ResetWaveCompleteValues();
 
         // Disable FFW
         if(m_playbackSpeed == 2) UpdateGameSpeed();
