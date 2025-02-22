@@ -18,8 +18,10 @@ public abstract class Tower : MonoBehaviour
 
     [Header("Attachment Points")]
     [SerializeField] protected Transform m_turretPivot;
-
     [SerializeField] protected Transform m_muzzlePoint;
+
+    [Header("Renderers")]
+    [SerializeField] protected List<Renderer> m_renderers;
 
     [Header("Range Circle")]
     [SerializeField] protected LineRenderer m_towerRangeCircle;
@@ -39,6 +41,7 @@ public abstract class Tower : MonoBehaviour
     protected float m_targetAngle;
     protected quaternion m_targetRotation;
     protected Vector3 m_directionAwayFromSpire;
+    protected List<Material> m_materials;
 
     void Awake()
     {
@@ -51,6 +54,12 @@ public abstract class Tower : MonoBehaviour
         m_animator = GetComponent<Animator>();
         m_towerCollider = gameObject.GetComponent<Collider>();
         m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
+
+        m_materials = new List<Material>();
+        foreach (Renderer renderer in m_renderers)
+        {
+            m_materials.Add(renderer.material);
+        }
     }
 
     public virtual void GameplayStateChanged(GameplayManager.GameplayState newState)
@@ -64,6 +73,11 @@ public abstract class Tower : MonoBehaviour
 
     public virtual void RequestTowerDisable()
     {
+        foreach (Material material in m_materials)
+        {
+            material.color = Color.gray;
+        }
+
         RequestPlayAudio(m_towerData.m_audioTowerDeactivatedClips, m_audioSource);
         m_curTarget = null;
         enabled = false;
@@ -71,8 +85,14 @@ public abstract class Tower : MonoBehaviour
 
     public virtual void RequestTowerEnable()
     {
-        RequestPlayAudio(m_towerData.m_audioTowerActivatedClips, m_audioSource);
         enabled = true;
+        m_curTarget = null;
+        RequestPlayAudio(m_towerData.m_audioTowerActivatedClips, m_audioSource);
+
+        foreach (Material material in m_materials)
+        {
+            material.color = Color.white;
+        }
     }
 
     public abstract TowerTooltipData GetTooltipData();
@@ -80,7 +100,7 @@ public abstract class Tower : MonoBehaviour
     public abstract void SetUpgradeData(TowerUpgradeData data);
 
     private int m_overlapCapsuleHitCount = 0;
-    
+
     public void FindTarget()
     {
         // Collider[] hits = Physics.OverlapSphere(transform.position, m_towerData.m_fireRange, m_layerMask.value);
@@ -137,7 +157,7 @@ public abstract class Tower : MonoBehaviour
         {
             m_targetCollider = m_curTarget.GetComponent<Collider>(); // Used for Void towers to check hit unit or shield.
         }
-        
+
         ListPool<EnemyController>.Release(targets);
     }
 
@@ -168,6 +188,7 @@ public abstract class Tower : MonoBehaviour
     private Vector3 m_targetPos;
     private Vector3 m_muzzlePos;
     private Vector3 m_directionOfTarget;
+
     protected bool IsTargetInSight()
     {
         m_targetPos = m_curTarget.transform.position;
@@ -182,6 +203,7 @@ public abstract class Tower : MonoBehaviour
 
     private Vector2 m_tower2dPos;
     private Vector2 m_target2dPos;
+
     protected bool IsTargetInFireRange(Vector3 targetPos)
     {
         // Trying 2d range calculations to be more player friendly with the flying unit(s).
@@ -325,6 +347,7 @@ public abstract class Tower : MonoBehaviour
     }
 
     private Collider m_towerCollider;
+
     public virtual void RemoveTower()
     {
         Debug.Log($"Build Tower: Setting up {gameObject.name} at {transform.position}.");

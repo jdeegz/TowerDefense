@@ -82,6 +82,11 @@ public class GameplayManager : MonoBehaviour
         set
         {
             m_wave = value;
+
+            // Logging hit point increase over the game.
+            float hitPointsThisWave = Instance.m_gameplayData.CalculateHealth(10, true);
+            Debug.Log($"Wave {Wave} hitpoints: {hitPointsThisWave}, Increase: {(hitPointsThisWave / 10) * 100}%");
+            
             OnWaveChanged?.Invoke(m_wave);
         }
     }
@@ -107,11 +112,12 @@ public class GameplayManager : MonoBehaviour
     [Header("Active Enemies")]
     public List<EnemyController> m_enemyList;
     public List<EnemyController> m_enemyBossList;
-    
+
     public List<CompletedWave> m_wavesCompleted;
     public int m_perfectWavesCompleted;
-    
+
     private int m_enemiesCreatedThisWave;
+
     public int EnemiesCreatedThisWave
     {
         get { return m_enemiesCreatedThisWave; }
@@ -123,8 +129,9 @@ public class GameplayManager : MonoBehaviour
             }
         }
     }
-    
+
     private int m_enemiesKilledThisWave;
+
     public int EnemiesKilledThisWave
     {
         get { return m_enemiesKilledThisWave; }
@@ -136,8 +143,9 @@ public class GameplayManager : MonoBehaviour
             }
         }
     }
-    
+
     private int m_coresClaimedThisWave;
+
     public int CoresClaimedThisWave
     {
         get { return m_coresClaimedThisWave; }
@@ -149,8 +157,9 @@ public class GameplayManager : MonoBehaviour
             }
         }
     }
-    
+
     private int m_damageTakenThisWave;
+
     public int DamageTakenThisWave
     {
         get { return m_damageTakenThisWave; }
@@ -162,7 +171,7 @@ public class GameplayManager : MonoBehaviour
             }
         }
     }
-    
+
 
     [Header("Player Constructed")]
     public List<GathererController> m_woodGathererList;
@@ -293,7 +302,7 @@ public class GameplayManager : MonoBehaviour
             StartNextWave();
         }
     }
-    
+
     void StartNextWave()
     {
         switch (m_gameplayData.m_gameMode)
@@ -828,7 +837,7 @@ public class GameplayManager : MonoBehaviour
 
         m_gameSpeed = newSpeed;
         Debug.Log($"Gameplay Manager: Game Speed is now {m_gameSpeed}.");
-        
+
         //Include FFW state
         //When we get a request check current game speed to identify if we return to normal or return to FFW when leaving pause.
         //What do we send from the hotkey/button presses?
@@ -896,6 +905,8 @@ public class GameplayManager : MonoBehaviour
                 UpdateGamePlayback(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
+                
+                
                 switch (m_gameplayData.m_gameMode)
                 {
                     case MissionGameplayData.GameMode.Standard:
@@ -1109,7 +1120,7 @@ public class GameplayManager : MonoBehaviour
 
         float t = -ray.origin.y / ray.direction.y; // Solve for t where Y = 0
         Vector3 worldPos = ray.origin + t * ray.direction; // Get intersection point
-        
+
         Debug.Log($"Precon Mouse Position: {worldPos}.");
 
         worldPos.x += m_preconxOffset;
@@ -1120,7 +1131,7 @@ public class GameplayManager : MonoBehaviour
         gridPos = Util.FindNearestValidCellPos(worldPos, m_preconstructedTowerData.m_buildingSize);
 
         spawnPosition = new Vector3(gridPos.x, 0.7f, gridPos.y);
-        
+
         Debug.Log($"Precon Building Spawn Position: {spawnPosition}");
 
         // Create the new object.
@@ -1192,7 +1203,7 @@ public class GameplayManager : MonoBehaviour
         if (gridPos == m_preconstructedTowerPos) return;
 
         m_preconstructedTowerPos = gridPos;
-        
+
         List<Cell> newCells = Util.GetCellsFromPos(m_preconstructedTowerPos, m_preconBuildingWidth, m_preconBuildingHeight);
 
         if (newCells == null) return;
@@ -1812,13 +1823,13 @@ public class GameplayManager : MonoBehaviour
         }
 
         ++EnemiesKilledThisWave;
-        
+
         // Dont check for win in Survival.
         if (m_gameplayData.m_gameMode == MissionGameplayData.GameMode.Survival) return;
 
         // Are there enemies remaining?
         if (m_enemyList.Count > 0) return;
-        
+
         // Are there active spawners?
         foreach (EnemySpawner spawner in m_enemySpawners)
         {
@@ -1828,7 +1839,7 @@ public class GameplayManager : MonoBehaviour
                 return;
             }
         }
-        
+
         foreach (EnemySpawner spawner in m_enemyTrojanSpawners)
         {
             if (spawner.SpawnerActive)
@@ -1844,12 +1855,12 @@ public class GameplayManager : MonoBehaviour
 
         if (m_gameplayState == GameplayState.BossWave)
         {
-            UpdateCompletedWaves();
+            // If it's a boss wave, we only care about RemoveBossFromList as tracking wave completion.
+            //UpdateCompletedWaves(); 
         }
         else
         {
             UpdateCompletedWaves();
-            
         }
 
         RequestPlayAudio(m_gameplayAudioData.m_audioWaveEndClips);
@@ -1876,7 +1887,7 @@ public class GameplayManager : MonoBehaviour
 
         if (m_wavesCompleted == null) m_wavesCompleted = new List<CompletedWave>();
         m_wavesCompleted.Add(completedWave);
-        
+
         Debug.Log($"Wave {m_wavesCompleted.Count} completed.");
         Debug.Log($"Wave {m_wavesCompleted.Count} data: " +
                   $"Enemies Created: {EnemiesCreatedThisWave}, " +
@@ -1884,10 +1895,41 @@ public class GameplayManager : MonoBehaviour
                   $"Cores Claimed: {CoresClaimedThisWave}, " +
                   $"Damage Taken: {DamageTakenThisWave}, " +
                   $"Completion: {wavePercent}%");
-        
+
 
         OnWaveCompleted?.Invoke(completedWave);
-        
+
+        ResetWaveCompleteValues();
+    }
+
+    private void UpdateCompletedBossWave()
+    {
+        // Calculate if this was a perfected wave.
+        // Calculate Damage Taken / Castle Starting Health.
+        float wavePercent = 0;
+
+        int currentMaxHealth = m_castleController.GetCurrentMaxHealth();
+        wavePercent = (float)currentMaxHealth / (currentMaxHealth + DamageTakenThisWave);
+
+        if (wavePercent == 1) ++m_perfectWavesCompleted;
+
+        CompletedWave completedWave = new CompletedWave(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave, wavePercent);
+
+        if (m_wavesCompleted == null) m_wavesCompleted = new List<CompletedWave>();
+
+        m_wavesCompleted.Add(completedWave);
+
+        Debug.Log($"Boss Wave {m_wavesCompleted.Count} completed.");
+        Debug.Log($"Wave {m_wavesCompleted.Count} data: " +
+                  $"Enemies Created: {EnemiesCreatedThisWave}, " +
+                  $"Enemies Killed: {EnemiesKilledThisWave}, " +
+                  $"Cores Claimed: {CoresClaimedThisWave}, " +
+                  $"Damage Taken: {DamageTakenThisWave}, " +
+                  $"Completion: {wavePercent}%");
+
+
+        OnWaveCompleted?.Invoke(completedWave);
+
         ResetWaveCompleteValues();
     }
 
@@ -1903,14 +1945,14 @@ public class GameplayManager : MonoBehaviour
             // What percent of enemies created escaped?
             wavePercent = 1 - (DamageTakenThisWave / EnemiesCreatedThisWave);
         }
-        
+
         if (wavePercent == 1) ++m_perfectWavesCompleted;
-        
+
         CompletedWave completedWave = new CompletedWave(EnemiesCreatedThisWave, EnemiesKilledThisWave, CoresClaimedThisWave, DamageTakenThisWave, wavePercent);
-        
+
         if (m_wavesCompleted == null) m_wavesCompleted = new List<CompletedWave>();
         m_wavesCompleted.Add(completedWave);
-        
+
         Debug.Log($"Wave {m_wavesCompleted.Count} completed.");
         Debug.Log($"Wave {m_wavesCompleted.Count} data: " +
                   $"Enemies Created: {EnemiesCreatedThisWave}, " +
@@ -1918,15 +1960,16 @@ public class GameplayManager : MonoBehaviour
                   $"Cores Claimed: {CoresClaimedThisWave}, " +
                   $"Damage Taken: {DamageTakenThisWave}, " +
                   $"Completion: {wavePercent}%");
-        
+
 
         OnWaveCompleted?.Invoke(completedWave);
-        
+
         ResetWaveCompleteValues();
     }
 
     public void AddBossToList(EnemyController enemy)
     {
+        ++EnemiesCreatedThisWave;
         m_enemyBossList.Add(enemy);
     }
 
@@ -1940,26 +1983,46 @@ public class GameplayManager : MonoBehaviour
                 break;
             }
         }
+
+        ++EnemiesKilledThisWave; // This is not garaunteed by bosses, as they may also ESCAPE and not be killed. But i don't think this can occur yet.
+
+        if (m_enemyBossList.Count > 0) return;
+
+        UpdateCompletedBossWave();
     }
 
     public void AddSpawnerToList(EnemySpawner spawner)
     {
         m_enemySpawners.Add(spawner);
     }
-    
+
     public void RemoveSpawnerFromList(EnemySpawner spawner)
     {
-        m_enemySpawners.Remove(spawner);
+        for (int i = 0; i < m_enemySpawners.Count; ++i)
+        {
+            if (m_enemySpawners[i] == spawner)
+            {
+                m_enemySpawners.RemoveAt(i);
+                break;
+            }
+        }
     }
-    
+
     public void AddTrojanSpawnerToList(EnemySpawner spawner)
     {
         m_enemyTrojanSpawners.Add(spawner);
     }
-    
+
     public void RemoveTrojanSpawnerFromList(EnemySpawner spawner)
     {
-        m_enemyTrojanSpawners.Remove(spawner);
+        for (int i = 0; i < m_enemyTrojanSpawners.Count; ++i)
+        {
+            if (m_enemyTrojanSpawners[i] == spawner)
+            {
+                m_enemyTrojanSpawners.RemoveAt(i);
+                break;
+            }
+        }
     }
 
     [HideInInspector]
@@ -2040,13 +2103,13 @@ public class GameplayManager : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+
         UpdateGameplayState(GameplayState.Build);
         UpdateInteractionState(InteractionState.Idle);
         ResetWaveCompleteValues();
 
         // Disable FFW
-        if(m_playbackSpeed == 2) UpdateGameSpeed();
+        if (m_playbackSpeed == 2) UpdateGameSpeed();
     }
 
     public bool IsEndlessModeActive()
@@ -2138,7 +2201,7 @@ public class GameplayManager : MonoBehaviour
 
         //Set speed to paused
         UpdateGamePlayback(GameSpeed.Paused);
-        
+
         m_combatHUD.SetCanvasInteractive(false, 0.1f);
 
         /*// Disable Lights
@@ -2157,7 +2220,7 @@ public class GameplayManager : MonoBehaviour
 
         Debug.Log($"Cut Scene: Set Combat HUD Interativity to True.");
         m_combatHUD.SetCanvasInteractive(true);
-        
+
         //Set interaction to disabled
         UpdateInteractionState(InteractionState.Idle);
 
@@ -2166,7 +2229,7 @@ public class GameplayManager : MonoBehaviour
 
         m_watchingCutScene = false;
         Debug.Log($"Cut Scene: Set Watching Cut Scene to: {m_watchingCutScene}.");
-        
+
 
         /*// Loop through each light and re-enable it
         foreach (Light light in m_lights)
@@ -2195,7 +2258,7 @@ public class GameplayManager : MonoBehaviour
     {
         m_victorySequence = StartCoroutine(VictorySequence());
     }
-    
+
     private void HandleDefeatSequence()
     {
         m_defeatSequence = StartCoroutine(DefeatSequence());
@@ -2218,7 +2281,7 @@ public class GameplayManager : MonoBehaviour
     IEnumerator VictorySequence()
     {
         UpdateInteractionState(InteractionState.Disabled);
-        
+
         // Disable Spire Damage.
         m_castleController.SetCastleInvulnerable(true);
 
@@ -2277,7 +2340,7 @@ public class GameplayManager : MonoBehaviour
 
         // Display the Victory UI.
         UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
-        
+
         // Play Victory Stinger
         RequestPlayAudio(m_gameplayAudioData.m_victoryClip);
 
@@ -2287,10 +2350,11 @@ public class GameplayManager : MonoBehaviour
 
     private Coroutine m_defeatSequence;
     private float m_cameraMoveDuration = 2f;
+
     IEnumerator DefeatSequence()
     {
         UpdateInteractionState(InteractionState.Disabled);
-        
+
         // Disable Spire Damage.
         m_castleController.SetCastleInvulnerable(true);
 
@@ -2299,7 +2363,7 @@ public class GameplayManager : MonoBehaviour
 
         // Hide the CombatHUD.
         CombatHUD.SetCanvasInteractive(false);
-        
+
         // Assure we're at Time Scale 1.
         DOTween.To(() => Time.timeScale, x => Time.timeScale = x, 1f, 3).SetUpdate(true);
 
@@ -2308,13 +2372,13 @@ public class GameplayManager : MonoBehaviour
         {
             gatherer.ReturnToIdle();
         }
-        
+
         // Disable Living enemies.
         foreach (EnemyController enemyController in m_enemyList)
         {
             enemyController.SetEnemyActive(false);
         }
-        
+
         foreach (EnemyController enemyController in m_enemyBossList)
         {
             enemyController.SetEnemyActive(false);
@@ -2345,7 +2409,7 @@ public class GameplayManager : MonoBehaviour
 
         // Play Defeat Stinger
         RequestPlayAudio(m_gameplayAudioData.m_defeatClip);
-        
+
         // Display the Victory UI.
         UIPopupManager.Instance.ShowPopup<UIMissionCompletePopup>("MissionComplete");
 

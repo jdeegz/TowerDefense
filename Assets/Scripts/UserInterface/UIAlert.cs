@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Sequence = DG.Tweening.Sequence;
 
-public class UIAlert : MonoBehaviour
+public class UIAlert : MonoBehaviour // TO DO This should become a derived class to allow for more alert variation.
 {
     [SerializeField] private TextMeshProUGUI m_label;
 

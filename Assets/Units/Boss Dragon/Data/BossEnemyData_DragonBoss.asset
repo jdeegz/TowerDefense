@@ -17,14 +17,19 @@ MonoBehaviour:
   m_moveSpeed: 2
   m_movementWiggleValue: 0
   m_lookSpeed: 55
+  m_canBeSlowed: 1
   m_damageMultiplier: 1
-  m_health: 150
+  m_health: 200
   m_targetPriority: 0
   m_challengeRating: 0
   m_healthMeterOffset: 200
   m_healthMeterScale: 2
+  m_coreRewardCount: 30
   m_spawnVFXPrefab: {fileID: 0}
-  m_deathVFXPrefab: {fileID: 0}
+  m_deathVFXPrefab: {fileID: 4492142606264769375, guid: cc4c7729d02baac4cb236df99f3a1020, type: 3}
+  m_attackSpireVFXPrefab: {fileID: 2714476485978983733, guid: f0ecd6f85b5b16f46b30ff40b34507f2, type: 3}
+  m_teleportDepartureVFX: {fileID: 0}
+  m_teleportArrivalVFX: {fileID: 0}
   m_trojanSpawner: {fileID: 0}
   m_audioSpawnClips:
   - {fileID: 8300000, guid: e87e7199dc4750e4eb952023d1c1ef69, type: 3}
@@ -37,10 +42,10 @@ MonoBehaviour:
   m_audioLifeLoop: {fileID: 8300000, guid: 87146123d69241e49897122ba222573e, type: 3}
   m_audioEnemyFeatureClip: {fileID: 0}
   m_projectileObj: {fileID: 8933404775076088512, guid: 8ecd13374739f4e40af2191fa92d6296, type: 3}
-  m_castleAttackRate: 5
-  m_strafeAttackRate: 4
-  m_attackDelay: 1
-  m_attackCooldown: 1.5
+  m_castleAttackRate: 8
+  m_strafeAttackRate: 2
+  m_attackDelay: 0.5
+  m_attackCooldown: 0.33
   m_audioMovementClips:
   - {fileID: 8300000, guid: 7f703c7e5369f0b40b3e56a20fc438a2, type: 3}
   - {fileID: 8300000, guid: d9c1e992453d76944a8e300027ea88ce, type: 3}

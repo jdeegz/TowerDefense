@@ -25,6 +25,9 @@ public class EnemyData : ScriptableObject
     public float m_healthMeterOffset = 35f;
     public float m_healthMeterScale = 1f;
 
+    [Header("Cores Granted")]
+    public int m_coreRewardCount = 1;
+    
     [Header("VFX")]
     public GameObject m_spawnVFXPrefab;
     public GameObject m_deathVFXPrefab;

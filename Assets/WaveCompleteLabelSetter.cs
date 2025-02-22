@@ -8,8 +8,25 @@ public class WaveCompleteLabelSetter : MonoBehaviour
 
     void OnEnable()
     {
-        string text;
+        //Was this a boss wave?
+        int wave = GameplayManager.Instance.Wave;
+        
+        Debug.Log($"WaveCompeteLabelSetter: Enabled. Current Wave is {wave}");
 
+        if (GameplayManager.Instance.m_bossWaves.Contains(wave))
+        {
+            SetBossWaveText();
+            Debug.Log($"WaveCompleteLabelSetter: This was a boss wave.");
+        }
+        else
+        {
+            SetNormalWaveText();
+        }
+    }
+
+    void SetNormalWaveText()
+    {
+        string text;
         if (GameplayManager.Instance.IsEndlessModeActive())
         {
             text = m_uiStrings.m_waveCompletedEndless;
@@ -17,6 +34,21 @@ public class WaveCompleteLabelSetter : MonoBehaviour
         else
         {
             text = m_uiStrings.m_waveCompleted;
+        }
+
+        m_descriptionLabel.SetText(text);
+    }
+
+    void SetBossWaveText()
+    {
+        string text;
+        if (GameplayManager.Instance.IsEndlessModeActive())
+        {
+            text = m_uiStrings.m_waveCompletedBossDamage;
+        }
+        else
+        {
+            text = m_uiStrings.m_waveCompletedBossWave;
         }
 
         m_descriptionLabel.SetText(text);

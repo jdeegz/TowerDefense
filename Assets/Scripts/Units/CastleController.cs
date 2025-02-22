@@ -78,6 +78,11 @@ public class CastleController : MonoBehaviour
         m_isInvulnerable = value;
     }
 
+    public int GetCurrentMaxHealth()
+    {
+        return m_maxHealth;
+    }
+
     void OnDestroy()
     {
         UpdateHealth -= OnUpdateHealth;

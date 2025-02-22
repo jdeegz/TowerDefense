@@ -66,7 +66,6 @@ public class EnemyDragon : EnemyController
 
         m_headTransformHistory = new Queue<BoneTransform>();
 
-
         UpdateBossState(BossState.Idle);
 
         SetBossPathPoints();
@@ -76,6 +75,8 @@ public class EnemyDragon : EnemyController
         InitiateBossMovement();
 
         SetSequenceController(GameplayManager.Instance.GetActiveBossController());
+        
+        // TO DO Refactor dragon boss creation. Can avoid doing it on spawn?
         for (var i = 0; i < m_dragonBoneObjs.Count; i++)
         {
             var obj = m_dragonBoneObjs[i];
@@ -85,12 +86,16 @@ public class EnemyDragon : EnemyController
             swarmMemberController.SetEnemyData(m_enemyData);
             swarmMemberController.SetMother(this);
             swarmMemberController.m_returnToPool = true;
+
+            Debug.Log($"Dragon Boss: Added dragon bone {i}/{m_dragonBoneObjs.Count}.");
         }
 
         for (int x = 0; x < m_dragonBones.Count; x++)
         {
             m_dragonBoneVFXTransforms[x].transform.SetParent(m_dragonBones[x].transform);
             m_dragonBoneVFXTransforms[x].transform.localPosition = Vector3.zero;
+            
+            Debug.Log($"Dragon Boss: Added dragon bone VFX {x}/{m_dragonBoneObjs.Count}.");
         }
 
 
@@ -115,9 +120,77 @@ public class EnemyDragon : EnemyController
         base.OnEnemyDestroyed(pos);
     }
 
+    public override void SpawnCores()
+    {
+        Debug.Log($"Spawn Cores: Spawn Enemy Dragon Cores.");
+        
+        // What percent of defined cores should we spawn?
+        int currentMaxHealth = GameplayManager.Instance.m_castleController.GetCurrentMaxHealth();
+        float rewardPercent = (float)currentMaxHealth / (currentMaxHealth + GameplayManager.Instance.DamageTakenThisWave);
+
+        // How many cores is that?
+        int coresToReward = Mathf.RoundToInt(m_enemyData.m_coreRewardCount * rewardPercent);
+        Debug.Log($"Spawn Cores: Cores to Reward: {coresToReward}");
+        
+        // Find the uncharged Obelisks.
+        List<Obelisk> unchargedObelisks = FindAllUnchargedObelisks();
+        
+        // If we have no uncharged obelisks, we're done here. Nothing to Grant.
+        if (unchargedObelisks == null || unchargedObelisks.Count == 0)
+        {
+            Debug.Log($"Spawn Cores: Uncharged Obelisks Null or Count is 0.");
+            return;
+        }
+        
+        // Calculate the number of cores to sent to the first obelisk in the list.
+        int obeliskIndex = 0;
+        Obelisk currentObelisk = unchargedObelisks[obeliskIndex];
+        int currentObeliskAvailableCapacity = unchargedObelisks[obeliskIndex].GetObeliskMaxChargeCount() - unchargedObelisks[obeliskIndex].GetObeliskChargeCount();
+        int currentShareOfCores = m_enemyData.m_coreRewardCount / unchargedObelisks.Count;
+        GameObject coreObj = currentObelisk.m_obeliskData.m_obeliskSoulObj;
+        
+        // Each spawn point should spawn it's share of cores.
+        // Each core should travel to its share of uncharged obelisks.
+        int coresSentToCurrentObelisk = 0;
+        Debug.Log($"Spawn Cores: There are {m_dragonBoneObjs.Count} valid Core Spawn locations.");
+        for (int i = 0; i < coresToReward; ++i)
+        {
+            // Spawn a core at the bone position we desire, and have it travel to our current obelisk.
+            Vector3 spawnPosition = m_dragonBones[i % m_dragonBoneObjs.Count].transform.position;
+            GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(coreObj, spawnPosition, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+            ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
+            
+            obeliskSoul.SetupSoul(currentObelisk.m_targetPoint.transform.position, currentObelisk, 1);
+
+            Debug.Log($"Spawn Cores: Core {i} Created at Dragon Bone {i % m_dragonBoneObjs.Count}. Sending to Obelisk {obeliskIndex} at {currentObelisk.transform.position}");
+            
+            //Send Cores to obelisks until we've met the share of Cores per Obelisk or the obelisk is full. Recalculate the shares if the obelisk is filled.
+            ++coresSentToCurrentObelisk;
+            if (coresSentToCurrentObelisk >= Math.Min(currentObeliskAvailableCapacity, currentShareOfCores))
+            {
+                // Look to see if we have more obelisks to fill.
+                ++obeliskIndex;
+                if (obeliskIndex >= unchargedObelisks.Count)
+                {
+                    Debug.Log($"Spawn Cores: No more uncharged obelisks to fill.");
+                    return;
+                }
+                
+                // Calculate the new share among obelisks, and update the current obelisk.
+                int coresRemaining = coresToReward - i;
+                int obelisksRemaining = unchargedObelisks.Count - obeliskIndex;
+                currentShareOfCores = obelisksRemaining > 0 ? coresRemaining / obelisksRemaining : coresRemaining;
+                currentObelisk = unchargedObelisks[obeliskIndex];
+                currentObeliskAvailableCapacity = currentObelisk.GetObeliskMaxChargeCount() - currentObelisk.GetObeliskChargeCount();
+                coresSentToCurrentObelisk = 0;
+            }
+        }
+    }
+
     public void SetSequenceController(BossSequenceController controller)
     {
         m_bossSequenceController = controller;
+        Debug.Log($"Dragon Boss: Sequence Controller set to: {controller}.");
     }
 
     void SetBossPathPoints()
@@ -126,7 +199,7 @@ public class EnemyDragon : EnemyController
         Vector2Int centerPoint = Util.GetVector2IntFrom3DPos(GameplayManager.Instance.m_castleController.transform.position);
         m_bossGridCellPositions = DiamondGenerator(centerPoint, m_castlePathingRadius);
 
-        m_curPositionList = m_bossGridCellPositions; // We start rotating around the bass first.
+        m_curPositionList = m_bossGridCellPositions; // We start rotating around the base first.
 
         foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission) // Get the points around obelisks we want to move towards. Then sort them by obelisk completion %.
         {
@@ -138,7 +211,9 @@ public class EnemyDragon : EnemyController
             m_bossObeliskPathPoints.Add(newObeliskObj);
         }
 
-        m_bossObeliskPathPoints.Sort(new BossObeliskObjComparer());
+        m_bossObeliskPathPoints.Sort(new BossObeliskObjComparer()); // Sorts by obelisk completion progress.
+
+        Debug.Log($"Dragon Boss: Path Points Set.");
     }
 
     void SetSpawnPosition()
@@ -199,6 +274,7 @@ public class EnemyDragon : EnemyController
 
         Vector3 spawnPos = new Vector3(castleXPosition + ((xDelta + spawnOffset) * xMultiplier), 0, castleZPosition + ((zDelta + spawnOffset) * zMultiplier));
         transform.position = spawnPos;
+        Debug.Log($"Dragon Boss: Spawn Point {spawnPos} Set directed towards {m_spawnDirection}.");
     }
 
     void InitiateBossMovement()
@@ -209,6 +285,8 @@ public class EnemyDragon : EnemyController
         m_castlePos = GameplayManager.Instance.m_castleController.transform.position;
         transform.rotation = Quaternion.LookRotation(m_curGoalPos - transform.position);
         UpdateBossState(BossState.MoveToDestination);
+
+        Debug.Log($"Dragon Boss: Initiating Boss Movement to {m_curGoalPos}.");
     }
 
     public (List<Vector2Int>, Vector3, int) GetNextGoalList(Vector3 curPos)
@@ -229,22 +307,7 @@ public class EnemyDragon : EnemyController
             ++m_bossObeliskPathIndex; //Increment for next loop
         }
 
-        /*//We now need to find the closts point in the list to move to.
-        Vector3 closestGoalPos = new Vector3();
-        int pathingStartIndex = 0;
-        float shortestDistance = 9999f;
-        for (int i = 0; i < newList.Count; ++i)
-        {
-            Vector3 pointPos = new Vector3(newList[i].x, 0, newList[i].y);
-            float distance = Vector3.Distance(curPos, pointPos);
-            if (distance <= shortestDistance)
-            {
-                shortestDistance = distance;
-                pathingStartIndex = i;
-            }
-        }*/
-
-        //We now need to find the closts point in the list to move to.
+        //We now need to find the closest point in the list to move to.
         Vector3 nextGoalPos = new Vector3();
         int pathingStartIndex = 0;
         float savedDistance = -1;
@@ -290,16 +353,16 @@ public class EnemyDragon : EnemyController
         switch (m_spawnDirection)
         {
             case SpawnDirection.North:
-                goalIndex = 3;
+                goalIndex = 0;
                 break;
             case SpawnDirection.East:
-                goalIndex = 2;
+                goalIndex = 3;
                 break;
             case SpawnDirection.South:
-                goalIndex = 1;
+                goalIndex = 2;
                 break;
             case SpawnDirection.West:
-                goalIndex = 0;
+                goalIndex = 1;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -330,6 +393,9 @@ public class EnemyDragon : EnemyController
     void UpdateBossState(BossState newState)
     {
         m_bossState = newState;
+
+        Debug.Log($"Enemy Dragon State: {m_bossState}.");
+        
         switch (m_bossState)
         {
             case BossState.Idle:
@@ -585,21 +651,6 @@ public class EnemyDragon : EnemyController
         }
     }
 
-
-    public override void RemoveObject()
-    {
-        //Disabling the Status Effect application to spawners. Movespeed after maze destruction too punishing.
-        /*foreach (StandardSpawner spawner in GameplayManager.Instance.m_enemySpawners)
-        {
-            GameObject bossShardObj = Instantiate(((BossEnemyData)m_enemyData).m_bossShard, transform.position, quaternion.identity);
-
-            bossShardObj.GetComponent<BossShard>().SetupBossShard(spawner.transform.position);
-            spawner.SetSpawnerStatusEffect(((BossEnemyData)m_enemyData).m_spawnStatusEffect, ((BossEnemyData)m_enemyData).m_spawnStatusEffectWaveDuration);
-        }*/
-
-        base.RemoveObject();
-    }
-
     private List<Vector2Int> HexagonGenerator(Vector2Int centerPoint, int radius)
     {
         List<Vector2Int> points = new List<Vector2Int>();
@@ -630,6 +681,8 @@ public class EnemyDragon : EnemyController
 
             Vector2Int point = new Vector2Int(x, y);
             points.Add(point);
+
+            Debug.Log($"Diamond Generator Add point: {point} - {i}/4.");
             //Instantiate(m_debugShape, new Vector3(point.x, 0, point.y), quaternion.identity, transform);
         }
 

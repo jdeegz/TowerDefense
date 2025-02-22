@@ -223,7 +223,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void DamageCastle()
     {
         GameplayManager.Instance.m_castleController.TakeDamage(1);
-        
+
         if (m_enemyData.m_attackSpireVFXPrefab)
         {
             ObjectPoolManager.SpawnObject(m_enemyData.m_attackSpireVFXPrefab, transform.position, transform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
@@ -235,7 +235,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         if (!m_isActive) return;
 
         if (m_isTeleporting) return;
-        
+
         HandleMovement();
     }
 
@@ -244,13 +244,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public void BeginTeleport(Cell portalDestinationCell)
     {
         ObjectPoolManager.SpawnObject(m_enemyData.m_teleportDepartureVFX, m_targetPoint.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-       
+
         m_isTeleporting = true; // This will null m_enemy in all projectiles.
-        
+
         Vector2Int newPos = portalDestinationCell.m_cellPos;
 
         transform.position = new Vector3(newPos.x, -50, newPos.y);
-        
+
         GameUtil.DelayTimer.DelayAction(2f, () => CompleteTeleport());
     }
 
@@ -258,13 +258,13 @@ public abstract class EnemyController : Dissolvable, IEffectable
     {
         Vector3 arrivalPos = transform.position;
         arrivalPos.y = 0;
-        
+
         transform.position = arrivalPos;
-        
+
         ObjectPoolManager.SpawnObject(m_enemyData.m_teleportArrivalVFX, m_targetPoint.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-        
+
         //m_animator.SetTrigger("Birth");
-        
+
         m_isTeleporting = false;
         Debug.Log($"Completed Teleport to : {m_curPos}, position is now {transform.position}.");
     }
@@ -286,8 +286,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
     protected Quaternion m_targetRotation;
     protected float m_posClampX;
     protected float m_posClampZ;
-    
-    
+
+
     public virtual void HandleMovement()
     {
         //Update Cell occupancy
@@ -322,9 +322,9 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 {
                     Debug.Log($"{m_newCell.m_cellPos} is trying to teleport to {m_newCell.m_portalConnectionCell.m_cellPos}.");
                     Cell portalDestinationCell = m_newCell.m_portalConnectionCell;
-   
+
                     BeginTeleport(portalDestinationCell);
-                    
+
                     m_newPos = portalDestinationCell.m_cellPos;
                     m_newCell = portalDestinationCell;
                 }
@@ -334,7 +334,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
                 //Get new cell from new position.
                 m_curCell = m_newCell;
-                
+
                 //Assign self to cell.
                 m_curCell.UpdateActorCount(1, gameObject.name);
 
@@ -345,7 +345,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
             if (m_curCell == null) Debug.Log($"curCell is null.");
             if (m_goalCell == null) Debug.Log($"goal cell is null.");
-            
+
 
             m_wiggleMagnitude = m_enemyData.m_movementWiggleValue * m_lastSpeedModifierFaster * m_lastSpeedModifierSlower;
             m_nextCellPosOffset = new Vector2(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f) * m_wiggleMagnitude);
@@ -453,7 +453,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     }
 
     private float cumDamage;
-    
+
     public virtual void OnTakeDamage(float dmg)
     {
         if (m_curHealth <= 0) return;
@@ -478,6 +478,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     private Color m_hitFlashStartColor = new Color(130f / 255f, 50f / 255f, 50f / 255f); // Convert to 0-1 range
     private Color m_hitFlashEndColor = Color.black;
+
     public void HitFlash()
     {
         for (int i = 0; i < m_allRenderers.Count; ++i)
@@ -526,7 +527,6 @@ public abstract class EnemyController : Dissolvable, IEffectable
         m_isComplete = true;
         m_isActive = false;
 
-        
 
         if (m_curCell != null)
         {
@@ -540,24 +540,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         DestroyEnemy?.Invoke(transform.position);
 
         //If dead, look for obelisks nearby. If there is one, spawn a soul and have it move to the obelisk.
-        if (m_curHealth <= 0 && m_obeliskData != null)
-        {
-            Obelisk m_closestObelisk = FindUnchargedObelisk();
-            if (m_closestObelisk != null)
-            {
-                //Instantiate a soul, and set its properties.
-                m_obeliskData = m_closestObelisk.m_obeliskData;
-                //GameObject obeliskSoulObject = Instantiate(m_obeliskData.m_obeliskSoulObj, m_swarmMemberTarget.position, quaternion.identity);
-                GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-                ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
-                obeliskSoul.SetupSoul(m_closestObelisk.m_targetPoint.transform.position, m_closestObelisk, m_obeliskData.m_soulValue);
-                ++GameplayManager.Instance.CoresClaimedThisWave;
-            }
-            else if (m_enemyData.m_deathVFXPrefab)
-            {
-                ObjectPoolManager.SpawnObject(m_enemyData.m_deathVFXPrefab.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-            }
-        }
+        SpawnCores();
 
         RemoveFromGameplayList();
 
@@ -581,11 +564,33 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 material.SetColor("_EmissionColor", m_allOrigColors[i]);
             }
         }
-        
+
         //Kind of hacky, but this prevents towers from continuing to hit units that reach the castle.
         m_curHealth = 0;
 
         StartDissolve(RemoveObject);
+    }
+
+    public virtual void SpawnCores()
+    {
+        Debug.Log($"Spawn Enemy Controller Cores.");
+        
+        if (m_curHealth > 0 && m_obeliskData == null) return;
+
+        Obelisk m_closestObelisk = FindUnchargedObeliskInRange();
+        if (m_closestObelisk != null)
+        {
+            GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(m_obeliskData.m_obeliskSoulObj, m_targetPoint.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+            ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
+            
+            obeliskSoul.SetupSoul(m_closestObelisk.m_targetPoint.transform.position, m_closestObelisk, m_enemyData.m_coreRewardCount);
+            
+            GameplayManager.Instance.CoresClaimedThisWave += m_enemyData.m_coreRewardCount;
+        }
+        else if (m_enemyData.m_deathVFXPrefab)
+        {
+            ObjectPoolManager.SpawnObject(m_enemyData.m_deathVFXPrefab.gameObject, m_targetPoint.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        }
     }
 
     public virtual void RemoveObject()
@@ -656,8 +661,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
         // Return the closest uncharged obelisk, or the closest charged obelisk if none are uncharged.
         return closestUnchargedObelisk ? closestUnchargedObelisk : closestChargedObelisk;
     }
-    
-    private Obelisk FindUnchargedObelisk()
+
+    private Obelisk FindUnchargedObeliskInRange()
     {
         float closestUnchargedDistance = Mathf.Infinity;
 
@@ -690,12 +695,20 @@ public abstract class EnemyController : Dissolvable, IEffectable
         return closestUnchargedObelisk;
     }
 
-
-    public void HandleTrojanSpawn(Vector3 startPos, Vector3 endPos)
+    public List<Obelisk> FindAllUnchargedObelisks()
     {
-        transform.position = startPos;
-        float moveDuration = Vector3.Distance(transform.position, endPos) / 0.6f;
-        gameObject.transform.DOJump(endPos, 2, 1, moveDuration).OnComplete(() => SetEnemyActive(true));
+        List<Obelisk> unchargedObelisks = new List<Obelisk>();
+        foreach (Obelisk obelisk in GameplayManager.Instance.m_obelisksInMission)
+        {
+            if (obelisk.m_obeliskState == Obelisk.ObeliskState.Charging)
+            {
+                Debug.Log($"Spawn Cores: Uncharged Obelisk Added to List.");
+                unchargedObelisks.Add(obelisk);
+            }
+        }
+
+        Debug.Log($"Spawn Cores: Returning Uncharged Obslisks. Count: {unchargedObelisks.Count}.");
+        return unchargedObelisks;
     }
 
     public void SetEnemyActive(bool active) //Used to halt this unit from functioning. (Trojan created enemies)

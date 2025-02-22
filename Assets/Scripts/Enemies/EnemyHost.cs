@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -108,6 +109,77 @@ public class EnemyHost : EnemyController
     }
     //
 
+    public override void SpawnCores()
+    {
+        if (m_livingThralls.Count == 0) return; //You failed, no core reward for you.
+        
+        Debug.Log($"Spawn Cores: Spawn Enemy Host Cores.");
+        
+        // What percent of defined cores should we spawn?
+        int currentMaxHealth = GameplayManager.Instance.m_castleController.GetCurrentMaxHealth();
+        float rewardPercent = (float)currentMaxHealth / (currentMaxHealth + GameplayManager.Instance.DamageTakenThisWave);
+
+        // How many cores is that?
+        int coresToReward = Mathf.RoundToInt(m_enemyData.m_coreRewardCount * rewardPercent);
+        Debug.Log($"Spawn Cores: Cores to Reward: {coresToReward}");
+        
+        // Find the uncharged Obelisks.
+        List<Obelisk> unchargedObelisks = FindAllUnchargedObelisks();
+        
+        // If we have no uncharged obelisks, we're done here. Nothing to Grant.
+        if (unchargedObelisks == null || unchargedObelisks.Count == 0)
+        {
+            Debug.Log($"Spawn Cores: Uncharged Obelisks Null or Count is 0.");
+            return;
+        }
+        
+        // Calculate the number of cores to sent to the first obelisk in the list.
+        int obeliskIndex = 0;
+        Obelisk currentObelisk = unchargedObelisks[obeliskIndex];
+        int currentObeliskAvailableCapacity = unchargedObelisks[obeliskIndex].GetObeliskMaxChargeCount() - unchargedObelisks[obeliskIndex].GetObeliskChargeCount();
+        int currentShareOfCores = m_enemyData.m_coreRewardCount / unchargedObelisks.Count;
+        GameObject coreObj = currentObelisk.m_obeliskData.m_obeliskSoulObj;
+        
+        // Each spawn point should spawn it's share of cores.
+        // Each core should travel to its share of uncharged obelisks.
+        int coresSentToCurrentObelisk = 0;
+        Debug.Log($"Spawn Cores: There are {m_livingThralls.Count} valid Core Spawn locations.");
+        
+        for (int i = 0; i < coresToReward; ++i)
+        {
+            // Spawn a core at the bone position we desire, and have it travel to our current obelisk.
+            Vector3 spawnPosition = m_livingThralls[i % m_livingThralls.Count].transform.position;
+            GameObject obeliskSoulObject = ObjectPoolManager.SpawnObject(coreObj, spawnPosition, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+            ObeliskSoul obeliskSoul = obeliskSoulObject.GetComponent<ObeliskSoul>();
+            
+            obeliskSoul.SetupSoul(currentObelisk.m_targetPoint.transform.position, currentObelisk, 1);
+
+            Debug.Log($"Spawn Cores: Core {i} Created at Living Thrall {i % m_livingThralls.Count}. Sending to Obelisk {obeliskIndex} at {currentObelisk.transform.position}");
+            
+            //Send Cores to obelisks until we've met the share of Cores per Obelisk or the obelisk is full. Recalculate the shares if the obelisk is filled.
+            ++coresSentToCurrentObelisk;
+            if (coresSentToCurrentObelisk >= Math.Min(currentObeliskAvailableCapacity, currentShareOfCores))
+            {
+                // Look to see if we have more obelisks to fill.
+                ++obeliskIndex;
+                if (obeliskIndex >= unchargedObelisks.Count)
+                {
+                    Debug.Log($"Spawn Cores: No more uncharged obelisks to fill.");
+                    return;
+                }
+                
+                // Calculate the new share among obelisks, and update the current obelisk.
+                int coresRemaining = coresToReward - i;
+                int obelisksRemaining = unchargedObelisks.Count - obeliskIndex;
+                currentShareOfCores = obelisksRemaining > 0 ? coresRemaining / obelisksRemaining : coresRemaining;
+                currentObelisk = unchargedObelisks[obeliskIndex];
+                currentObeliskAvailableCapacity = currentObelisk.GetObeliskMaxChargeCount() - currentObelisk.GetObeliskChargeCount();
+                coresSentToCurrentObelisk = 0;
+            }
+        }
+    }
+    
+    
     //REMOVING BASE FUNCTIONALITY
     public override void HandleMovement()
     {

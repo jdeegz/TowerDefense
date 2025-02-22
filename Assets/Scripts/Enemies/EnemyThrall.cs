@@ -208,18 +208,16 @@ public class EnemyThrall : EnemyController
     //REMOVING BASE FUNCTIONALITY
     public override void SetupUI()
     {
-        return;
+        //
     }
     
     public override void AddToGameplayList()
     {
-        return;
+        //
     }
     
     public override void RemoveFromGameplayList()
     {
-        return;
+        //
     }
-    //
-
 }

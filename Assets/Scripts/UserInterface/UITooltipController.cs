@@ -350,11 +350,11 @@ public class UITooltipController : MonoBehaviour
             //RectTransform canvasRect = m_canvas.GetComponent<RectTransform>();
             RectTransformUtility.ScreenPointToLocalPointInRectangle(m_canvas.transform as RectTransform, screenPosition, m_canvas.worldCamera, out Vector2 localPoint);
 
+
             // Set the anchored position to match the bottom-right of the screen
             localPoint.x += -20;
             localPoint.y += 20;
             m_tooltipRect.anchoredPosition = localPoint;
         }
-        
     }
 }

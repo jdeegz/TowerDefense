@@ -51,6 +51,8 @@ public class UIStringData : ScriptableObject
     public string m_waveCompleted = "Cores Claimed";
     public string m_waveCompletedEndless = "Grainwraiths Slain";
     public string m_waveCompletedPerfect = "Perfect Wave!";
+    public string m_waveCompletedBossWave = "Cores Claimed";
+    public string m_waveCompletedBossDamage = "Damage Prevented";
 
     [Header("Sound Strings")]
     public string m_volumeMasterText;

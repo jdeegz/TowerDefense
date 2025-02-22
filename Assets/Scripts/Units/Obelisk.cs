@@ -173,6 +173,11 @@ public class Obelisk : MonoBehaviour
     {
         return m_curChargeCount;
     }
+    
+    public int GetObeliskMaxChargeCount()
+    {
+        return m_maxChargeCount;
+    }
 
     private void ObeliskChargeChanged(int i)
     {

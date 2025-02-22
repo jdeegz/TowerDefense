@@ -45,8 +45,8 @@ public class MissionGameplayData : ScriptableObject
     [Header("Equipped Towers")]
     public List<TowerData> m_equippedTowers;        // The towers available to the player in this mission.
     public TowerData m_blueprintTower;              // Reference to the blue print tower.
-    
-    public float CalculateHealth(float baseHealth)
+
+    public float CalculateHealth(float baseHealth, bool log = false)
     {
         int i = GameplayManager.Instance.Wave;
         float health = baseHealth;
@@ -61,7 +61,8 @@ public class MissionGameplayData : ScriptableObject
 
         int numberOfEarlyGameCycles = earlyWaveNumber / m_cycleLength;
         float earlyGameBonusHealth = health * (1 + (numberOfEarlyGameCycles * m_earlyGameCycleFactor)) - health;
-        //.Log($"Early Base Health: {earlyGameHealth}, Early Bonus Health {earlyGameBonusHealth}, Early Cycles: {numberOfEarlyGameCycles}");
+
+        if (log) Debug.Log($"Early Base Health: {earlyGameHealth}, Early Bonus Health {earlyGameBonusHealth}, Early Cycles: {numberOfEarlyGameCycles}");
 
         earlyGameHealth += earlyGameBonusHealth;
         
@@ -75,7 +76,8 @@ public class MissionGameplayData : ScriptableObject
 
             numberOfMidGameCycles = midWaveNumber / m_cycleLength;
             midGameBonusHealth = health * (1 + (numberOfMidGameCycles * m_midGameCycleFactor)) - health;
-            //Debug.Log($"Mid Base Health: {midGameHealth}, Mid Bonus Health {midGameBonusHealth}, Mid Cycles: {numberOfMidGameCycles}");
+            
+            if (log) Debug.Log($"Mid Base Health: {midGameHealth}, Mid Bonus Health {midGameBonusHealth}, Mid Cycles: {numberOfMidGameCycles}");
 
             midGameHealth += midGameBonusHealth;
         }
@@ -90,14 +92,15 @@ public class MissionGameplayData : ScriptableObject
 
             numberOfLateGameCycles = lateWaveNumber / m_cycleLength;
             lateGameBonusHealth = health * (1 + (numberOfLateGameCycles * m_lateGameCycleFactor)) - health;
-            //Debug.Log($"Late Base Health: {lateGameHealth}, Late Bonus Health {lateGameBonusHealth}, Late Cycles: {numberOfLateGameCycles}");
+            
+            if (log) Debug.Log($"Late Base Health: {lateGameHealth}, Late Bonus Health {lateGameBonusHealth}, Late Cycles: {numberOfLateGameCycles}");
 
             lateGameHealth += lateGameBonusHealth;
         }
         
         float cumHealth = (earlyGameHealth + midGameHealth + lateGameHealth);
         
-        //Debug.Log($"Wave: {i}, Total Health {cumHealth}");
+        if (log) Debug.Log($"Wave: {i}, Total Health {cumHealth}");
 
         return cumHealth;
     }

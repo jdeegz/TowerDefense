@@ -10,14 +10,13 @@ using UnityEngine.UI;
 
 public class UIOptionsPopup : UIPopup
 {
-    
     [Header("Audio Test Objects")]
     [SerializeField] private AudioClip m_volumeSliderAudioClip;
     [SerializeField] private AudioMixer m_audioMixer;
 
     [Header("Cheats Objects")]
     [SerializeField] private GameObject m_cheatsGroup;
-    
+
     [Header("Volume - Master")]
     [SerializeField] private Slider m_volumeMasterSlider;
     [SerializeField] private TextMeshProUGUI m_volumeMasterLabel;
@@ -50,7 +49,7 @@ public class UIOptionsPopup : UIPopup
     void Awake()
     {
         base.Awake();
-        
+
         m_elapsedTime = 0;
         m_cheatsGroup.SetActive(false);
 
@@ -59,9 +58,24 @@ public class UIOptionsPopup : UIPopup
             m_missionNameLabel.SetText($"{GameManager.Instance.m_curMission.m_missionName}");
         }
     }
-    
+
     public override void HandleShow()
     {
+        if (GameManager.Instance != null)
+        {
+            if (GameManager.Instance.m_gameState == GameManager.GameState.Menus)
+            {
+                m_surrenderButton.gameObject.SetActive(false);
+                m_restartButton.gameObject.SetActive(false);
+                m_missionNameLabel.gameObject.SetActive(false);
+            }
+
+            if (GameManager.Instance.m_gameState != GameManager.GameState.Menus)
+            {
+                //Out-of-game Only Options
+            }
+        }
+
         if (m_surrenderButton.gameObject.activeSelf)
         {
             string buttonString;
@@ -75,10 +89,21 @@ public class UIOptionsPopup : UIPopup
                 // Surrender
                 buttonString = m_uiStrings.m_surrender;
             }
-            
+
             m_surrenderButtonLabel.SetText(buttonString);
         }
-        
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (!GameManager.Instance || GameManager.Instance.m_gameState != GameManager.GameState.Menus)
+        {
+            m_cheatsGroup.SetActive(true);
+        }
+        else
+        {
+            m_cheatsGroup.SetActive(false);
+        }
+#endif
+
         base.HandleShow();
     }
 
@@ -111,21 +136,6 @@ public class UIOptionsPopup : UIPopup
         m_volumeMusicSlider.onValueChanged.AddListener(TryChangeMusicVolume);
         m_volumeSFXSlider.onValueChanged.AddListener(TryChangeSFXVolume);
 
-        if (GameManager.Instance != null)
-        {
-            if (GameManager.Instance.m_gameState == GameManager.GameState.Menus)
-            {
-                m_surrenderButton.gameObject.SetActive(false);
-                m_restartButton.gameObject.SetActive(false);
-                m_missionNameLabel.gameObject.SetActive(false);
-            }
-
-            if (GameManager.Instance.m_gameState != GameManager.GameState.Menus)
-            {
-                //Out-of-game Only Options
-            }
-        }
-
         //Set the dropdown to show the correct option on start.
         m_dropdownIndex = 0;
         if (!Screen.fullScreen)
@@ -134,18 +144,6 @@ public class UIOptionsPopup : UIPopup
         }
 
         m_screenModeDropdown.value = m_dropdownIndex;
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        if (!GameManager.Instance || GameManager.Instance.m_gameState != GameManager.GameState.Menus)
-        {
-            m_cheatsGroup.SetActive(true);
-        }
-        else
-        {
-            m_cheatsGroup.SetActive(false);
-        }
-
-#endif
     }
 
     void ToggleDynamicTooltip(bool value)
@@ -240,7 +238,7 @@ public class UIOptionsPopup : UIPopup
     void Update()
     {
         base.Update();
-        
+
         m_elapsedTime += Time.deltaTime;
         if (m_elapsedTime > 10f)
         {
