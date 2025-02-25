@@ -321,24 +321,6 @@ public class GathererController : MonoBehaviour
         FindUnblockedPath();
     }
 
-    /*private void HandleBoostedEffect()
-    {
-        if (ActiveSpeedBoostCount > 0)
-        {
-            if (!m_boostedVFX.activeSelf)
-            {
-                m_boostedVFX.SetActive(true);
-            }
-        }
-        else if (ActiveSpeedBoostCount == 0)
-        {
-            if (m_boostedVFX.activeSelf)
-            {
-                m_boostedVFX.SetActive(false);
-            }
-        }
-    }*/
-
     void FixedUpdate()
     {
         // Each frame, check to see if we can enter the next cell, if not, find a new path to our goal.
@@ -510,19 +492,64 @@ public class GathererController : MonoBehaviour
             m_unblockSearchTimeElapsed = 0;
         }
     }
+    
+    void SpaceGatherersApart()
+    {
+        float separationRadius = .3f; // Minimum distance to maintain, using their collider as the value.
+        Collider[] nearbyGatherers = Physics.OverlapSphere(transform.position, separationRadius, LayerMask.GetMask("Gatherers"));
+
+        Debug.Log($"{name} detected {nearbyGatherers.Length - 1} nearby gatherers while {m_gathererTask}");
+        
+        Vector3 separationVector = Vector3.zero;
+        int numNearby = 0;
+
+        foreach (Collider other in nearbyGatherers)
+        {
+            if (other.gameObject == this.gameObject) continue;
+
+            // Get direction away from the nearby gatherer
+            Vector3 pushDirection = transform.position - other.transform.position;
+            float distance = pushDirection.magnitude;
+
+            if (distance < separationRadius && distance > 0.1f) // Avoid division by zero
+            {
+                pushDirection.Normalize();
+                separationVector += pushDirection / distance; // Closer units get a stronger push
+                numNearby++;
+            }
+        }
+
+        if (numNearby > 0)
+        {
+            separationVector /= numNearby; // Average out influence
+            transform.position += separationVector * 0.1f; // Adjust step size for smooth movement
+        }
+    }
 
     private Vector3 m_avoidanceDirection;
 
     void OnTriggerStay(Collider other)
     {
-        // Ensure we're only detecting other gatherers
         if (other.CompareTag("Gatherer") && other.gameObject != this.gameObject)
-
         {
-            //Debug.Log($"avoiding {other.gameObject.name}");
-            // Logic to adjust movement for avoidance
             Vector3 directionToOther = transform.position - other.transform.position;
-            m_avoidanceDirection = directionToOther.normalized / directionToOther.magnitude;
+            float distance = directionToOther.magnitude;
+
+            // Avoidance strength smoothly decreases as they move apart
+            float avoidanceStrength = Mathf.Clamp(2.0f / (distance * distance), 0, 1);
+
+            // Apply a smoothing effect to avoid sudden jumps
+            m_avoidanceDirection = Vector3.Lerp(m_avoidanceDirection, directionToOther.normalized * avoidanceStrength, 0.2f);
+        
+            Debug.Log($"{name} Trigger Stay: Avoidance Direction: {m_avoidanceDirection} at Strength: {avoidanceStrength}");
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Gatherer") && other.gameObject != this.gameObject)
+        {
+            m_avoidanceDirection = Vector3.zero; // Completely reset avoidance when no longer colliding
         }
     }
 
@@ -599,26 +626,18 @@ public class GathererController : MonoBehaviour
             m_moveDirection = (m_nextCellPosition - transform.position).normalized;
         }
 
-
         // Add avoidance direction to movement
-        float avoidanceStrength = 0.5f;
-        Vector3 finalMovementDirection = m_moveDirection + m_avoidanceDirection * avoidanceStrength;
+        Vector3 finalMovementDirection = m_moveDirection + m_avoidanceDirection;
         finalMovementDirection = finalMovementDirection.normalized;
 
         // Calculate final movement with speed and move the gatherer
         float cumulativeMoveSpeed = 1f * m_totalSpeedBoost * Time.deltaTime;
         transform.position += finalMovementDirection * cumulativeMoveSpeed;
 
-        // Check if the avoidance direction is significant enough to influence look direction
-        if (m_avoidanceDirection.magnitude < 0.5f) // Adjust threshold as needed
-        {
-            // Only change look direction if avoidance is minimal
-            float cumulativeLookSpeed = m_lookSpeed * m_totalSpeedBoost * Time.deltaTime;
-            Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
-        }
+        float cumulativeLookSpeed = m_lookSpeed * m_totalSpeedBoost * Time.deltaTime;
 
-        m_avoidanceDirection = Vector3.zero;
+        Quaternion targetRotation = Quaternion.LookRotation(m_moveDirection + m_avoidanceDirection);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, cumulativeLookSpeed);
     }
 
     private void DestinationReached()

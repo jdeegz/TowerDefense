@@ -40,10 +40,10 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     private void RandomResourceAmount()
     {
-        int randomInt = Random.Range(0, 22);
+        int randomInt = Random.Range(0, 20);
         if (randomInt == 1)
         {
-            m_resourcesRemaining -= 1;
+            m_resourcesRemaining = 1;
             if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
             {
                 foreach (GameObject obj in m_objectsToToggle)
