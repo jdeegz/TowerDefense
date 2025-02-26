@@ -43,8 +43,8 @@ public class EnemySprinter : EnemyController
                 // Is the new cell a portal? Is it also a portal entrance?
                 if (m_newCell.m_directionToNextCell == Cell.Direction.Portal)
                 {
-                    Debug.Log($"{m_newCell.m_cellPos} is trying to teleport to {m_newCell.m_portalConnectionCell.m_cellPos}.");
-                    Cell portalDestinationCell = m_newCell.m_portalConnectionCell;
+                    //Debug.Log($"{m_newCell.m_cellPos} is trying to teleport to {m_newCell.m_portalConnectionCell.m_cellPos}.");
+                    Cell portalDestinationCell = m_newCell.m_portalDestinationCell;
    
                     BeginTeleport(portalDestinationCell);
                     

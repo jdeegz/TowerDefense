@@ -221,7 +221,7 @@ public class AStar
             // Add the current cell to the list of island cells
             islandCells.Add(curCell);
 
-            if (curCell.m_portalConnectionCell != null && curCell.m_tempDirectionToNextCell != Cell.Direction.Portal)
+            if (curCell.m_portalDestinationCell != null && curCell.m_tempDirectionToNextCell != Cell.Direction.Portal)
             {
                 // We've crawled to this tile, we want to include it in the island, but not add any of its neighbors.
                 return;
@@ -368,7 +368,7 @@ public class AStar
 
             path.Add(current);
 
-            if (curCell.m_portalConnectionCell != null)
+            if (curCell.m_portalDestinationCell != null)
             {
                 //Debug.Log($"Found a portal connection.");
 
@@ -381,7 +381,7 @@ public class AStar
                 if (curCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
                 {
                     //Debug.Log($"Portal exit has direction, stepping into it.");
-                    curCell = curCell.m_portalConnectionCell;
+                    curCell = curCell.m_portalDestinationCell;
                     current = curCell.m_cellPos;
                     //Add the portal exit cell
                     path.Add(current);

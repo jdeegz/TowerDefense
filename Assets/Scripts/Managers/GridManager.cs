@@ -43,13 +43,15 @@ public class GridManager : MonoBehaviour
 
     void OnDestroy()
     {
+        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
+        GameplayManager.OnPreconBuildingMoved -= PreconBuildingMoved;
+        GameplayManager.OnPreconBuildingClear -= PreconBuildingClear;
+        
+        if (m_unitPaths == null) return;
         foreach (UnitPath unitPath in m_unitPaths)
         {
             unitPath.ClearUnitPath();
         }
-        GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
-        GameplayManager.OnPreconBuildingMoved -= PreconBuildingMoved;
-        GameplayManager.OnPreconBuildingClear -= PreconBuildingClear;
     }
 
     void GameplayManagerStateChanged(GameplayManager.GameplayState newState)
@@ -137,7 +139,7 @@ public class GridManager : MonoBehaviour
                     {
                         //Get the direction of the neighbor to the curCell.
                         neighbor.m_cellDistanceFromGoal = distanceToGoal;
-                        neighbor.UpdateTempDirection(curCell.m_cellPos);
+                        neighbor.UpdateTempDirection(curCell);
                         frontier.Enqueue(neighbor);
                         nextTileToGoal[neighbor] = curCell;
 
@@ -450,7 +452,8 @@ public class Cell
     public int m_cellIndex;
     public int m_cellDistanceFromGoal;
     public Vector2Int m_cellPos;
-    public Cell m_portalConnectionCell;
+    [FormerlySerializedAs("m_portalConnectionCell")] public Cell m_portalDestinationCell;
+    public List<Cell> m_additionalNeighbors = new List<Cell>();
 
     public bool m_canPathNorth = true;
     public bool m_canPathEast = true;
@@ -545,7 +548,7 @@ public class Cell
 
     public void SetPortalConnectionCell(Cell cell)
     {
-        m_portalConnectionCell = cell;
+        m_portalDestinationCell = cell;
     }
 
     public void SetIsOutOfBounds(bool b)
@@ -587,10 +590,11 @@ public class Cell
         m_gridCellObjMaterial.color = color;
     }
 
-    public void UpdateTempDirection(Vector2Int destinationCellPos)
+    public void UpdateTempDirection(Cell destinationCell)
     {
         // Subtract our position from the cell we wish to direct towards.
-        Vector2Int directionPos = destinationCellPos - m_cellPos;
+        
+        Vector2Int directionPos = destinationCell.m_cellPos - m_cellPos;
 
         Direction direction = Direction.Unset;
 
@@ -620,6 +624,7 @@ public class Cell
         }
         else if (Math.Abs(directionPos.x) + Math.Abs(directionPos.y) > 1)
         {
+            m_portalDestinationCell = destinationCell;
             direction = Direction.Portal;
         }
 
@@ -883,7 +888,7 @@ public class UnitPath
             curPath.Add(path[i]);
             Cell curCell = Util.GetCellFromPos(path[i]);
             m_lineRenderers[pathCount].gameObject.SetActive(true);
-            if (curCell.m_portalConnectionCell != null && curCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
+            if (curCell.m_portalDestinationCell != null && curCell.m_tempDirectionToNextCell == Cell.Direction.Portal)
             {
                 m_lineRenderers[pathCount].SetPoints(curPath);
                 ++pathCount;

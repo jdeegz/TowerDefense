@@ -71,7 +71,7 @@ public static class Util
 
     private static int[] m_dX = { 0, 1, 0, -1 };
     private static int[] m_dY = { 0, 1, -1, 0 };
-    
+
     public static Vector2Int FindNearestValidCellPos(Vector3 worldPos)
     {
         Vector2Int gridPos = new Vector2Int(Mathf.RoundToInt(worldPos.x), Mathf.RoundToInt(worldPos.z));
@@ -91,7 +91,7 @@ public static class Util
                 {
                     gridPos.x += m_dX[i];
                     gridPos.y += m_dY[i];
-                    
+
                     gridPos.x = Mathf.Clamp(gridPos.x, 0, GridManager.Instance.m_gridWidth - 1);
                     gridPos.y = Mathf.Clamp(gridPos.y, 0, GridManager.Instance.m_gridHeight - 1);
 
@@ -99,21 +99,22 @@ public static class Util
                     if (cell != null) return cell.m_cellPos;
                 }
             }
+
             ++step;
         }
 
         return gridPos;
-    } 
-    
+    }
+
     public static Vector2Int FindNearestValidCellPos(Vector3 worldPos, Vector2Int objectSize)
     {
         Vector2Int gridPos = new Vector2Int(Mathf.RoundToInt(worldPos.x), Mathf.RoundToInt(worldPos.z));
-        
+
         //Expected outcomes: 1x1 = 0,0 | 2x2 = 1,1 | 3x3 = 1,1
         Vector2Int buildingPadding = new Vector2Int((int)Math.Floor(objectSize.x / 2.0), (int)Math.Floor(objectSize.y / 2.0));
 
         Debug.Log($"Find Nearest Valid Cell Pos: {worldPos}, Building Size: {objectSize}, Building Padding: {buildingPadding}");
-        
+
         gridPos.x = Mathf.Clamp(gridPos.x, 0 + buildingPadding.x, GridManager.Instance.m_gridWidth - buildingPadding.x);
         gridPos.y = Mathf.Clamp(gridPos.y, 0 + buildingPadding.y, GridManager.Instance.m_gridHeight - buildingPadding.y);
 
@@ -130,7 +131,7 @@ public static class Util
                 {
                     gridPos.x += m_dX[i];
                     gridPos.y += m_dY[i];
-                    
+
                     gridPos.x = Mathf.Clamp(gridPos.x, 0, GridManager.Instance.m_gridWidth - 1);
                     gridPos.y = Mathf.Clamp(gridPos.y, 0, GridManager.Instance.m_gridHeight - 1);
 
@@ -138,6 +139,7 @@ public static class Util
                     if (cell != null) return cell.m_cellPos;
                 }
             }
+
             ++step;
         }
 
@@ -170,7 +172,7 @@ public static class Util
         return new Vector3(Mathf.FloorToInt(vector.x + 0.5f), Mathf.FloorToInt(vector.y), Mathf.FloorToInt(vector.z + 0.5f));
     }
 
-    
+
     public static List<Cell> GetCellsInRadius(int centerX, int centerY, int radius)
     {
         List<Cell> cellsWithinRadius = new List<Cell>();
@@ -557,7 +559,7 @@ public static class Util
 
                 // Disabling out of bounds check 2/11/2025
                 // Implementing precon changes that allow the obj to appear over water.
-                /*if (cell.m_isOutOfBounds) 
+                /*if (cell.m_isOutOfBounds)
                 {
                     Debug.Log($"Cell out of bounds.");
                     return null;
@@ -757,15 +759,28 @@ public static class Util
     {
         // Get the neighboring cells (North, East, South, and West)
         List<Vector2Int> neighbors = new List<Vector2Int>();
-
         Cell curCell = GetCellFromPos(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y));
-        if (curCell.m_canPathNorth) neighbors.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1));
-        if (curCell.m_canPathEast) neighbors.Add(new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y));
-        if (curCell.m_canPathSouth) neighbors.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1));
-        if (curCell.m_canPathWest) neighbors.Add(new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y));
+
+        // If we have additional neighbors, and we have not been set to Portal, we're in an exit. Add the neighbors and step through them.
+        // The neighbor is then set as the Portal direction and should get it's 4 neighbors like normal.
+        if (curCell.m_additionalNeighbors.Count > 0 && curCell.m_tempDirectionToNextCell != Cell.Direction.Portal)
+        {
+            foreach (Cell additionalNeighbor in curCell.m_additionalNeighbors)
+            {
+                neighbors.Add(additionalNeighbor.m_cellPos);
+            }
+        }
+        else
+        {
+            if (curCell.m_canPathNorth) neighbors.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y + 1));
+            if (curCell.m_canPathEast) neighbors.Add(new Vector2Int(startCell.m_cellPos.x + 1, startCell.m_cellPos.y));
+            if (curCell.m_canPathSouth) neighbors.Add(new Vector2Int(startCell.m_cellPos.x, startCell.m_cellPos.y - 1));
+            if (curCell.m_canPathWest) neighbors.Add(new Vector2Int(startCell.m_cellPos.x - 1, startCell.m_cellPos.y));
+        }
+
 
         // Is this portal a cell?
-        if (curCell.m_portalConnectionCell != null)
+        /*if (curCell.m_portalConnectionCell != null)
         {
             if (curCell.m_tempDirectionToNextCell != Cell.Direction.Portal) // We're at an exit.
             {
@@ -774,7 +789,8 @@ public static class Util
                 neighbors.Add(curCell.m_portalConnectionCell.m_cellPos);
                 //Debug.Log($"Cell {curCell.m_cellPos} is a portal cell. Setting it's connection {curCell.m_portalConnectionCell} as the entrance.");
             }
-        }
+        }*/
+
 
         List<Cell> neighborCells = new List<Cell>();
 

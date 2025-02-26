@@ -97,10 +97,12 @@ public class GridCellOccupantUtil
         Cell cellExit = Util.GetCellFrom3DPos(portalExitObj.transform.position);
 
         //Debug.Log($"{cellEntrance.m_cellPos} connected to {cellExit.m_cellPos} by a portal!");
-        cellEntrance.m_portalConnectionCell = cellExit;
+        
+        cellEntrance.m_additionalNeighbors.Add(cellExit);
         SetBuildRestricted(portalEntranceObj, true, 1, 1);
         
-        cellExit.m_portalConnectionCell = cellEntrance;
+        
+        cellExit.m_additionalNeighbors.Add(cellEntrance);
         SetBuildRestricted(portalExitObj, true, 1, 1);
     }
 }
