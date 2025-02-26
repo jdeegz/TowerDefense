@@ -15,7 +15,12 @@ public class UIToolTipWaveDisplay : UITooltip
         string endlessHighScorestring;
 
         int curWave = GameplayManager.Instance.Wave;
-        int waveHighScore = GameplayManager.Instance.GetCurrentMissionSaveData().m_waveHighScore;
+        
+        MissionSaveData missionSaveData = GameplayManager.Instance.GetCurrentMissionSaveData();
+
+        if (missionSaveData == null) return;
+        
+        int waveHighScore = missionSaveData.m_waveHighScore;
 
         if (waveHighScore > 0)
         {
