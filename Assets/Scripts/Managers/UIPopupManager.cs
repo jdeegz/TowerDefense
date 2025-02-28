@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class UIPopupManager : MonoBehaviour
 {
@@ -9,7 +12,7 @@ public class UIPopupManager : MonoBehaviour
     private readonly List<UIPopup> m_activePopups = new List<UIPopup>();
 
     public static UIPopupManager Instance { get; private set; }
-    
+
     public static event Action<bool> OnPopupManagerPopupsOpen; // Used to let CombatView if it should disable hotkeys.
 
     void Update()
@@ -19,14 +22,19 @@ public class UIPopupManager : MonoBehaviour
             CloseTopPopup();
             return;
         }
-        
+
         if (Input.GetKeyDown(KeyCode.Escape) && m_activePopups.Count == 0)
         {
             RequestOptionsPopup();
             return;
         }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            HandleOutsideClick();
+        }
     }
-    
+
     public T ShowPopup<T>(string UIPopupID, object data = null) where T : UIPopup
     {
         UIPopup popup = GetOrCreatePopup(UIPopupID);
@@ -36,7 +44,7 @@ public class UIPopupManager : MonoBehaviour
             return null;
         }
 
-        if (m_activePopups.Contains(popup))
+        if (m_activePopups.Contains(popup) && !popup.SupportRefresh)
         {
             return popup as T;
         }
@@ -48,10 +56,30 @@ public class UIPopupManager : MonoBehaviour
 
         popup.HandleShow();
         m_activePopups.Add(popup);
-        
-        if(popup.PausesGame) PauseGameplay();
-        
+
+        if (popup.PausesGame) PauseGameplay();
+
         return popup as T;
+    }
+
+    public void HandleOutsideClick()
+    {
+        if (m_activePopups.Count == 0) return;
+
+        // Get the top-most popup.
+        UIPopup topPopup = m_activePopups[^1];
+        if (!topPopup.CloseOnOutsideClick) return;
+
+        RectTransform popupRectTransform = topPopup.GetComponent<RectTransform>();
+
+        Vector2 mousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(popupRectTransform, Input.mousePosition, null, out mousePosition);
+
+        if (!popupRectTransform.rect.Contains(mousePosition))
+        {
+            // Close the popup if clicked outside
+            ClosePopup(topPopup);
+        }
     }
 
     private UIPopup GetOrCreatePopup(string popupID)
@@ -83,14 +111,24 @@ public class UIPopupManager : MonoBehaviour
     public void ClosePopup(UIPopup popup)
     {
         if (popup == null || !m_activePopups.Contains(popup)) return;
-        
+
         popup.HandleClose();
-        
+
         m_activePopups.Remove(popup);
 
         if (m_activePopups.Count == 0)
         {
             ResumeGameplay();
+        }
+    }
+
+    public void ClosePopup<T>() where T : UIPopup
+    {
+        UIPopup popupToClose = m_activePopups.FirstOrDefault(p => p is T);
+
+        if (popupToClose != null)
+        {
+            ClosePopup(popupToClose);
         }
     }
 
@@ -100,8 +138,9 @@ public class UIPopupManager : MonoBehaviour
         {
             m_activePopups[i].HandleClose();
         }
+
         m_activePopups.Clear();
-        
+
         ResumeGameplay();
     }
 

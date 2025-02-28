@@ -22,10 +22,7 @@ public class UITooltipController : MonoBehaviour
 
     private float m_rectWidth;
     private float m_rectHeight;
-    private RectTransform m_tooltipRect;
     private Vector2 m_mousePos;
-    private Canvas m_canvas;
-    private Vector2 m_defaultPivot;
 
     public Selectable m_curSelected;
     public Selectable m_curUISelectable;
@@ -35,11 +32,14 @@ public class UITooltipController : MonoBehaviour
     private string m_objectNameString;
     private string m_objectDescriptionString;
     private string m_objectDetailsString;
-    private CanvasGroup m_canvasGroup;
-    private VerticalLayoutGroup m_layoutGroup;
+    
     private Tween m_curTween;
-    private Vector2 m_lastScreenSize;
+    private Canvas m_canvas;
+    private CanvasGroup m_canvasGroup;
     private CanvasScaler m_canvasScaler;
+    private RectTransform m_tooltipRect;
+    private Vector2 m_defaultPivot;
+    private Vector2 m_lastScreenSize;
     private bool m_supressToolTips;
 
     private string m_timeIconString = "<sprite name=\"Time\">";
@@ -52,12 +52,11 @@ public class UITooltipController : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        m_canvasGroup = m_tooltipDisplayGroup.GetComponent<CanvasGroup>();
-        m_layoutGroup = m_tooltipDisplayGroup.GetComponent<VerticalLayoutGroup>();
-        m_canvasGroup.alpha = 0;
-        m_tooltipRect = m_tooltipDisplayGroup.GetComponent<RectTransform>();
         m_canvas = GetComponentInParent<Canvas>();
         m_canvasScaler = m_canvas.GetComponent<CanvasScaler>();
+        m_canvasGroup = m_tooltipDisplayGroup.GetComponent<CanvasGroup>();
+        m_tooltipRect = m_tooltipDisplayGroup.GetComponent<RectTransform>();
+        m_canvasGroup.alpha = 0;
         m_defaultPivot = m_tooltipRect.pivot;
         m_lastScreenSize = new Vector2(Screen.width, Screen.height);
 

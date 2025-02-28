@@ -5,41 +5,17 @@ using UnityEngine.UIElements;
 
 public class MissionTableController : MonoBehaviour
 {
-    [Header("Spires")]
-    [SerializeField] private GameObject m_spireObj;
-    [SerializeField] private GameObject m_spiresRoot;
-    [SerializeField] private float m_radius;
-    [SerializeField] private int m_quantity;
-
-    void Start()
-    {
-        PlaceSpires();
-    }
-
-    void PlaceSpires()
-    {
-        for (int i = 0; i < m_quantity; i++)
-        {
-            float angle = i * (360f / m_quantity); // Divide the circle evenly
-            float radians = angle * Mathf.Deg2Rad;
-
-            // Calculate position using sin and cos
-            Vector3 position = new Vector3(
-                m_spiresRoot.transform.position.x + m_radius * Mathf.Cos(radians),
-                m_spiresRoot.transform.position.y,
-                m_spiresRoot.transform.position.z + m_radius * Mathf.Sin(radians)
-            );
-
-            // Instantiate the spire at the calculated position
-            Instantiate(m_spireObj, position, Quaternion.identity, m_spiresRoot.transform);
-        }
-    }
-
+    public static MissionTableController Instance;
     [Header("Table Rotation")]
     [SerializeField] private Transform m_rotationRoot;
     [SerializeField] private float m_rotationSpeed = 10f; // Adjust sensitivity
     private float m_currentYRotation = 0f;
 
+    void Awake()
+    {
+        Instance = this;
+    }
+    
     void Update()
     {
         HandleMouseScroll();
@@ -72,6 +48,22 @@ public class MissionTableController : MonoBehaviour
         m_rotationRoot.rotation = Quaternion.Euler(0f, m_currentYRotation, 0f);
     }
 
+    public void SetTargetRotation(Transform targetObject)
+    {
+        // Get the direction from the root to the clicked object
+        Vector3 direction = m_rotationRoot.position - targetObject.position;
+    
+        float targetYRotation = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+        // Calculate the angle difference to ensure smooth rotation
+        float angleDifference = Mathf.DeltaAngle(m_rotationRoot.eulerAngles.y, targetYRotation);
+
+        // Apply the target rotation considering the current rotation of the root object
+        m_targetYRotation = m_rotationRoot.eulerAngles.y + targetYRotation;
+
+        //Debug.Log($"SetTargetRotation: Starting Rotation: {m_rotationRoot.eulerAngles.y}, Rotation to Obj: {targetYRotation}. Target Rotation: {m_targetYRotation}.");
+    }
+
     void HandleMouseScroll()
     {
         float scrollDelta = Input.mouseScrollDelta.y;
@@ -80,6 +72,7 @@ public class MissionTableController : MonoBehaviour
             Debug.Log($"Scroll Delta {scrollDelta}.");
             m_targetYRotation += scrollDelta * m_rotationSpeed; // Update target rotation
             m_targetYRotation = Mathf.Repeat(m_targetYRotation, 360f);
+            UIPopupManager.Instance.ClosePopup<UIMissionInfo>();
             Debug.Log($"Scrolled.");
         }
     }
@@ -154,12 +147,12 @@ public class MissionTableController : MonoBehaviour
             m_startedOnUI = false;
             
             //Determine if we've dragged enough to qualify for a drag or click.
-            if (m_draggedDistance < 0.1f)
+            if (m_draggedDistance < 0.5f)
             {
                 TryTriggerClick();
             }
             
-            Debug.Log($"Drag Stop. Dragged distance: {m_draggedDistance}");
+            //Debug.Log($"Drag Stop. Dragged distance: {m_draggedDistance}");
         }
     }
 

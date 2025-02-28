@@ -58,4 +58,12 @@ public static class GameSettings
         get => PlayerPrefs.GetInt(WindowSettingKey, 0);
         set => PlayerPrefs.SetInt(WindowSettingKey, value);
     }
+    
+    // Localization
+    private const string SelectedLanguageKey = "SelectedLanguage";
+    public static string SelectedLanguageValue
+    {
+        get => PlayerPrefs.GetString(SelectedLanguageKey, "en-US");
+        set => PlayerPrefs.SetString(SelectedLanguageKey, value);
+    }
 }

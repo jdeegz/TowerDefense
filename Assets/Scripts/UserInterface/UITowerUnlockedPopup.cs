@@ -11,7 +11,6 @@ public class UITowerUnlockedPopup : UIPopup, IDataPopup
     
     private TowerData m_towerData;
     
-
     public void SetData(object data)
     {
         if (data is TowerData towerData)

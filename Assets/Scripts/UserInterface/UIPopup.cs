@@ -11,11 +11,12 @@ using UnityEngine.UI;
 public abstract class UIPopup : MonoBehaviour
 {
     [Header("UI Popup Settings")]
-    [SerializeField] private Button m_closeButton;
     [SerializeField] private bool m_closeOnEscape = true;
+    [SerializeField] private Button m_closeButton;
     [SerializeField] private bool m_closeOnOutsideClick = false;
     [SerializeField] private Button m_closeOnOutsideButton;
     [SerializeField] private bool m_isModal = true;
+    [SerializeField] private bool m_supportRefresh = false;
     [SerializeField] private bool m_pausesGame = true;
     [SerializeField] private float m_autoCloseTime = 0f; // 0 means no auto-close
     
@@ -27,7 +28,9 @@ public abstract class UIPopup : MonoBehaviour
     public event Action OnPopupOpen;
     public event Action OnPopupClose;
     public bool CloseOnEscape => m_closeOnEscape;
+    public bool CloseOnOutsideClick => m_closeOnOutsideClick;
     public bool PausesGame => m_pausesGame;
+    public bool SupportRefresh => m_supportRefresh;
 
     protected CanvasGroup m_canvasGroup; 
     protected AudioSource m_audioSource;
@@ -54,40 +57,11 @@ public abstract class UIPopup : MonoBehaviour
         if (m_autoCloseTime > 0) StartCoroutine(AutoCloseRoutine());
     }
 
-    protected virtual void Update()
+    public virtual void Update()
     {
-        /*if (m_closeOnOutsideClick && Input.GetMouseButtonDown(0))
-        {
-            
-            if (!IsPointerOverUIElement(gameObject))
-            {
-                RequestClose();
-            }
-        }*/
+        //
     }
     
-    /*private bool IsPointerOverUIElement(GameObject popup)
-    {
-        PointerEventData eventData = new PointerEventData(EventSystem.current)
-        {
-            position = Input.mousePosition
-        };
-    
-        List<RaycastResult> results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(eventData, results);
-
-        foreach (var result in results)
-        {
-            if (result.gameObject == popup || result.gameObject.transform.IsChildOf(popup.transform))
-            {
-                return true; // Clicked inside the popup
-            }
-        }
-
-        return false; // Clicked outside
-    }*/
-
-
     public virtual void HandleShow()
     {
         Debug.Log($"Showing {this.name}");

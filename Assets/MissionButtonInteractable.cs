@@ -3,13 +3,7 @@ using UnityEngine;
 
 public class MissionButtonInteractable : Interactable
 {
-    // A mission button is the parent of the visual mission button in the mission table.
-    // This script controls the display state of the mission button.
-    // This script houses a mission data that it may read from to present necessary info.
-    // The mission Data is also used to generate the onclick functionality, launching the mission scene.
-    // This button should also set its display state by its self, not from a mission list, because we're hand placing the buttons.
     [SerializeField] private MissionData m_missionData;
-
     [SerializeField] private Renderer m_spireRenderer;
     [SerializeField] private GameObject m_spireTopMesh;
     [SerializeField] private GameObject m_defeatedRootObj;
@@ -119,16 +113,20 @@ public class MissionButtonInteractable : Interactable
 
     public override void OnHover()
     {
-        Debug.Log($"OnHoverEnter: {m_missionData.m_missionName}.");
+        //Debug.Log($"OnHoverEnter: {m_missionData.m_missionName}.");
     }
 
     public override void OnHoverExit()
     {
-        Debug.Log($"OnHoverExit: {m_missionData.m_missionName}.");
+        //Debug.Log($"OnHoverExit: {m_missionData.m_missionName}.");
     }
 
     public override void OnClick()
     {
         Debug.Log($"OnClick: {m_missionData.m_missionName}.");
+        MissionTableController.Instance.SetTargetRotation(transform);
+
+        MissionInfoData missionInfoData = new MissionInfoData(m_missionSaveData, m_missionData);
+        UIPopupManager.Instance.ShowPopup<UIMissionInfo>("MissionInfo", missionInfoData);
     }
 }
