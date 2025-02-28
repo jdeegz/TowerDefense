@@ -86,7 +86,7 @@ public class GameplayManager : MonoBehaviour
             // Logging hit point increase over the game.
             float hitPointsThisWave = Instance.m_gameplayData.CalculateHealth(10, true);
             Debug.Log($"Wave {Wave} hitpoints: {hitPointsThisWave}, Increase: {(hitPointsThisWave / 10) * 100}%");
-            
+
             OnWaveChanged?.Invoke(m_wave);
         }
     }
@@ -725,6 +725,8 @@ public class GameplayManager : MonoBehaviour
     {
         ProgressionRewardData rewardData = unlockableData.GetRewardData();
 
+        if (rewardData == null) return;
+
         switch (rewardData.RewardType)
         {
             // TOWERS
@@ -905,8 +907,8 @@ public class GameplayManager : MonoBehaviour
                 UpdateGamePlayback(GameSpeed.Normal);
                 break;
             case GameplayState.SpawnEnemies:
-                
-                
+
+
                 switch (m_gameplayData.m_gameMode)
                 {
                     case MissionGameplayData.GameMode.Standard:
@@ -932,6 +934,7 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
+                HandleMissionProgression();
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, Wave, m_perfectWavesCompleted);
                 HandleVictorySequence();
                 break;
@@ -2442,6 +2445,32 @@ public class GameplayManager : MonoBehaviour
     {
         int i = Random.Range(0, clips.Count);
         m_audioSource.PlayOneShot(clips[i]);
+    }
+
+    void HandleMissionProgression()
+    {
+        if (GameManager.Instance == null) return;
+
+        // Each mission houses the keys it needs to flip if obelisks fill, and if endless wave passed.
+        // GameManager has a reference to the Mission Data. The keys will be held in there.
+
+        // For each reward in our MissionData, check if our completion wave is greater than the required wave. If so, flip the key.
+        foreach (ProgressionUnlockableData unlockable in GameManager.Instance.m_curMission.m_unlockableRewards)
+        {
+            Debug.Log($"HandleMissionProgression: {unlockable}.");
+            if (Wave < unlockable.GetWaveRequirement())
+            {
+                Debug.Log($"Wave requirement not met for {unlockable}. Current Wave {Wave} / Required Wave {unlockable.GetWaveRequirement()}");
+                continue; // We have not met the requirement, go next.
+            }
+
+            // We have met the requirement. Get the Key(s) and update them.
+            foreach (ProgressionKeyData key in unlockable.GetKeyData())
+            {
+                Debug.Log($"HandleMissionProgression: {unlockable}'s {key} unlocked.");
+                PlayerDataManager.Instance.RequestUnlockKey(key);
+            }
+        }
     }
 }
 

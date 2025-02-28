@@ -7,8 +7,6 @@ using UnityEngine;
 public class MissionData : ScriptableObject
 {
     [Header("Scene Data")]
-    [SerializeField] private MissionStats m_missionStats;
-    public MissionStats m_BaseMissionStats => m_missionStats;
     public string m_missionScene;
     
     //Used in Menus
@@ -20,12 +18,10 @@ public class MissionData : ScriptableObject
     [Header("Testing Data")]
     // For testing missions
     public bool m_isUnlockedByDefault;
-}
-
-/// <summary>
-/// https://youtu.be/tE1qH8OxO2Y?t=413
-/// </summary>
-public struct MissionStats
-{
-    public int m_WaveCount;
+    
+    [Header("Progression - Requirements")]
+    public List<ProgressionUnlockableData> m_unlockRequirements;
+    
+    [Header("Progression - Unlockables")]
+    public List<ProgressionUnlockableData> m_unlockableRewards;
 }

@@ -5,9 +5,14 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ProgressionUnlockableData", menuName = "ScriptableObjects/Progression/ProgressionUnlockableData")]
 public class ProgressionUnlockableData : ScriptableObject
 {
-    [SerializeField] private List<ProgressionKeyData> m_unlockRequirementKeys;
-    [SerializeField] private ProgressionRewardData m_unlockReward;
-    [SerializeField] private RuinIndicator m_ruinIndicator;
+    [SerializeField] private List<ProgressionKeyData> m_unlockRequirementKeys; // The keys required to complete the unlock.
+    [SerializeField] private ProgressionRewardData m_unlockReward; // A reference to the item we unlock.
+    
+    [Header("Towers & Buildings")]
+    [SerializeField] private RuinIndicator m_ruinIndicator; // The visual element we spawn in the mission to achieve this unlock.
+
+    [Header("Endless Mission Req")]
+    [SerializeField] private int m_waveReq = -1;
     
     public bool RequirementsIncludesKey(ProgressionKeyData keyData)
     {
@@ -21,6 +26,7 @@ public class ProgressionUnlockableData : ScriptableObject
 
     public void AwardUnlockable()
     {
+        if (m_unlockReward == null) return; // Sometime we don't have an object to unlock, like for Missions that only read the keys.
         m_unlockReward.UnlockReward();
     }
 
@@ -42,6 +48,11 @@ public class ProgressionUnlockableData : ScriptableObject
     public List<ProgressionKeyData> GetKeyData()
     {
         return m_unlockRequirementKeys;
+    }
+
+    public int GetWaveRequirement()
+    {
+        return m_waveReq;
     }
     
     public void ResetProgression()

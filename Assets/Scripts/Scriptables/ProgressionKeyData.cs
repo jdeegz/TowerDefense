@@ -55,6 +55,6 @@ public class ProgressionKeyData : ScriptableObject
     {
         // Write to player prefs to unlock this key.
         ProgressionKeyEnabled = true;
-        //Debug.Log($"KEY: {name}'s value: {ProgressionKeyEnabled}");
+        Debug.Log($"KEY: {name}'s value: {ProgressionKeyEnabled}");
     }
 }

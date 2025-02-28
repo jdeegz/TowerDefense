@@ -46,7 +46,16 @@ public class MissionTableController : MonoBehaviour
 
         HandleDrag();
 
+        HandleMouseHover();
 
+        RotateToTargetRotation();
+    }
+
+    private float m_targetYRotation = 0f;
+    private float m_rotationVelocity = 0f;
+
+    void RotateToTargetRotation()
+    {
         float scrollDelta = Input.mouseScrollDelta.y;
         if (Mathf.Abs(scrollDelta) > 0.01f) // Prevent minor jittering
         {
@@ -62,9 +71,6 @@ public class MissionTableController : MonoBehaviour
         // Apply the rotation
         m_rotationRoot.rotation = Quaternion.Euler(0f, m_currentYRotation, 0f);
     }
-
-    private float m_targetYRotation = 0f;
-    private float m_rotationVelocity = 0f;
 
     void HandleMouseScroll()
     {
@@ -82,6 +88,7 @@ public class MissionTableController : MonoBehaviour
     private Vector3 m_dragStartPosition;
     private Vector3 m_dragCurrentPosition;
     private bool m_isDragging;
+    private float m_draggedDistance;
 
     void HandleDrag()
     {
@@ -103,6 +110,7 @@ public class MissionTableController : MonoBehaviour
             {
                 m_dragStartPosition = ray.GetPoint(entry);
                 m_isDragging = true;
+                m_draggedDistance = 0f;
                 Debug.Log($"Drag Start.");
             }
         }
@@ -114,6 +122,9 @@ public class MissionTableController : MonoBehaviour
             if (plane.Raycast(ray, out float entry))
             {
                 Vector3 dragCurrentPosition = ray.GetPoint(entry);
+                
+                //Calculate drag distance
+                m_draggedDistance += Vector3.Distance(m_dragStartPosition, dragCurrentPosition);
 
                 // Convert positions to local space relative to the table center
                 Vector3 startLocal = m_dragStartPosition - m_rotationRoot.position;
@@ -141,7 +152,53 @@ public class MissionTableController : MonoBehaviour
         {
             m_isDragging = false;
             m_startedOnUI = false;
-            Debug.Log($"Drag Stop.");
+            
+            //Determine if we've dragged enough to qualify for a drag or click.
+            if (m_draggedDistance < 0.1f)
+            {
+                TryTriggerClick();
+            }
+            
+            Debug.Log($"Drag Stop. Dragged distance: {m_draggedDistance}");
+        }
+    }
+
+    void TryTriggerClick()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            Interactable interactable = hit.collider.GetComponent<Interactable>();
+            if(interactable != null) interactable.OnClick();
+        }
+    }
+
+    private Interactable m_previousInteractable;
+    void HandleMouseHover()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // Build the ray.
+        if (Physics.Raycast(ray, out RaycastHit hit)) // Shoot the ray and return the hit.
+        {
+            Interactable interactable = hit.collider.GetComponent<Interactable>();
+
+            if (interactable != null) // We hit an interactable
+            {
+                if (m_previousInteractable != null && interactable != m_previousInteractable) // Its a new interactable
+                {
+                    m_previousInteractable.OnHoverExit();
+                }
+
+                interactable.OnHover();
+                m_previousInteractable = interactable;    
+            }
+        }
+        else
+        {
+            if (m_previousInteractable != null) // We did not hit an interactable, so exit then null.
+            {
+                m_previousInteractable.OnHoverExit();
+                m_previousInteractable = null;
+            }
         }
     }
 }

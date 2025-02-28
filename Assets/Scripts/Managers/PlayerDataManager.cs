@@ -65,13 +65,29 @@ public class PlayerDataManager
 
         //Debug.Log($"{m_playerData.m_progressionKeys.Count} Progression Keys found in Save Data");
     }
-
-    public void BuildMissionListSaveData()
+    
+    public MissionSaveData GetMissionSaveDataByMissionData(MissionData missionData)
     {
-        //If the read data does not have a MissionSaveData for all missions, make new ones for those missing.
-        int missionListDesync = GameManager.Instance.m_missionTable.m_MissionList.Length - m_playerData.m_missions.Count;
+        foreach (MissionSaveData missionSaveData in m_playerData.m_missions)
+        {
+            if (missionSaveData.m_sceneName == missionData.m_missionScene) return missionSaveData;
+        }
+        
+        // If we haven't found one, create a new one and add it to player data for future look-ups.
+        
+        MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene, 0, 0, 0, 0);
+        m_playerData.m_missions.Add(newMissionSaveData);
 
-        for (var i = 0; i < missionListDesync; i++)
+        return newMissionSaveData;
+    }
+
+    public void InitializeMissionListSaveData()
+    {
+        // Create an entry of type MissionSaveData in PlayerData for each mission in our Mission Table.
+        // This is used when we reset progress.
+        int missionCount = GameManager.Instance.m_missionTable.m_MissionList.Length;
+
+        for (var i = 0; i < missionCount; i++)
         {
             var missionData = GameManager.Instance.m_missionTable.m_MissionList[i];
             int completionRank = m_playerData.m_missions.Count == 0 ? 1 : 0;
@@ -83,16 +99,18 @@ public class PlayerDataManager
 
     public void UpdateMissionSaveData(string missionName, int completeionRank, int wave, int perfectWaves)
     {
+        Debug.Log($"UpdateMissionSaveData: {missionName}.");
+        
         // Make and edit a temporary Mission Save Data, use the existing one as reference, then assign it.
-        MissionSaveData newMissionSaveData = new MissionSaveData(missionName, 0, 0, 0, 0);
-        newMissionSaveData.m_missionCompletionRank = completeionRank;
+        MissionSaveData newMissionSaveData = new MissionSaveData(missionName, 1, wave, completeionRank, perfectWaves);
 
         for (var i = 0; i < m_playerData.m_missions.Count; i++)
         {
             MissionSaveData mission = m_playerData.m_missions[i];
             if (mission.m_sceneName == newMissionSaveData.m_sceneName)
             {
-                //increment attempts in current data.
+                Debug.Log($"UpdateMissionSaveData: Existing MissionSaveData Found!");
+                
                 newMissionSaveData.m_missionAttempts = mission.m_missionAttempts + 1;
 
                 newMissionSaveData.m_waveHighScore = Math.Max(wave, mission.m_waveHighScore);
@@ -101,8 +119,8 @@ public class PlayerDataManager
                 newMissionSaveData.m_perfectWaveScore = Math.Max(perfectWaves, mission.m_perfectWaveScore);
                 Debug.Log($"UpdateMissionSaveData: Evaluating Perfect Wave Score. Current High Score {mission.m_perfectWaveScore}, New Score {perfectWaves}.");
 
-                //only save the highest completion rank.
                 newMissionSaveData.m_missionCompletionRank = Math.Max(newMissionSaveData.m_missionCompletionRank, mission.m_missionCompletionRank);
+                Debug.Log($"UpdateMissionSaveData: Evaluating Completion Rank. Current High Score {mission.m_missionCompletionRank}, New Score {completeionRank}.");
 
                 Debug.Log($"UpdateMissionSaveData: " +
                           $"Mission Attempts {newMissionSaveData.m_missionAttempts}, " +
@@ -111,15 +129,19 @@ public class PlayerDataManager
                           $"Completion Rank {newMissionSaveData.m_missionCompletionRank}.");
                 
                 m_playerData.m_missions[i] = newMissionSaveData;
-
-                //If completion rank is greater than 1, we want to unlock the next mission if there is one.
-                if (newMissionSaveData.m_missionCompletionRank > 1 && i < m_playerData.m_missions.Count - 1)
-                {
-                    m_playerData.m_missions[i + 1].m_missionCompletionRank = Math.Max(1, m_playerData.m_missions[i + 1].m_missionCompletionRank);
-                }
+                HandleWrite();
+                return;
             }
         }
 
+        Debug.Log($"UpdateMissionSaveData: NO Existing MissionSaveData Found!");
+        m_playerData.m_missions.Add(newMissionSaveData);
+        
+        Debug.Log($"UpdateMissionSaveData: Creating {missionName} Mission Save Data:" +
+                  $"Mission Attempts {newMissionSaveData.m_missionAttempts}, " +
+                  $"Wave High Score {newMissionSaveData.m_waveHighScore}, " +
+                  $"Perfect Wave Score {newMissionSaveData.m_perfectWaveScore}, " +
+                  $"Completion Rank {newMissionSaveData.m_missionCompletionRank}.");
         HandleWrite();
     }
 
@@ -140,54 +162,8 @@ public class PlayerDataManager
     {
         m_playerData = new PlayerData();
         m_playerData.m_buildNumber = m_buildNumber;
-        BuildMissionListSaveData();
+        InitializeMissionListSaveData();
         HandleWrite();
-    }
-
-    void SyncMissionListSaveData()
-    {
-        //Validate Mission Save Data list.
-        int missionListLength = GameManager.Instance.m_missionTable.m_MissionList.Length;
-        if (m_playerData.m_missions.Count != missionListLength)
-        {
-            Debug.Log($"Mission List mismatch. Updating Mission List.");
-
-            //We have a desync between saved missions and number of missions in game.
-            if (missionListLength > m_playerData.m_missions.Count)
-            {
-                //We have more missions in the game, build the save data for the new ones.
-                BuildMissionListSaveData();
-
-                //TO DO
-                //Build out the ability to insert new missions into the list, rather than just appending to end.
-                return;
-            }
-
-            if (missionListLength < m_playerData.m_missions.Count)
-            {
-                //We've removed some missions from the game, clean out the ones that dont exist anymore.
-                //We're not just removing from the end of the list, we're checking to see if the mission still exists, if not, removing it at its index.
-                for (int i = 0; i < m_playerData.m_missions.Count; ++i)
-                {
-                    bool isInMissionList = false;
-                    foreach (MissionData missionData in GameManager.Instance.m_missionTable.m_MissionList)
-                    {
-                        if (missionData.m_missionScene == m_playerData.m_missions[i].m_sceneName)
-                        {
-                            isInMissionList = true;
-                        }
-                    }
-
-                    if (isInMissionList == false)
-                    {
-                        m_playerData.m_missions.RemoveAt(i);
-                        --i;
-                    }
-                }
-
-                HandleWrite();
-            }
-        }
     }
     
     // UNLOCK PROGRESSION
@@ -265,6 +241,8 @@ public class PlayerDataManager
             
             // Get the reward so we can determine type, then get the tower data and pack it.
             ProgressionRewardData rewardData = unlockableData.GetRewardData();
+            if (rewardData == null) continue;
+            
             switch (rewardData.RewardType)
             {
                 case "Structure":
@@ -275,6 +253,8 @@ public class PlayerDataManager
                     TowerData towerData = rewardData.GetReward();
                     if (unlockedTowers.Contains(towerData)) break;
                     unlockedTowers.Add(towerData);
+                    break;
+                case "Mission":
                     break;
                 default:
                     break;
