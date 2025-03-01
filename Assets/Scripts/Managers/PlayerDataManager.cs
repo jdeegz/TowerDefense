@@ -11,18 +11,27 @@ public class PlayerDataManager
     public static event Action<ProgressionUnlockableData> OnUnlockableUnlocked;
     public static event Action<ProgressionUnlockableData> OnUnlockableLocked;
     public PlayerData m_playerData;
-    public ProgressionTable m_progressionTable;
     
     //private string m_path;
     private string m_persistantPath;
     private int m_buildNumber = 6; //Increment this to invalidate old save files. Updated Jan 30th 2025
+    public static ProgressionTable m_progressionTable;
 
     //Constructor
     private PlayerDataManager()
     {
         SetPaths();
         HandleRead();
-        //m_progressionTable = GameManager.Instance.m_progressionTable;
+        
+        if (m_progressionTable == null)
+        {
+            m_progressionTable = Resources.Load<ProgressionTable>("ProgressionTable");
+        }
+    }
+    
+    public static ProgressionTable GetProgressionTable()
+    {
+        return m_progressionTable;
     }
 
     void SetPaths()
@@ -76,25 +85,12 @@ public class PlayerDataManager
         // If we haven't found one, create a new one and add it to player data for future look-ups.
         
         MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene, 0, 0, 0, 0);
+        newMissionSaveData.m_missionCompletionRank = missionData.m_isUnlockedByDefault ? 1 : 0;
         m_playerData.m_missions.Add(newMissionSaveData);
 
+        Debug.Log($"GetMissionSaveData: Mission Name: {newMissionSaveData.m_sceneName}, Mission Completion Rank: {newMissionSaveData.m_missionCompletionRank}");
+
         return newMissionSaveData;
-    }
-
-    public void InitializeMissionListSaveData()
-    {
-        // Create an entry of type MissionSaveData in PlayerData for each mission in our Mission Table.
-        // This is used when we reset progress.
-        int missionCount = GameManager.Instance.m_missionTable.m_MissionList.Length;
-
-        for (var i = 0; i < missionCount; i++)
-        {
-            var missionData = GameManager.Instance.m_missionTable.m_MissionList[i];
-            int completionRank = m_playerData.m_missions.Count == 0 ? 1 : 0;
-            MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene, 0, 0, completionRank, 0);
-
-            m_playerData.m_missions.Add(newMissionSaveData);
-        }
     }
 
     public void UpdateMissionSaveData(string missionName, int completeionRank, int wave, int perfectWaves)
@@ -162,7 +158,7 @@ public class PlayerDataManager
     {
         m_playerData = new PlayerData();
         m_playerData.m_buildNumber = m_buildNumber;
-        InitializeMissionListSaveData();
+        m_progressionTable.ResetProgressionData();
         HandleWrite();
     }
     

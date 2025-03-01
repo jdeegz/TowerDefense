@@ -32,6 +32,7 @@ public class ProgressionUnlockableData : ScriptableObject
 
     public void LockUnlockable()
     {
+        if (m_unlockReward == null) return;
         m_unlockReward.LockReward();
     }
     

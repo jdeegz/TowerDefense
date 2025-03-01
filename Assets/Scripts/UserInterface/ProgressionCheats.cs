@@ -15,18 +15,18 @@ public class ProgressionCheats : MonoBehaviour
     void Start()
     {
         // Get progression info
-        m_progressionTable = PlayerDataManager.Instance.m_progressionTable;
+        m_progressionTable = PlayerDataManager.m_progressionTable;
         
         // Build Buttons, Unlock/Lock all.
         // Unlock All
         GameObject buttonObj = Instantiate(m_cheatButtonObj, m_rootTransform);
         CheatButton cheatButton = buttonObj.GetComponent<CheatButton>();
         
-        cheatButton.SetupButton("Unlock All", PlayerDataManager.Instance.m_progressionTable.CheatProgressionData, UpdateState);
+        cheatButton.SetupButton("Unlock All", m_progressionTable.CheatProgressionData, UpdateState);
         
         buttonObj = Instantiate(m_cheatButtonObj, m_rootTransform);
         cheatButton = buttonObj.GetComponent<CheatButton>();
-        cheatButton.SetupButton("Lock All", PlayerDataManager.Instance.m_progressionTable.ResetProgressionData, UpdateState);
+        cheatButton.SetupButton("Lock All", m_progressionTable.ResetProgressionData, UpdateState);
         
         // Build Toggles
         m_toggles = new List<CheatToggle>();

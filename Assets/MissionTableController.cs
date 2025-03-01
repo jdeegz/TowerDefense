@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
@@ -6,6 +7,7 @@ using UnityEngine.UIElements;
 public class MissionTableController : MonoBehaviour
 {
     public static MissionTableController Instance;
+
     [Header("Table Rotation")]
     [SerializeField] private Transform m_rotationRoot;
     [SerializeField] private float m_rotationSpeed = 10f; // Adjust sensitivity
@@ -15,7 +17,12 @@ public class MissionTableController : MonoBehaviour
     {
         Instance = this;
     }
-    
+
+    void Start()
+    {
+        SetRotation(GetFurthestUnlockedMission().transform);
+    }
+
     void Update()
     {
         HandleMouseScroll();
@@ -25,6 +32,11 @@ public class MissionTableController : MonoBehaviour
         HandleMouseHover();
 
         RotateToTargetRotation();
+
+        if (Input.GetKeyUp(KeyCode.A))
+        {
+            PrintDictionary();
+        }
     }
 
     private float m_targetYRotation = 0f;
@@ -40,28 +52,25 @@ public class MissionTableController : MonoBehaviour
 
         // Ensure shortest rotation path by normalizing the difference
         float deltaAngle = Mathf.DeltaAngle(m_currentYRotation, m_targetYRotation);
-
-        // Smooth interpolation using Lerp
         m_currentYRotation = Mathf.Lerp(m_currentYRotation, m_currentYRotation + deltaAngle, Time.deltaTime * 10f);
-
-        // Apply the rotation
         m_rotationRoot.rotation = Quaternion.Euler(0f, m_currentYRotation, 0f);
     }
 
     public void SetTargetRotation(Transform targetObject)
     {
-        // Get the direction from the root to the clicked object
         Vector3 direction = m_rotationRoot.position - targetObject.position;
-    
         float targetYRotation = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-
-        // Calculate the angle difference to ensure smooth rotation
-        float angleDifference = Mathf.DeltaAngle(m_rotationRoot.eulerAngles.y, targetYRotation);
-
-        // Apply the target rotation considering the current rotation of the root object
         m_targetYRotation = m_rotationRoot.eulerAngles.y + targetYRotation;
 
         //Debug.Log($"SetTargetRotation: Starting Rotation: {m_rotationRoot.eulerAngles.y}, Rotation to Obj: {targetYRotation}. Target Rotation: {m_targetYRotation}.");
+    }
+
+    public void SetRotation(Transform targetObject)
+    {
+        Vector3 direction = m_rotationRoot.position - targetObject.position;
+        float targetYRotation = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        m_rotationRoot.rotation = Quaternion.Euler(0f, targetYRotation, 0f);
+        //m_rotationRoot.transform.rotation.y = m_rotationRoot.eulerAngles.y + targetYRotation;
     }
 
     void HandleMouseScroll()
@@ -69,11 +78,10 @@ public class MissionTableController : MonoBehaviour
         float scrollDelta = Input.mouseScrollDelta.y;
         if (Mathf.Abs(scrollDelta) > 0.01f) // Prevent minor jittering
         {
-            Debug.Log($"Scroll Delta {scrollDelta}.");
+            //Debug.Log($"Scroll Delta {scrollDelta}.");
             m_targetYRotation += scrollDelta * m_rotationSpeed; // Update target rotation
             m_targetYRotation = Mathf.Repeat(m_targetYRotation, 360f);
             UIPopupManager.Instance.ClosePopup<UIMissionInfo>();
-            Debug.Log($"Scrolled.");
         }
     }
 
@@ -115,7 +123,7 @@ public class MissionTableController : MonoBehaviour
             if (plane.Raycast(ray, out float entry))
             {
                 Vector3 dragCurrentPosition = ray.GetPoint(entry);
-                
+
                 //Calculate drag distance
                 m_draggedDistance += Vector3.Distance(m_dragStartPosition, dragCurrentPosition);
 
@@ -145,13 +153,13 @@ public class MissionTableController : MonoBehaviour
         {
             m_isDragging = false;
             m_startedOnUI = false;
-            
+
             //Determine if we've dragged enough to qualify for a drag or click.
             if (m_draggedDistance < 0.5f)
             {
                 TryTriggerClick();
             }
-            
+
             //Debug.Log($"Drag Stop. Dragged distance: {m_draggedDistance}");
         }
     }
@@ -162,11 +170,12 @@ public class MissionTableController : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Interactable interactable = hit.collider.GetComponent<Interactable>();
-            if(interactable != null) interactable.OnClick();
+            if (interactable != null) interactable.OnClick();
         }
     }
 
     private Interactable m_previousInteractable;
+
     void HandleMouseHover()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // Build the ray.
@@ -182,7 +191,7 @@ public class MissionTableController : MonoBehaviour
                 }
 
                 interactable.OnHover();
-                m_previousInteractable = interactable;    
+                m_previousInteractable = interactable;
             }
         }
         else
@@ -193,5 +202,38 @@ public class MissionTableController : MonoBehaviour
                 m_previousInteractable = null;
             }
         }
+    }
+
+
+    
+    [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
+    private int m_curSelectedMissionIndex;
+
+    void PrintDictionary()
+    {
+        int i = 0;
+        foreach (MissionButtonInteractable button in m_missionButtonList)
+        {
+            Debug.Log($"ButtonDictionary: Entry {i}: Mission: {button.MissionSaveData.m_sceneName}.");
+            i++;
+        }
+    }
+
+    private int m_furthestDefeatedIndex;
+    private MissionButtonInteractable GetFurthestUnlockedMission()
+    {
+        for (int i = 0; i < m_missionButtonList.Count; ++i)
+        {
+            if (m_missionButtonList[i].MissionSaveData.m_missionCompletionRank == 1)
+            {
+                return m_missionButtonList[i];
+            }
+            
+            if (m_missionButtonList[i].MissionSaveData.m_missionCompletionRank >= 2)
+            {
+                m_furthestDefeatedIndex = i;
+            }
+        }
+        return m_missionButtonList[m_furthestDefeatedIndex];
     }
 }

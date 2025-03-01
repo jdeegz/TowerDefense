@@ -79,7 +79,7 @@ public class RuinController : MonoBehaviour
         PlayerDataManager.Instance.RequestUnlockKey(m_progressionKey);
 
         // The Unlockable Progress this key belongs to and display an alert based on progress.
-        ProgressionUnlockableData unlockableData = PlayerDataManager.Instance.m_progressionTable.GetUnlockableFromKey(m_progressionKey);
+        ProgressionUnlockableData unlockableData = PlayerDataManager.m_progressionTable.GetUnlockableFromKey(m_progressionKey);
         UnlockProgress unlockProgress = unlockableData.GetProgress();
 
         if (unlockProgress.m_isUnlocked)

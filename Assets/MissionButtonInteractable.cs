@@ -16,7 +16,7 @@ public class MissionButtonInteractable : Interactable
     private Material m_spireMaterial;
 
     private DisplayState m_buttonDisplayState;
-    private DisplayState ButtonButtonDisplayState
+    public DisplayState ButtonDisplayState
     {
         get { return m_buttonDisplayState; }
         set
@@ -29,16 +29,19 @@ public class MissionButtonInteractable : Interactable
             }
         }
     }
+
+    public MissionSaveData MissionSaveData => m_missionSaveData;
     
-    private enum DisplayState
+    public enum DisplayState
     {
+        Uninitialized,
         Locked,
         Unlocked,
         Defeated,
         Perfected, 
     }
     
-    void Start()
+    void Awake()
     {
         // Get the Save Data for this mission.
         //if (PlayerDataManager.Instance == null) return;
@@ -53,7 +56,7 @@ public class MissionButtonInteractable : Interactable
         
         SetInitialState();
         
-        ButtonButtonDisplayState = CalculateDisplayState();
+        ButtonDisplayState = CalculateDisplayState();
     }
 
     void SetInitialState()
@@ -89,6 +92,8 @@ public class MissionButtonInteractable : Interactable
     {
         switch (displayState)
         {
+            case DisplayState.Uninitialized:
+                return;
             case DisplayState.Locked:
                 m_lockedRootObj.SetActive(true);
                 m_defeatedRootObj.SetActive(false);

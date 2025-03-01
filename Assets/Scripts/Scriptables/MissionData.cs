@@ -14,6 +14,7 @@ public class MissionData : ScriptableObject
     public string m_missionName;
     public string m_missionDescription;
     public Sprite m_missionSprite;
+    public int m_missionPlacement = 000;
     
     [Header("Testing Data")]
     // For testing missions

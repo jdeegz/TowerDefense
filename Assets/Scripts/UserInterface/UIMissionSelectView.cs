@@ -35,9 +35,9 @@ public class UIMissionSelectView : MonoBehaviour
 
     void Start()
     {
-        m_backButton.onClick.AddListener(OnBackButtonClick);
+        m_backButton.onClick.AddListener(OnBackButtonClick);/*
         m_resetSaveDataButton.onClick.AddListener(OnResetButtonClick);
-        m_unlockAllButton.onClick.AddListener(OnUnlockAllButtonClick);
+        m_unlockAllButton.onClick.AddListener(OnUnlockAllButtonClick);*/
 
         BuildMissionList();
     }
@@ -108,19 +108,19 @@ public class UIMissionSelectView : MonoBehaviour
         MenuManager.Instance.UpdateMenuState(MenuManager.MenuState.StartMenu);
     }
 
-    private void OnResetButtonClick()
+    /*private void OnResetButtonClick()
     {
         //ClearMissionList();
         PlayerDataManager.Instance.ResetPlayerData();
         BuildMissionList();
         m_dataResetToast.alpha = 1;
         m_dataResetToast.DOFade(0, 3f);
-    }
+    }*/
 
-    private void OnUnlockAllButtonClick()
+    /*private void OnUnlockAllButtonClick()
     {
         // Object Unlocks
-        PlayerDataManager.Instance.m_progressionTable.CheatProgressionData();
+        //PlayerDataManager.Instance.m_progressionTable.CheatProgressionData();
         
         // Mission Unlocks
         for (int i = 0; i < PlayerDataManager.Instance.m_playerData.m_missions.Count; ++i)
@@ -131,5 +131,5 @@ public class UIMissionSelectView : MonoBehaviour
         }
         
         BuildMissionList();
-    }
+    }*/
 }

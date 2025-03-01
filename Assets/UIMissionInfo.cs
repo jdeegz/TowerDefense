@@ -98,7 +98,7 @@ public class UIMissionInfo : UIPopup, IDataPopup
 
         string missionDetailsString;
         string missionWaveHighScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentEndlessHighScore, m_missionSaveData.m_waveHighScore);
-        string missionPerfectWaveScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentEndlessScore, m_missionSaveData.m_perfectWaveScore);
+        string missionPerfectWaveScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentPerfectHighScore, m_missionSaveData.m_perfectWaveScore);
         missionDetailsString = $"{missionWaveHighScore}<br>{missionPerfectWaveScore}";
         m_missionDetailsLabel.SetText(missionDetailsString);
 

@@ -30,7 +30,7 @@ public class RuinIndicator : Ruin
     public void SetUpRuinIndicator(RuinController ruinController)
     {
         m_ruinController = ruinController;
-        m_unlockableData = PlayerDataManager.Instance.m_progressionTable.GetUnlockableFromKey(m_ruinController.ProgressionKey);
+        m_unlockableData = PlayerDataManager.m_progressionTable.GetUnlockableFromKey(m_ruinController.ProgressionKey);
         m_towerData = m_unlockableData.GetRewardData().GetReward();
     }
 
