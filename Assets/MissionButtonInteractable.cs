@@ -54,16 +54,9 @@ public class MissionButtonInteractable : Interactable
         m_spireMaterial = m_spireRenderer.material;
         m_defaultColorTint = m_spireMaterial.GetColor("_BaseTint");
         
-        SetInitialState();
+        SetState(true, false, m_lockedColorTint);
         
         ButtonDisplayState = CalculateDisplayState();
-    }
-
-    void SetInitialState()
-    {
-        m_lockedRootObj.SetActive(true);
-        m_defeatedRootObj.SetActive(false);
-        m_spireMaterial.SetColor("_BaseTint", m_lockedColorTint);
     }
 
     public DisplayState CalculateDisplayState()
@@ -95,25 +88,26 @@ public class MissionButtonInteractable : Interactable
             case DisplayState.Uninitialized:
                 return;
             case DisplayState.Locked:
-                m_lockedRootObj.SetActive(true);
-                m_defeatedRootObj.SetActive(false);
-                m_spireMaterial.SetColor("_BaseTint", m_lockedColorTint);
+                SetState(true, false, m_lockedColorTint);
                 break;
             case DisplayState.Unlocked:
-                m_lockedRootObj.SetActive(false);
-                m_defeatedRootObj.SetActive(false);
-                m_spireMaterial.SetColor("_BaseTint", m_defaultColorTint);
+                SetState(false, false, m_defaultColorTint);
                 break;
             case DisplayState.Defeated:
-                m_lockedRootObj.SetActive(false);
-                m_defeatedRootObj.SetActive(true);
-                m_spireMaterial.SetColor("_BaseTint", m_defaultColorTint);
+                SetState(false, true, m_defaultColorTint);
                 break;
             case DisplayState.Perfected:
                 break;
             default:
                 return;
         }
+    }
+
+    void SetState(bool showLockedRoot, bool showDefeatedRoot, Color spireColor)
+    {
+        m_lockedRootObj.SetActive(showLockedRoot);
+        m_defeatedRootObj.SetActive(showDefeatedRoot);
+        m_spireMaterial.SetColor("_BaseTint", spireColor);
     }
 
     public override void OnHover()

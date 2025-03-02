@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GameUtil;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
@@ -11,20 +12,51 @@ public class MissionTableController : MonoBehaviour
     [Header("Table Rotation")]
     [SerializeField] private Transform m_rotationRoot;
     [SerializeField] private float m_rotationSpeed = 10f; // Adjust sensitivity
+    
+    [Header("Mission Buttons")]
+    [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
+    
+    
     private float m_currentYRotation = 0f;
+    private float m_targetYRotation = 0f;
+    private float m_initialYRotation;
+    private float m_draggedDistance;
+    
+    private bool m_isActive;
+    private bool m_startedOnUI;
+    private bool m_isDragging;
+    
+    private Vector3 m_dragStartPosition;
+    private Vector3 m_dragStartDirection;
+    private Vector3 m_dragCurrentPosition;
+    
+    private int m_prevSelectedMissionIndex = -1;
+    private int m_nextSelectedMissionIndex = 1;
+    private int m_curSelectedMissionIndex = 0;
+    private int m_furthestDefeatedIndex;
+    
+    private MissionButtonInteractable m_curSelectedMission;
+    private Interactable m_previousInteractable;
+    
+    private List<float> m_missionButtonRotations = new List<float>();
 
     void Awake()
     {
         Instance = this;
+        m_isActive = false;
+        CalculateMissionButtonRotationValues();
     }
 
     void Start()
     {
-        SetRotation(GetFurthestUnlockedMission().transform);
+        SelectedMissionIndex = m_missionButtonList.IndexOf(GetFurthestUnlockedMission());
+        SetRotation(m_missionButtonList[SelectedMissionIndex].transform);
     }
 
     void Update()
     {
+        if (!m_isActive) return;
+
         HandleMouseScroll();
 
         HandleDrag();
@@ -34,15 +66,7 @@ public class MissionTableController : MonoBehaviour
         HandleHotkeys();
 
         RotateToTargetRotation();
-
-        if (Input.GetKeyUp(KeyCode.A))
-        {
-            PrintDictionary();
-        }
     }
-
-    private float m_targetYRotation = 0f;
-    private float m_rotationVelocity = 0f;
 
     void RotateToTargetRotation()
     {
@@ -56,6 +80,8 @@ public class MissionTableController : MonoBehaviour
         float deltaAngle = Mathf.DeltaAngle(m_currentYRotation, m_targetYRotation);
         m_currentYRotation = Mathf.Lerp(m_currentYRotation, m_currentYRotation + deltaAngle, Time.deltaTime * 10f);
         m_rotationRoot.rotation = Quaternion.Euler(0f, m_currentYRotation, 0f);
+
+        //Debug.Log($"Current Rotation: {m_currentYRotation}");
     }
 
     public void SetTargetRotation(Transform targetObject)
@@ -69,9 +95,6 @@ public class MissionTableController : MonoBehaviour
 
     public void SetSelectedMission(MissionButtonInteractable missionButton)
     {
-        // Get the index of this mission Button.
-        // Set the index. -> rotate the table.
-        // Store that we have a selected item.
         for (var i = 0; i < m_missionButtonList.Count; ++i)
         {
             MissionButtonInteractable button = m_missionButtonList[i];
@@ -90,9 +113,12 @@ public class MissionTableController : MonoBehaviour
     {
         Vector3 direction = m_rotationRoot.position - targetObject.position;
         float targetYRotation = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        m_targetYRotation = targetYRotation;
+        m_currentYRotation = m_targetYRotation;
         m_rotationRoot.rotation = Quaternion.Euler(0f, targetYRotation, 0f);
-        //m_rotationRoot.transform.rotation.y = m_rotationRoot.eulerAngles.y + targetYRotation;
+        m_isActive = true;
     }
+
 
     void HandleMouseScroll()
     {
@@ -103,17 +129,11 @@ public class MissionTableController : MonoBehaviour
             m_targetYRotation += scrollDelta * m_rotationSpeed; // Update target rotation
             m_targetYRotation = Mathf.Repeat(m_targetYRotation, 360f);
             UIPopupManager.Instance.ClosePopup<UIMissionInfo>();
+
+            CalculateAdjacentIndexes();
         }
     }
 
-    private bool m_startedOnUI;
-    private Vector3 m_dragStartPosition;
-    private Vector3 m_dragStartDirection;
-    private Vector3 m_dragCurrentPosition;
-    private float m_initialYRotation;
-    private bool m_isDragging;
-    public bool IsDragging => m_isDragging;
-    private float m_draggedDistance;
 
     void HandleDrag()
     {
@@ -138,7 +158,7 @@ public class MissionTableController : MonoBehaviour
                 m_initialYRotation = m_targetYRotation;
                 m_isDragging = true;
                 m_draggedDistance = 0f;
-                Debug.Log($"Drag Start.");
+                //Debug.Log($"Drag Start.");
             }
         }
 
@@ -167,9 +187,13 @@ public class MissionTableController : MonoBehaviour
             if (m_draggedDistance < 0.5f)
             {
                 TryTriggerClick();
+                return;
             }
 
             //Debug.Log($"Drag Stop. Dragged distance: {m_draggedDistance}");
+
+            //Try and calculate the new selected index.
+            CalculateAdjacentIndexes();
         }
     }
 
@@ -197,8 +221,6 @@ public class MissionTableController : MonoBehaviour
             if (interactable != null) interactable.OnClick();
         }
     }
-
-    private Interactable m_previousInteractable;
 
     void HandleMouseHover()
     {
@@ -229,9 +251,42 @@ public class MissionTableController : MonoBehaviour
     }
 
 
-    [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
-    private int m_curSelectedMissionIndex;
-    private MissionButtonInteractable m_curSelectedMission;
+    private void CalculateMissionButtonRotationValues()
+    {
+        for (int i = 0; i < m_missionButtonList.Count; ++i)
+        {
+            Vector3 direction = m_missionButtonList[i].transform.position - m_rotationRoot.position;
+            float buttonRotationValue = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+            buttonRotationValue = Mathf.Repeat(buttonRotationValue - 180, 360f);
+
+            //Debug.Log($"Mission {i}; Rotation Value {buttonRotationValue}.");
+            m_missionButtonRotations.Add(buttonRotationValue);
+        }
+    }
+
+    private void CalculateAdjacentIndexes()
+    {
+        // for each item in the mission list, get its relative angle and compare it to our current angle. Get the item that preceeds the item that has a larger angle.
+        float currentRotationValue = Mathf.Repeat(m_rotationRoot.eulerAngles.y, 360f);
+        int passedIndex = 0;
+        for (int i = 0; i < m_missionButtonList.Count; ++i)
+        {
+            //Debug.Log($"Mission {i}; Current Rot Value {currentRotationValue} is greater than mission's value {m_missionButtonRotations[i]} : {currentRotationValue > m_missionButtonRotations[i]}");
+            if (currentRotationValue > m_missionButtonRotations[i])
+            {
+                passedIndex = i;
+            }
+
+            if (currentRotationValue < m_missionButtonRotations[i])
+            {
+                m_nextSelectedMissionIndex = i;
+                break;
+            }
+        }
+
+        m_prevSelectedMissionIndex = passedIndex;
+    }
 
     public int SelectedMissionIndex
     {
@@ -241,14 +296,18 @@ public class MissionTableController : MonoBehaviour
             if (value != m_curSelectedMissionIndex)
             {
                 m_curSelectedMissionIndex = (value + m_missionButtonList.Count) % m_missionButtonList.Count;
+                m_prevSelectedMissionIndex = m_curSelectedMissionIndex - 1;
+                m_nextSelectedMissionIndex = m_curSelectedMissionIndex + 1;
+
                 SetTargetRotation(m_missionButtonList[m_curSelectedMissionIndex].transform);
+                //Debug.Log($"Selected Mission Index: {m_curSelectedMissionIndex}.");
             }
         }
     }
 
     private void NextMissionIndex(bool value)
     {
-        SelectedMissionIndex += value ? 1 : -1;
+        SelectedMissionIndex = value ? m_nextSelectedMissionIndex : m_prevSelectedMissionIndex;
 
         if (m_curSelectedMission != null)
         {
@@ -257,24 +316,13 @@ public class MissionTableController : MonoBehaviour
         }
     }
 
-    void PrintDictionary()
-    {
-        int i = 0;
-        foreach (MissionButtonInteractable button in m_missionButtonList)
-        {
-            Debug.Log($"ButtonDictionary: Entry {i}: Mission: {button.MissionSaveData.m_sceneName}.");
-            i++;
-        }
-    }
-
-    private int m_furthestDefeatedIndex;
-
     private MissionButtonInteractable GetFurthestUnlockedMission()
     {
         for (int i = 0; i < m_missionButtonList.Count; ++i)
         {
             if (m_missionButtonList[i].MissionSaveData.m_missionCompletionRank == 1)
             {
+                //Debug.Log($"Furthest Mission Found: {m_missionButtonList[i].MissionSaveData.m_sceneName} with competion Rank 1.");
                 return m_missionButtonList[i];
             }
 
@@ -284,9 +332,10 @@ public class MissionTableController : MonoBehaviour
             }
         }
 
+        //Debug.Log($"Furthest Fallback Mission Found: {m_missionButtonList[m_furthestDefeatedIndex].MissionSaveData.m_sceneName} with competion Rank 2.");
         return m_missionButtonList[m_furthestDefeatedIndex];
     }
-    
+
     public void RequestTableReset()
     {
         foreach (var button in m_missionButtonList)

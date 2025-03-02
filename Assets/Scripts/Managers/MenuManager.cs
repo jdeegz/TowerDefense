@@ -45,8 +45,8 @@ public class MenuManager : MonoBehaviour
 
     private void MenuManagerOnMenuStateChanged(MenuState state)
     {
-        m_StartMenuView.SetActive(state == MenuState.StartMenu);
-        m_MissionSelectView.SetActive(state == MenuState.MissionSelect);
+        /*m_StartMenuView.SetActive(state == MenuState.StartMenu);
+        m_MissionSelectView.SetActive(state == MenuState.MissionSelect);*/
     }
 
 

@@ -85,15 +85,22 @@ public class PlayerDataManager
         // If we haven't found one, create a new one and add it to player data for future look-ups.
         MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene, 0, 0, 0, 0);
         bool isUnlocked = true;
-        foreach (ProgressionUnlockableData unlockable in missionData.m_unlockRequirements)
+        if (missionData.m_unlockRequirements == null || missionData.m_unlockRequirements.Count == 0)
         {
-            if (!unlockable.GetProgress().m_isUnlocked)
+            isUnlocked = false; // This mission has no unlock requirements, it is not available content.
+        }
+        else
+        {
+            foreach (ProgressionUnlockableData unlockable in missionData.m_unlockRequirements)
             {
-                isUnlocked = false;
-                break;
+                if (!unlockable.GetProgress().m_isUnlocked)
+                {
+                    isUnlocked = false;
+                    break;
+                }
             }
         }
-         
+
         if(missionData.m_isUnlockedByDefault || isUnlocked)
         {
             newMissionSaveData.m_missionCompletionRank = 1;
