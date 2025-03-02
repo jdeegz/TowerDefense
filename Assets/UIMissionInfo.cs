@@ -50,6 +50,7 @@ public class UIMissionInfo : UIPopup, IDataPopup
     public override void HandleClose()
     {
         Debug.Log($"MissionInfo: Closing popup.");
+        MissionTableController.Instance.SetSelectedMission(null);
         ResetData();
         m_canvasGroup.interactable = false;
         m_canvasGroup.blocksRaycasts = false;

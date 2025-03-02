@@ -14,5 +14,7 @@ public class UIResetAllProgression : MonoBehaviour
     private void OnResetButtonClick()
     {
         PlayerDataManager.Instance.ResetPlayerData();
+
+        MissionTableController.Instance.RequestTableReset();
     }
 }

@@ -13,6 +13,8 @@ public class UIUnlockAllProgression : MonoBehaviour
     
     private void OnUnlockAllButtonClick()
     {
-        PlayerDataManager.m_progressionTable.CheatProgressionData();
+        PlayerDataManager.Instance.CheatPlayerData();
+        
+        MissionTableController.Instance.RequestTableReset();
     }
 }

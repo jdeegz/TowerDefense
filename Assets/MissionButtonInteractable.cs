@@ -66,7 +66,7 @@ public class MissionButtonInteractable : Interactable
         m_spireMaterial.SetColor("_BaseTint", m_lockedColorTint);
     }
 
-    DisplayState CalculateDisplayState()
+    public DisplayState CalculateDisplayState()
     {
         if (m_missionSaveData == null)
         {
@@ -129,9 +129,26 @@ public class MissionButtonInteractable : Interactable
     public override void OnClick()
     {
         Debug.Log($"OnClick: {m_missionData.m_missionName}.");
-        MissionTableController.Instance.SetTargetRotation(transform);
+        MissionTableController.Instance.SetSelectedMission(this);
 
+        RequestMissionInfoPopup();
+    }
+
+    public void RequestMissionInfoPopup()
+    {
         MissionInfoData missionInfoData = new MissionInfoData(m_missionSaveData, m_missionData);
         UIPopupManager.Instance.ShowPopup<UIMissionInfo>("MissionInfo", missionInfoData);
+    }
+
+    public void UpdateDisplayState()
+    {
+        Debug.Log($"{name} Update Display State request serviced.");
+        
+        if (m_missionData != null)
+        {
+            m_missionSaveData = PlayerDataManager.Instance.GetMissionSaveDataByMissionData(m_missionData);
+        }
+        
+        ButtonDisplayState = CalculateDisplayState();
     }
 }

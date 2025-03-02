@@ -83,9 +83,22 @@ public class PlayerDataManager
         }
         
         // If we haven't found one, create a new one and add it to player data for future look-ups.
-        
         MissionSaveData newMissionSaveData = new MissionSaveData(missionData.m_missionScene, 0, 0, 0, 0);
-        newMissionSaveData.m_missionCompletionRank = missionData.m_isUnlockedByDefault ? 1 : 0;
+        bool isUnlocked = true;
+        foreach (ProgressionUnlockableData unlockable in missionData.m_unlockRequirements)
+        {
+            if (!unlockable.GetProgress().m_isUnlocked)
+            {
+                isUnlocked = false;
+                break;
+            }
+        }
+         
+        if(missionData.m_isUnlockedByDefault || isUnlocked)
+        {
+            newMissionSaveData.m_missionCompletionRank = 1;
+        }
+        
         m_playerData.m_missions.Add(newMissionSaveData);
 
         Debug.Log($"GetMissionSaveData: Mission Name: {newMissionSaveData.m_sceneName}, Mission Completion Rank: {newMissionSaveData.m_missionCompletionRank}");
@@ -270,6 +283,16 @@ public class PlayerDataManager
     public void ResetProgressionTable()
     {
         m_progressionTable.ResetProgressionData();
+    }
+    
+    public void CheatPlayerData()
+    {
+        foreach (MissionSaveData missionSaveData in m_playerData.m_missions)
+        {
+            missionSaveData.m_missionCompletionRank = Math.Max(1, missionSaveData.m_missionCompletionRank);
+        }
+        
+        m_progressionTable.CheatProgressionData();
     }
 }
 
