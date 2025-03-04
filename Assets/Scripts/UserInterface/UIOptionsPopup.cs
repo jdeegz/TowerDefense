@@ -51,60 +51,48 @@ public class UIOptionsPopup : UIPopup
         base.Awake();
 
         m_elapsedTime = 0;
-        m_cheatsGroup.SetActive(false);
-
-        if (GameManager.Instance != null && GameManager.Instance.m_curMission != null)
-        {
-            m_missionNameLabel.SetText($"{GameManager.Instance.m_curMission.m_missionName}");
-        }
     }
 
     public override void HandleShow()
     {
-        if (GameManager.Instance != null)
-        {
-            if (GameManager.Instance.m_gameState == GameManager.GameState.Menus)
-            {
-                m_surrenderButton.gameObject.SetActive(false);
-                m_restartButton.gameObject.SetActive(false);
-                m_missionNameLabel.gameObject.SetActive(false);
-            }
+        bool showSurrenderButton = false;
+        bool isEndlessModeActive = false;
+        bool showRestartButton = false;
+        bool showMissionLabel = false;
+        bool showCheats = false;
 
-            if (GameManager.Instance.m_gameState != GameManager.GameState.Menus)
-            {
-                //Out-of-game Only Options
-            }
+        // If we have a game manager, and we are in a mission, show these things.
+        if (GameManager.Instance != null && GameManager.Instance.m_curMission != null)
+        {
+            showSurrenderButton = true;
+            showRestartButton = true;
+            showMissionLabel = true;
+            showCheats = true;
+            isEndlessModeActive = GameplayManager.Instance.IsEndlessModeActive();
         }
 
-        if (m_surrenderButton.gameObject.activeSelf)
-        {
-            string buttonString;
-            if (GameplayManager.Instance.IsEndlessModeActive())
-            {
-                // Complete Mission
-                buttonString = m_uiStrings.m_completeMission;
-            }
-            else
-            {
-                // Surrender
-                buttonString = m_uiStrings.m_surrender;
-            }
-
-            m_surrenderButtonLabel.SetText(buttonString);
-        }
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        if (!GameManager.Instance || GameManager.Instance.m_gameState != GameManager.GameState.Menus)
-        {
-            m_cheatsGroup.SetActive(true);
-        }
-        else
-        {
-            m_cheatsGroup.SetActive(false);
-        }
-#endif
-
+        SetState(showSurrenderButton, isEndlessModeActive, showRestartButton, showMissionLabel, showCheats);
         base.HandleShow();
+    }
+
+    void SetState(bool showSurrenderButton, bool isEndlessModeActive, bool showRestartButton, bool showMissionLabel, bool showCheats)
+    {
+        //Surrender Button
+        m_surrenderButton.gameObject.SetActive(showSurrenderButton);
+        string surrenderButtonString = isEndlessModeActive ? m_uiStrings.m_completeMission : m_uiStrings.m_surrender;
+        m_surrenderButtonLabel.SetText(surrenderButtonString);
+
+        //Restart button
+        m_restartButton.gameObject.SetActive(showRestartButton);
+
+        //Mission Name Label
+        m_missionNameLabel.gameObject.SetActive(showMissionLabel);
+        if (showMissionLabel) m_missionNameLabel.SetText($"{GameManager.Instance.m_curMission.m_missionName}");
+
+        //Cheat
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        m_cheatsGroup.SetActive(showCheats);
+#endif
     }
 
     void Start()

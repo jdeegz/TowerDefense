@@ -12,32 +12,32 @@ public class MissionTableController : MonoBehaviour
     [Header("Table Rotation")]
     [SerializeField] private Transform m_rotationRoot;
     [SerializeField] private float m_rotationSpeed = 10f; // Adjust sensitivity
-    
+
     [Header("Mission Buttons")]
     [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
-    
-    
+
+
     private float m_currentYRotation = 0f;
     private float m_targetYRotation = 0f;
     private float m_initialYRotation;
     private float m_draggedDistance;
-    
+
     private bool m_isActive;
     private bool m_startedOnUI;
     private bool m_isDragging;
-    
+
     private Vector3 m_dragStartPosition;
     private Vector3 m_dragStartDirection;
     private Vector3 m_dragCurrentPosition;
-    
+
     private int m_prevSelectedMissionIndex = -1;
     private int m_nextSelectedMissionIndex = 1;
     private int m_curSelectedMissionIndex = 0;
     private int m_furthestDefeatedIndex;
-    
+
     private MissionButtonInteractable m_curSelectedMission;
     private Interactable m_previousInteractable;
-    
+
     private List<float> m_missionButtonRotations = new List<float>();
 
     void Awake()
@@ -293,15 +293,12 @@ public class MissionTableController : MonoBehaviour
         get { return m_curSelectedMissionIndex; }
         set
         {
-            if (value != m_curSelectedMissionIndex)
-            {
-                m_curSelectedMissionIndex = (value + m_missionButtonList.Count) % m_missionButtonList.Count;
-                m_prevSelectedMissionIndex = m_curSelectedMissionIndex - 1;
-                m_nextSelectedMissionIndex = m_curSelectedMissionIndex + 1;
+            m_curSelectedMissionIndex = (value + m_missionButtonList.Count) % m_missionButtonList.Count;
+            m_prevSelectedMissionIndex = m_curSelectedMissionIndex - 1;
+            m_nextSelectedMissionIndex = m_curSelectedMissionIndex + 1;
 
-                SetTargetRotation(m_missionButtonList[m_curSelectedMissionIndex].transform);
-                //Debug.Log($"Selected Mission Index: {m_curSelectedMissionIndex}.");
-            }
+            SetTargetRotation(m_missionButtonList[m_curSelectedMissionIndex].transform);
+            //Debug.Log($"Selected Mission Index: {m_curSelectedMissionIndex}.");
         }
     }
 

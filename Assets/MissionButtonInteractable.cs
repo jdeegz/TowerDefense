@@ -5,7 +5,6 @@ public class MissionButtonInteractable : Interactable
 {
     [SerializeField] private MissionData m_missionData;
     [SerializeField] private Renderer m_spireRenderer;
-    [SerializeField] private GameObject m_spireTopMesh;
     [SerializeField] private GameObject m_defeatedRootObj;
     [SerializeField] private GameObject m_lockedRootObj;
 
@@ -16,6 +15,7 @@ public class MissionButtonInteractable : Interactable
     private Material m_spireMaterial;
 
     private DisplayState m_buttonDisplayState;
+
     public DisplayState ButtonDisplayState
     {
         get { return m_buttonDisplayState; }
@@ -31,16 +31,16 @@ public class MissionButtonInteractable : Interactable
     }
 
     public MissionSaveData MissionSaveData => m_missionSaveData;
-    
+
     public enum DisplayState
     {
         Uninitialized,
         Locked,
         Unlocked,
         Defeated,
-        Perfected, 
+        Perfected,
     }
-    
+
     void Awake()
     {
         // Get the Save Data for this mission.
@@ -52,35 +52,43 @@ public class MissionButtonInteractable : Interactable
 
         // Get the spire material to tint it.
         m_spireMaterial = m_spireRenderer.material;
-        m_defaultColorTint = m_spireMaterial.GetColor("_BaseTint");
-        
+        m_defaultColorTint = m_spireMaterial.GetColor("_BaseColor");
+
         SetState(true, false, m_lockedColorTint);
-        
+
         ButtonDisplayState = CalculateDisplayState();
     }
 
     public DisplayState CalculateDisplayState()
     {
-        if (m_missionSaveData == null)
+        if (m_missionSaveData == null) // If we have no data, we're not ready. This is not good!
         {
             return DisplayState.Locked;
         }
 
-        switch (m_missionSaveData.m_missionCompletionRank)
+        bool isUnlocked = true;
+        foreach (var unlockReq in m_missionData.m_unlockRequirements) // Do we have all of the keys unlocked for this mission?
         {
-            case (0):
-                return DisplayState.Locked;
-            case (1):
-                return DisplayState.Unlocked;
-            case (2):
-                return DisplayState.Defeated;
-            case (>2):
-                return DisplayState.Perfected;
-            default:
-                return DisplayState.Locked;
+            if (!unlockReq.GetProgress().m_isUnlocked)
+            {
+                isUnlocked = false;
+                break;
+            }
         }
+
+        if (!isUnlocked)
+        {
+            return DisplayState.Locked;
+        }
+
+        if (m_missionSaveData.m_missionCompletionRank < 2)
+        {
+            return DisplayState.Unlocked;
+        }
+
+        return DisplayState.Defeated;
     }
-    
+
     void FormatMissionButton(DisplayState displayState)
     {
         switch (displayState)
@@ -107,7 +115,7 @@ public class MissionButtonInteractable : Interactable
     {
         m_lockedRootObj.SetActive(showLockedRoot);
         m_defeatedRootObj.SetActive(showDefeatedRoot);
-        m_spireMaterial.SetColor("_BaseTint", spireColor);
+        m_spireMaterial.SetColor("_BaseColor", spireColor);
     }
 
     public override void OnHover()
@@ -130,19 +138,19 @@ public class MissionButtonInteractable : Interactable
 
     public void RequestMissionInfoPopup()
     {
-        MissionInfoData missionInfoData = new MissionInfoData(m_missionSaveData, m_missionData);
+        MissionInfoData missionInfoData = new MissionInfoData(m_missionSaveData, m_missionData, m_buttonDisplayState);
         UIPopupManager.Instance.ShowPopup<UIMissionInfo>("MissionInfo", missionInfoData);
     }
 
     public void UpdateDisplayState()
     {
         Debug.Log($"{name} Update Display State request serviced.");
-        
+
         if (m_missionData != null)
         {
             m_missionSaveData = PlayerDataManager.Instance.GetMissionSaveDataByMissionData(m_missionData);
         }
-        
+
         ButtonDisplayState = CalculateDisplayState();
     }
 }

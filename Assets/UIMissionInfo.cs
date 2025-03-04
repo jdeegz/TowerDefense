@@ -21,6 +21,7 @@ public class UIMissionInfo : UIPopup, IDataPopup
     private float m_defaultYPosition;
     private Tween m_curTween;
     private Sequence m_curSequence;
+    private MissionButtonInteractable.DisplayState m_displayState;
     
     private void Awake()
     {
@@ -68,34 +69,34 @@ public class UIMissionInfo : UIPopup, IDataPopup
     
     public void FormatDisplay()
     {
-        switch (m_missionSaveData.m_missionCompletionRank)
+        switch (m_displayState)
         {
-            case 0: // Locked
-                m_missionDetailsLabel.gameObject.SetActive(false);
-                m_missionPlayButton.interactable = false;
-                m_missionPlayButtonLabel.SetText("Locked");
+            case MissionButtonInteractable.DisplayState.Uninitialized:
                 break;
-            case 1: // Unlocked
-                m_missionDetailsLabel.gameObject.SetActive(false);
-                m_missionPlayButton.interactable = true;
-                m_missionPlayButtonLabel.SetText("Play");
+            case MissionButtonInteractable.DisplayState.Locked:
+                FormatMissionInfo(false, "Locked", false);
                 break;
-            case 2: // Defeated
-                m_missionPlayButton.interactable = true;
-                m_missionPlayButtonLabel.SetText("Play");
-                m_missionDetailsLabel.gameObject.SetActive(true);
+            case MissionButtonInteractable.DisplayState.Unlocked:
+                FormatMissionInfo(true, "Play", false);
                 break;
-            case >2: // Perfected
-                m_missionPlayButton.interactable = true;
-                m_missionPlayButtonLabel.SetText("Play");
-                m_missionDetailsLabel.gameObject.SetActive(true);
+            case MissionButtonInteractable.DisplayState.Defeated:
+                FormatMissionInfo(true, "Play", true);
+                break;
+            case MissionButtonInteractable.DisplayState.Perfected:
                 break;
             default:
-                break;
+                throw new ArgumentOutOfRangeException();
         }
+    }
+
+    void FormatMissionInfo(bool buttonInteractable, string buttonString, bool showDetailsLabel)
+    {
         //Set UI display.
         m_missionNameLabel.SetText(m_missionData.m_missionName);
         m_missionDescriptionLabel.SetText(m_missionData.m_missionDescription);
+        m_missionPlayButton.interactable = buttonInteractable;
+        m_missionPlayButtonLabel.SetText(buttonString);
+        m_missionDetailsLabel.gameObject.SetActive(showDetailsLabel);
 
         string missionDetailsString;
         string missionWaveHighScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentEndlessHighScore, m_missionSaveData.m_waveHighScore);
@@ -106,7 +107,7 @@ public class UIMissionInfo : UIPopup, IDataPopup
         m_missionThumbnail.sprite = m_missionData.m_missionSprite;
         m_missionPlayButton.onClick.AddListener(OnPlayButtonClicked);
         
-        LayoutRebuilder.ForceRebuildLayoutImmediate(m_popupRect);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(m_popupRect); 
     }
 
     public void OnPlayButtonClicked()
@@ -125,6 +126,7 @@ public class UIMissionInfo : UIPopup, IDataPopup
         {
             m_missionSaveData = missionInfoData.m_missionSaveData;
             m_missionData = missionInfoData.m_missionData;
+            m_displayState = missionInfoData.m_missionDisplayState;
             FormatDisplay();
         }
     }
@@ -140,10 +142,12 @@ public class MissionInfoData
 {
     public MissionSaveData m_missionSaveData;
     public MissionData m_missionData;
+    public MissionButtonInteractable.DisplayState m_missionDisplayState;
     
-    public MissionInfoData(MissionSaveData missionSaveData, MissionData missionData)
+    public MissionInfoData(MissionSaveData missionSaveData, MissionData missionData, MissionButtonInteractable.DisplayState missionDisplayState)
     {
         m_missionSaveData = missionSaveData;
         m_missionData = missionData;
+        m_missionDisplayState = missionDisplayState;
     }
 }
