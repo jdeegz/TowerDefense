@@ -32,6 +32,12 @@ public class UIStringData : ScriptableObject
     [Header("Ruins Restriction Reasons")]
     public string m_unlockableUnlocked = "{0} Unlocked!";
     public string m_ruinDiscovered = "{0} / {1} Ruins Discovered!";
+
+    [Header("UI - Mission Table")]
+    public string m_missionInfoNameDefault = "Mission";
+    public string m_missionInfoDescriptionDefault = "Not Implemented";
+    public string m_missionInfoButtonLocked = "Locked";
+    public string m_missionInfoButtonPlay = "Play";
     
     [Header("End of Game Strings")]
     public string m_victory;
@@ -58,9 +64,8 @@ public class UIStringData : ScriptableObject
     public string m_volumeMasterText;
     public string m_volumeMusicText;
     public string m_volumeSFXText;
-    
+
     [Header("Options Popup Strings")]
     public string m_surrender = "Surrender";
     public string m_completeMission = "Complete Mission";
-    
 }

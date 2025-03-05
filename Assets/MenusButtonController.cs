@@ -44,7 +44,7 @@ public class MenusButtonController : MonoBehaviour, IPointerEnterHandler, IPoint
     void OnHoverEnter()
     {
         m_hoverDisplayCanvasGroup.blocksRaycasts = true;
-
+        if(m_curSequence != null && m_curSequence.IsPlaying()){ m_curSequence.Kill() ;}
         m_curSequence = DOTween.Sequence();
         m_curSequence.SetUpdate(true);
         m_curSequence.Append(m_hoverDisplayCanvasGroup.DOFade(1, m_showDuration));
@@ -61,7 +61,7 @@ public class MenusButtonController : MonoBehaviour, IPointerEnterHandler, IPoint
     void OnHoverExit()
     {
         m_hoverDisplayCanvasGroup.blocksRaycasts = false;
-
+        if(m_curSequence != null && m_curSequence.IsPlaying()){ m_curSequence.Kill() ;}
         m_curSequence = DOTween.Sequence();
         m_curSequence.SetUpdate(true);
         m_curSequence.Append(m_hoverDisplayCanvasGroup.DOFade(0, m_hideDuration));

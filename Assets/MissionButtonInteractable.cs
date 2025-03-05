@@ -25,7 +25,7 @@ public class MissionButtonInteractable : Interactable
             {
                 m_buttonDisplayState = value;
                 FormatMissionButton(m_buttonDisplayState);
-                Debug.Log($"DisplayState: {m_missionData.m_missionName} is {m_buttonDisplayState}.");
+                //Debug.Log($"DisplayState: {m_missionData.m_missionName} is {m_buttonDisplayState}.");
             }
         }
     }
@@ -130,7 +130,7 @@ public class MissionButtonInteractable : Interactable
 
     public override void OnClick()
     {
-        Debug.Log($"OnClick: {m_missionData.m_missionName}.");
+        //Debug.Log($"OnClick: {m_missionData.m_missionName}.");
         MissionTableController.Instance.SetSelectedMission(this);
 
         RequestMissionInfoPopup();
