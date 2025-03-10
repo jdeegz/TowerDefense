@@ -315,21 +315,22 @@ public class MissionTableController : MonoBehaviour
 
     private MissionButtonInteractable GetFurthestUnlockedMission()
     {
-        for (int i = 0; i < m_missionButtonList.Count; ++i)
+        for (int i = 0; i < m_missionButtonList.Count; ++i) // Kind of stupid to use the buttons display state to determine a missions status...
         {
-            if (m_missionButtonList[i].MissionSaveData.m_missionCompletionRank == 1)
+            // Is the mission unlocked?
+            if (m_missionButtonList[i].ButtonDisplayState == MissionButtonInteractable.DisplayState.Unlocked)
             {
-                //Debug.Log($"Furthest Mission Found: {m_missionButtonList[i].MissionSaveData.m_sceneName} with competion Rank 1.");
                 return m_missionButtonList[i];
             }
-
-            if (m_missionButtonList[i].MissionSaveData.m_missionCompletionRank >= 2)
+            
+            // Has the mission been defeated?
+            if (m_missionButtonList[i].ButtonDisplayState == MissionButtonInteractable.DisplayState.Defeated)
             {
                 m_furthestDefeatedIndex = i;
             }
         }
 
-        //Debug.Log($"Furthest Fallback Mission Found: {m_missionButtonList[m_furthestDefeatedIndex].MissionSaveData.m_sceneName} with competion Rank 2.");
+        Debug.Log($"Furthest Fallback Mission Found: {m_missionButtonList[m_furthestDefeatedIndex].MissionSaveData.m_sceneName} with competion Rank 2.");
         return m_missionButtonList[m_furthestDefeatedIndex];
     }
 

@@ -10,12 +10,13 @@ public class CutSceneController : MonoBehaviour
         {
             m_isCutSceneComplete = false;
         }
+
     }
 
     void Update()
     {
         if (!m_isCutSceneComplete) return;
-        
+
         if (Input.GetMouseButtonUp(0))
         {
             //We're cut scene complete, and mouse pressed. 

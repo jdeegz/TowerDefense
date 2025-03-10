@@ -210,7 +210,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
         }
     }
 
-    public void ReachedCastle()
+    public virtual void ReachedCastle()
     {
         if (GameplayManager.Instance.m_castleController.GetCastleCurHealth() > 0)
         {

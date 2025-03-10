@@ -74,23 +74,23 @@ public class GameplayManager : MonoBehaviour
     public GameplayAudioData m_gameplayAudioData;
     public AudioSource m_audioSource;
 
-    public int m_wave;
-
+    private int m_wave;
     public int Wave
     {
         get { return m_wave; }
         set
         {
             m_wave = value;
-
-            // Logging hit point increase over the game.
-            float hitPointsThisWave = Instance.m_gameplayData.CalculateHealth(10, true);
-            Debug.Log($"Wave {Wave} hitpoints: {hitPointsThisWave}, Increase: {(hitPointsThisWave / 10) * 100}%");
-
+            m_minute = Mathf.CeilToInt(m_totalTime / 60f);
+            
             OnWaveChanged?.Invoke(m_wave);
         }
     }
 
+    private float m_totalTime;
+    private int m_minute;
+    public int Minute => m_minute;
+    
     [HideInInspector] public float m_timeToNextWave;
     [HideInInspector] public bool delayForQuest;
 
@@ -273,6 +273,12 @@ public class GameplayManager : MonoBehaviour
         HandlePreconMousePosition();
 
         NextWaveTimer();
+        GameTimer();
+    }
+
+    void GameTimer()
+    {
+        m_totalTime += Time.deltaTime;
     }
 
     void NextWaveTimer()
@@ -793,7 +799,7 @@ public class GameplayManager : MonoBehaviour
     void Start()
     {
         UpdateGameplayState(GameplayState.BuildGrid);
-        m_timeToNextWave = m_gameplayData.m_firstBuildDuraction;
+        m_timeToNextWave = m_gameplayData.m_firstBuildDuration;
 
         /*var pipeline = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
         m_scriptableRenderer = pipeline.scriptableRenderer;

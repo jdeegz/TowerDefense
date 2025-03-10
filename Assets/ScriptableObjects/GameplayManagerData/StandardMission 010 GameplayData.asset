@@ -12,21 +12,112 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b646059a1f08044885ecc91f721945d, type: 3}
   m_Name: StandardMission 010 GameplayData
   m_EditorClassIdentifier: 
-  m_earlyGameFactor: 0.15
-  m_earlyGameCycleFactor: 1
-  m_midGameWave: 10
-  m_midGameFactor: 0.25
-  m_midGameCycleFactor: 1.2
-  m_lateGameWave: 30
-  m_lateGameFactor: 0.3
-  m_lateGameCycleFactor: 1.3
-  m_cycleLength: 10
-  m_healthMultiplier: 0
+  m_gameMode: 0
+  m_earlyCycleLength: 10
+  m_earlyCycleCount: 1
+  m_earlyCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_earlyCurveMultiplier: 5
+  m_midCycleLength: 15
+  m_midCycleCount: 2
+  m_midCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.7
+      value: 0.8
+      inSlope: 1.5497022
+      outSlope: 1.5878776
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.10941485
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.07939385
+      outSlope: 0.07939385
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.20356236
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_midCurveMultiplier: 3
+  m_lateCycleLength: 10
+  m_lateCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.7
+      value: 0.8
+      inSlope: 1.5497022
+      outSlope: 1.5878776
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.10941485
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.07939385
+      outSlope: 0.07939385
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.20356236
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_lateCurveMultiplier: 2
+  m_healthMultiplier: 0.6
   m_delayForQuest: 1
   m_allowEndlessMode: 0
-  m_firstBuildDuraction: 15
-  m_buildDuration: 6.1
+  m_firstBuildDuration: 15
+  m_buildDuration: 6
   m_afterBossBuildDuration: 30
+  m_survivalWaveDuration: 45
   m_equippedTowers:
   - {fileID: 11400000, guid: 2eb2b0ef5dee4fb4593956182ff1e62a, type: 2}
   m_blueprintTower: {fileID: 11400000, guid: 2475bb710833bce4296b08a4ce35f79f, type: 2}

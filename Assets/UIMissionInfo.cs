@@ -1,5 +1,6 @@
 using System;
 using DG.Tweening;
+using GameUtil;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -131,9 +132,10 @@ public class UIMissionInfo : UIPopup, IDataPopup
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(m_popupRect);
     }
-
+    
     public void OnPlayButtonClicked()
     {
+        
         Debug.Log($"PlayButtonClicked: Request Change Scene to {m_missionData.m_missionScene}.");
 
         if (GameManager.Instance == null) return;

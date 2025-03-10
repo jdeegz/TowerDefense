@@ -518,6 +518,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3515886513994707955}
   - component: {fileID: 5682613330391848426}
+  - component: {fileID: 1436106112526133527}
   m_Layer: 0
   m_Name: ResourceManager
   m_TagString: Untagged
@@ -566,6 +567,21 @@ MonoBehaviour:
   - {fileID: 5495023557100828210, guid: b1dd2d3d5395e354087f10877b6cee55, type: 3}
   - {fileID: 5495023557100828210, guid: 3a06b7905abf58a4db0a55bf099d2823, type: 3}
   - {fileID: 5495023557100828210, guid: fe6d3e73c3db97f43997cffd3e558f08, type: 3}
+--- !u!114 &1436106112526133527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6759988659853353668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2b7f36477e387c42a72a4113211dc22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_damageDoneThisWave: 0
+  m_incomeThisWave: 0
+  m_unitHealthThisWave: 0
 --- !u!1 &6892224833705152105
 GameObject:
   m_ObjectHideFlags: 0
@@ -671,8 +687,10 @@ MonoBehaviour:
   m_goalPointPos: {x: 0, y: 0}
   m_obelisksInMission: []
   m_enemySpawners: []
+  m_enemyTrojanSpawners: []
   m_enemyList: []
   m_enemyBossList: []
+  m_perfectWavesCompleted: 0
   m_woodGathererList: []
   m_stoneGathererList: []
   m_towerList: []

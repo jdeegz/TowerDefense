@@ -48,7 +48,6 @@ public class ResourceManager : MonoBehaviour
     private int m_depletionCounter;
 
     //each time wood is deposited, add quantity and timestamp to a list.
-
     //When a request to update the gpm display, collect all of the items in the list, within the last 60 seconds.
     //Sum the quantities in the list and divide by 60.
     private float m_depositTimer;
@@ -125,6 +124,7 @@ public class ResourceManager : MonoBehaviour
 
         if (gatherer != null && amount > 0) //Check if this is a deposit and not a sell/build/upgrade
         {
+            EconomyLogging.Instance.AddToIncomeThisWave(amount);
             WoodDeposit newDeposit = new WoodDeposit();
             newDeposit.m_quantity = amount;
             newDeposit.m_timeStamp = m_depositTimer;

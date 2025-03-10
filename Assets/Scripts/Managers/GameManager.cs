@@ -68,6 +68,9 @@ public class GameManager : MonoBehaviour
 
     public void RequestChangeScene(String sceneName, GameState newState, MenuManager.MenuState? menuState = null)
     {
+        if (Time.time - m_lastRequestTime < m_requestCooldown) return;
+        m_lastRequestTime = Time.time;
+        
         Time.timeScale = 1.0f;
         if (sceneName == m_curScene)
         {
@@ -121,7 +124,9 @@ public class GameManager : MonoBehaviour
         m_loadingTransitionController.TransitionEnd();
     }
 
-
+    private float m_lastRequestTime = -1f;
+    private float m_requestCooldown = 0.1f;
+    
     //START CUTSCENE MANAGEMENT
     //ADD SCENE
     public void RequestAdditiveSceneLoad(String sceneName)
@@ -158,6 +163,8 @@ public class GameManager : MonoBehaviour
     //REMOVE SCENE
     public void RequestAdditiveSceneUnload(String sceneName)
     {
+        if (Time.time - m_lastRequestTime < m_requestCooldown) return;
+        m_lastRequestTime = Time.time;
         Debug.Log($"Cut Scene: Request Scene Unload: {sceneName}");
         m_cutSceneTransitionController.TransitionStart(sceneName, () => StartCutSceneUnload(sceneName));
     }
