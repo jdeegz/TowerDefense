@@ -3,7 +3,6 @@ using UnityEngine.EventSystems;
 
 public class UIToolTipWaveDisplay : UITooltip
 {
-    [SerializeField] private UIStringData m_uiStrings;
     public override void OnPointerEnter(PointerEventData eventData)
     {
         //Reformat the Description String.
@@ -27,18 +26,18 @@ public class UIToolTipWaveDisplay : UITooltip
             if (curWave > waveHighScore)
             {
                 // New High Score!
-                endlessHighScorestring = string.Format(m_uiStrings.m_tooltipNewEndlessHighScore, curWave);
+                endlessHighScorestring = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipNewEndlessHighScore, curWave);
             }
             else
             {
-                string currentEndlessHighScore = string.Format(m_uiStrings.m_tooltipCurrentEndlessHighScore, waveHighScore);
-                string currentEndlessScore = string.Format(m_uiStrings.m_tooltipCurrentEndlessScore, curWave);
+                string currentEndlessHighScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentEndlessHighScore, waveHighScore);
+                string currentEndlessScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentEndlessScore, curWave);
                 endlessHighScorestring = $"{currentEndlessHighScore}<br>{currentEndlessScore}";
             }
         }
         else
         {
-            endlessHighScorestring = string.Format(m_uiStrings.m_tooltipCurrentEndlessScore, curWave);
+            endlessHighScorestring = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentEndlessScore, curWave);
         }
 
         //Display highest Perfect Wave count.
@@ -52,38 +51,34 @@ public class UIToolTipWaveDisplay : UITooltip
             {
                 // New High Score!
                 //NEW BEST Perfect Score: 100
-                perfectWaveHighScoreString = string.Format(m_uiStrings.m_tooltipNewPerfectHighScore, curPerfectWaveCount);
+                perfectWaveHighScoreString = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipNewPerfectHighScore, curPerfectWaveCount);
             }
             else
             {
                 //Perfect Wave High Score: 10
                 //Perfect Waves: 9
-                string currentPerfectHighScore = string.Format(m_uiStrings.m_tooltipCurrentPerfectHighScore, perfectWaveHighScore);
-                string currentPerfectScore = string.Format(m_uiStrings.m_tooltipCurrentPerfectScore, curPerfectWaveCount);
+                string currentPerfectHighScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentPerfectHighScore, perfectWaveHighScore);
+                string currentPerfectScore = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentPerfectScore, curPerfectWaveCount);
                 perfectWaveHighScoreString = $"{currentPerfectHighScore}<br>{currentPerfectScore}";
             }
         }
         else
         {
-            perfectWaveHighScoreString = string.Format(m_uiStrings.m_tooltipCurrentPerfectScore, curPerfectWaveCount);
+            perfectWaveHighScoreString = string.Format(LocalizationManager.Instance.CurrentLanguage.m_tooltipCurrentPerfectScore, curPerfectWaveCount);
         }
         
         //Display current Perfect Wave count.
         m_descriptionString = $"{endlessHighScorestring}<br><br>{perfectWaveHighScoreString}";
         
-        base.OnPointerEnter(eventData);
-    }
-    
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+        //Calculate hitpoint multiplier. Display as "Minute: 10<br>Enemy Health: x24"
+        float health = GameplayManager.Instance.m_gameplayData.CalculateHealth(10);
+        string formattedhealthMultiplier = (health / 10).ToString("N0");
+        string multiplierString = string.Format(LocalizationManager.Instance.CurrentLanguage.m_healthMultiplierToolTip, formattedhealthMultiplier);
 
-    // Update is called once per frame
-    void Update()
-    {
+        int minute = GameplayManager.Instance.Minute;
+        string minuteString = string.Format(LocalizationManager.Instance.CurrentLanguage.m_missionMinuteToolTip, minute);
         
+        m_detailsString = $"{minuteString}<br>{multiplierString}";
+        base.OnPointerEnter(eventData);
     }
 }

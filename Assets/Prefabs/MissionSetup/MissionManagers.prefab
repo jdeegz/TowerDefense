@@ -86,6 +86,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4639917968836526602}
   - {fileID: 1954129994767142}
   - {fileID: 4111995918332002151}
   - {fileID: 3515886513994707955}
@@ -477,6 +478,68 @@ MonoBehaviour:
   - m_waveBreakpoint: 9999
     m_scorePerWave: 1
   m_obeliskChargeScoreValue: 100
+--- !u!1 &6471290922297049097
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4639917968836526602}
+  - component: {fileID: 229749547280243225}
+  m_Layer: 0
+  m_Name: LocalizationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4639917968836526602
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6471290922297049097}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8814645121660537196}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &229749547280243225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6471290922297049097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce3c6b7daeaa7134a9d058e5e5207f27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_defaultLanguageStringData: {fileID: 0}
+  m_languageList:
+  - m_languageName: en-US
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
+  - m_languageName: en-GB
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
+  - m_languageName: es-ES
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
+  - m_languageName: es-419
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
+  - m_languageName: fr-FR
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
+  - m_languageName: de-DE
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
+  - m_languageName: it-IT
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
+  - m_languageName: nl-NL
+    m_languageStringData: {fileID: 11400000, guid: f093dbf7b83176541acfc88ee3ee62f2, type: 2}
 --- !u!1 &6614810461200635810
 GameObject:
   m_ObjectHideFlags: 0
@@ -579,9 +642,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2b7f36477e387c42a72a4113211dc22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_damageDoneThisWave: 0
-  m_incomeThisWave: 0
-  m_unitHealthThisWave: 0
 --- !u!1 &6892224833705152105
 GameObject:
   m_ObjectHideFlags: 0
@@ -679,7 +739,6 @@ MonoBehaviour:
   m_gameplayData: {fileID: 11400000, guid: 79bf179af36a5a6498cf1da85b17d7fa, type: 2}
   m_gameplayAudioData: {fileID: 11400000, guid: ad395bbbe2f6e0e4e9d0d86cd7a5e740, type: 2}
   m_audioSource: {fileID: 2556430719214392079}
-  m_wave: 0
   m_timeToNextWave: 0
   delayForQuest: 0
   m_castleController: {fileID: 0}

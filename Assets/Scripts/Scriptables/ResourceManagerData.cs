@@ -6,7 +6,6 @@ using UnityEngine.Serialization;
 [CreateAssetMenu (fileName = "ResourceManagerData", menuName = "ScriptableObjects/ResourceManagerData")]
 public class ResourceManagerData : ScriptableObject
 {
-    
     [Header("Starting Resources")]
     public int m_startingStone;
     public int m_startingWood;

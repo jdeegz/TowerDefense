@@ -17,6 +17,13 @@ public class UIStringData : ScriptableObject
     public string m_bossDamageType;
     public string m_ruinIndicatedString;
 
+    [Header("Econ Strings")]
+    public string m_woodBankToolTip = "Wood is harvested from the Forests by Gatherers.";
+    public string m_woodRateToolTip = "Wood Per Minute: {0}";
+    public string m_missionMinuteToolTip = "Minute: {0}";
+    public string m_healthMultiplierToolTip = "Enemy Health: x{0}";
+    
+
     [Header("Building Restriction Reasons")]
     public string m_buildRestrictedDefault;
     public string m_buildRestrictedActorsOnCell;

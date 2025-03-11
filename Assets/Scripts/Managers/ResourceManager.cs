@@ -29,7 +29,6 @@ public class ResourceManager : MonoBehaviour
     public static event Action<float> UpdateWoodRate;
     public static event Action<int, int> UpdateStoneBank;
 
-    public List<GathererLineRendererObject> m_gathererLineRendererObjs;
     public Material m_gathererPathMaterial;
     public GameObject m_gathererTargetObj;
 
@@ -53,6 +52,7 @@ public class ResourceManager : MonoBehaviour
     private float m_depositTimer;
     private List<WoodDeposit> m_woodDeposits;
     private float m_woodPerMinute;
+    public float WoodPerMinute => m_woodPerMinute;
     private int m_ruinIndicatedCount;
 
 
@@ -70,6 +70,11 @@ public class ResourceManager : MonoBehaviour
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
     }
 
+    void Update()
+    {
+        m_depositTimer += Time.deltaTime;
+    }
+
     private void OnDestroy()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
@@ -81,39 +86,6 @@ public class ResourceManager : MonoBehaviour
         {
             SetupRuinIndications();
         }
-    }
-
-    void Start()
-    {
-        
-    }
-
-    public void AddGathererLineRenderer(GathererController gatherer)
-    {
-        if (m_gathererLineRendererObjs == null)
-        {
-            m_gathererLineRendererObjs = new List<GathererLineRendererObject>();
-        }
-
-        m_gathererLineRendererObjs.Add(new GathererLineRendererObject(gatherer));
-    }
-
-    void Update()
-    {
-        /*if (m_gathererLineRendererObjs == null) return; // Dont do this in the TEST WORLD.
-        foreach (GathererLineRendererObject line in m_gathererLineRendererObjs)
-        {
-            if (line.m_lineRenderer.positionCount > 1)
-            {
-                line.m_lineRenderer.SetPosition(0, line.m_gatherer.transform.position);
-
-                if (Vector3.Distance(line.m_gatherer.transform.position, line.m_lineRenderer.GetPosition(1)) <= 0.71f)
-                {
-                    // If we're next to the next index, update the list by removing that position.
-                    line.UpdateLineRendererProgress();
-                }
-            }
-        }*/
     }
 
     public void UpdateWoodAmount(int amount, GathererController gatherer = null)

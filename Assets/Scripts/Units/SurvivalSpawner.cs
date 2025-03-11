@@ -162,7 +162,7 @@ public class SurvivalSpawner : EnemySpawner
                 break;
             case GameplayManager.GameplayState.PlaceObstacles:
                 GameplayManager.Instance.AddSpawnerToList(this);
-                GridCellOccupantUtil.SetActor(gameObject, 1, 1, 1);
+                GridCellOccupantUtil.SetActor(m_spawnPoint.gameObject, 1, 1, 1);
                 break;
             case GameplayManager.GameplayState.FloodFillGrid:
                 break;

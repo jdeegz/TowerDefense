@@ -82,7 +82,7 @@ public class GameplayManager : MonoBehaviour
         {
             m_wave = value;
             m_minute = Mathf.CeilToInt(m_totalTime / 60f);
-            
+            Debug.Log($"Wave {m_wave}, Total Time: {m_totalTime}, Minute: {m_minute}");
             OnWaveChanged?.Invoke(m_wave);
         }
     }
@@ -487,6 +487,7 @@ public class GameplayManager : MonoBehaviour
 
     void StartMission()
     {
+        m_totalTime = 0;
         UpdateGameplayState(GameplayState.Build);
         ResourceManager.Instance.StartDepositTimer();
     }
