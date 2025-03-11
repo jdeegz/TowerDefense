@@ -8,8 +8,7 @@ public class MenuManager : MonoBehaviour
 {
     public static MenuManager Instance;
     public static event Action<MenuState> OnMenuStateChanged;
-    [SerializeField] private GameObject m_StartMenuView;
-    [SerializeField] private GameObject m_MissionSelectView;
+    [SerializeField] private AudioSource m_audioSource;
     public MenuState m_menuState;
 
     public enum MenuState
@@ -59,5 +58,10 @@ public class MenuManager : MonoBehaviour
     void OnDestroy()
     {
         OnMenuStateChanged -= MenuManagerOnMenuStateChanged;
+    }
+
+    public void RequestAudioOneShot(AudioClip audioClip)
+    {
+        m_audioSource.PlayOneShot(audioClip);
     }
 }

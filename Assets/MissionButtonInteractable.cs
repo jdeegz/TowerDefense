@@ -1,13 +1,30 @@
 using System;
+using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.VFX;
+using Random = UnityEngine.Random;
+
 
 public class MissionButtonInteractable : Interactable
 {
+    [Header("Data")]
     [SerializeField] private MissionData m_missionData;
+
+    [Header("Renderers")]
     [SerializeField] private Renderer m_spireRenderer;
+
+    [Header("Objects")]
     [SerializeField] private GameObject m_defeatedRootObj;
     [SerializeField] private GameObject m_lockedRootObj;
+    [SerializeField] private GameObject m_undefeatedRootObj;
+    [SerializeField] private VisualEffect m_undefeatedVFX;
 
+    [Header("Audio Clips")]
+    [SerializeField] private List<AudioClip> m_hoverEnterSFX;
+    [SerializeField] private List<AudioClip> m_selectedSFX;
+
+    [Header("Colors")]
     [SerializeField] private Color m_lockedColorTint;
     private Color m_defaultColorTint;
 
@@ -15,6 +32,46 @@ public class MissionButtonInteractable : Interactable
     private Material m_spireMaterial;
 
     private DisplayState m_buttonDisplayState;
+
+    private string m_selectedLayerString = "Outline Selected"; //Must sync with layer name.
+    private string m_hoveredLayerString = "Outline Hover"; //Must sync with layer name.
+    private string m_defaultLayerString;
+
+    private AudioSource m_audioSource;
+
+    private GameObject m_currentSelectedIndicator;
+
+    private bool m_isHovered;
+
+    private bool Hovered
+    {
+        get { return m_isHovered; }
+        set
+        {
+            if (value != m_isHovered)
+            {
+                m_isHovered = value;
+                
+                if(m_isHovered && !m_isSelected) MenuManager.Instance.RequestAudioOneShot(m_hoverEnterSFX[Random.Range(0, m_hoverEnterSFX.Count)]);
+                UpdateOutline();
+            }
+        }
+    }
+
+    private bool m_isSelected;
+
+    private bool Selected
+    {
+        get { return m_isSelected; }
+        set
+        {
+            if (value != m_isSelected)
+            {
+                m_isSelected = value;
+                UpdateOutline();
+            }
+        }
+    }
 
     public DisplayState ButtonDisplayState
     {
@@ -43,8 +100,11 @@ public class MissionButtonInteractable : Interactable
 
     void Awake()
     {
+        MissionTableController.OnMissionSelected += OnMissionSelected;
+        m_defaultLayerString = LayerMask.LayerToName(gameObject.layer);
+        m_audioSource = GetComponent<AudioSource>();
+
         // Get the Save Data for this mission.
-        //if (PlayerDataManager.Instance == null) return;
         if (m_missionData != null)
         {
             m_missionSaveData = PlayerDataManager.Instance.GetMissionSaveDataByMissionData(m_missionData);
@@ -54,9 +114,14 @@ public class MissionButtonInteractable : Interactable
         m_spireMaterial = m_spireRenderer.material;
         m_defaultColorTint = m_spireMaterial.GetColor("_BaseColor");
 
-        SetState(true, false, m_lockedColorTint);
+        SetState(true, false, m_lockedColorTint, false);
 
         ButtonDisplayState = CalculateDisplayState();
+    }
+
+    void OnDestroy()
+    {
+        MissionTableController.OnMissionSelected -= OnMissionSelected;
     }
 
     public DisplayState CalculateDisplayState()
@@ -96,13 +161,13 @@ public class MissionButtonInteractable : Interactable
             case DisplayState.Uninitialized:
                 return;
             case DisplayState.Locked:
-                SetState(true, false, m_lockedColorTint);
+                SetState(true, false, m_lockedColorTint, false);
                 break;
             case DisplayState.Unlocked:
-                SetState(false, false, m_defaultColorTint);
+                SetState(false, false, m_defaultColorTint, true);
                 break;
             case DisplayState.Defeated:
-                SetState(false, true, m_defaultColorTint);
+                SetState(false, true, m_defaultColorTint, false);
                 break;
             case DisplayState.Perfected:
                 break;
@@ -111,28 +176,30 @@ public class MissionButtonInteractable : Interactable
         }
     }
 
-    void SetState(bool showLockedRoot, bool showDefeatedRoot, Color spireColor)
+    void SetState(bool showLockedRoot, bool showDefeatedRoot, Color spireColor, bool showUndefeatedVFX)
     {
         m_lockedRootObj.SetActive(showLockedRoot);
         m_defeatedRootObj.SetActive(showDefeatedRoot);
+        m_undefeatedRootObj.SetActive(showUndefeatedVFX);
         m_spireMaterial.SetColor("_BaseColor", spireColor);
+
+        if (showUndefeatedVFX)
+        {
+            m_undefeatedVFX.Play();
+        }
+        else
+        {
+            m_undefeatedVFX.Stop();
+        }
     }
 
-    public override void OnHover()
-    {
-        //Debug.Log($"OnHoverEnter: {m_missionData.m_missionName}.");
-    }
-
-    public override void OnHoverExit()
-    {
-        //Debug.Log($"OnHoverExit: {m_missionData.m_missionName}.");
-    }
 
     public override void OnClick()
     {
         //Debug.Log($"OnClick: {m_missionData.m_missionName}.");
         MissionTableController.Instance.SetSelectedMission(this);
-
+        
+        MenuManager.Instance.RequestAudioOneShot(m_selectedSFX[Random.Range(0, m_selectedSFX.Count)]);
         RequestMissionInfoPopup();
     }
 
@@ -152,5 +219,48 @@ public class MissionButtonInteractable : Interactable
         }
 
         ButtonDisplayState = CalculateDisplayState();
+    }
+
+    public override void OnHover()
+    {
+        Hovered = true;
+    }
+
+    public override void OnHoverExit()
+    {
+        Hovered = false;
+    }
+
+    private void OnMissionSelected(MissionButtonInteractable obj)
+    {
+        // Handle Deselection
+        Selected = obj == this;
+    }
+
+    void UpdateOutline()
+    {
+        string layerName = m_defaultLayerString;
+        if (m_isSelected)
+        {
+            // Selected Outline
+            layerName = m_selectedLayerString;
+        }
+        else
+        {
+            if (m_isHovered)
+            {
+                // Hovered Outline
+                layerName = m_hoveredLayerString;
+            }
+            else
+            {
+                // No Outline
+                layerName = m_defaultLayerString;
+            }
+        }
+
+        if (m_spireRenderer == null) return;
+
+        m_spireRenderer.gameObject.layer = LayerMask.NameToLayer(layerName);
     }
 }

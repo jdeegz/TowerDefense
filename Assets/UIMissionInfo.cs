@@ -9,12 +9,22 @@ using Sequence = DG.Tweening.Sequence;
 
 public class UIMissionInfo : UIPopup, IDataPopup
 {
+    [Header("Labels")]
     [SerializeField] private TextMeshProUGUI m_missionNameLabel;
     [SerializeField] private TextMeshProUGUI m_missionDescriptionLabel;
-    [SerializeField] private Image m_missionThumbnail;
     [SerializeField] private TextMeshProUGUI m_missionDetailsLabel;
     [SerializeField] private TextMeshProUGUI m_missionPlayButtonLabel;
+
+    [Header("Images")]
+    [SerializeField] private Image m_missionThumbnail;
+
+    [Header("Buttons")]
     [SerializeField] private Button m_missionPlayButton;
+
+    [Header("Sound Clips")]
+    [SerializeField] private AudioClip m_showPopupSFX;
+    [SerializeField] private AudioClip m_hidePopupSFX;
+    [SerializeField] private AudioClip m_playButtonPressedSFX;
 
     private RectTransform m_popupRect;
     private MissionSaveData m_missionSaveData;
@@ -34,6 +44,7 @@ public class UIMissionInfo : UIPopup, IDataPopup
     public override void HandleShow()
     {
         //Debug.Log($"MissionInfo: Opening popup.");
+        
         gameObject.SetActive(true);
         if (m_curSequence != null && m_curSequence.IsActive())
         {
@@ -45,13 +56,16 @@ public class UIMissionInfo : UIPopup, IDataPopup
 
         m_curSequence = DOTween.Sequence();
         m_curSequence.Join(m_canvasGroup.DOFade(1, 0.3f));
-        m_curSequence.Join(m_popupRect.DOAnchorPosY(m_defaultYPosition - 20f, 0.3f).From());
+        m_curSequence.Join(m_popupRect.DOAnchorPosY(m_defaultYPosition - 20f, 0.15f).From());
         m_curSequence.Play();
+        MenuManager.Instance.RequestAudioOneShot(m_showPopupSFX);
     }
 
     public override void HandleClose()
     {
         //Debug.Log($"MissionInfo: Closing popup.");
+        
+        MenuManager.Instance.RequestAudioOneShot(m_hidePopupSFX);
         MissionTableController.Instance.SetSelectedMission(null);
         ResetData();
         m_canvasGroup.interactable = false;
@@ -135,7 +149,7 @@ public class UIMissionInfo : UIPopup, IDataPopup
     
     public void OnPlayButtonClicked()
     {
-        
+        MenuManager.Instance.RequestAudioOneShot(m_playButtonPressedSFX);
         Debug.Log($"PlayButtonClicked: Request Change Scene to {m_missionData.m_missionScene}.");
 
         if (GameManager.Instance == null) return;

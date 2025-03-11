@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using GameUtil;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,6 +11,14 @@ public class MissionTableController : MonoBehaviour
 {
     public static MissionTableController Instance;
 
+    [Header("Prefabs")]
+    [SerializeField] private GameObject m_hoveredMissionIndicatorFab;
+    public GameObject HoveredMissionIndicatorFab => m_hoveredMissionIndicatorFab;
+    
+    [SerializeField] private GameObject m_selectedMissionIndicatorFab;
+    public GameObject SelectedMissionIndicatorFab => m_selectedMissionIndicatorFab;
+
+
     [Header("Table Rotation")]
     [SerializeField] private Transform m_rotationRoot;
     [SerializeField] private float m_rotationSpeed = 10f; // Adjust sensitivity
@@ -16,6 +26,7 @@ public class MissionTableController : MonoBehaviour
     [Header("Mission Buttons")]
     [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
 
+    public static event Action<MissionButtonInteractable> OnMissionSelected;
 
     private float m_currentYRotation = 0f;
     private float m_targetYRotation = 0f;
@@ -37,6 +48,7 @@ public class MissionTableController : MonoBehaviour
 
     private MissionButtonInteractable m_curSelectedMission;
     private Interactable m_previousInteractable;
+    private GameObject m_currentSelectedIndicator;
 
     private List<float> m_missionButtonRotations = new List<float>();
 
@@ -105,7 +117,8 @@ public class MissionTableController : MonoBehaviour
                 return;
             }
         }
-
+        
+        OnMissionSelected?.Invoke(null);
         m_curSelectedMission = null;
     }
 
@@ -298,6 +311,7 @@ public class MissionTableController : MonoBehaviour
             m_nextSelectedMissionIndex = m_curSelectedMissionIndex + 1;
 
             SetTargetRotation(m_missionButtonList[m_curSelectedMissionIndex].transform);
+            OnMissionSelected?.Invoke(m_missionButtonList[m_curSelectedMissionIndex]);
             //Debug.Log($"Selected Mission Index: {m_curSelectedMissionIndex}.");
         }
     }
@@ -322,7 +336,7 @@ public class MissionTableController : MonoBehaviour
             {
                 return m_missionButtonList[i];
             }
-            
+
             // Has the mission been defeated?
             if (m_missionButtonList[i].ButtonDisplayState == MissionButtonInteractable.DisplayState.Defeated)
             {
