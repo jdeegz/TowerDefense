@@ -61,6 +61,7 @@ public class MissionGameplayData : ScriptableObject
     public float CalculateHealth(float baseHealth)
     {
         m_minute = GameplayManager.Instance.Minute;
+        
         //If health multiplier is less than 1, we scale up to 1 over intro first cycle, else we scale up to health multiplier.
         float healthMultiplier = 1;
         if (m_healthMultiplier < 1)
@@ -71,6 +72,8 @@ public class MissionGameplayData : ScriptableObject
         {
             healthMultiplier = Mathf.Lerp(1, m_healthMultiplier, m_minute);
         }
+        
+        //Debug.Log($"Base HP: {baseHealth} -  Multiplier: {m_healthMultiplier} - Minute: {m_minute} - Calculated Multiplier: {healthMultiplier}");
 
         m_baseHP = baseHealth * healthMultiplier;
 

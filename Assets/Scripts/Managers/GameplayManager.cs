@@ -81,7 +81,7 @@ public class GameplayManager : MonoBehaviour
         set
         {
             m_wave = value;
-            m_minute = Mathf.CeilToInt(m_totalTime / 60f);
+            m_minute = Mathf.FloorToInt(m_totalTime / 60f);
             Debug.Log($"Wave {m_wave}, Total Time: {m_totalTime}, Minute: {m_minute}");
             OnWaveChanged?.Invoke(m_wave);
         }

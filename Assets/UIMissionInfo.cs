@@ -141,10 +141,31 @@ public class UIMissionInfo : UIPopup, IDataPopup
         missionDetailsString = $"{missionWaveHighScore}<br>{missionPerfectWaveScore}";
         m_missionDetailsLabel.SetText(missionDetailsString);
 
-        m_missionThumbnail.sprite = missionThumbnail;
+        ApplyTexture(missionThumbnail);
         m_missionPlayButton.onClick.AddListener(OnPlayButtonClicked);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(m_popupRect);
+    }
+    
+    public void ApplyTexture(Sprite newTexture)
+    {
+        if (newTexture == null) return;
+
+        // Get the original texture dimensions
+        int originalWidth = newTexture.texture.width;
+        int originalHeight = newTexture.texture.height;
+        float targetHeight = m_missionThumbnail.rectTransform.sizeDelta.y;
+
+        // Calculate the new width to maintain aspect ratio
+        float aspectRatio = (float)originalWidth / originalHeight;
+        float newWidth = targetHeight * aspectRatio;
+
+        // Apply the new size to the RectTransform
+        RectTransform rectTransform = m_missionThumbnail.rectTransform;
+        rectTransform.sizeDelta = new Vector2(newWidth, targetHeight);
+
+        // Assign the texture to the image
+        m_missionThumbnail.sprite = newTexture;
     }
     
     public void OnPlayButtonClicked()
