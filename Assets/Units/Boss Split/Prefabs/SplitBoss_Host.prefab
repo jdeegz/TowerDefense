@@ -147,11 +147,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 268eab061b0129f47a5912e1e4b3ea4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_deathVFX: {fileID: 7261070014018448016, guid: cc4c7729d02baac4cb236df99f3a1020, type: 3}
   m_enemyData: {fileID: 11400000, guid: 3ab15db245a36a04f938664d9ca64c88, type: 2}
   m_targetPoint: {fileID: 7812068826875453832}
   m_enemyModelRoot: {fileID: 5383102028376328958}
   m_animator: {fileID: 3641798115077097585}
+  m_isTeleporting: 0
   m_enemyThrall: {fileID: 5037048379322115940, guid: 108c5b662114a4c4bac101319566a755, type: 3}
 --- !u!95 &3641798115077097585
 Animator:
@@ -634,6 +634,10 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: a09b2586925b0b248ab5cb2277aaafb1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: a09b2586925b0b248ab5cb2277aaafb1, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: a09b2586925b0b248ab5cb2277aaafb1, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

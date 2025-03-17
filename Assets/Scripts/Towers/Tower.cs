@@ -346,15 +346,15 @@ public abstract class Tower : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
     }
 
-    private Collider m_towerCollider;
+    protected Collider m_towerCollider;
 
     public virtual void RemoveTower()
     {
-        Debug.Log($"Build Tower: Setting up {gameObject.name} at {transform.position}.");
+        Debug.Log($"Remove Tower: Setting up {gameObject.name} at {transform.position}.");
         m_isBuilt = false;
         m_towerCollider.enabled = false;
         m_modelRoot.SetActive(false);
-        Debug.Log($"Build Tower: {gameObject.name}'s collider enabled: {m_towerCollider.enabled}, is built: {m_isBuilt}, model root is active: {m_modelRoot.activeSelf}.");
+        Debug.Log($"Remove Tower: {gameObject.name}'s collider enabled: {m_towerCollider.enabled}, is built: {m_isBuilt}, model root is active: {m_modelRoot.activeSelf}.");
         ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Tower);
         //ObjectPoolManager.OrphanObject(gameObject, .5f, ObjectPoolManager.PoolType.Tower);
     }

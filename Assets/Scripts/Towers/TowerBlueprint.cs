@@ -22,14 +22,17 @@ public class TowerBlueprint : Tower
     
     public override void SetupTower()
     {
+        Debug.Log($"Build Blueprint: Setting up {gameObject.name} at {transform.position}.");
         //Grid
-        GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1);
+        GridCellOccupantUtil.SetOccupant(gameObject, true, m_towerData.m_buildingSize.x, m_towerData.m_buildingSize.y);
         GameplayManager.Instance.AddBlueprintToList(this);
 
         //Operational
-        gameObject.GetComponent<Collider>().enabled = true;
-        m_isBuilt = false;
+        m_towerCollider.enabled = true;
+        m_isBuilt = true;
         m_modelRoot.SetActive(true);
+        HandleRaiseBlueprint();
+        Debug.Log($"Build Blueprint: {gameObject.name}'s collider enabled: {m_towerCollider.enabled}, is built: {m_isBuilt}, model root is active: {m_modelRoot.activeSelf}.");
 
         //Animation
         m_animator.SetTrigger("Construct");
@@ -53,23 +56,35 @@ public class TowerBlueprint : Tower
         switch (newSpeed)
         {
             case GameplayManager.GameSpeed.Paused:
-                if (m_isRaised == true) return;
-                duration = Random.Range(0.15f, 0.45f);
-                m_bottomMeshRenderer.enabled = true;
-                if(m_curTween != null && m_curTween.IsPlaying()) m_curTween.Kill();
-                m_curTween = m_blueprintRootObj.transform.DOLocalMove(m_raisedPos, duration).SetEase(Ease.OutBack).SetUpdate(true);
-                m_isRaised = true;
+                HandleRaiseBlueprint();
                 break;
             case GameplayManager.GameSpeed.Normal:
-                if (m_isRaised == false) return;
-                duration = Random.Range(0.15f, 0.45f);
-                if(m_curTween != null && m_curTween.IsPlaying()) m_curTween.Kill();
-                m_curTween = m_blueprintRootObj.transform.DOLocalMove(m_loweredPos, duration).SetEase(Ease.OutBack).SetUpdate(true).OnComplete(() => m_bottomMeshRenderer.enabled = false);
-                m_isRaised = false;
+                HandleLowerBlueprint();
                 break;
             default:
                 break;
         }
+    }
+
+    public void HandleRaiseBlueprint()
+    {
+        float duration;
+        if (m_isRaised == true) return;
+        duration = Random.Range(0.15f, 0.45f);
+        m_bottomMeshRenderer.enabled = true;
+        if(m_curTween != null && m_curTween.IsPlaying()) m_curTween.Kill();
+        m_curTween = m_blueprintRootObj.transform.DOLocalMove(m_raisedPos, duration).SetEase(Ease.OutBack).SetUpdate(true);
+        m_isRaised = true;
+    }
+    
+    public void HandleLowerBlueprint()
+    {
+        float duration;
+        if (m_isRaised == false) return;
+        duration = Random.Range(0.15f, 0.45f);
+        if(m_curTween != null && m_curTween.IsPlaying()) m_curTween.Kill();
+        m_curTween = m_blueprintRootObj.transform.DOLocalMove(m_loweredPos, duration).SetEase(Ease.OutBack).SetUpdate(true).OnComplete(() => m_bottomMeshRenderer.enabled = false);
+        m_isRaised = false; 
     }
     
     public override void RemoveTower()

@@ -319,6 +319,21 @@ public class GathererController : MonoBehaviour
         CleanUpHarvestQueue();
 
         FindUnblockedPath();
+
+        HandleGathererAvoidanceDirection();
+    }
+
+    private void HandleGathererAvoidanceDirection()
+    {
+        if (m_gathererAvoidanceCount == 0 && m_avoidanceDirection != Vector3.zero)
+        {
+            m_avoidanceDirection = Vector3.Lerp(m_avoidanceDirection, Vector3.zero, m_avoidanceDecayRate * Time.deltaTime);
+
+            if (m_avoidanceDirection.magnitude < 0.01f)
+            {
+                m_avoidanceDirection = Vector3.zero;
+            }
+        }
     }
 
     void FixedUpdate()
@@ -527,10 +542,20 @@ public class GathererController : MonoBehaviour
     }
 
     private Vector3 m_avoidanceDirection;
-
+    private float m_avoidanceDecayRate = 2f;
+    private float m_gathererAvoidanceCount;
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Gatherer") && other.gameObject != gameObject)
+        {
+            m_gathererAvoidanceCount++;
+            //Debug.Log($"{name} Trigger Enter ++ Critter Count {m_critterAvoidanceCount}");
+        }
+    }
+    
     void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("Gatherer") && other.gameObject != this.gameObject)
+        if (other.CompareTag("Gatherer") && other.gameObject != gameObject)
         {
             Vector3 directionToOther = transform.position - other.transform.position;
             float distance = directionToOther.magnitude;
@@ -547,9 +572,9 @@ public class GathererController : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Gatherer") && other.gameObject != this.gameObject)
+        if (other.CompareTag("Gatherer") && other.gameObject != gameObject)
         {
-            m_avoidanceDirection = Vector3.zero; // Completely reset avoidance when no longer colliding
+            m_gathererAvoidanceCount = Mathf.Max(0, m_gathererAvoidanceCount - 1);
         }
     }
 
@@ -1230,6 +1255,7 @@ public class GathererController : MonoBehaviour
         CompletedHarvest();
     }
 
+    private float m_bonusStorageRate = 15f; //Change if we want different percentage change per m_gathererLevel.
     private IEnumerator Storing()
     {
         bool facingGoal = false;
@@ -1245,7 +1271,7 @@ public class GathererController : MonoBehaviour
         // When storing, the gatherer has 33% per additional m_gathererLevel to store 1 extra wood.
         int storageAmount;
         int random = Random.Range(0, 100);
-        int bonusAmount = random < (GathererLevel - 1) * 25 ? 1 : 0; //Change 33 if we want different percentage change per m_gathererLevel.
+        int bonusAmount = random < (GathererLevel - 1) * m_bonusStorageRate ? 1 : 0; 
         storageAmount = m_carryCapacity + bonusAmount;
 
         ResourceManager.Instance.UpdateWoodAmount(storageAmount, this);
@@ -1408,7 +1434,8 @@ public class GathererController : MonoBehaviour
             m_harvestDuration = m_harvestDuration,
             m_storingDuration = m_storingDuration,
             m_carryCapacity = m_carryCapacity,
-            m_gathererLevel = GathererLevel
+            m_gathererLevel = GathererLevel,
+            m_bonusStorageRate = m_bonusStorageRate
         };
         return data;
     }
@@ -1423,6 +1450,7 @@ public class GathererTooltipData
     public float m_storingDuration;
     public int m_carryCapacity;
     public int m_gathererLevel;
+    public float m_bonusStorageRate;
 }
 
 [Serializable]

@@ -104,11 +104,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be1d1f2e210cd87409f92686bd5906a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_deathVFX: {fileID: 7261070014018448016, guid: cc4c7729d02baac4cb236df99f3a1020, type: 3}
   m_enemyData: {fileID: 0}
   m_targetPoint: {fileID: 5385197571511292196}
   m_enemyModelRoot: {fileID: 6499226114060676648}
   m_animator: {fileID: 8910002206428512841}
+  m_isTeleporting: 0
 --- !u!54 &1095660260099987776
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -248,9 +248,9 @@ MonoBehaviour:
   m_healEffect: {fileID: 6669414696289766840, guid: 7a8d1bec64aefdd49888aad6f2c2ce28, type: 3}
   m_thresholdEffect: {fileID: 1024829051135015859, guid: 000d5921633033242b300e81335ce30d, type: 3}
   m_healRadius: 3
-  m_healPeriod: 6
+  m_healPeriod: 8
   m_abilityPeriod: 5
-  m_healPower: 0.2
+  m_healPower: 0.15
   m_healLayerMask:
     serializedVersion: 2
     m_Bits: 1024

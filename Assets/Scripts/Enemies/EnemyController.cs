@@ -489,7 +489,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
                 {
                     material.EnableKeyword("_EMISSION");
                     material.SetColor("_EmissionColor", m_hitFlashStartColor);
-                    material.DOColor(m_hitFlashEndColor, "_EmissionColor", 0.15f);
+                    material.DOColor(m_hitFlashEndColor, "_EmissionColor", 0.15f).SetEase(Ease.InExpo);
                 }
             }
         }

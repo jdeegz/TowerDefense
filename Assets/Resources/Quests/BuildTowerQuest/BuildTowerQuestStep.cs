@@ -12,7 +12,7 @@ public class BuildTowerQuestStep : QuestStep
         GameplayManager.OnTowerBuild += TowerBuilt;
     }
 
-    private void TowerBuilt(TowerData towerData)
+    private void TowerBuilt(TowerData towerData, GameObject newTowerObj)
     {
         if (m_progressValue < m_progressRequired)
         {

@@ -228,7 +228,7 @@ public class UITooltipController : MonoBehaviour
                 m_objectDescriptionString = gathererData.m_gathererDescription;
                 string efficiency = gathererData.m_gathererLevel == 1
                     ? $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString}<br>"
-                    : $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString} and {(gathererData.m_gathererLevel - 1) * 25}% chance for +1{resourceIconString}<br>";
+                    : $"Harvest Efficiency: {gathererData.m_carryCapacity}{resourceIconString} and {(gathererData.m_gathererLevel - 1) * gathererData.m_bonusStorageRate}% chance for +1{resourceIconString}<br>";
                 m_objectDetailsString = efficiency +
                                         $"Harvest Speed: {gathererData.m_harvestDuration}{m_timeIconString}<br>" +
                                         $"Storage Speed: {gathererData.m_storingDuration}{m_timeIconString}";

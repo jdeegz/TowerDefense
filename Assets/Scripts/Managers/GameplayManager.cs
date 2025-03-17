@@ -40,7 +40,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<CompletedWave> OnWaveCompleted;
     public static event Action<List<Cell>> OnPreconBuildingMoved;
     public static event Action OnPreconBuildingClear;
-    public static event Action<TowerData> OnTowerBuild;
+    public static event Action<TowerData, GameObject> OnTowerBuild;
     public static event Action OnTowerSell;
     public static event Action OnTowerUpgrade;
     public static event Action<int, int> OnObelisksCharged;
@@ -549,7 +549,7 @@ public class GameplayManager : MonoBehaviour
                     TowerBlueprint blueprint = m_hoveredSelectable.GetComponent<TowerBlueprint>();
                     if (blueprint)
                     {
-                        RemoveBlueprintTower(blueprint);
+                        RemoveBlueprintFromList(blueprint);
                     }
                 }
             }
@@ -1307,8 +1307,9 @@ public class GameplayManager : MonoBehaviour
                 return false;
             }
 
-            //If the currenct cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
-            if (curCell.m_isBuildRestricted)
+            // If the current cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
+            // Or if the current cell has a critter in it.
+            if (curCell.m_isBuildRestricted || curCell.m_critterCount > 0)
             {
                 //Debug.Log($"Cannot Place: This cell is build restricted.");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedRestricted;
@@ -1516,7 +1517,7 @@ public class GameplayManager : MonoBehaviour
                 // Enable and update cell
                 if (m_canAfford && m_canPath && m_canPlace)
                 {
-                    m_invalidCellObjs[i].CellIsBuildable = !m_preconstructedTowerCells[i].m_isOccupied && !m_preconstructedTowerCells[i].m_isBuildRestricted;
+                    m_invalidCellObjs[i].CellIsBuildable = !m_preconstructedTowerCells[i].m_isOccupied && !m_preconstructedTowerCells[i].m_isBuildRestricted && m_preconstructedTowerCells[i].m_critterCount == 0;
                 }
                 else
                 {
@@ -1580,7 +1581,7 @@ public class GameplayManager : MonoBehaviour
             if (towerCell.m_cellPos == m_preconstructedTowerPos)
             {
                 Debug.Log($"Build Tower: Removing Blueprint in Tower destination.");
-                RemoveBlueprintTower(blueprint);
+                SellTower(blueprint, 0, 0);
             }
         }
 
@@ -1625,7 +1626,7 @@ public class GameplayManager : MonoBehaviour
             m_qty = m_unlockedStructures[m_preconstructedTowerData];
         }
 
-        OnTowerBuild?.Invoke(m_preconstructedTowerData);
+        OnTowerBuild?.Invoke(m_preconstructedTowerData, newTowerObj);
 
         //If this was the last of our stock, leave precon. (Emulate a mouse2 click while in precon state)
         if (m_qty == 0)
@@ -1714,24 +1715,14 @@ public class GameplayManager : MonoBehaviour
 
         m_blueprintList.Add(blueprint);
         OnBlueprintCountChanged?.Invoke(m_blueprintList.Count);
+        Debug.Log($"Build Blueprint: Blueprint Added to GameManager List.");
     }
 
     public void RemoveBlueprintFromList(TowerBlueprint blueprint)
     {
+        Debug.Log($"Remove Blueprint: Blueprint Removed from GameManager List.");
         m_blueprintList.Remove(blueprint);
         OnBlueprintCountChanged?.Invoke(m_blueprintList.Count);
-    }
-
-    public void RemoveBlueprintTower(TowerBlueprint blueprint)
-    {
-        //Configure Grid
-        GridCellOccupantUtil.SetOccupant(blueprint.gameObject, false, 1, 1);
-
-        //Clean up actor list
-        RemoveBlueprintFromList(blueprint);
-
-        //Remove the tower
-        blueprint.RemoveTower();
     }
 
     public void SellTower(Tower tower, int stoneValue, int woodValue)
@@ -1742,7 +1733,7 @@ public class GameplayManager : MonoBehaviour
         //Clean up actor list
         if (tower is TowerBlueprint)
         {
-            RemoveBlueprintTower(tower as TowerBlueprint);
+            RemoveBlueprintFromList(tower as TowerBlueprint);
         }
         else
         {
@@ -1770,8 +1761,11 @@ public class GameplayManager : MonoBehaviour
         tower.RemoveTower();
 
         //Set Gameplay Manager's state
-        m_curSelectable = null;
-        UpdateInteractionState(InteractionState.Idle);
+        if (m_interactionState == InteractionState.SelectedTower)
+        {
+            m_curSelectable = null;
+            UpdateInteractionState(InteractionState.Idle);
+        }
 
         //Let rest of game know of new tower.
         OnTowerSell?.Invoke();

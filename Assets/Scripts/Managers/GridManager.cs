@@ -452,7 +452,7 @@ public class Cell
     public int m_cellIndex;
     public int m_cellDistanceFromGoal;
     public Vector2Int m_cellPos;
-    [FormerlySerializedAs("m_portalConnectionCell")] public Cell m_portalDestinationCell;
+    public Cell m_portalDestinationCell;
     public List<Cell> m_additionalNeighbors = new List<Cell>();
 
     public bool m_canPathNorth = true;
@@ -524,6 +524,27 @@ public class Cell
         else
         {
             m_actorsList.Remove(name);
+        }
+    }
+
+    public List<string> m_critterList;
+    public int m_critterCount;
+    public void UpdateCritterCount(int i, string name)
+    {
+        if (m_critterList == null)
+        {
+            m_critterList = new List<string>();
+        }
+        
+        m_critterCount += i;
+
+        if (i > 0)
+        {
+            m_critterList.Add(name);
+        }
+        else
+        {
+            m_critterList.Remove(name);
         }
     }
 

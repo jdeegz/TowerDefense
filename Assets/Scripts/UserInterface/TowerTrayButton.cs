@@ -92,7 +92,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         m_qtyLabelUIEffect = m_towerQTY.GetComponent<UIEffect>();
     }
 
-    private void TowerBuilt(TowerData towerData)
+    private void TowerBuilt(TowerData towerData, GameObject newTowerObj)
     {
         if (towerData != m_towerData) return;
 

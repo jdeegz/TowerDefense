@@ -3,7 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Coffee.UIEffects;
 using JetBrains.Annotations;
+using PlayFab.MultiplayerModels;
+using Random = UnityEngine.Random;
 
 public static class Util
 {
@@ -17,6 +20,14 @@ public static class Util
         new Vector2Int(-1, 1), // Bottom-left
         new Vector2Int(0, 1), // Bottom
         new Vector2Int(1, 1) // Bottom-right
+    };
+    
+    public static Vector2Int[] m_cardinalDirections = new Vector2Int[]
+    {
+        new Vector2Int(0, -1), // Top
+        new Vector2Int(-1, 0), // Left
+        new Vector2Int(1, 0), // Right
+        new Vector2Int(0, 1), // Bottom
     };
 
     public static List<Vector2Int> GetBoxAround3x3Grid(Vector2Int center)
@@ -113,7 +124,7 @@ public static class Util
         //Expected outcomes: 1x1 = 0,0 | 2x2 = 1,1 | 3x3 = 1,1
         Vector2Int buildingPadding = new Vector2Int((int)Math.Floor(objectSize.x / 2.0), (int)Math.Floor(objectSize.y / 2.0));
 
-        Debug.Log($"Find Nearest Valid Cell Pos: {worldPos}, Building Size: {objectSize}, Building Padding: {buildingPadding}");
+        //Debug.Log($"Find Nearest Valid Cell Pos: {worldPos}, Building Size: {objectSize}, Building Padding: {buildingPadding}");
 
         gridPos.x = Mathf.Clamp(gridPos.x, 0 + buildingPadding.x, GridManager.Instance.m_gridWidth - buildingPadding.x);
         gridPos.y = Mathf.Clamp(gridPos.y, 0 + buildingPadding.y, GridManager.Instance.m_gridHeight - buildingPadding.y);
@@ -566,7 +577,7 @@ public static class Util
                 }*/
 
 
-                Debug.Log($"GetCellsFromPos: Adding {cell.m_cellPos}.");
+                //Debug.Log($"GetCellsFromPos: Adding {cell.m_cellPos}.");
                 cellsFromPos.Add(cell);
             }
         }
@@ -821,6 +832,85 @@ public static class Util
         }
 
         return adjacentCells;
+    }
+    
+    public static List<Cell> GetAdjacentEmptyCells(Vector2Int center)
+    {
+        List<Cell> adjacentCells = new List<Cell>();
+
+        foreach (Vector2Int direction in m_directions)
+        {
+            Vector2Int adjacentPosition = center + direction;
+            Cell adjacentCell = GetCellFromPos(adjacentPosition);
+            if (adjacentCell == null) continue;
+            if (!adjacentCell.m_isOccupied && adjacentCell.m_directionToNextCell != Cell.Direction.Portal)
+            {
+                adjacentCells.Add(adjacentCell);
+            }
+        }
+
+        return adjacentCells;
+    }
+    
+    public static List<Cell> GetPathableAdjacentEmptyCells(Cell startCell)
+    {
+        List<Cell> adjacentCells = new List<Cell>();
+
+        Vector2Int startCellPos = startCell.m_cellPos;
+        
+        Cell northNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x, startCellPos.y + 1));
+        if (startCell.m_canPathNorth && 
+            northNeighborCell != null &&
+            northNeighborCell.m_canPathSouth &&
+            !northNeighborCell.m_isOccupied &&
+            northNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
+        {
+            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding North cell: {northNeighborCell.m_cellPos}");
+            adjacentCells.Add(northNeighborCell);
+        }
+        
+        Cell southNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x, startCellPos.y - 1));
+        if (startCell.m_canPathSouth && 
+            southNeighborCell != null &&
+            southNeighborCell.m_canPathNorth &&
+            !southNeighborCell.m_isOccupied &&
+            southNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
+        {
+            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding South cell: {southNeighborCell.m_cellPos}");
+            adjacentCells.Add(southNeighborCell);
+        }
+        
+        Cell eastNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x + 1, startCellPos.y));
+        if (startCell.m_canPathEast && 
+            eastNeighborCell != null &&
+            eastNeighborCell.m_canPathWest &&
+            !eastNeighborCell.m_isOccupied &&
+            eastNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
+        {
+            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding East cell: {eastNeighborCell.m_cellPos}");
+            adjacentCells.Add(eastNeighborCell);
+        }
+        
+        Cell westNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x - 1, startCellPos.y));
+        if (startCell.m_canPathWest && 
+            westNeighborCell != null &&
+            westNeighborCell.m_canPathEast &&
+            !westNeighborCell.m_isOccupied &&
+            westNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
+        {
+            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding West cell: {westNeighborCell.m_cellPos}");
+            adjacentCells.Add(westNeighborCell);
+        }
+
+        return adjacentCells;
+    }
+    
+    public static T GetRandomElement<T>(List<T> list)
+    {
+        if (list == null || list.Count == 0)
+            return default;
+
+        return list[Random.Range(0, list.Count)];
     }
 
     public static List<Vector2Int> GetAdjacentCellPos(Vector2Int center)
