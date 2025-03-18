@@ -15,18 +15,20 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     [SerializeField] private GameObject m_treeBurnedVFX;
     [SerializeField] private GameObject m_treeShedVFX;
     [SerializeField] private GameObject m_treeFelledVFX;
-    [SerializeField] private List<GameObject> m_objectsToToggle;
+    [SerializeField] private List<GameObject> m_objectsToToggle; // Objects enabled if count > 1
+    [SerializeField] private List<GameObject> m_resourceCountMaximumObjs; // Objects enabled if count == maximum
 
     [SerializeField] private AudioSource m_audioSource;
     [SerializeField] private List<AudioClip> m_woodHarvestedClips;
     [SerializeField] private List<AudioClip> m_woodDepletedClips;
 
     private int m_resourcesRemaining;
+    private float m_refreshResourceTimeElapsed;
+
     [HideInInspector] public ResourceManager.ResourceType m_type;
     public List<HarvestPoint> m_harvestPoints;
     public event Action<ResourceNode> OnResourceNodeDepletion;
     private Quaternion m_treeRotation;
-    private int m_harvesters;
     private static int m_gatherersHarvestingHash = Animator.StringToHash("gatherersHarvesting");
 
     void Awake()
@@ -54,6 +56,21 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         }
     }
 
+    void Update()
+    {
+        if (m_nodeData.m_refreshResources && m_resourcesRemaining < m_nodeData.m_maxResources)
+        {
+            m_refreshResourceTimeElapsed += Time.deltaTime;
+
+            if (m_refreshResourceTimeElapsed >= m_nodeData.m_refreshRate)
+            {
+                m_resourcesRemaining = Math.Min(m_resourcesRemaining + m_nodeData.m_refreshQuantity, m_nodeData.m_maxResources);
+                UpdateResourceDisplayState();
+                m_refreshResourceTimeElapsed = 0;
+            }
+        }
+    }
+
     void OnDestroy()
     {
         GameplayManager.OnGameplayStateChanged -= GameplayManagerStateChanged;
@@ -75,19 +92,14 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             //Give the gatherer how much they ask for or all that is remaining.
             resourcesHarvested = Math.Min(i, m_resourcesRemaining);
             m_resourcesRemaining -= resourcesHarvested;
+
+            if (!m_nodeData.m_rewardsResources) resourcesHarvested = 0; // If the tree does not award resources, cancel out the grant.
             ObjectPoolManager.SpawnObject(m_treeShedVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
         }
 
-        if (m_resourcesRemaining == 1 && m_objectsToToggle.Count > 0)
-        {
-            int index = Random.Range(0, m_woodHarvestedClips.Count);
-            m_audioSource.PlayOneShot(m_woodHarvestedClips[index]);
-            
-            foreach (GameObject obj in m_objectsToToggle)
-            {
-                obj.SetActive(!obj.activeSelf);
-            }
-        }
+        m_audioSource.PlayOneShot(Util.GetRandomElement(m_woodHarvestedClips));
+        
+        UpdateResourceDisplayState();
 
         if (m_resourcesRemaining <= 0)
         {
@@ -97,13 +109,28 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             OnDepletion(true);
         }
 
+        
+        
         return (resourcesHarvested, m_resourcesRemaining);
+    }
+
+    void UpdateResourceDisplayState()
+    {
+        foreach (GameObject obj in m_objectsToToggle)
+        {
+            obj.SetActive(m_resourcesRemaining > 1);
+        }
+        
+        foreach (GameObject obj in m_resourceCountMaximumObjs)
+        {
+            obj.SetActive(m_resourcesRemaining == m_nodeData.m_maxResources);
+        }
     }
 
     public void RequestPlayAudioClip(AudioClip clip)
     {
         if (clip == null) return;
-        
+
         m_audioSource.PlayOneShot(clip);
     }
 
@@ -117,14 +144,12 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         //m_animator.SetTrigger("isSelected");
     }
 
-    public void SetIsHarvesting(int i)
-    {
-        m_harvesters += i;
-        //m_animator.SetInteger(m_gatherersHarvestingHash, m_harvesters);
-    }
-
     public void OnDepletion(bool harvested)
     {
+        if (harvested){ OnResourceNodeDepletion?.Invoke(this); } // dont invoke if we were destroyed by something else.
+        
+        if (!m_nodeData.m_limitedCount) return; // a node with a limited count should be removed below.
+
         GridCellOccupantUtil.SetOccupant(gameObject, false, 1, 1, this);
 
         //Setting this to 0 so it wont show up in Nearby Nodes check. (When dragon destroys node, the node was appearing in the FindNearbyNodes check)
@@ -139,9 +164,6 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         {
             RequestFelledRotation();
         }
-
-        OnResourceNodeDepletion?.Invoke(this);
-        
     }
 
     public void CreateResourceNode()
@@ -159,6 +181,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     private Tween m_curContactTween;
     private Sequence m_curContactSequence;
     private Transform m_curGathererTransform;
+
     public void RequestContactRotation(Transform gathererTransform)
     {
         if (m_curContactSequence != null && m_curContactSequence.IsActive())
@@ -166,42 +189,39 @@ public class ResourceNode : MonoBehaviour, IResourceNode
             Debug.Log("Rotation already in progress!");
             return;
         }
-        
+
         // Collect and assign Rotations
         m_curGathererTransform = gathererTransform;
-        Quaternion offset = Quaternion.AngleAxis(8f, m_curGathererTransform.right); 
+        Quaternion offset = Quaternion.AngleAxis(8f, m_curGathererTransform.right);
         Quaternion targetRotation = offset * m_treeRotation;
-        
+
         // Build and fire the Sequence
         m_curContactSequence = DOTween.Sequence();
         m_curContactSequence.Append(transform.DORotateQuaternion(targetRotation, 0.075f))
             .Append(transform.DORotateQuaternion(m_treeRotation, 0.1f))
-            .OnComplete(() =>
-            {
-                m_curContactSequence = null; 
-            });
+            .OnComplete(() => { m_curContactSequence = null; });
     }
 
     public void RequestFelledRotation()
     {
         gameObject.GetComponent<Collider>().enabled = false;
-        
+
         // Collect and assign Rotations
-        Quaternion offset = Quaternion.AngleAxis(90f, m_curGathererTransform.right); 
+        Quaternion offset = Quaternion.AngleAxis(90f, m_curGathererTransform.right);
         Quaternion targetRotation = offset * m_treeRotation;
-        
+
         // Build and fire the Sequence
         m_curContactSequence = DOTween.Sequence();
         m_curContactSequence.Append(transform.DORotateQuaternion(targetRotation, 1f).SetEase(Ease.InQuad))
             .OnComplete(() =>
             {
                 ObjectPoolManager.SpawnObject(m_treeFelledVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
-                m_curContactSequence = null; 
+                m_curContactSequence = null;
                 m_modelRoot.SetActive(false);
                 Destroy(gameObject, 2f);
             });
     }
-    
+
     public void RequestPlayAudio(AudioClip clip)
     {
         //source.Stop();

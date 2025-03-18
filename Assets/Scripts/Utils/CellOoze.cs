@@ -90,7 +90,7 @@ public class CellOoze : MonoBehaviour
         RequestPlayAudio(m_audioImpactClips, m_audioSource);
 
         //What Cell am I on?
-        m_cell.UpdateBuildRestrictedValue(true);
+        m_cell.UpdateTemporaryBuildRestrictedValue(true);
 
         //Enable the collider
         m_collider.enabled = true;
@@ -103,7 +103,7 @@ public class CellOoze : MonoBehaviour
         GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
         m_isActive = false;
         m_spawnTween.Kill(false);
-        m_cell.UpdateBuildRestrictedValue(false);
+        m_cell.UpdateTemporaryBuildRestrictedValue(false);
         m_collider.enabled = false;
 
         if (m_activeOozeProjectileObj) ObjectPoolManager.ReturnObjectToPool(m_activeOozeProjectileObj);

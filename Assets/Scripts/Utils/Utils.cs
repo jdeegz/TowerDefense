@@ -21,7 +21,7 @@ public static class Util
         new Vector2Int(0, 1), // Bottom
         new Vector2Int(1, 1) // Bottom-right
     };
-    
+
     public static Vector2Int[] m_cardinalDirections = new Vector2Int[]
     {
         new Vector2Int(0, -1), // Top
@@ -52,6 +52,24 @@ public static class Util
         }
 
         return result;
+    }
+
+    public static bool IsAdjacentDiagonal(Vector2Int cellA, Vector2Int cellB)
+    {
+        //Debug.Log($"IsAdjacentDiagonal checking cells: {cellA} x {cellB}.");
+        int dx = Mathf.Abs(cellA.x - cellB.x);
+        int dy = Mathf.Abs(cellA.y - cellB.y);
+
+        return Mathf.Max(dx, dy) == 1;
+    }
+    
+    public static bool IsAdjacentDiagonalOrLess(Vector2Int cellA, Vector2Int cellB)
+    {
+        //Debug.Log($"IsAdjacentDiagonalOrLess checking cells: {cellA} x {cellB}.");
+        int dx = Mathf.Abs(cellA.x - cellB.x);
+        int dy = Mathf.Abs(cellA.y - cellB.y);
+
+        return Mathf.Max(dx, dy) <= 1;
     }
 
     public static List<Cell> GetEmptyCellsAtDistance(Vector2Int center, int distance)
@@ -833,7 +851,7 @@ public static class Util
 
         return adjacentCells;
     }
-    
+
     public static List<Cell> GetAdjacentEmptyCells(Vector2Int center)
     {
         List<Cell> adjacentCells = new List<Cell>();
@@ -851,15 +869,15 @@ public static class Util
 
         return adjacentCells;
     }
-    
+
     public static List<Cell> GetPathableAdjacentEmptyCells(Cell startCell)
     {
         List<Cell> adjacentCells = new List<Cell>();
 
         Vector2Int startCellPos = startCell.m_cellPos;
-        
+
         Cell northNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x, startCellPos.y + 1));
-        if (startCell.m_canPathNorth && 
+        if (startCell.m_canPathNorth &&
             northNeighborCell != null &&
             northNeighborCell.m_canPathSouth &&
             !northNeighborCell.m_isOccupied &&
@@ -868,9 +886,9 @@ public static class Util
             Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding North cell: {northNeighborCell.m_cellPos}");
             adjacentCells.Add(northNeighborCell);
         }
-        
+
         Cell southNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x, startCellPos.y - 1));
-        if (startCell.m_canPathSouth && 
+        if (startCell.m_canPathSouth &&
             southNeighborCell != null &&
             southNeighborCell.m_canPathNorth &&
             !southNeighborCell.m_isOccupied &&
@@ -879,9 +897,9 @@ public static class Util
             Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding South cell: {southNeighborCell.m_cellPos}");
             adjacentCells.Add(southNeighborCell);
         }
-        
+
         Cell eastNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x + 1, startCellPos.y));
-        if (startCell.m_canPathEast && 
+        if (startCell.m_canPathEast &&
             eastNeighborCell != null &&
             eastNeighborCell.m_canPathWest &&
             !eastNeighborCell.m_isOccupied &&
@@ -890,9 +908,9 @@ public static class Util
             Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding East cell: {eastNeighborCell.m_cellPos}");
             adjacentCells.Add(eastNeighborCell);
         }
-        
+
         Cell westNeighborCell = GetCellFromPos(new Vector2Int(startCellPos.x - 1, startCellPos.y));
-        if (startCell.m_canPathWest && 
+        if (startCell.m_canPathWest &&
             westNeighborCell != null &&
             westNeighborCell.m_canPathEast &&
             !westNeighborCell.m_isOccupied &&
@@ -904,7 +922,7 @@ public static class Util
 
         return adjacentCells;
     }
-    
+
     public static T GetRandomElement<T>(List<T> list)
     {
         if (list == null || list.Count == 0)

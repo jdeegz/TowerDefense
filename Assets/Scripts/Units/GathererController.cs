@@ -258,7 +258,7 @@ public class GathererController : MonoBehaviour
         {
             m_curPos = new Vector2Int((int)Mathf.Floor(transform.position.x + 0.5f), (int)Mathf.Floor(transform.position.z + 0.5f));
             m_curCell = Util.GetCellFromPos(m_curPos);
-            m_curCell.UpdateActorCount(1, gameObject.name);
+            m_curCell.UpdateGathererCount(1, gameObject.name);
             UpdateTask(GathererTask.Idling);
             m_idleCell = m_curCell;
 
@@ -448,7 +448,7 @@ public class GathererController : MonoBehaviour
             {
                 GameObject oldIndicator = m_curNodeQueueIndicators[i];
                 m_curNodeQueueIndicators.RemoveAt(i);
-                oldIndicator.transform.DOScale(0, 0.15f).SetEase(Ease.InBack).OnComplete(() =>
+                oldIndicator.transform.DOScale(0, 0.15f).SetEase(Ease.InBack).SetUpdate(true).OnComplete(() =>
                     ObjectPoolManager.ReturnObjectToPool(oldIndicator, ObjectPoolManager.PoolType.GameObject));
             }
         }
@@ -624,7 +624,7 @@ public class GathererController : MonoBehaviour
             // Remove self from current cell.
             if (m_curCell != null)
             {
-                m_curCell.UpdateActorCount(-1, gameObject.name);
+                m_curCell.UpdateGathererCount(-1, gameObject.name);
             }
 
             // Assign new position
@@ -634,7 +634,7 @@ public class GathererController : MonoBehaviour
             m_curCell = Util.GetCellFromPos(m_curPos);
 
             // Assign self to cell.
-            m_curCell.UpdateActorCount(1, gameObject.name);
+            m_curCell.UpdateGathererCount(1, gameObject.name);
 
             // Update my path towards my goal.
             GathererPath = AStar.FindPathToGoal(CurrentGoalCell, m_curCell);
@@ -931,35 +931,40 @@ public class GathererController : MonoBehaviour
 
     private Cell FindClosestPathableCell(List<ResourceNode> resourceNodes)
     {
-        List<Vector2Int> shortestPath = null;
+        int shortestPathLength = int.MaxValue;
         Cell closestGoalCell = null;
 
         foreach (ResourceNode node in resourceNodes)
         {
+            Debug.Log($"New Loop. Current Shortest Path Length: {shortestPathLength}");
+            
             Cell nodeCell = Util.GetCellFrom3DPos(node.transform.position);
             List<Vector2Int> path = AStar.FindPathToGoal(nodeCell, m_curCell);
 
             if (path == null)
             {
-                //Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is NULL.");
+                Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is NULL.");
                 continue;
             }
 
-            //Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is {path.Count} long.");
-            //Debug.Log($"The last cell in the path is {path.Last()}.");
+            Debug.Log($"Path from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} is {path.Count} long.");
+            Debug.Log($"The last cell in the path is {path.Last()}.");
             float remainingCellDistance = Math.Max(Math.Abs(nodeCell.m_cellPos.x - path.Last().x), Math.Abs(nodeCell.m_cellPos.y - path.Last().y));
 
             if (remainingCellDistance > 1) continue;
 
-            //Debug.Log($"The last cell in the path is {remainingCellDistance} away from the Resource Node.");
+            Debug.Log($"The last cell in the path is {remainingCellDistance} away from the Resource Node.");
 
-            if (shortestPath == null || path.Count < shortestPath.Count)
+            if (path.Count < shortestPathLength)
             {
-                shortestPath = path;
+                Debug.Log($"Assigning the path from from {m_curCell.m_cellPos} to {nodeCell.m_cellPos} as the Shortest Path.");
+                Debug.Log($"Current Shortest Path Length: {shortestPathLength} New Shortest Path Length: {path.Count}.");
+                shortestPathLength = path.Count;
                 closestGoalCell = nodeCell;
             }
         }
 
+        Debug.Log($"returning closest goal of path length {shortestPathLength}.");
         return closestGoalCell; // Return the closest goal cell or null if not found
     }
 
@@ -973,27 +978,54 @@ public class GathererController : MonoBehaviour
     void PathToDepositCell()
     {
         List<Vector2Int> shortestPath = null;
+        List<Vector2Int> shortestBlockedPath = null;
         Cell closestGoalCell = null;
+        Cell closestBlockedGoalCell = null;
         foreach (Vector2Int depositLocation in m_depositLocations)
         {
             Cell depositCell = Util.GetCellFromPos(depositLocation);
             List<Vector2Int> path = AStar.FindPathToGoal(depositCell, m_curCell);
-            if (path == null) continue;
-
-            if (shortestPath == null)
+            if (path == null)
             {
-                shortestPath = path;
-                closestGoalCell = depositCell;
+                //Debug.Log($"PathToDepositCell: Path to {depositLocation} is null.");    
+                continue;
             }
-
-            if (path.Count < shortestPath.Count)
+            
+            // We may get paths that lead to a blocked cell, we should prioritize paths that reach the location, then fallback to blocked paths.
+            if (Util.IsAdjacentDiagonalOrLess(path.Last(), depositLocation))
             {
-                shortestPath = path;
-                closestGoalCell = depositCell;
+                //Debug.Log($"Path to {depositLocation} is NOT blocked.. Checking to see if it is the closest path.");
+                if (shortestPath == null)
+                {
+                    shortestPath = path;
+                    closestGoalCell = depositCell;
+                }
+
+                if (path.Count < shortestPath.Count)
+                {
+                    shortestPath = path;
+                    closestGoalCell = depositCell;
+                }
+            }
+            else
+            {
+                //Debug.Log($"Path to {depositLocation} is blocked. Checking to see if it is the closest blocked path.");
+                if (shortestBlockedPath == null)
+                {
+                    shortestBlockedPath = path;
+                    closestBlockedGoalCell = depositCell;
+                } 
+                
+                if (path.Count < shortestBlockedPath.Count)
+                {
+                    shortestBlockedPath = path;
+                    closestBlockedGoalCell = depositCell;
+                }
             }
         }
 
-        CurrentGoalCell = closestGoalCell;
+        //Debug.Log($"Path to deposit location. Closest Goal Cell is null: {closestGoalCell == null}, Closest Blocked Goal Cell is null: {closestBlockedGoalCell == null}.");
+        CurrentGoalCell = closestGoalCell ?? closestBlockedGoalCell;
         UpdateTask(GathererTask.TravelingToDeposit);
     }
 
@@ -1117,12 +1149,6 @@ public class GathererController : MonoBehaviour
         // Unassign from the node (used for Player interupting the Harvesting state)
         if (CurrentHarvestNode)
         {
-            if (m_gathererTask == GathererTask.Harvesting)
-            {
-                //Debug.Log($"setting tree harvesting value -1");
-                CurrentHarvestNode.SetIsHarvesting(-1); // We only want to do this if we've started harvesting, which increments the value.
-            }
-
             CurrentHarvestNode.OnResourceNodeDepletion -= OnNodeDepleted;
         }
 
@@ -1134,11 +1160,6 @@ public class GathererController : MonoBehaviour
 
     private void InterruptHarvesting()
     {
-        if (CurrentHarvestNode && m_gathererTask == GathererTask.Harvesting)
-        {
-            CurrentHarvestNode.SetIsHarvesting(-1); // We only want to do this if we've started harvesting, which increments the value.
-        }
-
         // Stop gatherer Harvest Animation.
         //m_animator.SetBool(m_isHarvestingHash, false);
     }
@@ -1150,7 +1171,7 @@ public class GathererController : MonoBehaviour
             return;
         }
 
-        //Debug.Log($"{m_gathererData.m_gathererName}'s CURRENT node DEPLETED.");
+        Debug.Log($"{m_gathererData.m_gathererName}'s CURRENT node DEPLETED.");
 
         ClearHarvestVars();
 
@@ -1303,8 +1324,7 @@ public class GathererController : MonoBehaviour
 
     private void StartHarvesting()
     {
-        //m_animator.SetBool(m_isHarvestingHash, true);
-        CurrentHarvestNode.SetIsHarvesting(1);
+        //
     }
 
     private void CompletedHarvest()
@@ -1313,19 +1333,25 @@ public class GathererController : MonoBehaviour
 
         //m_animator.SetBool(m_isHarvestingHash, false);
 
-        PathToDepositCell();
-
         ValueTuple<int, int> vars = CurrentHarvestNode.RequestResource(m_carryCapacity);
         ResourceCarried = vars.Item1;
         int resourceRemaining = vars.Item2;
 
-        SetAnimatorBool("CarryingWood", true);
-
-        //If there are resources remaining in the node, unset some of the variables on the node.
-        if (resourceRemaining > 0)
+        if (ResourceCarried > 0)
         {
-            CurrentHarvestNode.SetIsHarvesting(-1);
+            SetAnimatorBool("CarryingWood", true);
+            PathToDepositCell();
         }
+        else
+        {
+            RequestNextHarvestNode();
+        }
+        
+        /*if(resourceRemaining == 0 && CurrentHarvestNode != null && CurrentHarvestNode.m_nodeData.m_refreshResources)
+        {
+            Debug.Log($"Node out of resources. Signal depletion. remaining {resourceRemaining}, carried {ResourceCarried}");
+            OnNodeDepleted(CurrentHarvestNode);
+        }*/
     }
 
     public GathererTask GetGathererTask()

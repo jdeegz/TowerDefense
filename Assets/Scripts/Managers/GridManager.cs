@@ -163,7 +163,7 @@ public class GridManager : MonoBehaviour
 
         if (!m_spawnPointsAccessible)
         {
-            //Debug.Log($"We did not find all spawn points when flood filling from the exit.");
+            Debug.Log($"We did not find all spawn points when flood filling from the exit.");
             return;
         }
 
@@ -443,12 +443,15 @@ public class Cell
     public bool m_isTempOccupied;
     public bool m_isUpForSale;
     public bool m_isBuildRestricted;
+    public bool m_isTemporaryBuildRestricted;
 
     public GameObject m_occupant;
     public ResourceNode m_cellResourceNode;
     public List<string> m_actorsList;
+    public List<string> m_gatherersList;
 
     public int m_actorCount;
+    public int m_gathererCount;
     public int m_cellIndex;
     public int m_cellDistanceFromGoal;
     public Vector2Int m_cellPos;
@@ -526,6 +529,25 @@ public class Cell
             m_actorsList.Remove(name);
         }
     }
+    
+    public void UpdateGathererCount(int i, string name)
+    {
+        if (m_gatherersList == null)
+        {
+            m_gatherersList = new List<string>();
+        }
+
+        m_gathererCount += i;
+
+        if (i > 0)
+        {
+            m_gatherersList.Add(name);
+        }
+        else
+        {
+            m_gatherersList.Remove(name);
+        }
+    }
 
     public List<string> m_critterList;
     public int m_critterCount;
@@ -553,6 +575,14 @@ public class Cell
         m_isBuildRestricted = value;
     }
 
+    public int m_temporaryBuildRestrictionCount;
+    public void UpdateTemporaryBuildRestrictedValue(bool value)
+    {
+        int delta = value ? 1 : -1;
+        m_temporaryBuildRestrictionCount += delta;
+        m_isTemporaryBuildRestricted = m_temporaryBuildRestrictionCount != 0;
+    }
+
     public void UpdateOccupancy(bool b)
     {
         m_isOccupied = b;
@@ -567,6 +597,18 @@ public class Cell
         }
     }
 
+    public bool IsBuildRestricted()
+    {
+        if (m_isBuildRestricted) return true;
+
+        return m_isTemporaryBuildRestricted;
+    }
+    
+    public bool HasActors()
+    {
+        return m_actorCount != 0 || m_gathererCount != 0 || m_critterCount != 0;
+    }
+    
     public void SetPortalConnectionCell(Cell cell)
     {
         m_portalDestinationCell = cell;
@@ -679,9 +721,7 @@ public class UnitPath
     public bool m_preconState;
     public bool m_pathDirty;
     public bool m_displayThisPath;
-
-    private Color m_lineRendererColorOn;
-    private Color m_lineRendererColorOff;
+    
     private List<TBLineRendererComponent> m_lineRenderers;
 
     public void Setup()
@@ -720,11 +760,9 @@ public class UnitPath
         Material instancedMaterial = new Material(GridManager.Instance.m_lineRendererMaterial);
         newLine.lineRendererProperties.texture = instancedMaterial;
         newLine.lineRendererProperties.lineWidth = 0.1f;
-        ColorUtility.TryParseHtmlString("#eca816", out Color colorOn);
-        ColorUtility.TryParseHtmlString("#9fa7af", out Color colorOff);
         newLine.lineRendererProperties.roundedCorners = true;
-        newLine.lineRendererProperties.startColor = colorOn;
-        newLine.lineRendererProperties.endColor = colorOff;
+        newLine.lineRendererProperties.startColor = GameplayManager.Instance.m_selectionColors.m_unitPathColorOn;
+        newLine.lineRendererProperties.endColor = GameplayManager.Instance.m_selectionColors.m_unitPathColorOff;
         newLine.lineRendererProperties.axis = TBLineRenderer.Axis.Y;
 
         //Assign the properties.

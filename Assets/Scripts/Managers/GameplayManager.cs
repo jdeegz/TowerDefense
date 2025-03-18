@@ -180,7 +180,7 @@ public class GameplayManager : MonoBehaviour
     private List<TowerBlueprint> m_blueprintList;
 
     [Header("Selected Object Info")]
-    [SerializeField] private SelectionColors m_selectionColors;
+    public SelectionColors m_selectionColors;
     private Material m_selectedOutlineMaterial; //Assigned on awake
     private Selectable m_curSelectable;
     public Selectable m_hoveredSelectable;
@@ -1277,7 +1277,7 @@ public class GameplayManager : MonoBehaviour
         {
             Cell curCell = cells[i];
 
-            if (curCell.m_actorCount > 0)
+            if (curCell.HasActors())
             {
                 //Debug.Log($"Cannot Place: There are actors on this cell.");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedActorsOnCell;
@@ -1309,7 +1309,7 @@ public class GameplayManager : MonoBehaviour
 
             // If the current cell is build restricted (bridges, obelisk ground, pathways), not a valid spot.
             // Or if the current cell has a critter in it.
-            if (curCell.m_isBuildRestricted || curCell.m_critterCount > 0)
+            if (curCell.IsBuildRestricted())
             {
                 //Debug.Log($"Cannot Place: This cell is build restricted.");
                 m_pathRestrictedReason = m_UIStringData.m_buildRestrictedRestricted;
