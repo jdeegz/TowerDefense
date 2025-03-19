@@ -148,6 +148,7 @@ public class GridManager : MonoBehaviour
                         {
                             if (neighbor == spawnPointCell)
                             {
+                                Debug.Log($"{spawnPointCell.m_cellPos} Spawner found.");
                                 ++spawnPointCellsFound;
                             }
                         }
@@ -163,7 +164,7 @@ public class GridManager : MonoBehaviour
 
         if (!m_spawnPointsAccessible)
         {
-            Debug.Log($"We did not find all spawn points when flood filling from the exit.");
+            Debug.Log($"Only found {spawnPointCellsFound} Spawners. {spawnPointCells.Count} are in the mission.");
             return;
         }
 

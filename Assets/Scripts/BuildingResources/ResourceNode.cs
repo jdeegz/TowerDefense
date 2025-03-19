@@ -42,6 +42,8 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
     private void RandomResourceAmount()
     {
+        if (!m_nodeData.m_limitedCount) return;
+        
         int randomInt = Random.Range(0, 20);
         if (randomInt == 1)
         {
