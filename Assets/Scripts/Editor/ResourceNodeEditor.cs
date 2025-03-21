@@ -47,7 +47,7 @@ public class ResourceNodeEditor : Editor
 
         foreach (ResourceNode node in allNodes)
         {
-            if (node.m_nodeData.m_resourceType == ResourceManager.ResourceType.Wood)
+            if (node.m_nodeData.m_resourceType == ResourceManager.ResourceType.Wood && !node.m_nodeData.m_refreshResources)
             {
                 trees.Add(node);
             }

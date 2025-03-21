@@ -21,6 +21,8 @@ public class GridCellOccupantUtil
                 Vector2Int pos = new Vector2Int((int)bottomLeftCell.x + x, (int)bottomLeftCell.z + z);
                 Cell cell = Util.GetCellFromPos(pos);
                 
+                if(cell == null) Debug.Log($"Object {obj.name} at {pos} Is not on a valid Cell.");
+                
                 if (cell.m_isOccupied && isOccupied)
                 {
                     if (pos.x != 0 && pos.x != GridManager.Instance.m_gridWidth - 1 && pos.y != 0 && pos.y != GridManager.Instance.m_gridHeight - 1)
