@@ -32,7 +32,7 @@ public class UITooltipController : MonoBehaviour
     private string m_objectNameString;
     private string m_objectDescriptionString;
     private string m_objectDetailsString;
-    
+
     private Tween m_curTween;
     private Canvas m_canvas;
     private CanvasGroup m_canvasGroup;
@@ -81,7 +81,7 @@ public class UITooltipController : MonoBehaviour
     {
         m_supressToolTips = false;
     }
-    
+
     private void GameObjectDeselected(GameObject obj)
     {
         Selectable deselected = obj.GetComponent<Selectable>();
@@ -113,7 +113,7 @@ public class UITooltipController : MonoBehaviour
             if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
             return;
         }
-        
+
         // If I am holding alt, do not display tooltips. If a tooltip is active, hide it.
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.Disabled && GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.Setup)
         {
@@ -122,7 +122,7 @@ public class UITooltipController : MonoBehaviour
             if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
             return;
         }
-        
+
         HandleTooltipPlacement();
 
         // Dont do any Tooltip display while in preconstruction.
@@ -175,7 +175,7 @@ public class UITooltipController : MonoBehaviour
     {
         m_curWorldSelectable = selectable;
     }
-    
+
     public void SetTooltipData(Selectable.SelectedObjectType type, GameObject hoveredObj)
     {
         switch (type)
@@ -185,6 +185,16 @@ public class UITooltipController : MonoBehaviour
                 m_objectNameString = woodNodeData.m_resourceNodeName;
                 m_objectDescriptionString = woodNodeData.m_resourceNodeDescription;
                 m_objectDetailsString = $"Resources Remaining: {woodNodeData.m_curResources} / {woodNodeData.m_maxResources}{m_resourceWoodIconString}";
+                //If rewards resources, include the icon + change copy.
+                if (woodNodeData.m_rewardsResources)
+                {
+                    m_objectDetailsString = $"Harvests Remaining: {woodNodeData.m_curResources} / {woodNodeData.m_maxResources}{m_resourceWoodIconString}";
+                }
+                else
+                {
+                    m_objectDetailsString = $"Roots Remaining: {woodNodeData.m_curResources} / {woodNodeData.m_maxResources}";
+                }
+
                 break;
             case Selectable.SelectedObjectType.ResourceStone:
                 ResourceNodeTooltipData stoneNodeData = hoveredObj.GetComponent<ResourceNode>().GetTooltipData();
@@ -265,6 +275,7 @@ public class UITooltipController : MonoBehaviour
                 {
                     tearData = hoveredObj.GetComponent<TrojanUnitSpawner>().GetTooltipData();
                 }
+
                 m_objectNameString = tearData.m_tearName;
                 m_objectDescriptionString = tearData.m_tearDescription;
                 m_objectDetailsString = tearData.m_tearDetails;
@@ -281,10 +292,10 @@ public class UITooltipController : MonoBehaviour
 
         m_objectNameLabel.SetText(m_objectNameString);
         m_objectNameLabel.gameObject.SetActive(!string.IsNullOrEmpty(m_objectNameString));
-        
+
         m_objectDescriptionLabel.SetText(m_objectDescriptionString);
         m_objectDescriptionLabel.gameObject.SetActive(!string.IsNullOrWhiteSpace(m_objectDescriptionString));
-        
+
         m_objectDetailsLabel.SetText(m_objectDetailsString);
         m_objectDetailsLabel.gameObject.SetActive(!string.IsNullOrWhiteSpace(m_objectDetailsString));
 

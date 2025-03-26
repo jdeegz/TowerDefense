@@ -15,6 +15,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
     [SerializeField] private GameObject m_treeBurnedVFX;
     [SerializeField] private GameObject m_treeShedVFX;
     [SerializeField] private GameObject m_treeFelledVFX;
+    [SerializeField] private GameObject m_rootsObj;
     [SerializeField] private List<GameObject> m_objectsToToggle; // Objects enabled if count > 1
     [SerializeField] private List<GameObject> m_resourceCountMaximumObjs; // Objects enabled if count == maximum
 
@@ -36,7 +37,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         m_resourcesRemaining = m_nodeData.m_maxResources;
         m_type = m_nodeData.m_resourceType;
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
-        m_treeRotation = transform.rotation; // Used for harvesting animations.
+        m_treeRotation = m_modelRoot.transform.rotation; // Used for harvesting animations.
         RandomResourceAmount();
     }
 
@@ -83,6 +84,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         if (newState == GameplayManager.GameplayState.PlaceObstacles)
         {
             GridCellOccupantUtil.SetOccupant(gameObject, true, 1, 1, this);
+            //CreepManager.Instance.AddCreepSource(Util.GetCellFrom3DPos(transform.position));
         }
     }
 
@@ -199,8 +201,8 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
         // Build and fire the Sequence
         m_curContactSequence = DOTween.Sequence();
-        m_curContactSequence.Append(transform.DORotateQuaternion(targetRotation, 0.075f))
-            .Append(transform.DORotateQuaternion(m_treeRotation, 0.1f))
+        m_curContactSequence.Append(m_modelRoot.transform.DORotateQuaternion(targetRotation, 0.075f))
+            .Append(m_modelRoot.transform.DORotateQuaternion(m_treeRotation, 0.1f))
             .OnComplete(() => { m_curContactSequence = null; });
     }
 
@@ -214,7 +216,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
 
         // Build and fire the Sequence
         m_curContactSequence = DOTween.Sequence();
-        m_curContactSequence.Append(transform.DORotateQuaternion(targetRotation, 1f).SetEase(Ease.InQuad))
+        m_curContactSequence.Append(m_modelRoot.transform.DORotateQuaternion(targetRotation, 1f).SetEase(Ease.InQuad))
             .OnComplete(() =>
             {
                 ObjectPoolManager.SpawnObject(m_treeFelledVFX, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
@@ -222,6 +224,13 @@ public class ResourceNode : MonoBehaviour, IResourceNode
                 m_modelRoot.SetActive(false);
                 Destroy(gameObject, 2f);
             });
+
+        if (m_rootsObj != null)
+        {
+            Vector3 endPos = m_rootsObj.transform.localPosition;
+            endPos.y = -0.5f;
+            m_curContactSequence.Join(m_rootsObj.transform.DOLocalMove(endPos, 0.25f));
+        }
     }
 
     public void RequestPlayAudio(AudioClip clip)
@@ -245,6 +254,7 @@ public class ResourceNode : MonoBehaviour, IResourceNode
         data.m_resourceNodeDescription = m_nodeData.m_resourceNodeDescription;
         data.m_maxResources = m_nodeData.m_maxResources;
         data.m_curResources = m_resourcesRemaining;
+        data.m_rewardsResources = m_nodeData.m_rewardsResources;
         return data;
     }
 
@@ -275,4 +285,5 @@ public class ResourceNodeTooltipData
     public string m_resourceNodeDescription;
     public int m_maxResources;
     public int m_curResources;
+    public bool m_rewardsResources;
 }

@@ -25,6 +25,7 @@ public class MissionTableController : MonoBehaviour
 
     [Header("Mission Buttons")]
     [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
+    public List<MissionButtonInteractable> MissionButtonList => m_missionButtonList;
 
     public static event Action<MissionButtonInteractable> OnMissionSelected;
 

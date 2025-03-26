@@ -25,8 +25,11 @@ public class CritterFlockController : MonoBehaviour
     [SerializeField] private float m_critterAlertMoveSpeed = 0.5f;
     [SerializeField] private float m_critterAlertRotationSpeed = 270f;
 
-    [Header("Debug")]
+    [Header("Colors")]
     [SerializeField] private Renderer m_renderer;
+    [SerializeField] private Gradient m_baseColorGradient;
+
+    [Header("Debug")]
     [SerializeField] private Color m_idleColor;
     [SerializeField] private Color m_eatingColor;
     [SerializeField] private Color m_rotatingColor;
@@ -73,7 +76,10 @@ public class CritterFlockController : MonoBehaviour
     void Start()
     {
         // Get components to edit later
+        m_renderer.material = new Material(m_renderer.material);
         m_material = m_renderer.material;
+        float t = Random.Range(0, 1f);
+        m_material.color = m_baseColorGradient.Evaluate(t);
         m_collider = GetComponent<Collider>();
 
         // Assign random starting look direction
@@ -184,12 +190,12 @@ public class CritterFlockController : MonoBehaviour
             switch (m_curState)
             {
                 case CritterState.Idle:
-                    m_material.color = m_idleColor;
+                    //m_material.color = m_idleColor;
                     yield return new WaitForSeconds(GetRandomDuration(m_critterIdleDuration));
                     ChooseNextAction();
                     break;
                 case CritterState.Eating:
-                    m_material.color = m_eatingColor;
+                    //m_material.color = m_eatingColor;
                     yield return new WaitForSeconds(GetRandomDuration(m_critterEatDuration));
                     ChooseNextAction();
                     break;
@@ -197,13 +203,13 @@ public class CritterFlockController : MonoBehaviour
                     ChooseNewTarget();
                     break;
                 case CritterState.Moving:
-                    m_material.color = m_isAlerted ? m_alertColor : m_movingColor;
+                    //m_material.color = m_isAlerted ? m_alertColor : m_movingColor;
                     yield return m_movementCoroutine = StartCoroutine(MoveToTarget());
                     m_isAlerted = false;
                     m_curState = CritterState.Eating;
                     break;
                 case CritterState.Rotating:
-                    m_material.color = m_rotatingColor;
+                    //m_material.color = m_rotatingColor;
                     yield return m_rotationCoroutine = StartCoroutine(RotateToTarget());
                     m_curState = CritterState.Moving;
                     break;

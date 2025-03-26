@@ -256,10 +256,19 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     private void CompleteTeleport()
     {
+        
         Vector3 arrivalPos = transform.position;
         arrivalPos.y = 0;
 
         transform.position = arrivalPos;
+        
+        Vector2Int direction = m_curCell.GetDirectionVector(m_curCell.m_directionToNextCell);
+        if (direction != Vector2Int.zero)
+        {
+            Vector3 lookDirection = new Vector3(direction.x, 0, direction.y);
+            Quaternion arrivalRot = Quaternion.LookRotation(lookDirection);
+            transform.rotation = arrivalRot;
+        }
 
         ObjectPoolManager.SpawnObject(m_enemyData.m_teleportArrivalVFX, m_targetPoint.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
 
