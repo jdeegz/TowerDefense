@@ -594,7 +594,7 @@ public class GathererController : MonoBehaviour
         {
             if (!m_isBlockedFromGoal && remainingCellDistance <= 1) // We're adjacent to the goal cell.
             {
-                float stoppingDistance = Vector2Int.Distance(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos) / 2 + 0.15f;
+                float stoppingDistance = Vector2Int.Distance(m_curCell.m_cellPos, CurrentGoalCell.m_cellPos) / 2 + 0.3f;
                 //Debug.Log($"We're in a cell adjacent the current goal. Distance to border: {distanceToGoalPoint}, Stopping Distance: {stoppingDistance}");
                 if (distanceToGoalPoint <= stoppingDistance && IsMoving) // We're on the border between the two cells.
                 {
