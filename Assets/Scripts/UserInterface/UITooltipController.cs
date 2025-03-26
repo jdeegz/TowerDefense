@@ -114,10 +114,10 @@ public class UITooltipController : MonoBehaviour
             return;
         }
 
-        // If I am holding alt, do not display tooltips. If a tooltip is active, hide it.
+        // Disabled tooltips while the interaction state is disabled (cutscenes, etc)
         if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.Disabled && GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.Setup)
         {
-            m_lastUISelectable = null; // Set these null so that when we release alt the tooltip reappears if there is one to show.
+            m_lastUISelectable = null;
             m_lastWorldSelectable = null;
             if (m_canvasGroup.alpha > 0) RequestShowTooltip(false);
             return;
@@ -142,12 +142,14 @@ public class UITooltipController : MonoBehaviour
             return;
         }
 
-        // I want to show a tooltip if I am hovering over an object, and it's not the same object as last frame.
-        if (m_curUISelectable != m_lastUISelectable)
+
+        if (!m_curUISelectable && !m_curWorldSelectable && m_canvasGroup.alpha > 0)
         {
-            // HandleShow a tooltip
-            if (m_curUISelectable) SetTooltipData(m_curUISelectable.m_selectedObjectType, m_curUISelectable.gameObject);
-            m_lastUISelectable = m_curUISelectable;
+            // Dont show a tooltip.
+            m_lastUISelectable = null;
+            m_lastWorldSelectable = null;
+            RequestShowTooltip(false);
+            return;
         }
 
         if (m_curWorldSelectable != m_lastWorldSelectable)
@@ -157,27 +159,47 @@ public class UITooltipController : MonoBehaviour
             m_lastWorldSelectable = m_curWorldSelectable;
         }
 
-        if (!m_curUISelectable && !m_curWorldSelectable)
+        // I want to show a tooltip if I am hovering over an object, and it's not the same object as last frame.
+        if (m_curUISelectable != m_lastUISelectable)
         {
-            // Dont show a tooltip.
-            m_lastUISelectable = null;
-            m_lastWorldSelectable = null;
-            RequestShowTooltip(false);
+            // HandleShow a tooltip
+            if (m_curUISelectable) SetTooltipData(m_curUISelectable.m_selectedObjectType, m_curUISelectable.gameObject);
+            m_lastUISelectable = m_curUISelectable;
         }
     }
 
     public void SetUISelectable(Selectable selectable)
     {
+        if (m_curUISelectable == selectable) return;
+        if (selectable != null)
+        {
+            Debug.Log($"{selectable} Set.");
+        }
+        else
+        {
+            Debug.Log($"{m_curUISelectable} Unset.");
+        }
+
         m_curUISelectable = selectable;
     }
 
     public void SetWorldSelectable(Selectable selectable)
     {
+        if (m_curWorldSelectable == selectable) return;
+        if (selectable != null)
+        {
+            Debug.Log($"{selectable} Set.");
+        }
+        else
+        {
+            Debug.Log($"{m_curWorldSelectable} Unset.");
+        }
         m_curWorldSelectable = selectable;
     }
 
     public void SetTooltipData(Selectable.SelectedObjectType type, GameObject hoveredObj)
     {
+        Debug.Log($"Setting Tooltip Data for: {hoveredObj}, type of {type}");
         switch (type)
         {
             case Selectable.SelectedObjectType.ResourceWood:
@@ -307,6 +329,15 @@ public class UITooltipController : MonoBehaviour
 
     void RequestShowTooltip(bool show)
     {
+        if (show)
+        {
+            Debug.Log($"Request Show Tooltip.");
+        }
+        else
+        {
+            Debug.Log($"Request Hide Tooltip.");
+        }
+
         if (m_supressToolTips) return;
         if (m_curTween != null) m_curTween.Kill();
         m_canvasGroup.alpha = 0;
