@@ -41,7 +41,7 @@ public class GameplayManager : MonoBehaviour
     public static event Action<List<Cell>> OnPreconBuildingMoved;
     public static event Action OnPreconBuildingClear;
     public static event Action<TowerData, GameObject> OnTowerBuild;
-    public static event Action OnTowerSell;
+    public static event Action<TowerData> OnStructureSold;
     public static event Action OnTowerUpgrade;
     public static event Action<int, int> OnObelisksCharged;
     public static event Action<int, int> OnObeliskAdded;
@@ -1728,8 +1728,9 @@ public class GameplayManager : MonoBehaviour
     public void SellTower(Tower tower, int stoneValue, int woodValue)
     {
         //Configure Grid
-        GridCellOccupantUtil.SetOccupant(tower.gameObject, false, 1, 1);
-
+        TowerData towerData = tower.GetTowerData();
+        GridCellOccupantUtil.SetOccupant(tower.gameObject, false, towerData.m_buildingSize.x, towerData.m_buildingSize.y);
+        
         //Clean up actor list
         if (tower is TowerBlueprint)
         {
@@ -1741,9 +1742,9 @@ public class GameplayManager : MonoBehaviour
         }
 
         //Handle Quantity
-        TowerData towerData = tower.GetTowerData();
         if (m_unlockedStructures.ContainsKey(towerData))
         {
+            OnStructureSold?.Invoke(towerData); // Tells UI To update quantity display.
             m_unlockedStructures[towerData] += 1;
         }
 
@@ -1766,9 +1767,6 @@ public class GameplayManager : MonoBehaviour
             m_curSelectable = null;
             UpdateInteractionState(InteractionState.Idle);
         }
-
-        //Let rest of game know of new tower.
-        OnTowerSell?.Invoke();
     }
 
     public void UpgradeTower(Tower oldTower, TowerData newTowerData, int stoneValue, int woodValue)

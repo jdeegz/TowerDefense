@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class TowerBlacksmith : Tower
 {
+    
     void Start()
     {
         
@@ -24,8 +25,19 @@ public class TowerBlacksmith : Tower
     {
         foreach (GathererController gathererController in GameplayManager.Instance.m_woodGathererList)
         {
-            gathererController.RequestIncrementGathererLevel(1);
+            gathererController.RequestUpdateGathererLevel(1);
         }
+    }
+
+    public override void RemoveTower()
+    {
+        //De-level the gatherers.
+        foreach (GathererController gathererController in GameplayManager.Instance.m_woodGathererList)
+        {
+            gathererController.RequestUpdateGathererLevel(-1);
+        }
+        
+        base.RemoveTower();
     }
 
     public override TowerTooltipData GetTooltipData()

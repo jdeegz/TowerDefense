@@ -84,12 +84,19 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
         GameplayManager.OnGameObjectDeselected += GameObjectDeselected;
         GameplayManager.OnTowerBuild += TowerBuilt;
+        GameplayManager.OnStructureSold += StructureSold;
         CheckStoneCost(ResourceManager.Instance.GetStoneAmount(), 0);
         CheckWoodCost(ResourceManager.Instance.GetWoodAmount(), 0);
 
         m_button.onClick.AddListener(SelectTowerButton);
         m_costLabelUIEffect = m_towerCost.GetComponent<UIEffect>();
         m_qtyLabelUIEffect = m_towerQTY.GetComponent<UIEffect>();
+    }
+
+    private void StructureSold(TowerData towerData)
+    {
+        if (towerData != m_towerData) return;
+        ++Quantity;
     }
 
     private void TowerBuilt(TowerData towerData, GameObject newTowerObj)
@@ -180,6 +187,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         GameplayManager.OnGameObjectSelected -= GameObjectSelected;
         GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
         GameplayManager.OnTowerBuild -= TowerBuilt;
+        GameplayManager.OnStructureSold -= StructureSold;
     }
 
     private bool m_isHovered;
@@ -215,7 +223,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void UpdateQuantity(int i)
     {
         Quantity += i;
-        //Debug.Log($"{m_towerData.m_towerName}'s button now has {Quantity}.");
+        Debug.Log($"{m_towerData.m_towerName}'s button now has {Quantity}.");
     }
 
     private void GameObjectSelected(GameObject obj)

@@ -27,12 +27,12 @@ public class TowerShrine : Tower
     
     void TriggerShrine()
     {
-        //TO-DO change these fields so that they use TowerData rather than a specific new data type.
-        /*m_maxCharges = m_data.m_maxCharges;
-        m_chargesPerInterval = m_data.m_chargesPerInterval;
-        m_intervalLength = m_data.m_intervalLength;
-        m_burstIntervalLength = m_data.m_burstIntervalLength;*/
         
+    }
+
+    void Start()
+    {
+        // Moved these out of Trigger Shrine so that I can sell this building and NOT reset the timers when we build it again.
         m_maxCharges = (int)m_towerData.m_secondaryfireRate;
         m_chargesPerInterval = (int)m_towerData.m_burstSize;
         m_intervalLength = m_towerData.m_fireRate;
@@ -40,7 +40,6 @@ public class TowerShrine : Tower
 
         //Adding a 5s delay. If you build, click the gems, sell, then build again you can get a lot of harvest speed for the delta between build and sell costs.
         m_intervalElapsedTime = m_intervalLength - 5f; // I think 1.5f is the delay between starting the shrine and spawning orbs so its not immediately on placement.
-        
     }
 
     void Update()

@@ -281,11 +281,21 @@ public class GathererController : MonoBehaviour
         }
     }
 
-    public void RequestIncrementGathererLevel(int i)
+    public void RequestUpdateGathererLevel(int i)
     {
-        IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
         GathererLevel += i;
-        RequestPlayAudio(m_gathererData.m_levelUpClip);
+
+        if (i > 0)
+        {
+            // Gatherer gained a level.
+            IngameUIController.Instance.SpawnLevelUpAlert(gameObject, transform.position);
+            RequestPlayAudio(m_gathererData.m_levelUpClip);
+        }
+        else
+        {
+            // Gatherer lost a level.
+            IngameUIController.Instance.SpawnLevelLostAlert(gameObject, transform.position);
+        }
     }
 
     void Start()

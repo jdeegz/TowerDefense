@@ -15,7 +15,7 @@ public class RuinArtifact : Ruin
 
     public override void GathererArrivedAtRuin(GathererController gathererController)
     {
-        gathererController.RequestIncrementGathererLevel(1);
+        gathererController.RequestUpdateGathererLevel(1);
     }
 
     void Awake()

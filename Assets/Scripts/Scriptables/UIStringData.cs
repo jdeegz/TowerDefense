@@ -10,6 +10,7 @@ public class UIStringData : ScriptableObject
     public string m_cannotAfford;
     public string m_cannotPlace;
     public string m_gathererLevelUp;
+    public string m_gathererLevelLost = "-1 Level";
     public string m_gathererIdle;
     public string m_displayHighScore;
     public string m_newHighScoreDisplay;

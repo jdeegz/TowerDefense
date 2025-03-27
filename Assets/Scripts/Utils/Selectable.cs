@@ -76,7 +76,7 @@ public class Selectable : MonoBehaviour
             
             ToggleSelectionOutline(true);
 
-            if (m_selectedObjectType == SelectedObjectType.Tower && GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.SelectedTower)
+            if (GameplayManager.Instance.m_interactionState == GameplayManager.InteractionState.SelectedTower)
             {
                 IngameUIController.Instance.m_towerSelectHUD.SelectTower(obj);
             }

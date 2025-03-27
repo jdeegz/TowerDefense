@@ -21,6 +21,7 @@ public class IngameUIController : MonoBehaviour
     public UIAlert m_currencyAlert;
     public UIAlert m_critCurrencyAlert;
     public UIAlert m_levelUpAlert;
+    public UIAlert m_levelLostAlert;
     public UIAlert m_gathererIdleAlert;
     public UIAlert m_ruinAlert;
     public RectTransform m_healthMeterBossRect;
@@ -128,7 +129,16 @@ public class IngameUIController : MonoBehaviour
         Vector2 screenPos = GetScreenPosition(worldPos);
         alert.SetLabelText($"{alertString}", m_levelUpColor);
         alert.SetupAlert(screenPos);
+    }
+    
+    public void SpawnLevelLostAlert(GameObject obj, Vector3 worldPos)
+    {
+        string alertString = string.Format(m_uiStringData.m_gathererLevelLost, obj.name);
         
+        UIAlert alert = Instantiate(m_currencyAlert, transform);
+        Vector2 screenPos = GetScreenPosition(worldPos);
+        alert.SetLabelText($"{alertString}", m_currencyBadcolor);
+        alert.SetupAlert(screenPos);
     }
     
     public void SpawnRuinDiscoveredAlert(Vector3 worldPos, string unlockableName, int requirementTotal, int requirementsMet)
