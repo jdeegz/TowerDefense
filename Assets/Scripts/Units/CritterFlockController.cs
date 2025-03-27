@@ -76,10 +76,15 @@ public class CritterFlockController : MonoBehaviour
     void Start()
     {
         // Get components to edit later
-        m_renderer.material = new Material(m_renderer.material);
         m_material = m_renderer.material;
+        
+        MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
+        
         float t = Random.Range(0, 1f);
         m_material.color = m_baseColorGradient.Evaluate(t);
+        materialPropertyBlock.SetColor("_Color", m_baseColorGradient.Evaluate(t));
+        m_renderer.SetPropertyBlock(materialPropertyBlock);
+        
         m_collider = GetComponent<Collider>();
 
         // Assign random starting look direction

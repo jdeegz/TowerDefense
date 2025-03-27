@@ -336,7 +336,7 @@ public class MissionSaveData
     public int m_missionAttempts;
     public int m_waveHighScore;
     public int m_perfectWaveScore;
-    public int m_missionCompletionRank;
+    public int m_missionCompletionRank; // 0 - Locked, 1 - Unbeaten, 2 - Defeated, 3 - ??
 
     public MissionSaveData(string sceneName, int attempts, int highScore, int completionRank, int perfectWaveScore)
     {

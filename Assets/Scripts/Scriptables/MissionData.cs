@@ -11,7 +11,8 @@ public class MissionData : ScriptableObject
     
     //Used in Menus
     [Header("Menu Data")]
-    public string m_missionName;
+    public string m_missionID; // Code Facing
+    public string m_missionName; // Player Facing
     public string m_missionDescription;
     public Sprite m_missionSprite;
     public int m_missionPlacement = 000;

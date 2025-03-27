@@ -75,6 +75,7 @@ public class GameplayManager : MonoBehaviour
     public AudioSource m_audioSource;
 
     private int m_wave;
+
     public int Wave
     {
         get { return m_wave; }
@@ -90,7 +91,7 @@ public class GameplayManager : MonoBehaviour
     private float m_totalTime;
     private int m_minute;
     public int Minute => m_minute;
-    
+
     [HideInInspector] public float m_timeToNextWave;
     [HideInInspector] public bool delayForQuest;
 
@@ -487,7 +488,13 @@ public class GameplayManager : MonoBehaviour
 
     void StartMission()
     {
+        Debug.Log($"Mission Started.");
+        
         m_totalTime = 0;
+        
+        m_missionStartTime = Time.time;
+        Invoke(nameof(SendSteamMissionStartedInfo), m_minimumMissionLength);
+        
         UpdateGameplayState(GameplayState.Build);
         ResourceManager.Instance.StartDepositTimer();
     }
@@ -941,11 +948,13 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
+                SendSteamCompletionInfo();
                 HandleMissionProgression();
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, Wave, m_perfectWavesCompleted);
                 HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
+                SendSteamCompletionInfo();
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0, 0);
                 HandleDefeatSequence();
                 break;
@@ -954,6 +963,89 @@ public class GameplayManager : MonoBehaviour
         }
 
         OnGameplayStateChanged?.Invoke(newState);
+    }
+
+    private float m_missionStartTime;
+    private float m_minimumMissionLength = 60;
+
+    // When the mission starts, tell steam that this mission has been attempted.
+    private void SendSteamMissionStartedInfo()
+    {
+        //Did the mission last at least N seconds? We want to weed out short sessions.
+        //Increment "_Started" for this mission stat.
+        if (GameManager.Instance == null)
+        {
+            Debug.Log($"No Game Manager. Not updating Steam Stats.");
+            return;
+        }
+
+        string missionID = GameManager.Instance.m_curMission.m_missionID;
+
+        Debug.Log($"SteamStats: Attempting to increment {missionID}_Started");
+        
+        SteamStatsManager.IncrementStat(missionID + "_Started"); // Result
+    }
+
+    // When a mission is completed, determine the state of completion.
+    private void SendSteamCompletionInfo()
+    {
+        if (GameManager.Instance == null)
+        {
+            Debug.Log($"SendSteamStats: No Game Manager. Not updating Steam Stats.");
+            return;
+        }
+        
+        float missionDuration = Time.time - m_missionStartTime;
+        if (missionDuration < m_minimumMissionLength)
+        {
+            Debug.Log($"SendSteamStats: Mission Length of {missionDuration} seconds not valid.");
+            return;
+        }
+        
+        Debug.Log($"SendSteamStats: Begin Sending Steam Stats.");
+
+        // Race condition, im not sure if the curMissionSaveData is already updated before this function fires. Maybe send a copy to this function?
+        string missionID = GameManager.Instance.m_curMission.m_missionID;
+
+        // This chunk will only log victories and defeats until a mission is defeated.
+        if (m_gameplayState == GameplayState.Victory && m_curMissionSaveData.m_missionCompletionRank == 1) // If we won, and the mission is previously unbeaten.
+        {
+            // _WonCount
+            SteamStatsManager.IncrementStat(missionID + "_WonCount");
+            // _WavesToWin
+            SteamStatsManager.SetStat(missionID + "_WavesToWin", Wave);
+            // _TimeToWin
+            SteamStatsManager.SetStat(missionID + "_TimeToWin", m_missionStartTime - Time.time);
+            // _AttemptsToWin
+            SteamStatsManager.SetStat(missionID + "_AttemptsToWin", m_curMissionSaveData.m_missionAttempts);
+        }
+        else if (m_gameplayState == GameplayState.Defeat && m_curMissionSaveData.m_missionCompletionRank == 1)
+        {
+            // _LostCount
+            SteamStatsManager.IncrementStat(missionID + "_LostCount");
+            // _WavesToLose
+            SteamStatsManager.SetStat(missionID + "_WavesToLose", Wave);
+            // _TimeToLose
+            SteamStatsManager.SetStat(missionID + "_TimeToLose", m_missionStartTime - Time.time);
+        }
+
+        // Endless ends when the spire is destroyed, and is always a victory.
+        if (m_endlessModeActive)
+        {
+            if (m_curMissionSaveData.m_waveHighScore < Wave)
+            {
+                SteamStatsManager.SetStat(missionID + "_WaveHighScore", Wave);
+                
+                SteamStatsManager.SetStat(missionID + "_TimeToWinEndless", m_missionStartTime - Time.time);
+            }
+
+            if (m_curMissionSaveData.m_perfectWaveScore < m_perfectWavesCompleted)
+            {
+                SteamStatsManager.SetStat(missionID + "_PerfectWavesCompleted", m_perfectWavesCompleted);
+            }
+        }
+
+        Debug.Log($"SendSteamStats: Completed Sending Steam Stats.");
     }
 
     private void ResetWaveCompleteValues()
@@ -1730,7 +1822,7 @@ public class GameplayManager : MonoBehaviour
         //Configure Grid
         TowerData towerData = tower.GetTowerData();
         GridCellOccupantUtil.SetOccupant(tower.gameObject, false, towerData.m_buildingSize.x, towerData.m_buildingSize.y);
-        
+
         //Clean up actor list
         if (tower is TowerBlueprint)
         {
@@ -2082,7 +2174,7 @@ public class GameplayManager : MonoBehaviour
             Debug.Log($"{obelisk.gameObject.name} beam activated.");
             obelisk.HandleSpireBeamVFX(false);
         }
-        
+
         // Disable Spire Beam.
         m_castleController.HandleSpireBeamVFX(false);
 
@@ -2090,7 +2182,7 @@ public class GameplayManager : MonoBehaviour
         {
             gatherer.ResumeGatherer();
         }
-        
+
         // Audio
         RequestPlayAudio(m_gameplayAudioData.m_endlessModeStartedClip);
 
