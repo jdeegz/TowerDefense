@@ -27,8 +27,8 @@ public class WaveDataGenerator : ScriptableObject
     {
         if (!IsInputValid()) return;
         List<CreepWave> introWaves = GenerateIntroWaveDataStatic(m_introEnemyDatas, m_introWaveCount, m_delayFactor, m_spawnInterval);
-        List<CreepWave> loopingWaves = GenerateLoopingWaveDataStatic(m_loopingEnemyDatas, m_loopingWaveCount, 200, 210, m_delayFactor, m_spawnInterval);
-        List<CreepWave> challengingWaves = GenerateLoopingWaveDataStatic(m_challengingEnemyDatas, m_challengingWaveCount, 250, 260, m_delayFactor, m_spawnInterval);
+        List<CreepWave> loopingWaves = GenerateLoopingWaveDataStatic(m_loopingEnemyDatas, m_loopingWaveCount, 190, 210, m_delayFactor, m_spawnInterval);
+        List<CreepWave> challengingWaves = GenerateLoopingWaveDataStatic(m_challengingEnemyDatas, m_challengingWaveCount, 240, 260, m_delayFactor, m_spawnInterval);
         GenerateWaveDataAsset(introWaves, loopingWaves, challengingWaves);
     }
 
@@ -208,8 +208,8 @@ public class WaveDataGenerator : ScriptableObject
         for (int i = 0; i < waveCount; i++)
         {
             
-            int targetMin = (i + 1) * 14;
-            int targetMax = targetMin + 14;
+            int targetMin = (i + 1) * (200 / waveCount);
+            int targetMax = targetMin + (200 / waveCount);
             creepWaves.Add(GenerateCreepWave(enemyDatas, targetMin, targetMax));
         }
 
