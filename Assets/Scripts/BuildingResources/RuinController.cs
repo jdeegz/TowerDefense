@@ -84,8 +84,8 @@ public class RuinController : MonoBehaviour
 
         if (unlockProgress.m_isUnlocked)
         {
-            TowerData rewardData = unlockableData.GetRewardData().GetReward();
-            UIPopupManager.Instance.ShowPopup<UITowerUnlockedPopup>("TowerUnlocked", rewardData);
+            TowerData towerData = unlockableData.GetRewardData().GetReward();
+            UIPopupManager.Instance.ShowPopup<UITowerUnlockedPopup>("TowerUnlocked", towerData);
         }
         else
         {

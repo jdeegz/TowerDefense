@@ -48,13 +48,14 @@ public class UIPopupManager : MonoBehaviour
         {
             return popup as T;
         }
+        
+        popup.HandleShow();
 
         if (popup is IDataPopup dataPopup)
         {
             dataPopup.SetData(data);
         }
 
-        popup.HandleShow();
         m_activePopups.Add(popup);
 
         if (popup.PausesGame) PauseGameplay();

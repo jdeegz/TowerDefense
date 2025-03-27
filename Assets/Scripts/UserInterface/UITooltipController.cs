@@ -171,14 +171,14 @@ public class UITooltipController : MonoBehaviour
     public void SetUISelectable(Selectable selectable)
     {
         if (m_curUISelectable == selectable) return;
-        if (selectable != null)
+        /*if (selectable != null)
         {
             Debug.Log($"{selectable} Set.");
         }
         else
         {
             Debug.Log($"{m_curUISelectable} Unset.");
-        }
+        }*/
 
         m_curUISelectable = selectable;
     }
@@ -186,20 +186,20 @@ public class UITooltipController : MonoBehaviour
     public void SetWorldSelectable(Selectable selectable)
     {
         if (m_curWorldSelectable == selectable) return;
-        if (selectable != null)
+        /*if (selectable != null)
         {
             Debug.Log($"{selectable} Set.");
         }
         else
         {
             Debug.Log($"{m_curWorldSelectable} Unset.");
-        }
+        }*/
         m_curWorldSelectable = selectable;
     }
 
     public void SetTooltipData(Selectable.SelectedObjectType type, GameObject hoveredObj)
     {
-        Debug.Log($"Setting Tooltip Data for: {hoveredObj}, type of {type}");
+        //Debug.Log($"Setting Tooltip Data for: {hoveredObj}, type of {type}");
         switch (type)
         {
             case Selectable.SelectedObjectType.ResourceWood:
@@ -329,14 +329,15 @@ public class UITooltipController : MonoBehaviour
 
     void RequestShowTooltip(bool show)
     {
-        if (show)
+        /*if (show)
+        /*if (show)
         {
             Debug.Log($"Request Show Tooltip.");
         }
         else
         {
             Debug.Log($"Request Hide Tooltip.");
-        }
+        }*/
 
         if (m_supressToolTips) return;
         if (m_curTween != null) m_curTween.Kill();

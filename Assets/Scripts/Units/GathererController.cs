@@ -726,6 +726,18 @@ public class GathererController : MonoBehaviour
         RequestedIdle();
     }
 
+    public void PauseGatherer()
+    {
+        m_animator.speed = 0;
+        enabled = false;
+    }
+
+    public void ResumeGatherer()
+    {
+        enabled = true;
+        m_animator.speed = 1;
+    }
+
     public void Contact()
     {
         if (m_curHarvestNode != null)

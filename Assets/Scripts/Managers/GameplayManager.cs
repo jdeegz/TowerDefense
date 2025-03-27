@@ -2082,10 +2082,15 @@ public class GameplayManager : MonoBehaviour
             Debug.Log($"{obelisk.gameObject.name} beam activated.");
             obelisk.HandleSpireBeamVFX(false);
         }
-
+        
         // Disable Spire Beam.
         m_castleController.HandleSpireBeamVFX(false);
 
+        foreach (GathererController gatherer in m_woodGathererList)
+        {
+            gatherer.ResumeGatherer();
+        }
+        
         // Audio
         RequestPlayAudio(m_gameplayAudioData.m_endlessModeStartedClip);
 
@@ -2296,7 +2301,7 @@ public class GameplayManager : MonoBehaviour
         // Idle the gatherers
         foreach (GathererController gatherer in m_woodGathererList)
         {
-            gatherer.ReturnToIdle();
+            gatherer.PauseGatherer();
         }
 
         // Deactivate Spawners
@@ -2372,7 +2377,7 @@ public class GameplayManager : MonoBehaviour
         // Idle the gatherers
         foreach (GathererController gatherer in m_woodGathererList)
         {
-            gatherer.ReturnToIdle();
+            gatherer.PauseGatherer();
         }
 
         // Disable Living enemies.

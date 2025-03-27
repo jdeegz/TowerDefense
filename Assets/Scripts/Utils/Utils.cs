@@ -6,6 +6,7 @@ using System.Linq;
 using Coffee.UIEffects;
 using JetBrains.Annotations;
 using PlayFab.MultiplayerModels;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public static class Util
@@ -52,6 +53,21 @@ public static class Util
         }
 
         return result;
+    }
+
+    public static IEnumerator RebuildCoroutine(RectTransform rectTransform)
+    {
+        yield return null; // Wait one frame
+        
+        var contentSizeFitter = rectTransform.GetComponent<ContentSizeFitter>();
+        if (contentSizeFitter != null)
+        {
+            contentSizeFitter.enabled = false;
+            yield return null; // Wait another frame
+            contentSizeFitter.enabled = true;
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
     }
 
     public static bool IsAdjacentDiagonal(Vector2Int cellA, Vector2Int cellB)
