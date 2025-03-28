@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Steamworks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
@@ -59,6 +60,31 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         UpdateGameState(GameState.Initialize);
+
+        CheckAndAwardPlaytesterStat();
+    }
+
+    private void CheckAndAwardPlaytesterStat()
+    {
+        string statName = "PlaytesterStat";
+        string achievementName = "Playtester";
+        bool hasStat = SteamUserStats.GetStat(statName, out int statValue);
+
+        SteamUserStats.RequestUserStats(SteamUser.GetSteamID());
+        
+        if (hasStat && statValue == 0)
+        {
+            SteamStatsManager.SetStat(statName, 1);
+            SteamStatsManager.SetAchievement(achievementName);
+        }
+        else if (!hasStat)
+        {
+            Debug.Log("Playtester Stat does not exist.");
+        }
+        else if (statValue == 1)
+        {
+            Debug.Log("Playtester Achievement has already been awarded.");
+        }
     }
 
     private void HandleInitialize()
@@ -70,7 +96,7 @@ public class GameManager : MonoBehaviour
     {
         if (Time.time - m_lastRequestTime < m_requestCooldown) return;
         m_lastRequestTime = Time.time;
-        
+
         Time.timeScale = 1.0f;
         if (sceneName == m_curScene)
         {
@@ -92,7 +118,7 @@ public class GameManager : MonoBehaviour
         String sceneName = SceneManager.GetActiveScene().name;
         m_loadingTransitionController.TransitionStart(sceneName, () => StartChangeScene(sceneName));
     }
-    
+
     private IEnumerator ChangeSceneAsync(String newScene, MenuManager.MenuState? menuState)
     {
         if (m_curScene != null)
@@ -119,14 +145,14 @@ public class GameManager : MonoBehaviour
         {
             MenuManager.Instance.UpdateMenuState(menuState.Value);
         }
-        
+
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
         m_loadingTransitionController.TransitionEnd();
     }
 
     private float m_lastRequestTime = -1f;
     private float m_requestCooldown = 0.1f;
-    
+
     //START CUTSCENE MANAGEMENT
     //ADD SCENE
     public void RequestAdditiveSceneLoad(String sceneName)
@@ -152,11 +178,11 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"Cut Scene: Loading {sceneName} Complete.");
-        
+
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curCutScene));
-        
+
         Debug.Log($"Cut Scene: {sceneName} Now the active scene.");
-        
+
         m_cutSceneTransitionController.TransitionEnd(); //Reveal new scene
     }
 
@@ -184,12 +210,12 @@ public class GameManager : MonoBehaviour
         }
 
         Debug.Log($"Cut Scene: Unloading {sceneName} Complete.");
-        
+
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(m_curScene));
-        
+
         Debug.Log($"Cut Scene: {SceneManager.GetActiveScene().name} Now the active scene.");
         m_cutSceneTransitionController.TransitionEnd(); //Reveal new scene
-        
+
         GameplayManager.Instance.DoneWatchingLeaveCutScene(); //Return to our last gameplay state.
     }
     //END CUTSCENE MANAGEMENT

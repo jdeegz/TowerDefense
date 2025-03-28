@@ -1003,40 +1003,43 @@ public class GameplayManager : MonoBehaviour
         }
         
         Debug.Log($"SendSteamStats: Begin Sending Steam Stats.");
+        Debug.Log($"SendSteamStats: Current state: {m_gameplayState}, and Mission Completion Rank: {m_curMissionSaveData.m_missionCompletionRank}.");
 
         // Race condition, im not sure if the curMissionSaveData is already updated before this function fires. Maybe send a copy to this function?
         string missionID = GameManager.Instance.m_curMission.m_missionID;
 
         // This chunk will only log victories and defeats until a mission is defeated.
-        if (m_gameplayState == GameplayState.Victory && m_curMissionSaveData.m_missionCompletionRank == 1) // If we won, and the mission is previously unbeaten.
+        // && m_curMissionSaveData.m_missionCompletionRank == 1
+        if (m_gameplayState == GameplayState.Victory) // If we won, and the mission is previously unbeaten.
         {
             // _WonCount
             SteamStatsManager.IncrementStat(missionID + "_WonCount");
             // _WavesToWin
             SteamStatsManager.SetStat(missionID + "_WavesToWin", Wave);
             // _TimeToWin
-            SteamStatsManager.SetStat(missionID + "_TimeToWin", m_missionStartTime - Time.time);
+            SteamStatsManager.SetStat(missionID + "_TimeToWin", Time.time - m_missionStartTime);
             // _AttemptsToWin
             SteamStatsManager.SetStat(missionID + "_AttemptsToWin", m_curMissionSaveData.m_missionAttempts);
         }
-        else if (m_gameplayState == GameplayState.Defeat && m_curMissionSaveData.m_missionCompletionRank == 1)
+        else if (m_gameplayState == GameplayState.Defeat)
         {
             // _LostCount
             SteamStatsManager.IncrementStat(missionID + "_LostCount");
             // _WavesToLose
             SteamStatsManager.SetStat(missionID + "_WavesToLose", Wave);
             // _TimeToLose
-            SteamStatsManager.SetStat(missionID + "_TimeToLose", m_missionStartTime - Time.time);
+            SteamStatsManager.SetStat(missionID + "_TimeToLose", Time.time - m_missionStartTime);
         }
 
         // Endless ends when the spire is destroyed, and is always a victory.
+        Debug.Log($"SendSteamStats: Is Endless : {m_endlessModeActive}");
         if (m_endlessModeActive)
         {
             if (m_curMissionSaveData.m_waveHighScore < Wave)
             {
                 SteamStatsManager.SetStat(missionID + "_WaveHighScore", Wave);
                 
-                SteamStatsManager.SetStat(missionID + "_TimeToWinEndless", m_missionStartTime - Time.time);
+                SteamStatsManager.SetStat(missionID + "_TimeToWinEndless", Time.time - m_missionStartTime);
             }
 
             if (m_curMissionSaveData.m_perfectWaveScore < m_perfectWavesCompleted)

@@ -3,6 +3,18 @@ using UnityEngine;
 
 public static class SteamStatsManager
 {
+    public static void DecrementStat(string statName)
+    {
+        if (!SteamManager.Initialized) return;
+
+        int currentValue = 0;
+        SteamUserStats.GetStat(statName, out currentValue);
+        SteamUserStats.SetStat(statName, currentValue - 1);
+        SteamUserStats.StoreStats();
+
+        Debug.Log($"SteamStatsManager: {statName} decremented from {currentValue} to {currentValue - 1}.");
+    }
+    
     public static void IncrementStat(string statName)
     {
         if (!SteamManager.Initialized) return;
@@ -15,17 +27,6 @@ public static class SteamStatsManager
         Debug.Log($"SteamStatsManager: {statName} incremented from {currentValue} to {currentValue + 1}.");
     }
 
-    public static void DecrementStat(string statName)
-    {
-        if (!SteamManager.Initialized) return;
-
-        int currentValue = 0;
-        SteamUserStats.GetStat(statName, out currentValue);
-        SteamUserStats.SetStat(statName, currentValue - 1);
-        SteamUserStats.StoreStats();
-
-        Debug.Log($"SteamStatsManager: {statName} decremented from {currentValue} to {currentValue - 1}.");
-    }
 
     public static void SetStat(string statName, int value)
     {
@@ -56,5 +57,13 @@ public static class SteamStatsManager
         Debug.Log($"SteamStatsManager: {statName} recieved. Value of {value}.");
 
         return value;
+    }
+
+    public static void SetAchievement(string achievementName)
+    {
+        SteamUserStats.SetAchievement(achievementName);
+        SteamUserStats.StoreStats();
+        
+        Debug.Log($"SteamStatsManager: {achievementName} achievement earned.");
     }
 }

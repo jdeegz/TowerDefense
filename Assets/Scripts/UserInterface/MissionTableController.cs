@@ -163,12 +163,14 @@ public class MissionTableController : MonoBehaviour
                 m_startedOnUI = false;
             }
 
-            Plane plane = new Plane(Vector3.up, m_rotationRoot.position);
+            Vector3 pos = m_rotationRoot.position;
+            pos.y += 4f;
+            Plane plane = new Plane(Vector3.up, pos);
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (plane.Raycast(ray, out float entry))
             {
                 m_dragStartPosition = ray.GetPoint(entry);
-                m_dragStartDirection = (m_rotationRoot.position - m_dragStartPosition).normalized;
+                m_dragStartDirection = (pos - m_dragStartPosition).normalized;
                 m_initialYRotation = m_targetYRotation;
                 m_isDragging = true;
                 m_draggedDistance = 0f;
@@ -178,12 +180,14 @@ public class MissionTableController : MonoBehaviour
 
         if (Input.GetMouseButton(0) && !m_startedOnUI)
         {
-            Plane plane = new Plane(Vector3.up, m_rotationRoot.position);
+            Vector3 pos = m_rotationRoot.position;
+            pos.y += 4f;
+            Plane plane = new Plane(Vector3.up, pos);
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (plane.Raycast(ray, out float entry))
             {
                 Vector3 dragCurrentPosition = ray.GetPoint(entry);
-                Vector3 currentDirection = (m_rotationRoot.position - dragCurrentPosition).normalized;
+                Vector3 currentDirection = (pos - dragCurrentPosition).normalized;
                 m_draggedDistance += Vector3.Distance(m_dragStartPosition, dragCurrentPosition);
 
                 float angleOffset = Vector3.SignedAngle(m_dragStartDirection, currentDirection, Vector3.up);
