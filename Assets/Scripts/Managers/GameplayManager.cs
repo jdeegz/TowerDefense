@@ -493,7 +493,7 @@ public class GameplayManager : MonoBehaviour
         m_totalTime = 0;
         
         m_missionStartTime = Time.time;
-        Invoke(nameof(SendSteamMissionStartedInfo), m_minimumMissionLength);
+        //Invoke(nameof(SendSteamMissionStartedInfo), m_minimumMissionLength);
         
         UpdateGameplayState(GameplayState.Build);
         ResourceManager.Instance.StartDepositTimer();
@@ -948,13 +948,13 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                SendSteamCompletionInfo();
+                //SendSteamCompletionInfo();
                 HandleMissionProgression();
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, Wave, m_perfectWavesCompleted);
                 HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
-                SendSteamCompletionInfo();
+                //SendSteamCompletionInfo();
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0, 0);
                 HandleDefeatSequence();
                 break;

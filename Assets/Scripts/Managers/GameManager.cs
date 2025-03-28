@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
     {
         UpdateGameState(GameState.Initialize);
 
-        CheckAndAwardPlaytesterStat();
+        //CheckAndAwardPlaytesterStat();
     }
 
     private void CheckAndAwardPlaytesterStat()

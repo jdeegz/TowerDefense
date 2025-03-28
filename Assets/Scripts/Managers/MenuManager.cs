@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using PlayFab;
 using UnityEngine;
 
 public class MenuManager : MonoBehaviour
