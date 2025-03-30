@@ -570,13 +570,22 @@ public class GathererController : MonoBehaviour
             Vector3 directionToOther = transform.position - other.transform.position;
             float distance = directionToOther.magnitude;
 
-            // Avoidance strength smoothly decreases as they move apart
-            float avoidanceStrength = Mathf.Clamp(2.0f / (distance * distance), 0, 1);
-
+            float maxAvoidDistance = 2f;
+            float avoidanceStrength = Mathf.Clamp01(1 - (distance / maxAvoidDistance));
+            
             // Apply a smoothing effect to avoid sudden jumps
-            m_avoidanceDirection = Vector3.Lerp(m_avoidanceDirection, directionToOther.normalized * avoidanceStrength, 0.2f);
+            
+            Vector3 noise = new Vector3(
+                Random.Range(-0.1f, 0.1f), 
+                0, 
+                Random.Range(-0.1f, 0.1f)
+            );
+            
+            m_avoidanceDirection = Vector3.Lerp(m_avoidanceDirection, (directionToOther.normalized + noise) * avoidanceStrength, 0.2f);
+            
+            //Debug.DrawLine(transform.position, transform.position + m_avoidanceDirection * 2, Color.red, 0.5f);
         
-            Debug.Log($"{name} Trigger Stay: Avoidance Direction: {m_avoidanceDirection} at Strength: {avoidanceStrength}");
+            Debug.Log($"{name} Trigger Stay: Avoidance Direction: {m_avoidanceDirection} at Strength: {avoidanceStrength}, Distance : {distance}");
         }
     }
 

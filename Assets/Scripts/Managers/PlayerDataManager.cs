@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using GameUtil;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,19 +15,25 @@ public class PlayerDataManager
     
     //private string m_path;
     private string m_persistantPath;
-    private int m_buildNumber = 6; //Increment this to invalidate old save files. Updated Jan 30th 2025
+    private int m_buildNumber = 8; //Increment this to invalidate old save files. Updated Jan 30th 2025
     public static ProgressionTable m_progressionTable;
 
     //Constructor
     private PlayerDataManager()
     {
+        Debug.Log($"Player Data Manager created.");
         SetPaths();
-        HandleRead();
         
         if (m_progressionTable == null)
         {
             m_progressionTable = Resources.Load<ProgressionTable>("ProgressionTable");
+            Debug.Log($"Player Data Manager: Progression Table Assigned.");
         }
+    }
+    
+    public void Initialize()
+    {
+        HandleRead();
     }
     
     public static ProgressionTable GetProgressionTable()
@@ -72,7 +79,7 @@ public class PlayerDataManager
             ResetPlayerData();
         }
 
-        //Debug.Log($"{m_playerData.m_progressionKeys.Count} Progression Keys found in Save Data");
+        Debug.Log($"{m_playerData.m_progressionKeys.Count} Progression Keys found in Save Data");
     }
     
     public MissionSaveData GetMissionSaveDataByMissionData(MissionData missionData)
@@ -178,6 +185,7 @@ public class PlayerDataManager
     {
         m_playerData = new PlayerData();
         m_playerData.m_buildNumber = m_buildNumber;
+        Debug.Log($"Player Data Manager: Resetting Progression Data");
         m_progressionTable.ResetProgressionData();
         HandleWrite();
     }
@@ -245,7 +253,8 @@ public class PlayerDataManager
     {
         Dictionary<TowerData, int> unlockedStructures = new Dictionary<TowerData, int>();
         List<TowerData> unlockedTowers = new List<TowerData>();
-        
+
+        Debug.Log($"Is player data null? {m_playerData == null}");
         foreach (ProgressionUnlockableData unlockableData in m_progressionTable.GetListUnlockableData())
         {
             //If we're still locked, go next.

@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
 #if !UNITY_EDITOR
         Cursor.lockState = CursorLockMode.Confined;
 #endif
-        PlayerDataManager.Instance.SetProgressionTable(m_progressionTable);
+        PlayerDataManager.Instance.Initialize();
     }
 
     public void UpdateGameState(GameState newState)

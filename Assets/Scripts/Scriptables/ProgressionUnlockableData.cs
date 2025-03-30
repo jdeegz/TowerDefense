@@ -61,6 +61,8 @@ public class ProgressionUnlockableData : ScriptableObject
         // For each unlockRequirementKey, set it's value back to locked (false)
         foreach (ProgressionKeyData progressionKeyData in m_unlockRequirementKeys)
         {
+            Debug.Log($"Unlockable: PlayerDataManager is null: {PlayerDataManager.Instance == null}.");
+            Debug.Log($"Unlockable: ProgressionKeyData is null: {progressionKeyData == null}.");
             PlayerDataManager.Instance.RequestLockKey(progressionKeyData);
         }
     }

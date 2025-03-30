@@ -53,8 +53,6 @@ public class IngameUIController : MonoBehaviour
     {
         m_camera = Camera.main;
         m_canvas = GetComponentInParent<Canvas>();
-        m_screenWidth = Screen.width / m_canvas.scaleFactor;
-        m_screenHeight = Screen.height / m_canvas.scaleFactor;
     }
 
     public void SpawnCurrencyAlert(int woodValue, int stoneValue, bool isGood, Vector3 worldPos)
@@ -188,11 +186,13 @@ public class IngameUIController : MonoBehaviour
 
     private Vector2 GetScreenPosition(Vector3 pos)
     {
-        m_screenWidth = Screen.width;
-        m_screenHeight = Screen.height;
-        Vector2 screenPos = m_camera.WorldToScreenPoint(pos);
-        screenPos.x -= m_screenWidth / 2;
-        screenPos.y -= m_screenHeight / 2 - 35f;
-        return screenPos;
+        m_screenWidth = Screen.width / m_canvas.scaleFactor;
+        m_screenHeight = Screen.height / m_canvas.scaleFactor;
+        
+        Vector3 viewportPos = m_camera.WorldToViewportPoint(pos);
+        viewportPos.x = viewportPos.x * m_screenWidth - m_screenWidth * 0.5f;
+        viewportPos.y = (viewportPos.y * m_screenHeight - m_screenHeight * 0.5f) - 35f;
+        
+        return viewportPos;
     }
 }

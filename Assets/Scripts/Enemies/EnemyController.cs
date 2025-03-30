@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using DG.Tweening;
+using GameUtil;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -240,7 +241,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
     }
 
     public bool m_isTeleporting;
-
+    private DelayTimer m_curTeleportTimer;
     public void BeginTeleport(Cell portalDestinationCell)
     {
         ObjectPoolManager.SpawnObject(m_enemyData.m_teleportDepartureVFX, m_targetPoint.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
@@ -251,11 +252,12 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
         transform.position = new Vector3(newPos.x, -50, newPos.y);
 
-        GameUtil.DelayTimer.DelayAction(2f, () => CompleteTeleport());
+        m_curTeleportTimer = DelayTimer.DelayAction(2f, () => CompleteTeleport());
     }
 
     private void CompleteTeleport()
     {
+        m_curTeleportTimer = null;
         
         Vector3 arrivalPos = transform.position;
         arrivalPos.y = 0;
@@ -529,6 +531,8 @@ public abstract class EnemyController : Dissolvable, IEffectable
     public virtual void OnEnemyDestroyed(Vector3 pos)
     {
         if (m_isComplete) return;
+        
+        if(m_curTeleportTimer != null) m_curTeleportTimer.Cancel();
 
         RequestPlayAudio(m_enemyData.m_audioDeathClips);
         RequestStopAudioLoop(m_audioSource);

@@ -642,22 +642,23 @@ public class GameplayManager : MonoBehaviour
 
     private void Awake()
     {
-        m_unlockedStructures = new Dictionary<TowerData, int>();
-        PlayerDataManager.Instance.SetProgressionTable(m_progressionTable);
-        PlayerDataManager.OnUnlockableUnlocked += UnlockableUnlocked;
-        PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
-
-        SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
-
-        m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
-        m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
-
-        m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
-
         if (!Instance)
         {
             Instance = this;
         }
+        
+        // Materials
+        m_selectedOutlineMaterial = Resources.Load<Material>("Materials/Mat_OutlineSelected");
+        
+        // Player Data
+        PlayerDataManager.Instance.Initialize();
+        
+        m_unlockedStructures = new Dictionary<TowerData, int>();
+        PlayerDataManager.OnUnlockableUnlocked += UnlockableUnlocked;
+        PlayerDataManager.OnUnlockableLocked += UnlockableLocked;
+        SortedAndUnlocked sortedAndUnlocked = PlayerDataManager.Instance.GetSortedUnlocked();
+        m_unlockedStructures = sortedAndUnlocked.m_unlockedStructures;
+        m_unlockedTowers = sortedAndUnlocked.m_unlockedTowers;
 
         m_mainCamera = Camera.main;
 

@@ -51,6 +51,8 @@ public class UIOptionsPopup : UIPopup
         base.Awake();
 
         m_elapsedTime = 0;
+        
+        m_cheatsGroup.SetActive(false);
     }
 
     public override void HandleShow()
