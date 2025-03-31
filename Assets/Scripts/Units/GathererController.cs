@@ -796,14 +796,16 @@ public class GathererController : MonoBehaviour
                 node.RequestPlayAudio(m_gathererData.m_queueingClips);
                 if (ResourceCarried == 0)
                 {
+                    Debug.Log($"Command Requested. Resources Carried: {ResourceCarried}.");
                     RequestedHarvest(node);
                 }
-                else // If we're carrying a node, we're on our way to a ruin or to deposit, in both instances, we want to travel to this node next.
+                else // If we're carrying a resource, we're on our way to a ruin or to deposit, in both instances, we want to travel to this node next.
                 {
+                    Debug.Log($"Command Requested. Resources Carried: {ResourceCarried}.");
                     ClearHarvestingQueue();
 
                     CurrentHarvestNode = node;
-                    PathToDepositCell();
+                    //PathToDepositCell();
                 }
 
                 break;
@@ -815,14 +817,14 @@ public class GathererController : MonoBehaviour
                 break;
             case Selectable.SelectedObjectType.Castle:
                 if (ResourceCarried == 0) RequestedIdle();
-                if (ResourceCarried > 0) PathToDepositCell();
+                //if (ResourceCarried > 0) PathToDepositCell();
                 break;
             case Selectable.SelectedObjectType.Ruin:
                 if (m_gathererTask != GathererTask.Storing) RequestTravelToRuin(requestObj);
                 break;
             case Selectable.SelectedObjectType.Obelisk:
                 if (ResourceCarried == 0) RequestedIdle();
-                if (ResourceCarried > 0) PathToDepositCell();
+                //if (ResourceCarried > 0) PathToDepositCell();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -847,7 +849,9 @@ public class GathererController : MonoBehaviour
     {
         m_curRuin = requestObj.GetComponent<Ruin>();
 
-        InterruptHarvesting();
+        ClearHarvestingQueue();
+        
+        ClearHarvestVars();
 
         RequestStopCoroutine();
 
@@ -1189,12 +1193,6 @@ public class GathererController : MonoBehaviour
         CurrentHarvestNode = null;
     }
 
-    private void InterruptHarvesting()
-    {
-        // Stop gatherer Harvest Animation.
-        //m_animator.SetBool(m_isHarvestingHash, false);
-    }
-
     private void OnNodeDepleted(ResourceNode node)
     {
         if (node != CurrentHarvestNode)
@@ -1310,6 +1308,7 @@ public class GathererController : MonoBehaviour
     private float m_bonusStorageRate = 15f; //Change if we want different percentage change per m_gathererLevel.
     private IEnumerator Storing()
     {
+        Debug.Log($"Gatherer Controller: Storing Coroutine started.");
         bool facingGoal = false;
         Vector3 goalPos = new Vector3(CurrentGoalCell.m_cellPos.x, 0, CurrentGoalCell.m_cellPos.y);
         while (facingGoal == false)
@@ -1346,11 +1345,13 @@ public class GathererController : MonoBehaviour
             //RequestPlayAudio(m_gathererData.m_woodDepositClips, m_audioSource);
         }
 
-        ResourceCarried = 0;
 
         SetAnimatorBool("CarryingWood", false);
 
         RequestNextHarvestNode();
+        
+        ResourceCarried = 0;
+        Debug.Log($"Gatherer Controller: Storing Coroutine completed.");
     }
 
     private void StartHarvesting()
