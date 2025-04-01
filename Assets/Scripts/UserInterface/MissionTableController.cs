@@ -14,7 +14,7 @@ public class MissionTableController : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject m_hoveredMissionIndicatorFab;
     public GameObject HoveredMissionIndicatorFab => m_hoveredMissionIndicatorFab;
-    
+
     [SerializeField] private GameObject m_selectedMissionIndicatorFab;
     public GameObject SelectedMissionIndicatorFab => m_selectedMissionIndicatorFab;
 
@@ -70,25 +70,21 @@ public class MissionTableController : MonoBehaviour
     {
         if (!m_isActive) return;
 
+        RotateToTargetRotation();
+
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+
+        HandleMouseHover();
+
         HandleMouseScroll();
 
         HandleDrag();
 
-        HandleMouseHover();
-
         HandleHotkeys();
-
-        RotateToTargetRotation();
     }
 
     void RotateToTargetRotation()
     {
-        float scrollDelta = Input.mouseScrollDelta.y;
-        if (Mathf.Abs(scrollDelta) > 0.01f) // Prevent minor jittering
-        {
-            m_targetYRotation += scrollDelta * m_rotationSpeed;
-        }
-
         // Ensure shortest rotation path by normalizing the difference
         float deltaAngle = Mathf.DeltaAngle(m_currentYRotation, m_targetYRotation);
         m_currentYRotation = Mathf.Lerp(m_currentYRotation, m_currentYRotation + deltaAngle, Time.deltaTime * 10f);
@@ -118,7 +114,7 @@ public class MissionTableController : MonoBehaviour
                 return;
             }
         }
-        
+
         OnMissionSelected?.Invoke(null);
         m_curSelectedMission = null;
     }
@@ -133,7 +129,6 @@ public class MissionTableController : MonoBehaviour
         m_isActive = true;
     }
 
-
     void HandleMouseScroll()
     {
         float scrollDelta = Input.mouseScrollDelta.y;
@@ -147,7 +142,6 @@ public class MissionTableController : MonoBehaviour
             CalculateAdjacentIndexes();
         }
     }
-
 
     void HandleDrag()
     {

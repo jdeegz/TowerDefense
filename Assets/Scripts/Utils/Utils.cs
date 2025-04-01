@@ -898,7 +898,7 @@ public static class Util
             !northNeighborCell.m_isOccupied &&
             northNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
         {
-            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding North cell: {northNeighborCell.m_cellPos}");
+            //Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding North cell: {northNeighborCell.m_cellPos}");
             adjacentCells.Add(northNeighborCell);
         }
 
@@ -909,7 +909,7 @@ public static class Util
             !southNeighborCell.m_isOccupied &&
             southNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
         {
-            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding South cell: {southNeighborCell.m_cellPos}");
+            //Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding South cell: {southNeighborCell.m_cellPos}");
             adjacentCells.Add(southNeighborCell);
         }
 
@@ -920,7 +920,7 @@ public static class Util
             !eastNeighborCell.m_isOccupied &&
             eastNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
         {
-            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding East cell: {eastNeighborCell.m_cellPos}");
+            //Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding East cell: {eastNeighborCell.m_cellPos}");
             adjacentCells.Add(eastNeighborCell);
         }
 
@@ -931,7 +931,7 @@ public static class Util
             !westNeighborCell.m_isOccupied &&
             westNeighborCell.m_directionToNextCell != Cell.Direction.Portal)
         {
-            Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding West cell: {westNeighborCell.m_cellPos}");
+            //Debug.Log($"Get Neighbors of {startCell.m_cellPos} -- adding West cell: {westNeighborCell.m_cellPos}");
             adjacentCells.Add(westNeighborCell);
         }
 

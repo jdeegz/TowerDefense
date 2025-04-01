@@ -20,6 +20,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Image m_towerImage;
     [SerializeField] private UIEffect m_buttonUIEffect;
 
+    private RectTransform m_buttonRect;
     private bool m_canAffordWood = true;
     private bool m_canAffordStone = true;
     private bool m_canAffordQty;
@@ -79,6 +80,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     void Start()
     {
         m_button = GetComponent<Button>();
+        m_buttonRect = GetComponent<RectTransform>();
         ResourceManager.UpdateStoneBank += CheckStoneCost;
         ResourceManager.UpdateWoodBank += CheckWoodCost;
         GameplayManager.OnGameObjectSelected += GameObjectSelected;
@@ -91,6 +93,8 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         m_button.onClick.AddListener(SelectTowerButton);
         m_costLabelUIEffect = m_towerCost.GetComponent<UIEffect>();
         m_qtyLabelUIEffect = m_towerQTY.GetComponent<UIEffect>();
+
+        m_originalYPos = m_buttonRect.rect.position.y;
     }
 
     private void StructureSold(TowerData towerData)
@@ -210,14 +214,47 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void GameObjectDeselected(GameObject obj)
     {
-        if (m_isHovered)
+        Debug.Log($"{obj.name} deselected.");
+        
+        TowerData data = GameplayManager.Instance.GetPreconTowerData();
+        if (data != null && data == m_towerData)
         {
-            SetButtonOutline(ButtonState.Hovered);
+            if (m_isHovered)
+            {
+                SetButtonOutline(ButtonState.Hovered);
+            }
+            else
+            {
+                SetButtonOutline(ButtonState.Normal);
+            }
         }
-        else
+    }
+
+    private Tween m_curSelectionTween;
+    private float m_originalYPos;
+    private bool m_currentlySelected;
+    
+    private void HandleButtonSelectionAnimation(bool isSelected)
+    {
+        Debug.Log($"HandleButtonSelection: {gameObject.name} is currently selected: {m_currentlySelected}, request was to select: {isSelected}.");
+
+        // Slight shrink if selected.
+        if (isSelected)
         {
-            SetButtonOutline(ButtonState.Normal);
+            m_buttonRect.transform.localScale = Vector3.one * 0.85f;
+            m_buttonRect.DOScale(Vector3.one, 0.1f).SetUpdate(true);
         }
+        
+        if (isSelected == m_currentlySelected) return; // If we got a new request that matches our current, do nothing.
+        
+        if(m_curSelectionTween.IsActive()) m_curSelectionTween.Kill();
+
+
+        Debug.Log($"{gameObject.name} handle Button Selection : {isSelected}.");
+        float endPos = isSelected ? m_originalYPos + 30f : m_originalYPos;
+        m_curSelectionTween = m_buttonRect.DOAnchorPosY(endPos, .15f).SetUpdate(true).SetEase(Ease.InOutBack);
+        
+        m_currentlySelected = isSelected;
     }
 
     public void UpdateQuantity(int i)
@@ -228,8 +265,10 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void GameObjectSelected(GameObject obj)
     {
+        Debug.Log($"{obj.name} selected.");
+        
         TowerData data = GameplayManager.Instance.GetPreconTowerData();
-        if (data != null && data == m_towerData)
+        if (data != null && data == m_towerData && m_buttonState != ButtonState.Selected)
         {
             SetButtonOutline(ButtonState.Selected);
         }
@@ -263,6 +302,8 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
             m_buttonUIEffect.toneFilter = savedToneFilter;
             m_buttonUIEffect.toneIntensity = savedToneIntensity;
+            
+            HandleButtonSelectionAnimation(m_buttonState == ButtonState.Selected);
         }
     }
 }

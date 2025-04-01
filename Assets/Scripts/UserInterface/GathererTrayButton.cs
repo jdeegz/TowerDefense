@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Coffee.UIEffects;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -17,6 +18,7 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     [SerializeField] private UIEffect m_buttonUIEffect;
 
     private Button m_button;
+    private RectTransform m_buttonRect;
     private GathererController m_gathererController;
     private GathererController.GathererTask m_lastTask;
     private GathererData m_gathererData;
@@ -46,12 +48,44 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         m_gathererController.GathererLevelChange += UpdateGathererLevelLabel;
     }
 
+    void Start()
+    {
+        m_buttonRect = GetComponent<RectTransform>();
+        m_originalYPos = m_buttonRect.rect.position.y;
+    }
+
     public void SelectGatherer()
     {
         GameplayManager.Instance.RequestSelectGatherer(m_gathererController.gameObject);
         CameraController.Instance.RequestOnRailsMove(m_gathererController.transform.position, 0.15f);
     }
 
+    private Tween m_curSelectionTween;
+    private float m_originalYPos;
+    private bool m_currentlySelected;
+    private void HandleButtonSelectionAnimation(bool isSelected)
+    {
+        Debug.Log($"HandleButtonSelection: {gameObject.name} is currently selected: {m_currentlySelected}, request was to select: {isSelected}.");
+        
+        // Slight shrink if selected.
+        if (isSelected)
+        {
+            m_buttonRect.transform.localScale = Vector3.one * 0.85f;
+            m_buttonRect.DOScale(Vector3.one, 0.1f).SetUpdate(true);
+        }
+        
+        if (isSelected == m_currentlySelected) return; // If we got a new request that matches our current, do nothing.
+        
+        if(m_curSelectionTween.IsActive()) m_curSelectionTween.Kill();
+
+
+        Debug.Log($"{gameObject.name} handle Button Selection : {isSelected}.");
+        float endPos = isSelected ? m_originalYPos + 30f : m_originalYPos;
+        m_curSelectionTween = m_buttonRect.DOAnchorPosY(endPos, .15f).SetUpdate(true).SetEase(Ease.InOutBack);
+        
+        m_currentlySelected = isSelected;
+    }
+    
     private void GathererSelected(GameObject selectedObj)
     {
         if (selectedObj == m_gathererController.gameObject)
@@ -134,6 +168,8 @@ public class GathererTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerE
                     Debug.Log($"Not state.");
                     break;
             }
+            
+            HandleButtonSelectionAnimation(m_buttonState == ButtonState.Selected);
         }
     }
 

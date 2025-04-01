@@ -196,7 +196,8 @@ MonoBehaviour:
   - {fileID: -340310107598150191}
   - {fileID: -5515988974199977595}
   - {fileID: 7014851050958980702}
-  m_RendererFeatureMap: 07c392264a5ddac9679350e76d809407925b4f695bbac43bb563ea597ab84ec8d809b988d362a6618a21bd1fc83c25c1bfd9e5a657602834a4f5fc1dacfb7444315e102b8213c363d125239bc2f946fb85c9d6bf404573b35e86af54ddc15961
+  - {fileID: 8231026057820827168}
+  m_RendererFeatureMap: 07c392264a5ddac9679350e76d809407925b4f695bbac43bb563ea597ab84ec8d809b988d362a6618a21bd1fc83c25c1bfd9e5a657602834a4f5fc1dacfb7444315e102b8213c363d125239bc2f946fb85c9d6bf404573b35e86af54ddc1596120ee64f9967a3a72
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -346,6 +347,26 @@ MonoBehaviour:
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
+--- !u!114 &5246767745184222281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52e2e32e102e44abeb72209e7ce030c3, type: 3}
+  m_Name: KawaseBlur
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    renderPassEvent: 450
+    blurMaterial: {fileID: 2100000, guid: a00afda211f274f6ca6cce958e4e13a5, type: 2}
+    blurPasses: 8
+    downsample: 2
+    copyToFramebuffer: 0
+    targetName: _blurTexture
 --- !u!114 &7014851050958980702
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -428,3 +449,26 @@ MonoBehaviour:
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
+--- !u!114 &8231026057820827168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 980a78cc4df543b29a2663be288cd2f5, type: 3}
+  m_Name: UniversalBlurFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  iterations: 7
+  downsample: 2
+  enableMipMaps: 1
+  scale: 1
+  offset: 1
+  scaleBlurWith: 1
+  scaleReferenceSize: 1080
+  blurType: 0
+  injectionPoint: 600
+  shader: {fileID: 4800000, guid: bb11bdc2e8aaf4c80b5315f3778d7ad4, type: 3}

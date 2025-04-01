@@ -59,6 +59,8 @@ ShaderVariantCollection:
         passType: 0
       - keywords: COLOR_MULTIPLY
         passType: 0
+      - keywords: COLOR_MULTIPLY SHADOW_COLOR_REPLACE
+        passType: 0
       - keywords: COLOR_MULTIPLY_ADDITIVE SHADOW_COLOR_REPLACE
         passType: 0
       - keywords: COLOR_MULTIPLY_ADDITIVE SHADOW_COLOR_REPLACE TONE_GRAYSCALE
@@ -87,8 +89,14 @@ ShaderVariantCollection:
         passType: 0
       - keywords: COLOR_REPLACE TRANSITION_COLOR_MULTIPLY_ADDITIVE TRANSITION_SHINY
         passType: 0
+      - keywords: EDGE_COLOR_REPLACE EDGE_PLAIN
+        passType: 0
+      - keywords: EDGE_COLOR_REPLACE EDGE_PLAIN SHADOW_COLOR_REPLACE
+        passType: 0
       - keywords: EDGE_COLOR_REPLACE EDGE_PLAIN SHADOW_COLOR_REPLACE TRANSITION_COLOR_MULTIPLY_ADDITIVE
           TRANSITION_SHINY
+        passType: 0
+      - keywords: EDGE_COLOR_REPLACE EDGE_SHINY SHADOW_COLOR_REPLACE
         passType: 0
       - keywords: EDGE_COLOR_REPLACE EDGE_SHINY SHADOW_COLOR_REPLACE TRANSITION_COLOR_MULTIPLY_ADDITIVE
           TRANSITION_SHINY

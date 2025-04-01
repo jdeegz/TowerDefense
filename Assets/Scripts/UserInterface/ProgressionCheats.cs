@@ -7,7 +7,7 @@ public class ProgressionCheats : MonoBehaviour
     [SerializeField] private GameObject m_cheatToggleObj;
     [SerializeField] private GameObject m_cheatButtonObj;
     [SerializeField] private Transform m_rootTransform;
-    
+    [SerializeField] private List<ProgressionUnlockableData> m_unlockableData;
     private ProgressionTable m_progressionTable;
     private List<CheatToggle> m_toggles;
 
@@ -30,7 +30,7 @@ public class ProgressionCheats : MonoBehaviour
         
         // Build Toggles
         m_toggles = new List<CheatToggle>();
-        foreach (ProgressionUnlockableData unlockableData in m_progressionTable.GetListUnlockableData())
+        foreach (ProgressionUnlockableData unlockableData in m_unlockableData)
         {
             GameObject toggleObj = Instantiate(m_cheatToggleObj, m_rootTransform);
             CheatToggle cheatToggle = toggleObj.GetComponent<CheatToggle>();

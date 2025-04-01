@@ -107,7 +107,7 @@ public class CameraController : MonoBehaviour
         float scrollDelta = Input.mouseScrollDelta.y;
 
         // Adjust camera position based on scrolling direction
-        if (scrollDelta != 0f)
+        if (scrollDelta != 0f && GameplayManager.Instance != null && GameplayManager.Instance.m_interactionState != GameplayManager.InteractionState.Disabled)
         {
             // Calculate the new zoom level
             float newZoom = Mathf.Clamp(m_camera.gameObject.transform.localPosition.z + scrollDelta * m_zoomSpeed, m_startZoom + m_maxZoomOut, m_startZoom + m_maxZoomIn);

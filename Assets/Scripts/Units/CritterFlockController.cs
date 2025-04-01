@@ -102,7 +102,7 @@ public class CritterFlockController : MonoBehaviour
     {
         // Is it within the flee range?
         float towerDistance = Vector3.Distance(towerObject.transform.position, new Vector3(m_curPos.x, 0, m_curPos.y));
-        Debug.Log($"Critter Tower Built -- Distance from Critter: {towerDistance}");
+        //Debug.Log($"Critter Tower Built -- Distance from Critter: {towerDistance}");
         if (towerDistance > m_critterAlertRange) return;
 
         Vector3 directionToTower = transform.position - towerObject.transform.position;
@@ -381,7 +381,7 @@ public class CritterFlockController : MonoBehaviour
     private void PickNewTarget()
     {
         m_targetPos = GetSpotInCell(m_curCell);
-        Debug.Log($"Pick New Target -- CurCell: {m_curCell.m_cellPos}, Target Pos: {m_targetPos}");
+        //Debug.Log($"Pick New Target -- CurCell: {m_curCell.m_cellPos}, Target Pos: {m_targetPos}");
         m_curState = CritterState.Rotating;
     }
 
@@ -392,14 +392,14 @@ public class CritterFlockController : MonoBehaviour
         if (emptyNeighbors.Count == 0)
         {
             // No valid neighbors, we stay in the current cell.
-            Debug.Log($"Pick New Cell -- No empty or pathable neighbors found.");
+            //Debug.Log($"Pick New Cell -- No empty or pathable neighbors found.");
             m_targetPos = GetSpotInCell(m_curCell);
         }
 
         if (emptyNeighbors.Count >= 2)
         {
             // Deprioritize our previous cell only if we have other options.
-            Debug.Log($"Pick New Cell -- More than two valid neighbors found, removing Prev Cell: {m_prevCell.m_cellPos}.");
+            //Debug.Log($"Pick New Cell -- More than two valid neighbors found, removing Prev Cell: {m_prevCell.m_cellPos}.");
             if (emptyNeighbors.Contains(m_prevCell))
             {
                 emptyNeighbors.Remove(m_prevCell);
@@ -409,7 +409,7 @@ public class CritterFlockController : MonoBehaviour
         int index = Random.Range(0, emptyNeighbors.Count);
 
         m_targetPos = GetSpotInCell(emptyNeighbors[index]);
-        Debug.Log($"Pick New Cell -- Cell: {emptyNeighbors[index].m_cellPos}, Target Pos: {m_targetPos}");
+        //Debug.Log($"Pick New Cell -- Cell: {emptyNeighbors[index].m_cellPos}, Target Pos: {m_targetPos}");
         m_curState = CritterState.Rotating;
     }
 
