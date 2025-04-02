@@ -586,7 +586,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
 
     public virtual void SpawnCores()
     {
-        Debug.Log($"Spawn Enemy Controller Cores.");
+        //Debug.Log($"Spawn Enemy Controller Cores.");
         
         if (m_curHealth > 0 && m_obeliskData == null) return;
 

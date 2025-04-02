@@ -10,6 +10,7 @@ public abstract class Tower : MonoBehaviour
     [Header("Tower Data")]
     [SerializeField] protected TowerData m_towerData;
     [SerializeField] protected GameObject m_modelRoot;
+    [SerializeField] protected Animator m_animator;
 
     [SerializeField] protected StatusEffectData m_statusEffectData;
     [SerializeField] protected LayerMask m_layerMask;
@@ -30,7 +31,7 @@ public abstract class Tower : MonoBehaviour
     [SerializeField] protected bool m_isBuilt;
 
     protected bool m_hasTargets;
-    protected Animator m_animator;
+    
     protected AudioSource m_audioSource;
     protected EnemyController m_curTarget;
     protected float m_targetDetectionInterval = 0.33f;
@@ -51,7 +52,8 @@ public abstract class Tower : MonoBehaviour
         m_towerRangeCircle.enabled = false;
         SetupRangeCircle(48, m_towerData.m_fireRange);
         m_audioSource = GetComponent<AudioSource>();
-        m_animator = GetComponent<Animator>();
+        if(m_animator == null) m_animator = GetComponent<Animator>();
+        m_animator.enabled = false;
         m_towerCollider = gameObject.GetComponent<Collider>();
         m_shieldLayer = LayerMask.NameToLayer("Shield"); //HARDCODED LAYER NAME
 
@@ -183,10 +185,13 @@ public abstract class Tower : MonoBehaviour
 
         m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, m_targetRotation,
             m_towerData.m_rotationSpeed * Time.deltaTime);
+        
+        Debug.DrawLine(m_turretPivot.transform.position, m_turretPivot.transform.position + (Vector3.forward * m_towerData.m_fireRange), Color.red, 0.5f);
     }
 
     private Vector3 m_targetPos;
     private Vector3 m_muzzlePos;
+    private Vector3 m_turretPivotPos;
     private Vector3 m_directionOfTarget;
 
     protected bool IsTargetInSight()
@@ -197,8 +202,11 @@ public abstract class Tower : MonoBehaviour
         m_muzzlePos = m_muzzlePoint.transform.position;
         m_muzzlePos.y = 0;
 
+        m_turretPivotPos = m_turretPivot.transform.position;
+        m_turretPivotPos.y = 0;
+
         m_directionOfTarget = m_targetPos - m_muzzlePos;
-        return Vector3.Angle(m_muzzlePoint.transform.forward, m_directionOfTarget) <= m_towerData.m_facingThreshold;
+        return Vector3.Angle(m_turretPivot.transform.forward, m_directionOfTarget) <= m_towerData.m_facingThreshold;
     }
 
     private Vector2 m_tower2dPos;
@@ -283,7 +291,8 @@ public abstract class Tower : MonoBehaviour
         m_overlapCapsulePoint2 = transform.position - Vector3.up * 1; // Bottom of the capsule
 
         //Animation
-        //m_animator.SetTrigger("Construct");
+        m_animator.enabled = true;
+        m_animator.SetTrigger("Construct");
 
         //Audio
         if (GameplayManager.Instance.m_gameplayState != GameplayManager.GameplayState.PlaceObstacles) m_audioSource.PlayOneShot(m_towerData.m_audioBuildClip);

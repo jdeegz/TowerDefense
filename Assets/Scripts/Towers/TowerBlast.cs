@@ -75,6 +75,7 @@ public class TowerBlast : Tower
 
     private void Fire()
     {
+        Debug.Log($"BlastTower: Fire()");
         //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
         GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.Projectile);
         Projectile projectileScript = projectileObj.GetComponent<Projectile>();
@@ -93,7 +94,8 @@ public class TowerBlast : Tower
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
         
         // ANIMATION
-        //m_animator.SetTrigger("Fire");
+        Debug.Log($"BlastToer: Animator Set Trigger - Fire.");
+        m_animator.SetTrigger("Fire");
         
         // VFX
         FireVFX();

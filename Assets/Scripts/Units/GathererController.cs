@@ -1308,7 +1308,7 @@ public class GathererController : MonoBehaviour
     private float m_bonusStorageRate = 15f; //Change if we want different percentage change per m_gathererLevel.
     private IEnumerator Storing()
     {
-        Debug.Log($"Gatherer Controller: Storing Coroutine started.");
+        //Debug.Log($"Gatherer Controller: Storing Coroutine started.");
         bool facingGoal = false;
         Vector3 goalPos = new Vector3(CurrentGoalCell.m_cellPos.x, 0, CurrentGoalCell.m_cellPos.y);
         while (facingGoal == false)
@@ -1351,7 +1351,7 @@ public class GathererController : MonoBehaviour
         RequestNextHarvestNode();
         
         ResourceCarried = 0;
-        Debug.Log($"Gatherer Controller: Storing Coroutine completed.");
+        //Debug.Log($"Gatherer Controller: Storing Coroutine completed.");
     }
 
     private void StartHarvesting()
