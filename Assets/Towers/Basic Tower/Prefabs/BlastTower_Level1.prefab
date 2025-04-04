@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 7355766546608313420}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.025295, y: 0, z: 5.0189505}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -62,10 +62,11 @@ MonoBehaviour:
   m_turretPivot: {fileID: 7403619941115956186}
   m_muzzlePoint: {fileID: 4852398705035536549}
   m_renderers:
-  - {fileID: 1443841950256414788}
+  - {fileID: 2797525881264139365}
   m_towerRangeCircle: {fileID: 2707007241451375309}
   m_isBuilt: 0
   m_targetSystem: 0
+  m_muzzlePointAlt: {fileID: 0}
 --- !u!114 &6488135836002424783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -80,7 +81,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_selectedObjectType: 2
   m_meshRenderers:
-  - {fileID: 1443841950256414788}
+  - {fileID: 2797525881264139365}
 --- !u!120 &2707007241451375309
 LineRenderer:
   serializedVersion: 2
@@ -352,6 +353,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7170742358127888137, guid: c55cb901fddaf7c4aa9765111c561997, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8e0d63de3846a5048919fc14740b8046, type: 2}
     - target: {fileID: -5861672700357765930, guid: c55cb901fddaf7c4aa9765111c561997, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -380,9 +385,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 3751152785546803655}
   m_SourcePrefab: {fileID: 100100000, guid: c55cb901fddaf7c4aa9765111c561997, type: 3}
---- !u!137 &1443841950256414788 stripped
+--- !u!137 &2797525881264139365 stripped
 SkinnedMeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -5861672700357765930, guid: c55cb901fddaf7c4aa9765111c561997, type: 3}
+  m_CorrespondingSourceObject: {fileID: -7170742358127888137, guid: c55cb901fddaf7c4aa9765111c561997, type: 3}
   m_PrefabInstance: {fileID: 4228503084399416466}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &3922565968379275715 stripped
@@ -402,7 +407,7 @@ Animator:
   m_Avatar: {fileID: 9000000, guid: c55cb901fddaf7c4aa9765111c561997, type: 3}
   m_Controller: {fileID: 9100000, guid: 61b28eb96d178784699f0604156ebe97, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0

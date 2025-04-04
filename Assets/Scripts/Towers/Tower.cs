@@ -10,6 +10,7 @@ public abstract class Tower : MonoBehaviour
     [Header("Tower Data")]
     [SerializeField] protected TowerData m_towerData;
     [SerializeField] protected GameObject m_modelRoot;
+    public GameObject ModelRoot => m_modelRoot;
     [SerializeField] protected Animator m_animator;
 
     [SerializeField] protected StatusEffectData m_statusEffectData;
@@ -43,6 +44,7 @@ public abstract class Tower : MonoBehaviour
     protected quaternion m_targetRotation;
     protected Vector3 m_directionAwayFromSpire;
     protected List<Material> m_materials;
+    protected Collider m_towerCollider;
 
     void Awake()
     {
@@ -171,8 +173,7 @@ public abstract class Tower : MonoBehaviour
             m_targetRotation = Quaternion.Euler(new Vector3(0f, m_targetAngle, 0f));
         }
 
-        //If we have no target, rotate away from the base during the Build phase. The isBuilt flag will stop this from happening when precon.
-        //Adding a instance check for the target dummy scene.
+        // Rotate away from Spire at the end of the round.
         if (GameplayManager.Instance && GameplayManager.Instance.m_gameplayState == GameplayManager.GameplayState.Build)
         {
             //Use enemy Goal as the 'target'.
@@ -186,11 +187,10 @@ public abstract class Tower : MonoBehaviour
         m_turretPivot.rotation = Quaternion.RotateTowards(m_turretPivot.transform.rotation, m_targetRotation,
             m_towerData.m_rotationSpeed * Time.deltaTime);
         
-        Debug.DrawLine(m_turretPivot.transform.position, m_turretPivot.transform.position + (Vector3.forward * m_towerData.m_fireRange), Color.red, 0.5f);
+        Debug.DrawLine(m_turretPivot.transform.position, m_turretPivot.transform.position + (m_turretPivot.transform.forward * m_towerData.m_fireRange), Color.red, 0.5f);
     }
 
     private Vector3 m_targetPos;
-    private Vector3 m_muzzlePos;
     private Vector3 m_turretPivotPos;
     private Vector3 m_directionOfTarget;
 
@@ -199,13 +199,10 @@ public abstract class Tower : MonoBehaviour
         m_targetPos = m_curTarget.transform.position;
         m_targetPos.y = 0;
 
-        m_muzzlePos = m_muzzlePoint.transform.position;
-        m_muzzlePos.y = 0;
-
         m_turretPivotPos = m_turretPivot.transform.position;
         m_turretPivotPos.y = 0;
 
-        m_directionOfTarget = m_targetPos - m_muzzlePos;
+        m_directionOfTarget = m_targetPos - m_turretPivotPos;
         return Vector3.Angle(m_turretPivot.transform.forward, m_directionOfTarget) <= m_towerData.m_facingThreshold;
     }
 
@@ -277,7 +274,6 @@ public abstract class Tower : MonoBehaviour
 
     public virtual void SetupTower()
     {
-        Debug.Log($"Build Tower: Setting up {gameObject.name} at {transform.position}.");
         //Grid
         GridCellOccupantUtil.SetOccupant(gameObject, true, m_towerData.m_buildingSize.x, m_towerData.m_buildingSize.y);
         GameplayManager.Instance.AddTowerToList(this);
@@ -286,7 +282,8 @@ public abstract class Tower : MonoBehaviour
         m_towerCollider.enabled = true;
         m_isBuilt = true;
         m_modelRoot.SetActive(true);
-        Debug.Log($"Build Tower: {gameObject.name}'s collider enabled: {m_towerCollider.enabled}, is built: {m_isBuilt}, model root is active: {m_modelRoot.activeSelf}.");
+        m_curTarget = null;
+        
         m_overlapCapsulePoint1 = transform.position + Vector3.up * 10; // Top of the capsule
         m_overlapCapsulePoint2 = transform.position - Vector3.up * 1; // Bottom of the capsule
 
@@ -300,9 +297,30 @@ public abstract class Tower : MonoBehaviour
         //VFX
         ObjectPoolManager.SpawnObject(m_towerData.m_towerConstructionPrefab, transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
+    
+    public virtual void RemoveTower()
+    {
+        m_isBuilt = false;
+        m_towerCollider.enabled = false;
+        
+        m_modelRoot.SetActive(false);
+        m_curTarget = null;
+       
+        ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Tower);
+    }
+    
+    public virtual void OnDestroy()
+    {
+        //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
+        if (!Application.isPlaying) return;
 
-//Fired via a keyframe in Animation.
-    public void FireVFX()
+        GameplayManager.OnGameObjectSelected -= GameObjectSelected;
+        GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
+        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
+    }
+
+
+    public virtual void FireVFX()
     {
         if (!m_towerData.m_muzzleFlashPrefab) return;
 
@@ -340,33 +358,7 @@ public abstract class Tower : MonoBehaviour
         audioSource.Stop();
     }
 
-    public virtual void OnDestroy()
-    {
-        //If this gameObject does not exist, exit this function. (Good for leaving play mode in editor and not getting asserts)
-        if (!Application.isPlaying) return;
-
-        /*if (m_audioSource.enabled)
-        {
-            RequestPlayAudio(m_towerData.m_audioDestroyClip);
-        }*/
-
-        GameplayManager.OnGameObjectSelected -= GameObjectSelected;
-        GameplayManager.OnGameObjectDeselected -= GameObjectDeselected;
-        GameplayManager.OnGameplayStateChanged -= GameplayStateChanged;
-    }
-
-    protected Collider m_towerCollider;
-
-    public virtual void RemoveTower()
-    {
-        Debug.Log($"Remove Tower: Setting up {gameObject.name} at {transform.position}.");
-        m_isBuilt = false;
-        m_towerCollider.enabled = false;
-        m_modelRoot.SetActive(false);
-        Debug.Log($"Remove Tower: {gameObject.name}'s collider enabled: {m_towerCollider.enabled}, is built: {m_isBuilt}, model root is active: {m_modelRoot.activeSelf}.");
-        ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Tower);
-        //ObjectPoolManager.OrphanObject(gameObject, .5f, ObjectPoolManager.PoolType.Tower);
-    }
+    
 
     void SetupRangeCircle(int segments, float radius)
     {

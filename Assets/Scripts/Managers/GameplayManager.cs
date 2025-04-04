@@ -1731,6 +1731,18 @@ public class GameplayManager : MonoBehaviour
             ClearPreconstructedTower();
             UpdateInteractionState(InteractionState.Idle);
         }
+        else
+        {
+            // Hide the precon tower for a moment, then reshow it.
+            m_preconstructedTower.ModelRoot.transform.localScale = Vector3.zero;
+            DOVirtual.DelayedCall(0.3f, () => 
+            {
+                //m_preconstructedTower.ModelRoot.transform.localScale = Vector3.one * 0.5f;
+                m_preconstructedTower.ModelRoot.transform.DOScale(Vector3.one, 0.15f)
+                    .SetEase(Ease.InOutBack)
+                    .SetUpdate(true);
+            });
+        }
     }
 
     // Clear Blueprint Tower Models -- Called via CombatView button.
@@ -1781,15 +1793,6 @@ public class GameplayManager : MonoBehaviour
 
     public void RemoveTowerFromList(Tower tower)
     {
-        /*
-            for (int i = 0; i < m_towerList.Count; ++i)
-            {
-                if (m_towerList[i] == tower)
-                {
-                    m_towerList.RemoveAt(i);
-                }
-            }
-            */
         m_towerList.Remove(tower);
     }
 

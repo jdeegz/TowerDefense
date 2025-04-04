@@ -7,15 +7,26 @@ using Random = UnityEngine.Random;
 
 public class TowerBlast : Tower
 {
+    [SerializeField] protected Transform m_muzzlePointAlt;
+    private bool m_useAltMuzzle;
     private float m_timeUntilFire;
     private float m_facingThreshold = 10f;
     private int m_shotsFired;
     private float m_timeUntilBurst;
 
+    private string m_fireTriggerString = "Fire";
+    private string m_fireAltTriggerString = "Fire_Alt";
+    
+    private Transform m_curMuzzleTransform;
+    private String m_curMuzzleTriggerString;
+    
+
     void Start()
     {
         m_timeUntilFire = 999f;
         m_timeUntilBurst = 999f;
+        m_curMuzzleTransform = m_muzzlePoint;
+        m_curMuzzleTriggerString = m_fireTriggerString;
     }
 
     void Update()
@@ -73,32 +84,40 @@ public class TowerBlast : Tower
         }
     }
 
+    private Quaternion m_projectileRotation;
+    private Vector3 m_projectileDirection;
     private void Fire()
     {
-        Debug.Log($"BlastTower: Fire()");
-        //GameObject projectileObj = Instantiate(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation);
-        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_muzzlePoint.position, m_muzzlePoint.rotation, null, ObjectPoolManager.PoolType.Projectile);
-        Projectile projectileScript = projectileObj.GetComponent<Projectile>();
-        /*if (m_statusEffectData)
+        if (m_muzzlePointAlt != null) // If we have multiple muzzles, alternate between them.
         {
-            StatusEffect statusEffect = new StatusEffect();
-            statusEffect.SetSender(gameObject);
-            statusEffect.m_data = m_statusEffectData;
-            projectileScript.SetProjectileStatusEffect(statusEffect);
-        }*/
+            m_curMuzzleTransform = m_useAltMuzzle ? m_muzzlePointAlt : m_muzzlePoint;
+            m_curMuzzleTriggerString = m_useAltMuzzle ? m_fireAltTriggerString : m_fireTriggerString;
+            m_useAltMuzzle = !m_useAltMuzzle;
+        }
 
-        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_muzzlePoint.position, gameObject, m_statusEffectData);
+        m_projectileDirection = m_curTarget.transform.position - m_curMuzzleTransform.position;
+        m_projectileRotation = Quaternion.LookRotation(m_projectileDirection);
+        GameObject projectileObj = ObjectPoolManager.SpawnObject(m_towerData.m_projectilePrefab, m_curMuzzleTransform.position, m_projectileRotation, null, ObjectPoolManager.PoolType.Projectile);
+        Projectile projectileScript = projectileObj.GetComponent<Projectile>();
+        
+        projectileScript.SetProjectileData(m_curTarget, m_curTarget.m_targetPoint, m_towerData.m_baseDamage, m_curMuzzleTransform.position, gameObject, m_statusEffectData);
 
         // AUDIO
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
         
         // ANIMATION
-        Debug.Log($"BlastToer: Animator Set Trigger - Fire.");
-        m_animator.SetTrigger("Fire");
+        m_animator.SetTrigger(m_curMuzzleTriggerString);
         
         // VFX
         FireVFX();
+    }
+    
+    public override void FireVFX()
+    {
+        if (!m_towerData.m_muzzleFlashPrefab) return;
+
+        ObjectPoolManager.SpawnObject(m_towerData.m_muzzleFlashPrefab, m_curMuzzleTransform.position, m_curMuzzleTransform.rotation, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
     private void HasTargets(bool b)
