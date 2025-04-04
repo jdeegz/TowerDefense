@@ -22,15 +22,22 @@ public class TowerArc : Tower
                     m_flameTowerProjectile.Play();
                     RequestPlayAudio(m_towerData.m_audioFireClips);
                     RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
+                    HandleFireAnims(true);
                 }
                 else
                 {
                     //TURN OFF FLAMES
                     m_flameTowerProjectile.Stop();
                     RequestStopAudioLoop();
+                    HandleFireAnims(false);
                 }
             } 
         }
+    }
+    
+    private void HandleFireAnims(bool isShooting)
+    {
+        m_animator.SetBool("HasTargets", isShooting);
     }
     
     private float m_timeUntilFire;
