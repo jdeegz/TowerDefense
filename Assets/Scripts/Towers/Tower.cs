@@ -99,7 +99,7 @@ public abstract class Tower : MonoBehaviour
             material.color = Color.white;
         }
         
-        m_animator.SetTrigger("Activate");
+        m_animator.SetTrigger("Reactivate");
     }
 
     public abstract TowerTooltipData GetTooltipData();
