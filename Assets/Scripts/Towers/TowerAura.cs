@@ -7,11 +7,14 @@ using UnityEngine.VFX;
 
 public class TowerAura : Tower
 {
+    [SerializeField] private List<DOTweenAnimation> m_gearTweens;
+    
     private float m_timeUntilFire;
     private List<GameObject> m_targetsTracked;
     private VisualEffect m_auraVFX;
     private float m_curDissolve = 1f;
     private bool m_searchForTargets;
+    private int lastTrackedCount = 0;
     
     void OnEnable()
     {
@@ -96,6 +99,17 @@ public class TowerAura : Tower
         }
         
         ListPool<GameObject>.Release(m_copyTargetsTracked);
+        
+        if (m_targetsTracked.Count != lastTrackedCount)
+        {
+            lastTrackedCount = m_targetsTracked.Count;
+            
+            float newSpeed = lastTrackedCount > 0 ? m_statusEffectData.m_speedModifier : 1;
+            foreach (DOTweenAnimation tween in m_gearTweens)
+            {
+                tween.tween.timeScale = newSpeed;
+            }
+        }
     }
     
 

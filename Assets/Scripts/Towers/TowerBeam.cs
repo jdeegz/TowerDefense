@@ -10,6 +10,8 @@ using UnityEngine.VFX;
 public class TowerBeam : Tower
 
 {
+    [SerializeField] private List<DOTweenAnimation> m_gearTweens;
+    
     private ProjectileBeam m_activeBeam;
     private Tween m_curTween;
     private float m_curDissolve = 1f;
@@ -31,14 +33,25 @@ public class TowerBeam : Tower
                     StartBeam();
                     RequestPlayAudio(m_towerData.m_audioFireClips);
                     RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
+                    HandleFireAnims(true);
                 }
                 else
                 {
                     //TURN OFF BEAM
                     StopBeam();
                     RequestStopAudioLoop();
+                    HandleFireAnims(false);
                 }
             }
+        }
+    }
+
+    private void HandleFireAnims(bool isShooting)
+    {
+        m_animator.SetBool("HasTargets", isShooting);
+        foreach (DOTweenAnimation tween in m_gearTweens)
+        {
+            tween.tween.timeScale = isShooting ? m_statusEffectData.m_speedModifier : 1;
         }
     }
 

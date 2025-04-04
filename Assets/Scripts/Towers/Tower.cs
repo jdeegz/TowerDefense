@@ -82,6 +82,7 @@ public abstract class Tower : MonoBehaviour
             material.color = Color.gray;
         }
 
+        m_animator.SetTrigger("Deactivate");
         RequestPlayAudio(m_towerData.m_audioTowerDeactivatedClips, m_audioSource);
         m_curTarget = null;
         enabled = false;
@@ -97,6 +98,8 @@ public abstract class Tower : MonoBehaviour
         {
             material.color = Color.white;
         }
+        
+        m_animator.SetTrigger("Activate");
     }
 
     public abstract TowerTooltipData GetTooltipData();
