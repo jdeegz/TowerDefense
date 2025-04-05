@@ -139,7 +139,7 @@ public class TowerCannon : Tower
         RequestPlayAudio(m_towerData.m_audioFireClips);
 
         //Play fire Animation
-        //m_animator.SetTrigger("Fire");
+        m_animator.SetTrigger("Fire");
         FireVFX();
 
         //Start a reload timer for this index.

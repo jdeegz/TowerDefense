@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6484229502060706562
+--- !u!1 &3799303332509363653
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,28 +8,28 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6979452788705849055}
-  m_Layer: 7
-  m_Name: Muzzle Point
+  - component: {fileID: 6490454136535165538}
+  m_Layer: 0
+  m_Name: MuzzlePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6979452788705849055
+--- !u!4 &6490454136535165538
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6484229502060706562}
+  m_GameObject: {fileID: 3799303332509363653}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.321, z: -0}
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4552535233955522817}
+  m_Father: {fileID: 8291889416698678123}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!1 &8404167365427768012
 GameObject:
@@ -92,8 +92,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0.557, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 6979452788705849055}
+  m_Children: []
   m_Father: {fileID: 7093046892578795572}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9140437940615734701
@@ -110,7 +109,6 @@ GameObject:
   - component: {fileID: 8923076353046454371}
   - component: {fileID: -7005396196458977181}
   - component: {fileID: -6322527113016510451}
-  - component: {fileID: 599330019463120484}
   m_Layer: 7
   m_Name: CannonTower
   m_TagString: Untagged
@@ -148,6 +146,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: e5bd7c829d0abbf4ea2a104d9b87b635, type: 2}
   m_modelRoot: {fileID: 8404167365427768012}
+  m_animator: {fileID: 4920679569970990189}
   m_statusEffectData: {fileID: 0}
   m_layerMask:
     serializedVersion: 2
@@ -156,14 +155,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 33792
   m_turretPivot: {fileID: 4552535233955522817}
-  m_muzzlePoint: {fileID: 6979452788705849055}
+  m_muzzlePoint: {fileID: 6490454136535165538}
   m_renderers:
-  - {fileID: 5643904635218045171}
+  - {fileID: 8135916103773452980}
   m_towerRangeCircle: {fileID: -7005396196458977181}
   m_isBuilt: 0
   m_targetSystem: 0
   m_muzzlePoints:
-  - {fileID: 6979452788705849055}
+  - {fileID: 6490454136535165538}
   m_loadedProjectiles: []
 --- !u!65 &4478089951611948086
 BoxCollider:
@@ -200,7 +199,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_selectedObjectType: 2
   m_meshRenderers:
-  - {fileID: 5643904635218045171}
+  - {fileID: 8135916103773452980}
 --- !u!120 &-7005396196458977181
 LineRenderer:
   serializedVersion: 2
@@ -403,28 +402,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!95 &599330019463120484
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9140437940615734701}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 22100000, guid: 25937af0edb855d4592d3c487a295f5f, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &6454424613328303223
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -481,6 +458,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 0581676d9f46a274ca42fdb96ad58e0f, type: 2}
+    - target: {fileID: -6234621900275626301, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0581676d9f46a274ca42fdb96ad58e0f, type: 2}
     - target: {fileID: 919132149155446097, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
       propertyPath: m_Name
       value: CannonTower_Level1
@@ -491,16 +472,54 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -6160909443113550052, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6490454136535165538}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4920679569970990189}
   m_SourcePrefab: {fileID: 100100000, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
---- !u!23 &5643904635218045171 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
+--- !u!1 &6148487906537605414 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
   m_PrefabInstance: {fileID: 6454424613328303223}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &4920679569970990189
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6148487906537605414}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 988f9450d1d562c42ac400e45394967f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 2
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &6780170889821803420 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
+  m_PrefabInstance: {fileID: 6454424613328303223}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &8135916103773452980 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -6234621900275626301, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
+  m_PrefabInstance: {fileID: 6454424613328303223}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8291889416698678123 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6160909443113550052, guid: c0ad70cb67e3b79459893cff7e63ecd2, type: 3}
   m_PrefabInstance: {fileID: 6454424613328303223}
   m_PrefabAsset: {fileID: 0}

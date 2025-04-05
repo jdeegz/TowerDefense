@@ -234,7 +234,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1253972613248529999}
-  - {fileID: 439872030016209545}
   - {fileID: 8201128818360580810}
   m_Father: {fileID: 8795141251248142417}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -294,15 +293,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3422267067485257249}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.876, z: 0}
+  m_LocalRotation: {x: 0.0008939082, y: 0.70710486, z: 0.0000640352, w: 0.70710814}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 956219149993495595}
   - {fileID: 2623168858468644869}
   - {fileID: 2663253964732754977}
-  m_Father: {fileID: 4888836089562354971}
+  m_Father: {fileID: 4354336040687742648}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4042526856377106012
 GameObject:
@@ -725,7 +724,6 @@ GameObject:
   - component: {fileID: 8923076353046454371}
   - component: {fileID: -7005396196458977181}
   - component: {fileID: -6322527113016510451}
-  - component: {fileID: 8020707726091264862}
   m_Layer: 7
   m_Name: CannonTower_UpgradeA2
   m_TagString: Untagged
@@ -763,6 +761,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: 2f6bf131640201242a491f5a243c6afd, type: 2}
   m_modelRoot: {fileID: 2731290404554802563}
+  m_animator: {fileID: 5950078662427962763}
   m_statusEffectData: {fileID: 0}
   m_layerMask:
     serializedVersion: 2
@@ -773,7 +772,7 @@ MonoBehaviour:
   m_turretPivot: {fileID: 8201128818360580810}
   m_muzzlePoint: {fileID: 8883319684500179084}
   m_renderers:
-  - {fileID: 84492718471957792}
+  - {fileID: 1609431595999828898}
   m_towerRangeCircle: {fileID: -7005396196458977181}
   m_isBuilt: 0
   m_targetSystem: 0
@@ -817,7 +816,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_selectedObjectType: 2
   m_meshRenderers:
-  - {fileID: 84492718471957792}
+  - {fileID: 1609431595999828898}
 --- !u!120 &-7005396196458977181
 LineRenderer:
   serializedVersion: 2
@@ -1020,28 +1019,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!95 &8020707726091264862
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9140437940615734701}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 22100000, guid: 25937af0edb855d4592d3c487a295f5f, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &1652179016435782052
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1098,6 +1075,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 49d38d9a242f9da47a061fa86fa5d656, type: 2}
+    - target: {fileID: 51898657118505478, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 49d38d9a242f9da47a061fa86fa5d656, type: 2}
     - target: {fileID: 919132149155446097, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
       propertyPath: m_Name
       value: CannonTower_LevelA2
@@ -1108,16 +1089,54 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -6160909443113550052, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 439872030016209545}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5950078662427962763}
   m_SourcePrefab: {fileID: 100100000, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
---- !u!23 &84492718471957792 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
-  m_PrefabInstance: {fileID: 1652179016435782052}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1253972613248529999 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
+  m_PrefabInstance: {fileID: 1652179016435782052}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &1609431595999828898 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 51898657118505478, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
+  m_PrefabInstance: {fileID: 1652179016435782052}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1886113096180657397 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
+  m_PrefabInstance: {fileID: 1652179016435782052}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &5950078662427962763
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886113096180657397}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 988f9450d1d562c42ac400e45394967f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 2
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!4 &4354336040687742648 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6160909443113550052, guid: 4e338c5c623f6f04aba48fccbbaa7a27, type: 3}
   m_PrefabInstance: {fileID: 1652179016435782052}
   m_PrefabAsset: {fileID: 0}

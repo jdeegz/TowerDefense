@@ -479,8 +479,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6483231648085226891}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.876, z: 0.10400009}
+  m_LocalRotation: {x: 0.0008939082, y: 0.70710486, z: 0.0000640352, w: 0.70710814}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -489,7 +489,7 @@ Transform:
   - {fileID: 725391013538596463}
   - {fileID: 1015655435632358223}
   - {fileID: 4076931077139341047}
-  m_Father: {fileID: 6816581690892986498}
+  m_Father: {fileID: 7266989106561500840}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6595305385108841544
 GameObject:
@@ -662,7 +662,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5319662563667730015}
-  - {fileID: 7972578233770907933}
   - {fileID: 4329687683881387876}
   m_Father: {fileID: 8795141251248142417}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1135,7 +1134,6 @@ GameObject:
   - component: {fileID: 8923076353046454371}
   - component: {fileID: -7005396196458977181}
   - component: {fileID: -6322527113016510451}
-  - component: {fileID: 2603187750464549451}
   m_Layer: 7
   m_Name: CannonTower_UpgradeA3
   m_TagString: Untagged
@@ -1173,6 +1171,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_towerData: {fileID: 11400000, guid: 3021963d8c67c0c4d8ead520da9e091f, type: 2}
   m_modelRoot: {fileID: 6805900306938192210}
+  m_animator: {fileID: 434122234271875978}
   m_statusEffectData: {fileID: 0}
   m_layerMask:
     serializedVersion: 2
@@ -1183,7 +1182,7 @@ MonoBehaviour:
   m_turretPivot: {fileID: 4329687683881387876}
   m_muzzlePoint: {fileID: 2650096904698891847}
   m_renderers:
-  - {fileID: 6455927890289894704}
+  - {fileID: 4862820247940871692}
   m_towerRangeCircle: {fileID: -7005396196458977181}
   m_isBuilt: 0
   m_targetSystem: 0
@@ -1229,7 +1228,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_selectedObjectType: 2
   m_meshRenderers:
-  - {fileID: 6455927890289894704}
+  - {fileID: 4862820247940871692}
 --- !u!120 &-7005396196458977181
 LineRenderer:
   serializedVersion: 2
@@ -1432,28 +1431,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!95 &2603187750464549451
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9140437940615734701}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 22100000, guid: 25937af0edb855d4592d3c487a295f5f, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &5645690494809192884
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1506,6 +1483,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8276014300411129928, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6f7c1c5aa885ad34391d697ee00c0ced, type: 2}
     - target: {fileID: -7511558181221131132, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1520,16 +1501,54 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -6160909443113550052, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7972578233770907933}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 434122234271875978}
   m_SourcePrefab: {fileID: 100100000, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
+--- !u!1 &4798845188940989669 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
+  m_PrefabInstance: {fileID: 5645690494809192884}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &434122234271875978
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4798845188940989669}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 988f9450d1d562c42ac400e45394967f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 2
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!137 &4862820247940871692 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -8276014300411129928, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
+  m_PrefabInstance: {fileID: 5645690494809192884}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5319662563667730015 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
   m_PrefabInstance: {fileID: 5645690494809192884}
   m_PrefabAsset: {fileID: 0}
---- !u!23 &6455927890289894704 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
+--- !u!4 &7266989106561500840 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6160909443113550052, guid: 4c7ee74312d73a84db81477e549fc435, type: 3}
   m_PrefabInstance: {fileID: 5645690494809192884}
   m_PrefabAsset: {fileID: 0}
