@@ -69,11 +69,23 @@ public class CheatManager : MonoBehaviour
         {
             TriggerKillAll();
         }
+        
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            TriggerToggleTowerActivation();
+        }
     }
 
     void TriggerKillAll()
     {
         GameplayManager.Instance.KillAllEnemies();
+    }
+
+    private bool m_activated = true;
+    void TriggerToggleTowerActivation()
+    {
+        m_activated = !m_activated;
+        GameplayManager.Instance.SetTowerActivation(m_activated);
     }
 
     void GiveWood()

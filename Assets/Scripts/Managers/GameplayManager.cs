@@ -2575,6 +2575,24 @@ public class GameplayManager : MonoBehaviour
             }
         }
     }
+
+    public void SetTowerActivation(bool value)
+    {
+        if (value)
+        {
+            foreach (Tower tower in m_towerList)
+            {
+                tower.RequestTowerEnable();
+            }
+        }
+        else
+        {
+            foreach (Tower tower in m_towerList)
+            {
+                tower.RequestTowerDisable();
+            } 
+        }
+    }
 }
 
 public class OozeManager
