@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using GameAnalyticsSDK;
 using JetBrains.Annotations;
 using Unity.Collections;
 using Unity.Mathematics;
@@ -493,7 +494,8 @@ public class GameplayManager : MonoBehaviour
         m_totalTime = 0;
         
         m_missionStartTime = Time.time;
-        //Invoke(nameof(SendSteamMissionStartedInfo), m_minimumMissionLength);
+        
+        SendGameAnalyticsMissionStartedInfo();
         
         UpdateGameplayState(GameplayState.Build);
         ResourceManager.Instance.StartDepositTimer();
@@ -949,13 +951,13 @@ public class GameplayManager : MonoBehaviour
             case GameplayState.CutScene:
                 break;
             case GameplayState.Victory:
-                //SendSteamCompletionInfo();
+                SendGameAnalyticsMissionCompletedInfo();
                 HandleMissionProgression();
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 2, Wave, m_perfectWavesCompleted);
                 HandleVictorySequence();
                 break;
             case GameplayState.Defeat:
-                //SendSteamCompletionInfo();
+                SendGameAnalyticsMissionCompletedInfo();
                 PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0, 0);
                 HandleDefeatSequence();
                 break;
@@ -969,6 +971,29 @@ public class GameplayManager : MonoBehaviour
     private float m_missionStartTime;
     private float m_minimumMissionLength = 60;
 
+    private void SendGameAnalyticsMissionStartedInfo()
+    {
+        string missionId = GameManager.Instance.m_curMission.m_missionID;
+        
+        GameAnalytics.NewProgressionEvent(GAProgressionStatus.Start, missionId);
+    }
+    
+    
+    private void SendGameAnalyticsMissionCompletedInfo()
+    {
+        string missionId = GameManager.Instance.m_curMission.m_missionID;
+        string mode = m_endlessModeActive ? "EndlessMode" : "NormalMode";
+        
+        GameAnalytics.SetCustomDimension01(mode);
+        GameAnalytics.NewDesignEvent($"Mission:{missionId}:{mode}:Wave", Wave);
+        GameAnalytics.NewDesignEvent($"Mission:{missionId}:{mode}:Time", (int)m_totalTime);
+        
+        GAProgressionStatus status = (m_gameplayState == GameplayState.Victory) ? GAProgressionStatus.Complete : GAProgressionStatus.Fail;
+
+        GameAnalytics.NewProgressionEvent(status, missionId);
+    }
+    
+    
     // When the mission starts, tell steam that this mission has been attempted.
     private void SendSteamMissionStartedInfo()
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GameAnalyticsSDK;
 using Steamworks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -34,6 +35,8 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Confined;
 #endif
         PlayerDataManager.Instance.Initialize();
+        // SDK Key and SDK Secret are set on the Settings object
+        GameAnalytics.Initialize();
     }
 
     public void UpdateGameState(GameState newState)
