@@ -23,6 +23,7 @@ public class TowerArc : Tower
                     RequestPlayAudio(m_towerData.m_audioFireClips);
                     RequestPlayAudioLoop(m_towerData.m_audioLoops[0]);
                     HandleFireAnims(true);
+                    m_animator.SetTrigger("Fire");
                 }
                 else
                 {

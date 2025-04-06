@@ -79,16 +79,19 @@ public class ProjectileMissile : Projectile
         }
     }
 
-
     void TravelToTargetFixedUpdate()
     {
         //Rotate towards Target.
         m_direction = m_targetPos - transform.position;
+        
         m_targetRotation = Quaternion.LookRotation(m_direction);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, m_targetRotation, m_lookSpeed * Time.fixedDeltaTime);
 
         //Move Forward.
-        transform.position += transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
+        //transform.position += transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
+        Vector3 clampedPos = transform.position + transform.forward * (m_projectileSpeed * Time.fixedDeltaTime);
+        clampedPos.y = Mathf.Max(clampedPos.y, 0.3f);
+        transform.position = clampedPos;
 
         //Increase Lookspeed (greatly)
         m_lookStep = m_lookAcceleration * Time.fixedDeltaTime;
