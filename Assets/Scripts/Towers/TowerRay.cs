@@ -30,7 +30,7 @@ public class TowerRay : Tower
     [Space(15)] [GradientUsage(true)]
     public Gradient m_panelGradient;
 
-    public List<MeshRenderer> m_panelMeshRenderers;
+    public List<Renderer> m_panelMeshRenderers;
 
     [Header("Data")]
     public float m_stackDropDelayTime;
@@ -58,10 +58,13 @@ public class TowerRay : Tower
             {
                 m_curStacks = value;
                 HandlePanelColor();
+                HandleTurretWiggle();
+                HandleIdle(m_curStacks > 0);
             }
         }
     }
-    
+
+
     private float m_curDamage;
     private float m_curFireRate;
     private Vector2 m_scrollOffset;
@@ -178,6 +181,14 @@ public class TowerRay : Tower
             }
         }
     }
+    
+    private void HandleIdle(bool HasTargets)
+    {
+        if (m_hasTargets == HasTargets) return;
+        
+        m_animator.SetBool("HasTargets", HasTargets);
+        m_hasTargets = HasTargets;
+    }
 
     void SetLineWidth()
     {
@@ -204,6 +215,7 @@ public class TowerRay : Tower
     
     void StopBeam()
     {
+        m_animator.SetBool("HasTargets", false);
         m_curTween.Kill();
         m_curTween = DOTween.To(() => m_curBeamWidth, x => m_curBeamWidth = x, 0f, 0.05f)
             .OnUpdate(SetLineWidth)
@@ -222,6 +234,13 @@ public class TowerRay : Tower
         if (m_projectileLineRenderer_Lightning) m_projectileLineRenderer_Lightning.enabled = false;
     }
 
+    private int additiveLayerIndex = 1;
+    private void HandleTurretWiggle()
+    {
+        float blendWeight = (float)CurStacks / m_maxStacks;
+        m_animator.SetLayerWeight(additiveLayerIndex, blendWeight);
+    }
+    
     void StartBeam()
     {
         m_curTween.Kill();
@@ -236,6 +255,9 @@ public class TowerRay : Tower
         m_muzzleVFX.Play();
         
         RequestPlayAudio(m_towerData.m_audioFireClips[0]);
+        
+        m_animator.SetTrigger("Fire");
+        m_animator.SetBool("HasTargets", true);
         //RequestPlayAudioLoop(m_towerData.m_audioSecondaryFireClips[0], m_secondaryAudioSource);
     }
 
@@ -265,9 +287,9 @@ public class TowerRay : Tower
 
         float normalizedTime = (float)CurStacks / m_maxStacks;
         Color color = m_panelGradient.Evaluate(normalizedTime);
-        foreach (MeshRenderer mesh in m_panelMeshRenderers)
+        foreach (Renderer renderer in m_panelMeshRenderers)
         {
-            mesh.material.SetColor("_EmissionColor", color);
+            renderer.material.SetColor("_EmissionColor", color);
         }
         
         //Debug.Log($"{gameObject.name}'s Material Color: {color} at stacks: {CurStacks}.");

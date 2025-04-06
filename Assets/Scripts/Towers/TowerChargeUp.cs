@@ -27,7 +27,7 @@ public class TowerChargeUp : Tower
     [Space(15)] [GradientUsage(true)]
     public Gradient m_panelGradient;
 
-    public List<MeshRenderer> m_panelMeshRenderers;
+    public List<Renderer> m_panelMeshRenderers;
 
     [Header("Data")]
     public float m_stackDropDelayTime;
@@ -50,8 +50,18 @@ public class TowerChargeUp : Tower
             {
                 m_curStacks = value;
                 HandlePanelColor();
+                HandleTurretWiggle();
+                HandleIdle(m_curStacks > 0);
             }
         }
+    }
+
+    private void HandleIdle(bool HasTargets)
+    {
+        if (m_hasTargets == HasTargets) return;
+        Debug.Log($"{name} Has Targets : {HasTargets}");
+        m_animator.SetBool("HasTargets", HasTargets);
+        m_hasTargets = HasTargets;
     }
 
     private Vector2 m_scrollOffset;
@@ -181,6 +191,13 @@ public class TowerChargeUp : Tower
 
         base.RequestTowerDisable();
     }
+    
+    private int additiveLayerIndex = 1;
+    private void HandleTurretWiggle()
+    {
+        float blendWeight = (float)CurStacks / m_maxStacks;
+        m_animator.SetLayerWeight(additiveLayerIndex, blendWeight);
+    }
 
     private float m_audioPitchMin = 0.5f;
     private float m_audioPitchMax = 1.5f;
@@ -192,9 +209,9 @@ public class TowerChargeUp : Tower
 
         m_panelNormalizedTime = CurStacks / m_maxStacks;
         m_panelColor = m_panelGradient.Evaluate(m_panelNormalizedTime);
-        foreach (MeshRenderer mesh in m_panelMeshRenderers)
+        foreach (Renderer renderer in m_panelMeshRenderers)
         {
-            mesh.material.SetColor("_EmissionColor", m_panelColor);
+            renderer.material.SetColor("_EmissionColor", m_panelColor);
         }
 
         m_lastStacks = CurStacks;
@@ -235,6 +252,8 @@ public class TowerChargeUp : Tower
         //Play Audio.
         int i = Random.Range(0, m_towerData.m_audioFireClips.Count - 1);
         m_audioSource.PlayOneShot(m_towerData.m_audioFireClips[i]);
+        
+        m_animator.SetTrigger("Fire");
     }
 
     void StartBeam()
