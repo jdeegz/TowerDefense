@@ -214,7 +214,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void GameObjectDeselected(GameObject obj)
     {
-        Debug.Log($"{obj.name} deselected.");
+        //Debug.Log($"{obj.name} deselected.");
         
         TowerData data = GameplayManager.Instance.GetPreconTowerData();
         if (data != null && data == m_towerData)
@@ -265,7 +265,7 @@ public class TowerTrayButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void GameObjectSelected(GameObject obj)
     {
-        Debug.Log($"{obj.name} selected.");
+        //Debug.Log($"{obj.name} selected.");
         
         TowerData data = GameplayManager.Instance.GetPreconTowerData();
         if (data != null && data == m_towerData && m_buttonState != ButtonState.Selected)
