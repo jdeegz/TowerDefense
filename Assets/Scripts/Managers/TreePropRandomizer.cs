@@ -7,6 +7,4 @@ public class TreePropRandomizer : MonoBehaviour
     public List<GameObject> m_treePropPrefabs;
 
     private List<TreeProp> m_treePropsInScene;
-    
-    
 }

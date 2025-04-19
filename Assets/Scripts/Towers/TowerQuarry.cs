@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class TowerQuarry : Tower
 {
-    [Header("Quarry Fields")]
-    public List<GameObject> m_chargeObjs;
-    public GameObject m_claimVFX;
     public int m_grantAmount = 1;
     
     public override void SetupTower()
@@ -33,7 +30,7 @@ public class TowerQuarry : Tower
         ResourceManager.Instance.UpdateStoneAmount(m_grantAmount);
         
         // UI
-        IngameUIController.Instance.SpawnCurrencyAlert(0, m_grantAmount, true, transform.position);
+        IngameUIController.Instance.SpawnCurrencyAlert(0, m_grantAmount, true, m_muzzlePoint.transform.position);
         
         // AUDIO
         RequestPlayAudio(m_towerData.m_audioSecondaryFireClips);

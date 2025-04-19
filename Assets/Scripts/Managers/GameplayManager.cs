@@ -986,7 +986,7 @@ public class GameplayManager : MonoBehaviour
         
         GameAnalytics.SetCustomDimension01(mode);
         GameAnalytics.NewDesignEvent($"Mission:{missionId}:{mode}:Wave", Wave);
-        GameAnalytics.NewDesignEvent($"Mission:{missionId}:{mode}:Time", (int)m_totalTime);
+        GameAnalytics.NewDesignEvent($"Mission:{missionId}:{mode}:Time", (int)(m_totalTime / 60));
         
         GAProgressionStatus status = (m_gameplayState == GameplayState.Victory) ? GAProgressionStatus.Complete : GAProgressionStatus.Fail;
 

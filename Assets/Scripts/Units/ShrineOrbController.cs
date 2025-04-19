@@ -28,7 +28,8 @@ public class ShrineOrbController : MonoBehaviour
     public void SetShrine(TowerShrine towerShrine)
     {
         m_orbParentTower = towerShrine;
-        m_spawnPoint = transform.position;
+        m_spawnPoint = towerShrine.transform.position;
+        m_spawnPoint.y += 3f;
         m_curDestination = GetNewDestination();
         Vector3 direction = m_curDestination - transform.position;
         transform.rotation = Quaternion.LookRotation(direction);

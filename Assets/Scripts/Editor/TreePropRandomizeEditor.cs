@@ -42,7 +42,6 @@ public class TreePropRandomizeEditor : Editor
         foreach (TreeProp node in allNodes)
         {
             trees.Add(node);
-            
         }
         
         return trees;

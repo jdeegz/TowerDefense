@@ -51,7 +51,7 @@ public class UIOptionsPopup : UIPopup
         base.Awake();
 
         m_elapsedTime = 0;
-        
+
         m_cheatsGroup.SetActive(false);
     }
 
@@ -184,12 +184,14 @@ public class UIOptionsPopup : UIPopup
         // Are we surrendering from an endless match, or normal?
         if (GameplayManager.Instance.IsEndlessModeActive())
         {
-            wave = GameplayManager.Instance.Wave;
-            perfectWavesCompleted = GameplayManager.Instance.m_perfectWavesCompleted;
+            GameplayManager.Instance.UpdateGameplayState(GameplayManager.GameplayState.Victory);
+            RequestClose();
         }
-
-        PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, wave, perfectWavesCompleted);
-        GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
+        else
+        {
+            PlayerDataManager.Instance.UpdateMissionSaveData(gameObject.scene.name, 1, 0, 0);
+            GameManager.Instance.RequestChangeScene("Menus", GameManager.GameState.Menus);
+        }
     }
 
     private void OnRestartButtonClicked()

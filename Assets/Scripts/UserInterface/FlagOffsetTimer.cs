@@ -6,7 +6,7 @@ public class FlagOffsetTimer : MonoBehaviour
     void OnEnable()
     {
         MaterialPropertyBlock block = new MaterialPropertyBlock();
-        block.SetFloat("_TimeOffset", Random.Range(0f, 10f));
+        block.SetFloat("_TimeOffset", Random.Range(0f, 1f));
         m_flagRenderer.SetPropertyBlock(block);
     }
 }
