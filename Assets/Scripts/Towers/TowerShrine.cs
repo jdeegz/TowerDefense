@@ -63,6 +63,7 @@ public class TowerShrine : Tower
             if (m_burstElapsedTime >= m_burstIntervalLength && m_spawnedChargeCount <= m_chargesPerInterval) // Can we spawn a charge?
             {
                 m_burstElapsedTime = 0;
+                m_animator.SetTrigger("Fire");
                 GrantCharges();
             }
         }

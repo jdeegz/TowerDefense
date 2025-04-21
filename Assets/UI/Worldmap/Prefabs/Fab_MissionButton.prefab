@@ -31,7 +31,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7805316452053759218}
   - {fileID: 8257731102294632924}
   - {fileID: 5835105513016438163}
   - {fileID: 3585178296565877928}
@@ -72,7 +71,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_missionData: {fileID: 11400000, guid: e368cf30439cf314ba46d0273d6274d1, type: 2}
-  m_spireRenderer: {fileID: 8805556920528250915}
+  m_spireRenderer: {fileID: 9136995842854433808}
   m_defeatedRootObj: {fileID: 7879033786073369336}
   m_lockedRootObj: {fileID: 5786264382816766851}
   m_undefeatedRootObj: {fileID: 7111534856153256919}
@@ -83,7 +82,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 97f9e76f2a1e8474abce64c895fd0362, type: 3}
   m_selectedSFX:
   - {fileID: 8300000, guid: 1677f560ab457a94ea375d7242ff08d3, type: 3}
-  m_lockedColorTint: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+  m_lockedColorTint: {r: 0.85, g: 0.85, b: 0.85, a: 1}
 --- !u!1 &3520203623081683426
 GameObject:
   m_ObjectHideFlags: 0
@@ -204,92 +203,6 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!1 &5623546034254133019
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7805316452053759218}
-  - component: {fileID: 7851378804386639622}
-  - component: {fileID: 7223391558696539784}
-  m_Layer: 0
-  m_Name: Base
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7805316452053759218
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5623546034254133019}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 0.05, z: 2}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8584224583022898356}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &7851378804386639622
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5623546034254133019}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &7223391558696539784
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5623546034254133019}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 5849c898f34496a489f88e9680a17aff, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &5786264382816766851
 GameObject:
   m_ObjectHideFlags: 0
@@ -401,7 +314,7 @@ VFXRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6636217316702075280}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -483,7 +396,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1805819662478222093
 Transform:
   m_ObjectHideFlags: 0
@@ -546,11 +459,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 095b56f7fa960204ea8b2d03cba37597, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.899
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 095b56f7fa960204ea8b2d03cba37597, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.589
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 095b56f7fa960204ea8b2d03cba37597, type: 3}
       propertyPath: m_LocalRotation.w
@@ -588,6 +501,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: MissionTable_Spire_Lock
       objectReference: {fileID: 0}
+    - target: {fileID: 3835294580639030054, guid: 095b56f7fa960204ea8b2d03cba37597, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 20b2c01cb06ca994b95e15bae6b77b70, type: 2}
+    - target: {fileID: 5330841180269689977, guid: 095b56f7fa960204ea8b2d03cba37597, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: ed032165ba6b2a04a9327a128cae0116, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -612,7 +533,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.098
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
       propertyPath: m_LocalPosition.z
@@ -646,10 +567,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -7511558181221131132, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
+    - target: {fileID: -8492872995662765717, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 9d64e12ae94041a46b086644138d042d, type: 2}
+    - target: {fileID: -7836496776709537609, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 889aa139842453548aba67c51709b634, type: 2}
+    - target: {fileID: -7511558181221131132, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 825b4ff38111d5f4cba0a649f9e293a6, type: 2}
     - target: {fileID: 919132149155446097, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
       propertyPath: m_Name
       value: MissionTable_Spire
@@ -664,8 +593,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
   m_PrefabInstance: {fileID: 7922406773476242599}
   m_PrefabAsset: {fileID: 0}
---- !u!23 &8805556920528250915 stripped
+--- !u!23 &9136995842854433808 stripped
 MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
+  m_CorrespondingSourceObject: {fileID: -7836496776709537609, guid: 6783aa2d4e9a6a842b148a8a2e726a97, type: 3}
   m_PrefabInstance: {fileID: 7922406773476242599}
   m_PrefabAsset: {fileID: 0}

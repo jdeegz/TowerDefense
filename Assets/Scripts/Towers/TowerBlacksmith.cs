@@ -1,17 +1,44 @@
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class TowerBlacksmith : Tower
 {
     
     void Start()
     {
-        
+        m_sparkTimer = Random.Range(0, m_sparkPeriodLength);
     }
 
     // Update is called once per frame
     void Update()
     {
+        HandleInteriorSparks();
+    }
+
+    [SerializeField] private float m_sparkPeriodLength;
+    [SerializeField] private float m_sparkActiveLength;
+    [SerializeField] private VisualEffect m_VFXInteriorSparks;
+    private float m_sparkTimer;
+    private bool m_sparksEnabled;
+
+    void HandleInteriorSparks()
+    {
+        if (!m_isBuilt) return;
         
+        m_sparkTimer += Time.deltaTime;
+
+        if (!m_sparksEnabled && m_sparkTimer > m_sparkPeriodLength) // Turn on if off
+        {
+            m_sparksEnabled = true;
+            m_VFXInteriorSparks.Play();
+        }
+
+        if (m_sparksEnabled && m_sparkTimer > m_sparkPeriodLength + m_sparkActiveLength) // Turn off if on
+        {
+            m_sparkTimer = 0;
+            m_sparksEnabled = false;
+            m_VFXInteriorSparks.Stop();
+        }
     }
 
     public override void SetupTower()

@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
 #endif
         PlayerDataManager.Instance.Initialize();
         // SDK Key and SDK Secret are set on the Settings object
+        GameAnalytics.SetBuildAllPlatforms(PlayerDataManager.Instance.BuildNumber.ToString());
         GameAnalytics.Initialize();
     }
 
