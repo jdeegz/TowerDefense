@@ -22,12 +22,14 @@ public class MenusButtonController : MonoBehaviour, IPointerEnterHandler, IPoint
     private Sequence m_curSequence;
 
     private float m_buttonWidth;
+    private Vector2 m_initialHoverRectSize;
 
     void Awake()
     {
         m_buttonRect = GetComponent<RectTransform>();
         m_buttonWidth = m_buttonRect.rect.width;
         m_hoverDisplayRect = m_hoverDisplayCanvasGroup.GetComponent<RectTransform>();
+        m_initialHoverRectSize = new Vector2(m_hoverDisplayRect.rect.width, m_hoverDisplayRect.rect.height);
         m_hoverDisplayFrameImage.color = GetComponent<Button>().colors.highlightedColor;
     }
 
@@ -49,10 +51,11 @@ public class MenusButtonController : MonoBehaviour, IPointerEnterHandler, IPoint
         m_curSequence.SetUpdate(true);
         m_curSequence.Append(m_hoverDisplayCanvasGroup.DOFade(1, m_showDuration));
 
-        Vector2 endPos = new Vector2(m_buttonWidth, 0);
+        Vector2 endSize = m_initialHoverRectSize;
+        endSize.x += m_buttonWidth;
         Vector2 labelEndPos = new Vector2(m_buttonWidth, 0);
 
-        m_curSequence.Join(m_hoverDisplayRect.DOAnchorPos(endPos, m_showDuration));
+        m_curSequence.Join(m_hoverDisplayRect.DOSizeDelta(endSize, m_showDuration));
         m_curSequence.Join(m_hoverDisplayLabelRect.DOAnchorPos(labelEndPos, m_showDuration * 1.5f).From());
 
         m_curSequence.Play();
@@ -66,10 +69,9 @@ public class MenusButtonController : MonoBehaviour, IPointerEnterHandler, IPoint
         m_curSequence.SetUpdate(true);
         m_curSequence.Append(m_hoverDisplayCanvasGroup.DOFade(0, m_hideDuration));
 
-        Vector2 endPos = new Vector2(0, 0);
         Vector2 labelEndPos = new Vector2(0, 0);
 
-        m_curSequence.Join(m_hoverDisplayRect.DOAnchorPos(endPos, m_hideDuration));
+        m_curSequence.Join(m_hoverDisplayRect.DOSizeDelta(m_initialHoverRectSize, m_showDuration));
         m_curSequence.Join(m_hoverDisplayLabelRect.DOAnchorPos(labelEndPos, m_hideDuration));
 
         m_curSequence.Play();
