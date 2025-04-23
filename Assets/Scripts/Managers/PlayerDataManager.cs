@@ -85,6 +85,13 @@ public class PlayerDataManager
     
     public MissionSaveData GetMissionSaveDataByMissionData(MissionData missionData)
     {
+        if (GameManager.Instance == null) Initialize();
+        
+        
+        Debug.Log($"Player Data is null: {m_playerData == null}");
+        Debug.Log($"Player Data Missions is null: {m_playerData.m_missions == null || m_playerData.m_missions.Count == 0}");
+
+        
         foreach (MissionSaveData missionSaveData in m_playerData.m_missions)
         {
             if (missionSaveData.m_sceneName == missionData.m_missionScene) return missionSaveData;
