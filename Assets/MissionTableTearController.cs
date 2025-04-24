@@ -11,6 +11,8 @@ public class MissionTableTearController : MonoBehaviour
     public Transform m_rotationTransform;
     
     private List<GameObject> m_validmissionButtons;
+    private int m_unlockedMissionCount;
+    private int m_defeatedMissionCount;
     
     private bool m_isSpawning;
     
@@ -24,6 +26,13 @@ public class MissionTableTearController : MonoBehaviour
     
     public void SetValidMissions()
     {
+        m_isSpawning = false;
+        
+        m_unlockedMissionCount = 0;
+        m_defeatedMissionCount = 0;
+        
+        m_spawnTimeElapsed = 0;
+        
         List<MissionButtonInteractable> missionButtons = MissionTableController.Instance.MissionButtonList;
         m_validmissionButtons = new List<GameObject>();
 
@@ -34,18 +43,27 @@ public class MissionTableTearController : MonoBehaviour
             {
                 m_validmissionButtons.Add(missionButton.gameObject);
             }
+            
+            if (missionButton.ButtonDisplayState == MissionButtonInteractable.DisplayState.Unlocked ||
+                missionButton.ButtonDisplayState == MissionButtonInteractable.DisplayState.Defeated)
+            {
+                ++m_unlockedMissionCount;
+            }
+            
+            if (missionButton.ButtonDisplayState == MissionButtonInteractable.DisplayState.Defeated)
+            {
+                ++m_defeatedMissionCount;
+            }
         }
-
-        Debug.Log($"SetValidMissions: Completed Scraping mission buttons and found {m_validmissionButtons.Count} valid mission targets.");
         
-        if (m_validmissionButtons.Count == 0)
+        if (m_validmissionButtons.Count == 0) // Player has powered all spires. Gossamer is healed.
         {
-            Debug.Log($"No Targets found, disabling Tear Controller.");
             enabled = false;
         }
         else
         {
-            Debug.Log($"Starting Tear Spawning.");
+            float percentMissionsDefeated = (float)m_defeatedMissionCount / missionButtons.Count;
+            m_spawnRate = Mathf.Lerp(6f, 12f, percentMissionsDefeated);
             m_isSpawning = true;
         }
     }
@@ -74,6 +92,6 @@ public class MissionTableTearController : MonoBehaviour
         GameObject obj = ObjectPoolManager.SpawnObject(m_missionTableTearObj, pos, quaternion.identity, transform, ObjectPoolManager.PoolType.GameObject);
         MissionTableTear tear = obj.GetComponent<MissionTableTear>();
         bool b = Random.Range(0, 2) == 0;
-        tear.SpawnTear(m_centerTransform, targetTransform, m_rotationTransform, b);
+        tear.SpawnTear(m_centerTransform, targetTransform, m_rotationTransform, b, m_unlockedMissionCount);
     }
 }

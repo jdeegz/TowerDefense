@@ -22,6 +22,10 @@ public class VanguardShieldManager : MonoBehaviour
         {
             m_maxShieldCount = GameplayManager.Instance.Wave / 15; //Every N waves, increase the maximum shield count by 1.
         }
+        else
+        {
+            m_maxShieldCount = m_vanguardShields.Count;
+        }
 
         m_activeShieldCount = Random.Range(1, Mathf.Min(m_vanguardShields.Count, m_maxShieldCount) + 1);
 

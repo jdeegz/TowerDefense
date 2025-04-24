@@ -27,6 +27,9 @@ public class MissionTableController : MonoBehaviour
     [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
     public List<MissionButtonInteractable> MissionButtonList => m_missionButtonList;
 
+    [Header("Tears")]
+    public MissionTableTearController m_tearController;
+
     public static event Action<MissionButtonInteractable> OnMissionSelected;
 
     private float m_currentYRotation = 0f;
@@ -353,5 +356,7 @@ public class MissionTableController : MonoBehaviour
         {
             button.UpdateDisplayState();
         }
+        
+        m_tearController.SetValidMissions();
     }
 }

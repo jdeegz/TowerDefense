@@ -23,6 +23,7 @@ public class ObjectOrbitController : MonoBehaviour
     private float m_arcTravelled;
     private float m_remainingAngleBetween;
     private float m_progress;
+    private float m_startBlend;
 
     private Vector3 m_startDir;
     private Vector3 m_targetDir;
@@ -76,6 +77,8 @@ public class ObjectOrbitController : MonoBehaviour
         {
             m_angleBetween = (360f - signedAngle) % 360f;
         }
+        
+        m_startBlend = Mathf.Lerp(0.2f, 0.85f, m_angleBetween / 360f);
 
         m_isAlive = true;
         m_audioSource = GetComponent<AudioSource>();
@@ -118,7 +121,8 @@ public class ObjectOrbitController : MonoBehaviour
 
         // Homing influence
         Vector3 targetLookDir = (m_targetTransform.position - transform.position).normalized;
-        float targetInfluence = Mathf.InverseLerp(0.75f, 1f, m_progress);
+        
+        float targetInfluence = Mathf.InverseLerp(m_startBlend, 1f, m_progress);
         Vector3 blendedDir = Vector3.Slerp(tangentDir, targetLookDir, targetInfluence).normalized;
         Quaternion targetRot = Quaternion.LookRotation(blendedDir);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, m_turnSpeed * Time.deltaTime);
@@ -126,7 +130,7 @@ public class ObjectOrbitController : MonoBehaviour
         // Move forward and apply height
         Vector3 move = transform.forward * m_moveSpeed * Time.deltaTime;
         Vector3 nextPos = transform.position + move;
-        nextPos.y = currentY;
+        //nextPos.y = currentY;
         transform.position = nextPos;
 
         // Stop when close
