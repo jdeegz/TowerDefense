@@ -1,113 +1,169 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class ObjectOrbitController : MonoBehaviour
 {
-    [Header("Orbit Settings")]
-    public Transform centerTransform;
-    public Transform targetTransform;
+    [Header("Grainwraith Settings")]
+    public EnemyData m_enemyData;
+    private float m_moveSpeed = 2f;
+    private float m_turnSpeed = 90f;
 
-    public bool clockwise = true;
-    public float moveSpeed = 2f;
-    public float turnSpeed = 90f;
-    public float stopDistance = 0.2f;
+    private Transform m_centerTransform;
+    private Transform m_targetTransform;
+    private Transform m_rotationRootTransform;
 
-    private float desiredRadius;
-    private float initialRadius;
-    private float initialHeight;
-    private float desiredHeight;
-    private float arcLength;
-    private float arcTravelled = 0f;
+    private bool m_clockwise = true;
+    private bool m_isAlive;
 
-    private bool hasArrived;
+    private float m_stoppingDistance = 0.2f;
+    private float m_initialHeight;
+    private float m_desiredHeight;
+    private float m_angleBetween;
+    private float m_arcTravelled;
+    private float m_remainingAngleBetween;
+    private float m_progress;
 
-    private Vector3 prevPos;
-    private Vector3 startDir;
-    private Vector3 targetDir;
-    private float angleBetween;
-    private float remainingAngleBetween;
-    private float progress;
+    private Vector3 m_startDir;
+    private Vector3 m_targetDir;
+    private Vector3 m_localCenter;
 
-    void Start()
+    private AudioSource m_audioSource;
+
+
+    public void SetupObject(Transform centerTransform, Transform targetTransform, Transform rotationRootTransform, bool clockwise)
     {
-        Vector3 toStart = transform.position - centerTransform.position;
+        m_moveSpeed = m_enemyData.m_moveSpeed;
+        m_turnSpeed = m_enemyData.m_lookSpeed;
+        
+        m_centerTransform = centerTransform;
+        m_targetTransform = targetTransform;
+        m_rotationRootTransform = rotationRootTransform;
+        m_clockwise = clockwise;
+
+        Vector3 toStart = transform.position - m_centerTransform.position;
         Vector3 flatToStart = new Vector3(toStart.x, 0, toStart.z).normalized;
 
-        Vector3 tangentDir = clockwise
+        Vector3 tangentDir = m_clockwise
             ? Vector3.Cross(Vector3.up, flatToStart)
             : Vector3.Cross(flatToStart, Vector3.up);
         transform.forward = tangentDir;
 
-        Vector3 toTarget = targetTransform.position - centerTransform.position;
-        Vector3 flatToTarget = new Vector3(toTarget.x, 0, toTarget.z);
+        // Add small random rotation noise
+        float yNoise = Random.Range(-20f, 20f);
+        float xNoise = Random.Range(-20f, 20f);
+        transform.rotation *= Quaternion.Euler(xNoise, yNoise, 0f);
 
-        initialRadius = flatToStart.magnitude;
-        desiredRadius = flatToTarget.magnitude;
+        m_initialHeight = transform.position.y;
+        m_desiredHeight = m_targetTransform.position.y;
 
-        initialHeight = transform.position.y;
-        desiredHeight = targetTransform.position.y;
-        
-        startDir = new Vector3(transform.position.x - centerTransform.position.x, 0,transform.position.z - centerTransform.position.z);
-        targetDir = new Vector3(targetTransform.position.x - centerTransform.position.x, 0, targetTransform.position.z - centerTransform.position.z);
+        Vector3 localStart = m_rotationRootTransform.InverseTransformPoint(transform.position);
+        localStart.y = 0;
+        Vector3 localTarget = m_rotationRootTransform.InverseTransformPoint(m_targetTransform.position);
+        localTarget.y = 0;
+        m_localCenter = m_rotationRootTransform.InverseTransformPoint(m_centerTransform.position);
+        m_localCenter.y = 0;
 
-        angleBetween = Vector3.SignedAngle(startDir, targetDir, Vector3.up);
-        angleBetween = (angleBetween + 360f) % 360f;
+        m_startDir = (localStart - m_localCenter);
+        m_targetDir = (localTarget - m_localCenter);
+
+        float signedAngle = Vector3.SignedAngle(m_startDir, m_targetDir, Vector3.up);
+        if (m_clockwise)
+        {
+            m_angleBetween = (360f + signedAngle) % 360f;
+        }
+        else
+        {
+            m_angleBetween = (360f - signedAngle) % 360f;
+        }
+
+        m_isAlive = true;
+        m_audioSource = GetComponent<AudioSource>();
+        RequestPlayAudio(m_enemyData.m_audioSpawnClips, m_audioSource);
+        ObjectPoolManager.SpawnObject(m_enemyData.m_teleportArrivalVFX, transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
     }
 
     void Update()
     {
-        if (hasArrived)
-            return;
+        if (!m_isAlive) return;
 
-        Vector3 currentDir = new Vector3(transform.position.x - centerTransform.position.x, 0,transform.position.z - centerTransform.position.z);
-        remainingAngleBetween = Vector3.SignedAngle(startDir, currentDir, Vector3.up);
-        remainingAngleBetween = (remainingAngleBetween + 360f) % 360f;  // Keep it between 0 and 360
+        Vector3 localCurrent = m_rotationRootTransform.InverseTransformPoint(transform.position);
+        localCurrent.y = 0;
+        m_localCenter = m_rotationRootTransform.InverseTransformPoint(m_centerTransform.position);
+        m_localCenter.y = 0;
 
-// Ensure the angle is always in the correct direction (respecting orbit direction)
-        if (clockwise && remainingAngleBetween < 0)
+        Vector3 currentDir = (localCurrent - m_localCenter);
+        m_remainingAngleBetween = Vector3.SignedAngle(m_startDir, currentDir, Vector3.up);
+        if (m_clockwise)
         {
-            remainingAngleBetween += 360f;  // Make sure the value stays positive for clockwise movement
+            m_remainingAngleBetween = (360f + m_remainingAngleBetween) % 360f;
         }
-        else if (!clockwise && remainingAngleBetween > 0)
+        else
         {
-            remainingAngleBetween -= 360f;  // Adjust for counter-clockwise movement
+            m_remainingAngleBetween = (360f - m_remainingAngleBetween) % 360f;
         }
 
-// Calculate the progress
-        float absRemainingAngle = Mathf.Abs(remainingAngleBetween);
-        progress = Mathf.Clamp01(absRemainingAngle / angleBetween);
-        
-        prevPos = transform.position;
+        // Calculate the progress
+        float absRemainingAngle = Mathf.Abs(m_remainingAngleBetween);
+        m_progress = Mathf.Clamp01(absRemainingAngle / m_angleBetween);
 
-        // 2. Radius & Y interpolation
-        float currentRadius = Mathf.Lerp(initialRadius, desiredRadius, progress);
-        float currentY = Mathf.Lerp(initialHeight, desiredHeight, progress);
+        float currentY = Mathf.Lerp(m_initialHeight, m_desiredHeight, m_progress);
 
-        // 3. Tangent direction
-        Vector3 toCenter = transform.position - centerTransform.position;
+        // Tangent direction
+        Vector3 toCenter = transform.position - m_centerTransform.position;
         Vector3 flatToCenter = new Vector3(toCenter.x, 0, toCenter.z).normalized;
-        Vector3 tangentDir = clockwise
+        Vector3 tangentDir = m_clockwise
             ? Vector3.Cross(Vector3.up, flatToCenter).normalized
             : Vector3.Cross(flatToCenter, Vector3.up).normalized;
 
-        // 4. Homing influence
-        Vector3 targetLookDir = (targetTransform.position - transform.position).normalized;
-        float targetInfluence = Mathf.InverseLerp(0.75f, 1f, progress);
+        // Homing influence
+        Vector3 targetLookDir = (m_targetTransform.position - transform.position).normalized;
+        float targetInfluence = Mathf.InverseLerp(0.75f, 1f, m_progress);
         Vector3 blendedDir = Vector3.Slerp(tangentDir, targetLookDir, targetInfluence).normalized;
-        Quaternion targetRot = Quaternion.LookRotation(blendedDir, Vector3.up);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, turnSpeed * Time.deltaTime);
+        Quaternion targetRot = Quaternion.LookRotation(blendedDir);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, m_turnSpeed * Time.deltaTime);
 
-        // 5. Move forward and apply height
-        Vector3 move = transform.forward * moveSpeed * Time.deltaTime;
+        // Move forward and apply height
+        Vector3 move = transform.forward * m_moveSpeed * Time.deltaTime;
         Vector3 nextPos = transform.position + move;
         nextPos.y = currentY;
         transform.position = nextPos;
 
-        // 6. Stop when close
-        if (Vector3.Distance(transform.position, targetTransform.position) < stopDistance)
+        // Stop when close
+        if (Vector3.Distance(transform.position, m_targetTransform.position) < m_stoppingDistance)
         {
-            hasArrived = true;
-            moveSpeed = 0;
-            turnSpeed = 0;
+            m_initialHeight = 0;
+            m_desiredHeight = 0;
+            m_angleBetween = 0;
+            m_arcTravelled = 0f;
+            m_remainingAngleBetween = 0;
+            m_progress = 0;
+            ReachedTarget();
         }
+    }
+
+    public void RequestPlayAudio(List<AudioClip> clips, AudioSource audioSource = null)
+    {
+        if (clips[0] == null) return;
+
+        if (audioSource == null) audioSource = m_audioSource;
+        int i = Random.Range(0, clips.Count);
+        audioSource.PlayOneShot(clips[i]);
+    }
+
+    public void ReachedTarget()
+    {
+        m_isAlive = false;
+        if (m_enemyData.m_attackSpireVFXPrefab)
+        {
+            Quaternion rotation = Quaternion.LookRotation(-transform.forward);
+            ObjectPoolManager.SpawnObject(m_enemyData.m_attackSpireVFXPrefab, transform.position, rotation, transform.parent, ObjectPoolManager.PoolType.ParticleSystem);
+        }
+        RemoveObject();
+    }
+
+    public void RemoveObject()
+    {
+        ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.Enemy);
     }
 }

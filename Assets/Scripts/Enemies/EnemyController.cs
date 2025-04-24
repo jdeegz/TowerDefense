@@ -272,7 +272,7 @@ public abstract class EnemyController : Dissolvable, IEffectable
             transform.rotation = arrivalRot;
         }
 
-        ObjectPoolManager.SpawnObject(m_enemyData.m_teleportArrivalVFX, m_targetPoint.transform.position, quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
+        ObjectPoolManager.SpawnObject(m_enemyData.m_teleportArrivalVFX, m_targetPoint.transform.position, Quaternion.identity, null, ObjectPoolManager.PoolType.ParticleSystem);
 
         //m_animator.SetTrigger("Birth");
 

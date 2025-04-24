@@ -17,6 +17,7 @@ public class VFXCleanUp : PooledObject
     public List<bool> m_vfxSystemHasPlayed;
     public bool m_vfxSystemsComplete;
     private bool m_hasReturnedToPool = false;
+    private bool m_isSpawned = false;
 
     void Start()
     {
@@ -62,6 +63,7 @@ public class VFXCleanUp : PooledObject
     void Update()
     {
         if (m_hasReturnedToPool) return;
+        if (!m_isSpawned) return;
 
         //If we have vfx systems in here, we need to check to see if each one has played and if it's completed, if so set a bool to true.
         if (!m_vfxSystemsComplete)
@@ -77,6 +79,7 @@ public class VFXCleanUp : PooledObject
                     m_vfxSystems.RemoveAt(i);
                     m_vfxSystemHasPlayed.RemoveAt(i);
                     --i;
+                    
                     continue;
                 }
 
@@ -97,10 +100,12 @@ public class VFXCleanUp : PooledObject
             {
                 ObjectPoolManager.ReturnObjectToPool(gameObject, ObjectPoolManager.PoolType.ParticleSystem);
                 m_hasReturnedToPool = true;
+                m_isSpawned = false;
             }
             else
             {
                 //
+                m_isSpawned = false;
             }
 
             m_elapsedTime = 0f;
@@ -116,7 +121,7 @@ public class VFXCleanUp : PooledObject
         
         // Create list that i manipulate in Update.
         m_vfxSystems = new List<VisualEffect>(m_vfx);
-
+        
         // Check if we have any systems, if we do, make a list of bools.
         if (m_vfxSystems.Count == 0)
         {
@@ -140,5 +145,7 @@ public class VFXCleanUp : PooledObject
                 m_vfxSystemHasPlayed.Add(false);
             }
         }
+
+        m_isSpawned = true;
     }
 }
