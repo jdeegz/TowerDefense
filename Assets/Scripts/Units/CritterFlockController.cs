@@ -11,13 +11,11 @@ public class CritterFlockController : MonoBehaviour
     [SerializeField] private float m_critterMoveSpeed = 0.2f;
     [SerializeField] private float m_critterRotationSpeed = 90f;
 
-    [SerializeField] private float m_critterIdleDuration = 2f;
-    [SerializeField] private float m_critterIdleChance = 0.1f;
-
-    [SerializeField] private float m_critterEatDuration = 5f;
-    [SerializeField] private float m_critterEatChance = 0.33f;
+    [SerializeField] private float m_critterIdleDuration = 4f;
+    [SerializeField] private float m_critterIdleChance = 0.66f;
 
     [SerializeField] private float m_critterNewCellChance = 0.33f;
+    [SerializeField] private float m_turnEaseSpeed = 10f;
 
     [Header("Alerted Stats")]
     [SerializeField] private bool m_isAlerted;
@@ -29,16 +27,11 @@ public class CritterFlockController : MonoBehaviour
     [SerializeField] private Renderer m_renderer;
     [SerializeField] private Gradient m_baseColorGradient;
 
-    [Header("Debug")]
-    [SerializeField] private Color m_idleColor;
-    [SerializeField] private Color m_eatingColor;
-    [SerializeField] private Color m_rotatingColor;
-    [SerializeField] private Color m_movingColor;
-    [SerializeField] private Color m_alertColor;
-    [SerializeField] private GameObject m_targetCellObj;
-    [SerializeField] private GameObject m_currentCellObj;
+    [SerializeField] private List<GameObject> m_horns;
+    
 
-    private Collider m_collider;
+    private float m_visualAngle = 0f;
+    
     private Material m_material;
 
     private Vector3 m_targetPos;
@@ -54,16 +47,16 @@ public class CritterFlockController : MonoBehaviour
     private Coroutine m_movementCoroutine;
     private Coroutine m_rotationCoroutine;
 
+    private Animator m_animator;
+
     private CritterState m_curState = CritterState.Idle;
 
     public enum CritterState
     {
-        Idle,
-        Eating,
+        Idle, // IsIdle
         ChoosingTarget,
-        Moving,
-        Rotating,
-        Fleeing
+        Moving, // IsMoving + Speed
+        Rotating, // Angle + Layer Weight
     }
 
 
@@ -85,11 +78,13 @@ public class CritterFlockController : MonoBehaviour
         materialPropertyBlock.SetColor("_Color", m_baseColorGradient.Evaluate(t));
         m_renderer.SetPropertyBlock(materialPropertyBlock);
         
-        m_collider = GetComponent<Collider>();
+        m_animator = GetComponent<Animator>();
 
         // Assign random starting look direction
         float randomYRotation = Random.Range(0f, 360f);
         transform.rotation = Quaternion.Euler(0f, randomYRotation, 0f);
+
+        Util.GetRandomElement(m_horns).SetActive(true);
     }
 
     void OnDestroy()
@@ -195,26 +190,21 @@ public class CritterFlockController : MonoBehaviour
             switch (m_curState)
             {
                 case CritterState.Idle:
-                    //m_material.color = m_idleColor;
+                    m_animator.SetBool("IsIdle", true);
                     yield return new WaitForSeconds(GetRandomDuration(m_critterIdleDuration));
-                    ChooseNextAction();
-                    break;
-                case CritterState.Eating:
-                    //m_material.color = m_eatingColor;
-                    yield return new WaitForSeconds(GetRandomDuration(m_critterEatDuration));
                     ChooseNextAction();
                     break;
                 case CritterState.ChoosingTarget:
                     ChooseNewTarget();
                     break;
                 case CritterState.Moving:
-                    //m_material.color = m_isAlerted ? m_alertColor : m_movingColor;
+                    m_animator.SetBool("IsIdle", false);
                     yield return m_movementCoroutine = StartCoroutine(MoveToTarget());
                     m_isAlerted = false;
-                    m_curState = CritterState.Eating;
+                    ChooseNextAction();
                     break;
                 case CritterState.Rotating:
-                    //m_material.color = m_rotatingColor;
+                    m_animator.SetBool("IsIdle", false);
                     yield return m_rotationCoroutine = StartCoroutine(RotateToTarget());
                     m_curState = CritterState.Moving;
                     break;
@@ -232,6 +222,8 @@ public class CritterFlockController : MonoBehaviour
     private IEnumerator MoveToTarget()
     {
         float moveSpeed = m_isAlerted ? m_critterAlertMoveSpeed : m_critterMoveSpeed;
+        float animSpeed = m_isAlerted ? 2 : 1;
+        m_animator.SetFloat("Speed", animSpeed);
 
         while (Vector3.Distance(transform.position, m_targetPos) > m_movementStoppingDistance)
         {
@@ -339,11 +331,24 @@ public class CritterFlockController : MonoBehaviour
     {
         Quaternion targetRotation = Quaternion.LookRotation(m_targetPos - transform.position);
         float rotationSpeed = m_isAlerted ? m_critterAlertRotationSpeed : m_critterRotationSpeed;
-        while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
+        float remainingAngle;
+        
+        while ((remainingAngle = Quaternion.Angle(transform.rotation, targetRotation)) > 0.1f)
         {
+            Vector3 directionToTarget = targetRotation * Vector3.forward;
+            Vector3 cross = Vector3.Cross(transform.forward, directionToTarget);
+            remainingAngle *= Mathf.Sign(cross.y); // signed range: -180 to +180
+            
+            m_visualAngle = Mathf.MoveTowards(m_visualAngle, remainingAngle, m_turnEaseSpeed * Time.deltaTime);
+            
+            m_animator.SetFloat("Angle", m_visualAngle);
+            
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             yield return null;
         }
+        
+        m_visualAngle = 0f;
+        m_animator.SetFloat("Angle", 0f);
     }
 
     private void ChooseNextAction()
@@ -352,14 +357,12 @@ public class CritterFlockController : MonoBehaviour
 
         if (randomRoll < m_critterIdleChance)
         {
+            Debug.Log($"Critter Next Action: Idle");
             m_curState = CritterState.Idle;
-        }
-        else if (randomRoll < m_critterIdleChance + m_critterEatChance)
-        {
-            m_curState = CritterState.Eating;
         }
         else
         {
+            Debug.Log($"Critter Next Action: Choosing Target");
             m_curState = CritterState.ChoosingTarget;
         }
     }
