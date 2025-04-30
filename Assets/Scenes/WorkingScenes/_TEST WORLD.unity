@@ -1913,15 +1913,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_critterMoveSpeed: 0.2
-  m_critterRotationSpeed: 45
-  m_critterIdleDuration: 2
-  m_critterIdleChance: 0.66
-  m_critterNewCellChance: 0.33
-  m_turnEaseSpeed: 120
+  m_critterRotationSpeed: 30
+  m_critterIdleDuration: 5
+  m_critterIdleChance: 0.5
+  m_critterNewCellChance: 0.5
+  m_turnEaseSpeed: 90
   m_isAlerted: 0
   m_critterAlertRange: 2.25
   m_critterAlertMoveSpeed: 0.5
-  m_critterAlertRotationSpeed: 270
+  m_critterAlertRotationSpeed: 120
   m_renderer: {fileID: 258517620}
   m_baseColorGradient:
     serializedVersion: 2
@@ -24130,6 +24130,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 7320fcc05a2faae44bcf240cda3ec86f, type: 3}
       propertyPath: m_Name
       value: Critter_Yak
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7320fcc05a2faae44bcf240cda3ec86f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2100230528978869014, guid: 7320fcc05a2faae44bcf240cda3ec86f, type: 3}
       propertyPath: m_IsActive

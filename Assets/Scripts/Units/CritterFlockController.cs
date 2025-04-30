@@ -28,10 +28,10 @@ public class CritterFlockController : MonoBehaviour
     [SerializeField] private Gradient m_baseColorGradient;
 
     [SerializeField] private List<GameObject> m_horns;
-    
+
 
     private float m_visualAngle = 0f;
-    
+
     private Material m_material;
 
     private Vector3 m_targetPos;
@@ -53,10 +53,10 @@ public class CritterFlockController : MonoBehaviour
 
     public enum CritterState
     {
-        Idle, // IsIdle
+        Idle,
         ChoosingTarget,
-        Moving, // IsMoving + Speed
-        Rotating, // Angle + Layer Weight
+        Moving,
+        Rotating,
     }
 
 
@@ -64,21 +64,20 @@ public class CritterFlockController : MonoBehaviour
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnTowerBuild += TowerBuilt;
+        m_animator = GetComponent<Animator>();
     }
 
     void Start()
     {
         // Get components to edit later
         m_material = m_renderer.material;
-        
+
         MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
-        
+
         float t = Random.Range(0, 1f);
         m_material.color = m_baseColorGradient.Evaluate(t);
         materialPropertyBlock.SetColor("_Color", m_baseColorGradient.Evaluate(t));
         m_renderer.SetPropertyBlock(materialPropertyBlock);
-        
-        m_animator = GetComponent<Animator>();
 
         // Assign random starting look direction
         float randomYRotation = Random.Range(0f, 360f);
@@ -146,7 +145,7 @@ public class CritterFlockController : MonoBehaviour
 
         m_isAlerted = true;
         m_targetPos = GetSpotInCell(fleeCell);
-        InterruptStateMachine(CritterState.Rotating);
+        InterruptStateMachine(CritterState.Moving);
     }
 
 
@@ -154,17 +153,17 @@ public class CritterFlockController : MonoBehaviour
     {
         if (m_stateMachineCoroutine != null)
         {
-            StopCoroutine(m_stateMachineCoroutine); 
+            StopCoroutine(m_stateMachineCoroutine);
         }
-        
+
         if (m_movementCoroutine != null)
         {
-            StopCoroutine(m_movementCoroutine); 
+            StopCoroutine(m_movementCoroutine);
         }
-        
+
         if (m_rotationCoroutine != null)
         {
-            StopCoroutine(m_rotationCoroutine); 
+            StopCoroutine(m_rotationCoroutine);
         }
 
         m_curState = desiredState;
@@ -190,7 +189,6 @@ public class CritterFlockController : MonoBehaviour
             switch (m_curState)
             {
                 case CritterState.Idle:
-                    m_animator.SetBool("IsIdle", true);
                     yield return new WaitForSeconds(GetRandomDuration(m_critterIdleDuration));
                     ChooseNextAction();
                     break;
@@ -198,13 +196,16 @@ public class CritterFlockController : MonoBehaviour
                     ChooseNewTarget();
                     break;
                 case CritterState.Moving:
-                    m_animator.SetBool("IsIdle", false);
-                    yield return m_movementCoroutine = StartCoroutine(MoveToTarget());
+                    m_animator.SetTrigger("IsMoving");
+                    yield return m_movementCoroutine = StartCoroutine(MoveAndRotateToTarget());
                     m_isAlerted = false;
-                    ChooseNextAction();
+                    
+                    // Always idle after a move.
+                    m_animator.SetTrigger("IsIdle");
+                    m_curState = CritterState.Idle; 
                     break;
                 case CritterState.Rotating:
-                    m_animator.SetBool("IsIdle", false);
+                    m_animator.SetTrigger("IsMoving");
                     yield return m_rotationCoroutine = StartCoroutine(RotateToTarget());
                     m_curState = CritterState.Moving;
                     break;
@@ -267,7 +268,7 @@ public class CritterFlockController : MonoBehaviour
         if (other.CompareTag("Critter") && other.gameObject != gameObject)
         {
             m_critterAvoidanceCount++;
-            //Debug.Log($"{name} Trigger Enter ++ Critter Count {m_critterAvoidanceCount}");
+            Debug.Log($"{name} Trigger Enter ++ Critter Count {m_critterAvoidanceCount}");
         }
     }
 
@@ -329,27 +330,127 @@ public class CritterFlockController : MonoBehaviour
 
     private IEnumerator RotateToTarget()
     {
-        Quaternion targetRotation = Quaternion.LookRotation(m_targetPos - transform.position);
         float rotationSpeed = m_isAlerted ? m_critterAlertRotationSpeed : m_critterRotationSpeed;
-        float remainingAngle;
-        
-        while ((remainingAngle = Quaternion.Angle(transform.rotation, targetRotation)) > 0.1f)
+        float turnEaseSpeed = m_isAlerted ? 180f : 90f;
+
+        while (true)
         {
-            Vector3 directionToTarget = targetRotation * Vector3.forward;
-            Vector3 cross = Vector3.Cross(transform.forward, directionToTarget);
-            remainingAngle *= Mathf.Sign(cross.y); // signed range: -180 to +180
-            
-            m_visualAngle = Mathf.MoveTowards(m_visualAngle, remainingAngle, m_turnEaseSpeed * Time.deltaTime);
-            
-            m_animator.SetFloat("Angle", m_visualAngle);
-            
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            Vector3 toTarget = m_targetPos - transform.position;
+
+            Vector3 targetDirection = toTarget.normalized;
+            Vector3 blendedDirection = (targetDirection + m_avoidanceDirection).normalized;
+
+            // Safe fallback if avoidance cancels out movement
+            if (blendedDirection.sqrMagnitude < 0.001f)
+                blendedDirection = targetDirection;
+
+            Quaternion desiredRotation = Quaternion.LookRotation(blendedDirection);
+
+            //If we're not looking, rotate.
+            //if (Quaternion.Angle(transform.rotation, desiredRotation) > 1f)
+            if (m_visualAngle > .1f)
+            {
+                // Rotation toward blended direction
+
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, rotationSpeed * Time.deltaTime);
+
+                // Calculate the angle for animator and exit condition
+                float angleDelta = Quaternion.Angle(transform.rotation, desiredRotation);
+                Vector3 cross = Vector3.Cross(transform.forward, blendedDirection);
+                float signedAngle = angleDelta * Mathf.Sign(cross.y);
+                m_visualAngle = Mathf.MoveTowards(m_visualAngle, signedAngle, turnEaseSpeed * Time.deltaTime);
+                m_animator.SetFloat("Angle", m_visualAngle);
+            }
+            else
+            {
+                m_visualAngle = 0f;
+                m_animator.SetFloat("Angle", 0f);
+                break;
+            }
+
             yield return null;
         }
-        
-        m_visualAngle = 0f;
-        m_animator.SetFloat("Angle", 0f);
     }
+
+    private bool m_isFacingTarget;
+    private bool m_isAtTarget;
+    private IEnumerator MoveAndRotateToTarget()
+    {
+        float moveSpeed = m_isAlerted ? m_critterAlertMoveSpeed : m_critterMoveSpeed;
+        float rotationSpeed = m_isAlerted ? m_critterAlertRotationSpeed : m_critterRotationSpeed;
+        float turnEaseSpeed = m_isAlerted ? 90f : 30f;
+        float animSpeed = m_isAlerted ? 2 : 1;
+
+        m_isFacingTarget = false;
+        m_isAtTarget = false;
+
+        m_animator.SetFloat("Speed", animSpeed);
+
+        while (true)
+        {
+            Vector3 toTarget = m_targetPos - transform.position;
+            float distance = toTarget.magnitude;
+
+            Vector3 targetDirection = toTarget.normalized;
+            Vector3 blendedDirection = (targetDirection + m_avoidanceDirection).normalized;
+
+            // Safe fallback if avoidance cancels out movement
+            if (blendedDirection.sqrMagnitude < 0.001f)
+                blendedDirection = targetDirection;
+            
+            Quaternion desiredRotation = Quaternion.LookRotation(blendedDirection);
+            
+            //If we're not looking, rotate.
+            if (Quaternion.Angle(transform.rotation, desiredRotation) > 1f)
+            {
+                // Rotation toward blended direction
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, rotationSpeed * Time.deltaTime);
+
+                // Calculate the angle for animator and exit condition
+                float angleDelta = Quaternion.Angle(transform.rotation, desiredRotation);
+                Vector3 cross = Vector3.Cross(transform.forward, blendedDirection);
+                float signedAngle = angleDelta * Mathf.Sign(cross.y);
+                m_visualAngle = Mathf.MoveTowards(m_visualAngle, signedAngle, turnEaseSpeed * Time.deltaTime);
+                m_animator.SetFloat("Angle", m_visualAngle);
+            }
+            else
+            {
+                m_visualAngle = 0f;
+                m_animator.SetFloat("Angle", 0f);
+                m_isFacingTarget = true;
+            }
+
+            //If we're not there, move.
+            if (distance >= m_movementStoppingDistance)
+            {
+                // Move forward in the blended direction
+                transform.position += blendedDirection * (moveSpeed * Time.deltaTime);
+
+                // Cell bookkeeping
+                m_newPos = Util.GetVector2IntFrom3DPos(transform.position);
+                if (m_newPos != m_curPos)
+                {
+                    m_newCell = Util.GetCellFromPos(m_newPos);
+                    m_curCell.UpdateCritterCount(-1, gameObject.name);
+                    m_prevCell = m_curCell;
+                    m_curCell = m_newCell;
+                    m_curPos = m_newPos;
+                    m_curCell.UpdateCritterCount(1, gameObject.name);
+                }
+            }
+            else
+            {
+                m_isAtTarget = true;
+            }
+
+            // Exit if close enough to the target and rotation is within threshold
+            if (m_isAtTarget && m_isFacingTarget)
+                break;
+
+            yield return null;
+        }
+    }
+
 
     private void ChooseNextAction()
     {
@@ -384,8 +485,33 @@ public class CritterFlockController : MonoBehaviour
     private void PickNewTarget()
     {
         m_targetPos = GetSpotInCell(m_curCell);
-        //Debug.Log($"Pick New Target -- CurCell: {m_curCell.m_cellPos}, Target Pos: {m_targetPos}");
-        m_curState = CritterState.Rotating;
+        CalculateMovementRequired();
+    }
+
+    private void CalculateMovementRequired()
+    {
+        Vector3 toTarget = m_targetPos - transform.position;
+        float distance = toTarget.magnitude;
+
+        Quaternion targetRotation = Quaternion.LookRotation(toTarget);
+        float remainingAngle = Quaternion.Angle(transform.rotation, targetRotation);
+
+        float moveSpeed = m_isAlerted ? m_critterAlertMoveSpeed : m_critterMoveSpeed;
+        float rotationSpeed = m_isAlerted ? m_critterAlertRotationSpeed : m_critterRotationSpeed;
+        float turningRadius = moveSpeed / rotationSpeed;
+
+        bool shouldRotateInPlace = distance < turningRadius && remainingAngle > 30f;
+
+        m_curState = CritterState.Moving;
+
+        if (shouldRotateInPlace)
+        {
+            m_curState = CritterState.Rotating;
+        }
+        else
+        {
+            m_curState = CritterState.Moving;
+        }
     }
 
     private void PickNewCell()
@@ -413,13 +539,13 @@ public class CritterFlockController : MonoBehaviour
 
         m_targetPos = GetSpotInCell(emptyNeighbors[index]);
         //Debug.Log($"Pick New Cell -- Cell: {emptyNeighbors[index].m_cellPos}, Target Pos: {m_targetPos}");
-        m_curState = CritterState.Rotating;
+        CalculateMovementRequired();
     }
 
     private Vector3 GetSpotInCell(Cell cell)
     {
-        float xOffset = Random.Range(-.45f, .45f);
-        float zOffset = Random.Range(-.45f, .45f);
+        float xOffset = Random.Range(-.35f, .35f);
+        float zOffset = Random.Range(-.35f, .35f);
         Vector3 newPos = new Vector3(cell.m_cellPos.x + xOffset, 0, cell.m_cellPos.y + zOffset);
         return newPos;
     }
