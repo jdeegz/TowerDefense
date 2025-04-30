@@ -61,6 +61,7 @@ public class CritterFlockController : MonoBehaviour
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnTowerBuild += TowerBuilt;
+        m_animator.SetInteger("IdleIndex", Random.Range(0,3));
     }
 
     void Start()
