@@ -15,7 +15,6 @@ public class CritterFlockController : MonoBehaviour
     [SerializeField] private float m_critterIdleChance = 0.66f;
 
     [SerializeField] private float m_critterNewCellChance = 0.33f;
-    [SerializeField] private float m_turnEaseSpeed = 10f;
 
     [Header("Alerted Stats")]
     [SerializeField] private bool m_isAlerted;
@@ -24,11 +23,11 @@ public class CritterFlockController : MonoBehaviour
     [SerializeField] private float m_critterAlertRotationSpeed = 270f;
 
     [Header("Colors")]
+    [SerializeField] private Animator m_animator;
     [SerializeField] private Renderer m_renderer;
     [SerializeField] private Gradient m_baseColorGradient;
 
     [SerializeField] private List<GameObject> m_horns;
-
 
     private float m_visualAngle = 0f;
 
@@ -47,8 +46,6 @@ public class CritterFlockController : MonoBehaviour
     private Coroutine m_movementCoroutine;
     private Coroutine m_rotationCoroutine;
 
-    private Animator m_animator;
-
     private CritterState m_curState = CritterState.Idle;
 
     public enum CritterState
@@ -64,7 +61,6 @@ public class CritterFlockController : MonoBehaviour
     {
         GameplayManager.OnGameplayStateChanged += GameplayManagerStateChanged;
         GameplayManager.OnTowerBuild += TowerBuilt;
-        m_animator = GetComponent<Animator>();
     }
 
     void Start()
@@ -207,7 +203,10 @@ public class CritterFlockController : MonoBehaviour
                 case CritterState.Rotating:
                     m_animator.SetTrigger("IsMoving");
                     yield return m_rotationCoroutine = StartCoroutine(RotateToTarget());
-                    m_curState = CritterState.Moving;
+                    
+                    // Always idle after a rotate. (Rotate is only fired if our targetPos is within a short distance)
+                    m_animator.SetTrigger("IsIdle");
+                    m_curState = CritterState.Idle;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -347,14 +346,9 @@ public class CritterFlockController : MonoBehaviour
             Quaternion desiredRotation = Quaternion.LookRotation(blendedDirection);
 
             //If we're not looking, rotate.
-            //if (Quaternion.Angle(transform.rotation, desiredRotation) > 1f)
-            if (m_visualAngle > .1f)
+            if (Quaternion.Angle(transform.rotation, desiredRotation) > 1f)
             {
-                // Rotation toward blended direction
-
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, rotationSpeed * Time.deltaTime);
-
-                // Calculate the angle for animator and exit condition
                 float angleDelta = Quaternion.Angle(transform.rotation, desiredRotation);
                 Vector3 cross = Vector3.Cross(transform.forward, blendedDirection);
                 float signedAngle = angleDelta * Mathf.Sign(cross.y);
@@ -401,7 +395,7 @@ public class CritterFlockController : MonoBehaviour
             Quaternion desiredRotation = Quaternion.LookRotation(blendedDirection);
             
             //If we're not looking, rotate.
-            if (Quaternion.Angle(transform.rotation, desiredRotation) > 1f)
+            if (Quaternion.Angle(transform.rotation, desiredRotation) > 1f && !m_isFacingTarget)
             {
                 // Rotation toward blended direction
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRotation, rotationSpeed * Time.deltaTime);
@@ -421,7 +415,7 @@ public class CritterFlockController : MonoBehaviour
             }
 
             //If we're not there, move.
-            if (distance >= m_movementStoppingDistance)
+            if (distance >= m_movementStoppingDistance && !m_isAtTarget)
             {
                 // Move forward in the blended direction
                 transform.position += blendedDirection * (moveSpeed * Time.deltaTime);
@@ -458,12 +452,12 @@ public class CritterFlockController : MonoBehaviour
 
         if (randomRoll < m_critterIdleChance)
         {
-            Debug.Log($"Critter Next Action: Idle");
+            Debug.Log($"{gameObject.name} Next Action: Idle");
             m_curState = CritterState.Idle;
         }
         else
         {
-            Debug.Log($"Critter Next Action: Choosing Target");
+            Debug.Log($"{gameObject.name} Critter Next Action: Choosing Target");
             m_curState = CritterState.ChoosingTarget;
         }
     }
@@ -500,10 +494,10 @@ public class CritterFlockController : MonoBehaviour
         float rotationSpeed = m_isAlerted ? m_critterAlertRotationSpeed : m_critterRotationSpeed;
         float turningRadius = moveSpeed / rotationSpeed;
 
-        bool shouldRotateInPlace = distance < turningRadius && remainingAngle > 30f;
+        bool shouldRotateInPlace = distance < .5 && remainingAngle > 30f;
 
-        m_curState = CritterState.Moving;
-
+        Debug.Log($"{gameObject.name} should rotate in place: {shouldRotateInPlace}, distance: {distance}, remaining angle: {remainingAngle}.");
+        
         if (shouldRotateInPlace)
         {
             m_curState = CritterState.Rotating;
