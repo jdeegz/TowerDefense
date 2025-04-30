@@ -4,6 +4,8 @@ using DG.Tweening;
 using GameUtil;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
@@ -21,7 +23,7 @@ public class MissionTableController : MonoBehaviour
 
     [Header("Table Rotation")]
     [SerializeField] private Transform m_rotationRoot;
-    [SerializeField] private float m_rotationSpeed = 10f; // Adjust sensitivity
+    [SerializeField] private float m_mouseWheelRotationSpeed = 10f; // Adjust sensitivity
 
     [Header("Mission Buttons")]
     [SerializeField] private List<MissionButtonInteractable> m_missionButtonList;
@@ -56,24 +58,82 @@ public class MissionTableController : MonoBehaviour
 
     private List<float> m_missionButtonRotations = new List<float>();
 
+    private bool m_menuMode = true;
+    private Tween m_menuModeRotationTween;
+    private Sequence m_curTransitionSequence;
+    private Sequence m_transitionToMenuSequence;
+    private Sequence m_transitionToMissionTableSequence;
+
+    [SerializeField] private GameObject m_cameraController;
+    [SerializeField] private Camera m_camera;
+    [SerializeField] private Volume m_globalVolume;
+
+    [SerializeField] private Transform m_menuControllerTransform;
+    [SerializeField] private Transform m_menuCameraTransform;
+    [SerializeField] private Transform m_tableControllerTransform;
+    [SerializeField] private Transform m_tableCameraTransform;
+    [SerializeField] private float m_transitionToTableDuration;
+    [SerializeField] private float m_transitionToMenuDuration;
+
+    private float m_menuDOFStart = 25f;
+    private float m_menuDOFEnd = 30f;
+    private float m_tableDOFStart = 60f;
+    private float m_tableDOFEnd = 90f;
+
+    private float m_menuCameraClippingNear = 5f;
+    private float m_menuCameraClippingFar = 90f;
+    private float m_tableCameraClippingNear = 40f;
+    private float m_tableCameraClippingFar = 140f;
+
+    private DepthOfField m_dofSettings;
+
+    [SerializeField] private float m_maxIdleTableRotationSpeed = 3;
+    [SerializeField] private float m_idleTableAccelerationDuration = 3;
+    private float m_curIdleTableRotationSpeed = 0;
+    private float m_lastTableInteractionTime;
+    private Vector3 m_tableRotation;
+
     void Awake()
     {
         Instance = this;
         m_isActive = false;
+        m_globalVolume.profile.TryGet(out m_dofSettings);
+
         CalculateMissionButtonRotationValues();
+
+        SetCameraStartingPosition();
+
+        m_tableRotation = m_rotationRoot.transform.eulerAngles;
     }
 
-    void Start()
+    private void SetCameraStartingPosition()
     {
-        SelectedMissionIndex = m_missionButtonList.IndexOf(GetFurthestUnlockedMission());
-        SetRotation(m_missionButtonList[SelectedMissionIndex].transform);
+        //Set to Menu starting, add logic for maybe skipping later.
+        m_menuMode = true;
+        m_cameraController.transform.position = m_menuControllerTransform.transform.position;
+        m_cameraController.transform.rotation = m_menuControllerTransform.transform.rotation;
+        m_camera.transform.position = m_menuCameraTransform.transform.position;
+        m_camera.transform.rotation = m_menuCameraTransform.transform.rotation;
+        m_dofSettings.gaussianStart.value = m_menuDOFStart;
+        m_dofSettings.gaussianEnd.value = m_menuDOFEnd;
+        m_camera.nearClipPlane = m_menuCameraClippingNear;
+        m_camera.farClipPlane = m_menuCameraClippingFar;
     }
+
 
     void Update()
     {
-        if (!m_isActive) return;
+        if (ShouldRotateTable())
+        {
+            HandleTableIdleRotation();
+        }
+        else
+        {
+            RotateToTargetRotation();
+        }
 
-        RotateToTargetRotation();
+        if (m_menuMode) return;
+
 
         if (EventSystem.current.IsPointerOverGameObject()) return;
 
@@ -86,23 +146,129 @@ public class MissionTableController : MonoBehaviour
         HandleHotkeys();
     }
 
+
+    private bool ShouldRotateTable()
+    {
+        if (m_menuMode) return true; // Always spin in menu
+
+        if (UIPopupManager.Instance.IsPopupOpen<UIMissionInfo>()) return false;
+        
+        if (Time.unscaledTime - m_lastTableInteractionTime > 8f)
+        {
+            m_tableRotation = m_rotationRoot.transform.eulerAngles;
+            return true;
+        }
+        return false;
+    }
+
+    public void OnTableInteracted()
+    {
+        m_curIdleTableRotationSpeed = 0;
+        m_lastTableInteractionTime = Time.unscaledTime;
+    }
+
+    private void HandleTableIdleRotation()
+    {
+        float accelerationRate = m_maxIdleTableRotationSpeed / m_idleTableAccelerationDuration;
+        m_curIdleTableRotationSpeed = Mathf.MoveTowards(
+            m_curIdleTableRotationSpeed,
+            m_maxIdleTableRotationSpeed,
+            accelerationRate * Time.unscaledDeltaTime
+        );
+
+        m_tableRotation.y = Mathf.Repeat(m_tableRotation.y + m_curIdleTableRotationSpeed * Time.unscaledDeltaTime, 360f);
+        m_rotationRoot.eulerAngles = m_tableRotation;
+    }
+
+    public void TriggerSequence()
+    {
+        if (m_curTransitionSequence != null && m_curTransitionSequence.IsActive())
+            m_curTransitionSequence.Kill();
+
+        if (m_menuMode)
+        {
+            OnTableInteracted();
+            m_curRotateToTargetSpeed = m_rotateToTargetFromMenuSpeed;
+            SelectedMissionIndex = m_missionButtonList.IndexOf(GetFurthestUnlockedMission());
+            m_curTransitionSequence = BuildTransitionSequence(
+                m_tableCameraTransform,
+                m_tableControllerTransform,
+                m_tableDOFStart,
+                m_tableDOFEnd,
+                m_tableCameraClippingNear,
+                m_tableCameraClippingFar,
+                m_transitionToTableDuration);
+            
+            m_curTransitionSequence.OnComplete( () => m_curRotateToTargetSpeed = m_rotateToTargetSpeed);
+        }
+        else
+        {
+            m_curTransitionSequence = BuildTransitionSequence(
+                m_menuCameraTransform,
+                m_menuControllerTransform,
+                m_menuDOFStart,
+                m_menuDOFEnd,
+                m_menuCameraClippingNear,
+                m_menuCameraClippingFar,
+                m_transitionToMenuDuration);
+        }
+
+        m_menuMode = !m_menuMode;
+        m_curTransitionSequence.Play();
+    }
+
+    private Sequence BuildTransitionSequence(
+        Transform cameraTarget,
+        Transform controllerTarget,
+        float dofStart,
+        float dofEnd,
+        float nearClip,
+        float farClip,
+        float duration)
+    {
+        var seq = DOTween.Sequence();
+
+        // Camera
+        seq.Append(m_camera.transform.DOMove(cameraTarget.position, duration));
+        seq.Join(m_camera.transform.DORotateQuaternion(cameraTarget.rotation, duration));
+
+        // Controller
+        seq.Join(m_cameraController.transform.DOMove(controllerTarget.position, duration));
+        seq.Join(m_cameraController.transform.DORotateQuaternion(controllerTarget.rotation, duration));
+
+        // DOF
+        seq.Join(DOTween.To(() => m_dofSettings.gaussianStart.value, x => m_dofSettings.gaussianStart.value = x, dofStart, duration));
+        seq.Join(DOTween.To(() => m_dofSettings.gaussianEnd.value, x => m_dofSettings.gaussianEnd.value = x, dofEnd, duration));
+
+        // Clipping Planes
+        seq.Join(DOTween.To(() => m_camera.nearClipPlane, x => m_camera.nearClipPlane = x, nearClip, duration));
+        seq.Join(DOTween.To(() => m_camera.farClipPlane, x => m_camera.farClipPlane = x, farClip, duration));
+
+        return seq;
+    }
+
+    private float m_rotateToTargetSpeed = 15f;
+    private float m_rotateToTargetFromMenuSpeed = 3f;
+    private float m_curRotateToTargetSpeed;
+    
     void RotateToTargetRotation()
     {
         // Ensure shortest rotation path by normalizing the difference
         float deltaAngle = Mathf.DeltaAngle(m_currentYRotation, m_targetYRotation);
-        m_currentYRotation = Mathf.Lerp(m_currentYRotation, m_currentYRotation + deltaAngle, Time.deltaTime * 10f);
+        m_currentYRotation = Mathf.Lerp(m_currentYRotation, m_currentYRotation + deltaAngle, Time.deltaTime * m_curRotateToTargetSpeed);
         m_rotationRoot.rotation = Quaternion.Euler(0f, m_currentYRotation, 0f);
 
-        //Debug.Log($"Current Rotation: {m_currentYRotation}");
+        Debug.Log($"Current Rotation: {m_currentYRotation}");
     }
 
     public void SetTargetRotation(Transform targetObject)
     {
+        m_currentYRotation = m_rotationRoot.eulerAngles.y;
         Vector3 direction = m_rotationRoot.position - targetObject.position;
         float targetYRotation = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         m_targetYRotation = m_rotationRoot.eulerAngles.y + targetYRotation;
 
-        //Debug.Log($"SetTargetRotation: Starting Rotation: {m_rotationRoot.eulerAngles.y}, Rotation to Obj: {targetYRotation}. Target Rotation: {m_targetYRotation}.");
+        Debug.Log($"SetTargetRotation: Starting Rotation: {m_rotationRoot.eulerAngles.y}, Rotation to Obj: {targetYRotation}. Target Rotation: {m_targetYRotation}.");
     }
 
     public void SetSelectedMission(MissionButtonInteractable missionButton)
@@ -114,6 +280,9 @@ public class MissionTableController : MonoBehaviour
             {
                 m_curSelectedMission = button;
                 SelectedMissionIndex = i;
+                
+                //Restart the Idle Timer.
+                OnTableInteracted();
                 return;
             }
         }
@@ -122,27 +291,20 @@ public class MissionTableController : MonoBehaviour
         m_curSelectedMission = null;
     }
 
-    public void SetRotation(Transform targetObject)
-    {
-        Vector3 direction = m_rotationRoot.position - targetObject.position;
-        float targetYRotation = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-        m_targetYRotation = targetYRotation;
-        m_currentYRotation = m_targetYRotation;
-        m_rotationRoot.rotation = Quaternion.Euler(0f, targetYRotation, 0f);
-        m_isActive = true;
-    }
-
     void HandleMouseScroll()
     {
         float scrollDelta = Input.mouseScrollDelta.y;
         if (Mathf.Abs(scrollDelta) > 0.01f) // Prevent minor jittering
         {
             //Debug.Log($"Scroll Delta {scrollDelta}.");
-            m_targetYRotation += scrollDelta * m_rotationSpeed; // Update target rotation
+            m_targetYRotation += scrollDelta * m_mouseWheelRotationSpeed; // Update target rotation
             m_targetYRotation = Mathf.Repeat(m_targetYRotation, 360f);
             UIPopupManager.Instance.ClosePopup<UIMissionInfo>();
 
             CalculateAdjacentIndexes();
+            
+            //Restart the Idle Timer.
+            OnTableInteracted();
         }
     }
 
@@ -209,6 +371,9 @@ public class MissionTableController : MonoBehaviour
 
             //Try and calculate the new selected index.
             CalculateAdjacentIndexes();
+            
+            //Restart the Idle Timer.
+            OnTableInteracted();
         }
     }
 
@@ -218,12 +383,18 @@ public class MissionTableController : MonoBehaviour
         {
             //Go backwards.
             NextMissionIndex(false);
+            
+            //Restart the Idle Timer.
+            OnTableInteracted();
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.UpArrow))
         {
             //Go backwards.
             NextMissionIndex(true);
+            
+            //Restart the Idle Timer.
+            OnTableInteracted();
         }
     }
 
@@ -356,7 +527,7 @@ public class MissionTableController : MonoBehaviour
         {
             button.UpdateDisplayState();
         }
-        
+
         m_tearController.SetValidMissions();
     }
 }

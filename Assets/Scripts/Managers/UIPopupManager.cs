@@ -48,7 +48,7 @@ public class UIPopupManager : MonoBehaviour
         {
             return popup as T;
         }
-        
+
         popup.HandleShow();
 
         if (popup is IDataPopup dataPopup)
@@ -130,6 +130,21 @@ public class UIPopupManager : MonoBehaviour
         if (popupToClose != null)
         {
             ClosePopup(popupToClose);
+        }
+    }
+
+    public bool IsPopupOpen<T>() where T : UIPopup
+    {
+        if (m_activePopups.Count == 0) return false;
+
+        UIPopup openPopup = m_activePopups.FirstOrDefault(p => p is T);
+        if (openPopup != null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
