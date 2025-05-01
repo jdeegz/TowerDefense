@@ -17,6 +17,12 @@ public class SwarmCutscene : MonoBehaviour
 
     void Start()
     {
+        for (var index = 0; index < m_swarmMembers.Count; index++)
+        {
+            var member = m_swarmMembers[index];
+            member.transform.localPosition = Vector3.zero;
+        }
+        
         AssignRandomTargets();
     }
 

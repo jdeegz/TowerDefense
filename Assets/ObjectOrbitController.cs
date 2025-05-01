@@ -6,11 +6,17 @@ public class ObjectOrbitController : MonoBehaviour
 {
     [Header("Grainwraith Settings")]
     public EnemyData m_enemyData;
+    [SerializeField] private bool m_canPitch = true;
+    [SerializeField] private Transform m_modelRoot;
+    
+
     private float m_moveSpeed = 2f;
     private float m_turnSpeed = 90f;
 
     private Transform m_centerTransform;
     private Transform m_targetTransform;
+    private Vector3 m_targetPos;
+    private Vector3 m_targetPosYOffset;
     private Transform m_rotationRootTransform;
 
     private bool m_clockwise = true;
@@ -36,9 +42,11 @@ public class ObjectOrbitController : MonoBehaviour
     {
         m_moveSpeed = m_enemyData.m_moveSpeed;
         m_turnSpeed = m_enemyData.m_lookSpeed;
-        
+
         m_centerTransform = centerTransform;
         m_targetTransform = targetTransform;
+        m_targetPosYOffset = new (0f, Random.Range(.25f, 1.75f), 0f);
+        m_targetPos = m_targetTransform.position + m_targetPosYOffset;
         m_rotationRootTransform = rotationRootTransform;
         m_clockwise = clockwise;
 
@@ -48,19 +56,21 @@ public class ObjectOrbitController : MonoBehaviour
         Vector3 tangentDir = m_clockwise
             ? Vector3.Cross(Vector3.up, flatToStart)
             : Vector3.Cross(flatToStart, Vector3.up);
+
         transform.forward = tangentDir;
+        
 
         // Add small random rotation noise
-        float yNoise = Random.Range(-20f, 20f);
-        float xNoise = Random.Range(-20f, 20f);
+        float yNoise = Random.Range(-30f, 30f);
+        float xNoise = Random.Range(-30f, 30f);
         transform.rotation *= Quaternion.Euler(xNoise, yNoise, 0f);
 
         m_initialHeight = transform.position.y;
-        m_desiredHeight = m_targetTransform.position.y;
+        m_desiredHeight = m_targetPos.y;
 
         Vector3 localStart = m_rotationRootTransform.InverseTransformPoint(transform.position);
         localStart.y = 0;
-        Vector3 localTarget = m_rotationRootTransform.InverseTransformPoint(m_targetTransform.position);
+        Vector3 localTarget = m_rotationRootTransform.InverseTransformPoint(m_targetPos);
         localTarget.y = 0;
         m_localCenter = m_rotationRootTransform.InverseTransformPoint(m_centerTransform.position);
         m_localCenter.y = 0;
@@ -77,7 +87,7 @@ public class ObjectOrbitController : MonoBehaviour
         {
             m_angleBetween = (360f - signedAngle) % 360f;
         }
-        
+
         m_startBlend = Mathf.Lerp(0.2f, 0.85f, m_angleBetween / 360f);
 
         m_isAlive = true;
@@ -90,6 +100,8 @@ public class ObjectOrbitController : MonoBehaviour
     {
         if (!m_isAlive) return;
 
+        m_targetPos = m_targetTransform.position + m_targetPosYOffset;
+        
         Vector3 localCurrent = m_rotationRootTransform.InverseTransformPoint(transform.position);
         localCurrent.y = 0;
         m_localCenter = m_rotationRootTransform.InverseTransformPoint(m_centerTransform.position);
@@ -120,13 +132,20 @@ public class ObjectOrbitController : MonoBehaviour
             : Vector3.Cross(flatToCenter, Vector3.up).normalized;
 
         // Homing influence
-        Vector3 targetLookDir = (m_targetTransform.position - transform.position).normalized;
-        
+        Vector3 targetLookDir = (m_targetPos - transform.position).normalized;
+
         float targetInfluence = Mathf.InverseLerp(m_startBlend, 1f, m_progress);
         Vector3 blendedDir = Vector3.Slerp(tangentDir, targetLookDir, targetInfluence).normalized;
         Quaternion targetRot = Quaternion.LookRotation(blendedDir);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, m_turnSpeed * Time.deltaTime);
 
+        if (!m_canPitch)
+        {
+            Vector3 modelEuler = m_modelRoot.localEulerAngles;
+            modelEuler.x = -transform.eulerAngles.x;
+            m_modelRoot.localEulerAngles = modelEuler;
+        }
+        
         // Move forward and apply height
         Vector3 move = transform.forward * m_moveSpeed * Time.deltaTime;
         Vector3 nextPos = transform.position + move;
@@ -134,7 +153,7 @@ public class ObjectOrbitController : MonoBehaviour
         transform.position = nextPos;
 
         // Stop when close
-        if (Vector3.Distance(transform.position, m_targetTransform.position) < m_stoppingDistance)
+        if (Vector3.Distance(transform.position, m_targetPos) < m_stoppingDistance)
         {
             m_initialHeight = 0;
             m_desiredHeight = 0;
@@ -163,6 +182,7 @@ public class ObjectOrbitController : MonoBehaviour
             Quaternion rotation = Quaternion.LookRotation(-transform.forward);
             ObjectPoolManager.SpawnObject(m_enemyData.m_attackSpireVFXPrefab, transform.position, rotation, transform.parent, ObjectPoolManager.PoolType.ParticleSystem);
         }
+
         RemoveObject();
     }
 

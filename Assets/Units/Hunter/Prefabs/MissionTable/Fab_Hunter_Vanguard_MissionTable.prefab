@@ -64,9 +64,6 @@ Transform:
   m_Children:
   - {fileID: 1395368091360968369}
   - {fileID: 5385197571511292196}
-  - {fileID: 8442564284681094414}
-  - {fileID: 2244764649470931153}
-  - {fileID: 5172792316106424924}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &7859827148287592889
@@ -179,6 +176,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_enemyData: {fileID: 11400000, guid: d2ea54f4ad520d745b7fa146d9045db2, type: 2}
+  m_canPitch: 0
+  m_modelRoot: {fileID: 1395368091360968369}
 --- !u!1 &6499226114060676648
 GameObject:
   m_ObjectHideFlags: 0
@@ -209,6 +208,9 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3262439119906904115}
+  - {fileID: 8442564284681094414}
+  - {fileID: 2244764649470931153}
+  - {fileID: 5172792316106424924}
   m_Father: {fileID: 6495075236501727628}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &62000155513566535
@@ -217,7 +219,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6495075236501727628}
+    m_TransformParent: {fileID: 1395368091360968369}
     m_Modifications:
     - target: {fileID: 8500060152390922313, guid: 2bc0ef6665375e14aab941c703edd88f, type: 3}
       propertyPath: m_LocalScale.x
@@ -360,7 +362,7 @@ PrefabInstance:
     - target: {fileID: 5866666021909216657, guid: 764387b9aba6d6f4c8230c768a0adc42, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: e9571955db6aa6b4e81763da31d45106, type: 2}
+      objectReference: {fileID: 9100000, guid: 59d0231c847dfb442ada977ee78e71bf, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -377,7 +379,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6495075236501727628}
+    m_TransformParent: {fileID: 1395368091360968369}
     m_Modifications:
     - target: {fileID: 8500060152390922313, guid: 2bc0ef6665375e14aab941c703edd88f, type: 3}
       propertyPath: m_LocalScale.x
@@ -451,7 +453,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6495075236501727628}
+    m_TransformParent: {fileID: 1395368091360968369}
     m_Modifications:
     - target: {fileID: 8500060152390922313, guid: 2bc0ef6665375e14aab941c703edd88f, type: 3}
       propertyPath: m_LocalScale.x

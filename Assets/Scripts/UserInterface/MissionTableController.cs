@@ -81,7 +81,7 @@ public class MissionTableController : MonoBehaviour
     private float m_tableDOFEnd = 90f;
 
     private float m_menuCameraClippingNear = 5f;
-    private float m_menuCameraClippingFar = 90f;
+    private float m_menuCameraClippingFar = 120f;
     private float m_tableCameraClippingNear = 40f;
     private float m_tableCameraClippingFar = 140f;
 
@@ -92,6 +92,9 @@ public class MissionTableController : MonoBehaviour
     private float m_curIdleTableRotationSpeed = 0;
     private float m_lastTableInteractionTime;
     private Vector3 m_tableRotation;
+
+    [SerializeField] private CanvasGroup m_playButtonCanvasGroup;
+        
 
     void Awake()
     {
@@ -120,7 +123,6 @@ public class MissionTableController : MonoBehaviour
         m_camera.farClipPlane = m_menuCameraClippingFar;
     }
 
-
     void Update()
     {
         if (ShouldRotateTable())
@@ -134,7 +136,6 @@ public class MissionTableController : MonoBehaviour
 
         if (m_menuMode) return;
 
-
         if (EventSystem.current.IsPointerOverGameObject()) return;
 
         HandleMouseHover();
@@ -145,7 +146,6 @@ public class MissionTableController : MonoBehaviour
 
         HandleHotkeys();
     }
-
 
     private bool ShouldRotateTable()
     {
@@ -190,6 +190,7 @@ public class MissionTableController : MonoBehaviour
             OnTableInteracted();
             m_curRotateToTargetSpeed = m_rotateToTargetFromMenuSpeed;
             SelectedMissionIndex = m_missionButtonList.IndexOf(GetFurthestUnlockedMission());
+            
             m_curTransitionSequence = BuildTransitionSequence(
                 m_tableCameraTransform,
                 m_tableControllerTransform,
@@ -200,9 +201,15 @@ public class MissionTableController : MonoBehaviour
                 m_transitionToTableDuration);
             
             m_curTransitionSequence.OnComplete( () => m_curRotateToTargetSpeed = m_rotateToTargetSpeed);
+
+            m_playButtonCanvasGroup.DOFade(0, 0.2f);
+            m_playButtonCanvasGroup.interactable = false;
+            m_playButtonCanvasGroup.blocksRaycasts = false;
         }
         else
         {
+            m_tableRotation = m_rotationRoot.transform.eulerAngles;
+            
             m_curTransitionSequence = BuildTransitionSequence(
                 m_menuCameraTransform,
                 m_menuControllerTransform,
@@ -211,6 +218,10 @@ public class MissionTableController : MonoBehaviour
                 m_menuCameraClippingNear,
                 m_menuCameraClippingFar,
                 m_transitionToMenuDuration);
+            
+            m_playButtonCanvasGroup.DOFade(1, 0.2f).SetDelay(m_transitionToMenuDuration);
+            m_playButtonCanvasGroup.interactable = true;
+            m_playButtonCanvasGroup.blocksRaycasts = true;
         }
 
         m_menuMode = !m_menuMode;
@@ -258,7 +269,7 @@ public class MissionTableController : MonoBehaviour
         m_currentYRotation = Mathf.Lerp(m_currentYRotation, m_currentYRotation + deltaAngle, Time.deltaTime * m_curRotateToTargetSpeed);
         m_rotationRoot.rotation = Quaternion.Euler(0f, m_currentYRotation, 0f);
 
-        Debug.Log($"Current Rotation: {m_currentYRotation}");
+        //Debug.Log($"Current Rotation: {m_currentYRotation}");
     }
 
     public void SetTargetRotation(Transform targetObject)
@@ -268,7 +279,7 @@ public class MissionTableController : MonoBehaviour
         float targetYRotation = -Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
         m_targetYRotation = m_rotationRoot.eulerAngles.y + targetYRotation;
 
-        Debug.Log($"SetTargetRotation: Starting Rotation: {m_rotationRoot.eulerAngles.y}, Rotation to Obj: {targetYRotation}. Target Rotation: {m_targetYRotation}.");
+        //Debug.Log($"SetTargetRotation: Starting Rotation: {m_rotationRoot.eulerAngles.y}, Rotation to Obj: {targetYRotation}. Target Rotation: {m_targetYRotation}.");
     }
 
     public void SetSelectedMission(MissionButtonInteractable missionButton)
@@ -395,6 +406,11 @@ public class MissionTableController : MonoBehaviour
             
             //Restart the Idle Timer.
             OnTableInteracted();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Backspace))
+        {
+            TriggerSequence();
         }
     }
 
